@@ -121,9 +121,38 @@ sealed class Pyretic(BossModule module) : Components.StayMove(module)
 
 sealed class Hints(BossModule module) : BossComponent(module)
 {
+    private bool isHeavy;
+    private bool isFrostbite;
+
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
+    {
+        switch (status.ID)
+        {
+            case (uint)SID.Heavy:
+                isHeavy = true;
+                break;
+            case (uint)SID.Frostbite:
+                isFrostbite = true;
+                break;
+        }
+    }
+
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
+    {
+        switch (status.ID)
+        {
+            case (uint)SID.Heavy:
+                isHeavy = false;
+                break;
+            case (uint)SID.Frostbite:
+                isFrostbite = false;
+                break;
+        }
+    }
+
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (actor.FindStatus((uint)SID.Heavy) != null || actor.FindStatus((uint)SID.Frostbite) != null)
+        if (isHeavy || isFrostbite)
         {
             hints.Add($"Cleanse debuffs!");
         }
@@ -150,5 +179,5 @@ sealed class Stage31Act2States : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 754, NameID = 9908, SortOrder = 2)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 754u, NameID = 9908u, SortOrder = 2)]
 public sealed class Stage31Act2(WorldState ws, Actor primary) : BossModule(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall);

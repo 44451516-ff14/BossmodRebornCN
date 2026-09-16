@@ -26,7 +26,7 @@ class Hints(BossModule module) : BossComponent(module)
 {
     private DateTime _nailSpawn;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var nailsActive = ((T05IfritH)Module).ActiveNails.Any();
         if (_nailSpawn == default && nailsActive)

@@ -74,7 +74,7 @@ sealed class EventList(Replay r, Action<DateTime> scrollTo, PlanDatabase planDB,
             }
             else
             {
-                foreach (var (oid, list) in _tree.Nodes(filter.ParticipantsByOID, kv => new($"{kv.Key:X} '{oidType?.GetEnumName(kv.Key)}' ({kv.Value.Count} objects)")))
+                foreach (var (oid, list) in _tree.Nodes(filter.ParticipantsByOID, kv => new($"{kv.Key:X} '{oidType?.GeneratedEnumName(kv.Key)}' ({kv.Value.Count} objects)")))
                 {
                     DrawParticipants(list, actions, statuses, tp, reference, filter, aidType, sidType);
                 }
@@ -124,21 +124,33 @@ sealed class EventList(Replay r, Action<DateTime> scrollTo, PlanDatabase planDB,
         }
 
         var haveTethers = false;
-        foreach (var _ in tethers) { haveTethers = true; break; }
+        foreach (var _ in tethers)
+        {
+            haveTethers = true;
+            break;
+        }
         foreach (var n in _tree.Node("Tethers", !haveTethers))
         {
-            _tree.LeafNodes(tethers, t => $"{tp(t.Time.Start)} + {t.Time}: {t.ID} ({tidType?.GetEnumName(t.ID)}) @ {ReplayUtils.ParticipantString(t.Source, t.Time.Start)} -> {ReplayUtils.ParticipantString(t.Target, t.Time.Start)}");
+            _tree.LeafNodes(tethers, t => $"{tp(t.Time.Start)} + {t.Time}: {t.ID} ({tidType?.GeneratedEnumName(t.ID)}) @ {ReplayUtils.ParticipantString(t.Source, t.Time.Start)} -> {ReplayUtils.ParticipantString(t.Target, t.Time.Start)}");
         }
 
         var haveIcons = false;
-        foreach (var _ in icons) { haveIcons = true; break; }
+        foreach (var _ in icons)
+        {
+            haveIcons = true;
+            break;
+        }
         foreach (var n in _tree.Node("Icons", !haveIcons))
         {
-            _tree.LeafNodes(icons, i => $"{tp(i.Timestamp)}: {i.ID} ({iidType?.GetEnumName(i.ID)}) @ {ReplayUtils.ParticipantString(i.Source, i.Timestamp)} -> {ReplayUtils.ParticipantString(i.Target, i.Timestamp)}");
+            _tree.LeafNodes(icons, i => $"{tp(i.Timestamp)}: {i.ID} ({iidType?.GeneratedEnumName(i.ID)}) @ {ReplayUtils.ParticipantString(i.Source, i.Timestamp)} -> {ReplayUtils.ParticipantString(i.Target, i.Timestamp)}");
         }
 
         var haveMapEffects = false;
-        foreach (var _ in mapEffects) { haveMapEffects = true; break; }
+        foreach (var _ in mapEffects)
+        {
+            haveMapEffects = true;
+            break;
+        }
         foreach (var n in _tree.Node("Map effects", !haveMapEffects))
         {
             if (haveMapEffects)
@@ -170,7 +182,11 @@ sealed class EventList(Replay r, Action<DateTime> scrollTo, PlanDatabase planDB,
         }
 
         var haveDirus = false;
-        foreach (var _ in dirus) { haveDirus = true; break; }
+        foreach (var _ in dirus)
+        {
+            haveDirus = true;
+            break;
+        }
         foreach (var n in _tree.Node("Director updates", !haveDirus))
         {
             if (haveDirus)
@@ -235,7 +251,11 @@ sealed class EventList(Replay r, Action<DateTime> scrollTo, PlanDatabase planDB,
                 {
                     for (var ti = 0; ti < a.Targets.Count; ++ti)
                     {
-                        if (a.Targets[ti].Target == p) { pActions.Add(a); break; }
+                        if (a.Targets[ti].Target == p)
+                        {
+                            pActions.Add(a);
+                            break;
+                        }
                     }
                 }
                 DrawActions(pActions, tp, aidType);
@@ -272,7 +292,7 @@ sealed class EventList(Replay r, Action<DateTime> scrollTo, PlanDatabase planDB,
         }
     }
 
-    private string CastString(Replay.Cast c, DateTime reference, DateTime prev, Type? aidType) => $"{new Replay.TimeRange(reference, c.Time.Start)} ({new Replay.TimeRange(prev, c.Time.Start)}) + {c.ExpectedCastTime + 0.3f:f2} ({c.Time}): {c.ID} ({aidType?.GetEnumName(c.ID.ID)}) @ {ReplayUtils.ParticipantPosRotString(c.Target, c.Time.Start)} / {Utils.Vec3String(c.Location)} / {c.Rotation}";
+    private string CastString(Replay.Cast c, DateTime reference, DateTime prev, Type? aidType) => $"{new Replay.TimeRange(reference, c.Time.Start)} ({new Replay.TimeRange(prev, c.Time.Start)}) + {c.ExpectedCastTime + 0.3f:f2} ({c.Time}): {c.ID} ({aidType?.GeneratedEnumName(c.ID.ID)}) @ {ReplayUtils.ParticipantPosRotString(c.Target, c.Time.Start)} / {Utils.Vec3String(c.Location)} / {c.Rotation}";
 
     private void DrawCasts(IEnumerable<Replay.Cast> list, DateTime reference, Type? aidType)
     {
@@ -283,7 +303,7 @@ sealed class EventList(Replay r, Action<DateTime> scrollTo, PlanDatabase planDB,
         }
     }
 
-    private string ActionString(Replay.Action a, Func<DateTime, string> tp, Type? aidType) => $"{tp(a.Timestamp)}: {a.ID} ({aidType?.GetEnumName(a.ID.ID)}): {ReplayUtils.ParticipantPosRotString(a.Source, a.Timestamp)} -> {ReplayUtils.ParticipantString(a.MainTarget, a.Timestamp)} {Utils.Vec3String(a.TargetPos)} ({a.Targets.Count} affected) #{a.GlobalSequence}";
+    private string ActionString(Replay.Action a, Func<DateTime, string> tp, Type? aidType) => $"{tp(a.Timestamp)}: {a.ID} ({aidType?.GeneratedEnumName(a.ID.ID)}): {ReplayUtils.ParticipantPosRotString(a.Source, a.Timestamp)} -> {ReplayUtils.ParticipantString(a.MainTarget, a.Timestamp)} {Utils.Vec3String(a.TargetPos)} ({a.Targets.Count} affected) #{a.GlobalSequence}";
 
     private void DrawActions(IEnumerable<Replay.Action> list, Func<DateTime, string> tp, Type? aidType)
     {
@@ -296,7 +316,7 @@ sealed class EventList(Replay r, Action<DateTime> scrollTo, PlanDatabase planDB,
         }
     }
 
-    private string StatusString(Replay.Status s, Func<DateTime, string> tp, Type? sidType) => $"{tp(s.Time.Start)} + {s.InitialDuration:f2} / {s.Time}: {Utils.StatusString(s.ID)} ({sidType?.GetEnumName(s.ID)}) ({s.StartingExtra:X}) @ {ReplayUtils.ParticipantString(s.Target, s.Time.Start)} from {ReplayUtils.ParticipantString(s.Source, s.Time.Start)}";
+    private string StatusString(Replay.Status s, Func<DateTime, string> tp, Type? sidType) => $"{tp(s.Time.Start)} + {s.InitialDuration:f2} / {s.Time}: {Utils.StatusString(s.ID)} ({sidType?.GeneratedEnumName(s.ID)}) ({s.StartingExtra:X}) @ {ReplayUtils.ParticipantString(s.Target, s.Time.Start)} from {ReplayUtils.ParticipantString(s.Source, s.Time.Start)}";
 
     private void DrawStatuses(IEnumerable<Replay.Status> statuses, Func<DateTime, string> tp, Type? sidType) => _tree.LeafNodes(statuses, s => StatusString(s, tp, sidType));
 

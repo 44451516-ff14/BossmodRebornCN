@@ -55,7 +55,7 @@ class PlayerBound(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         // Add global hint text
         if (!_bound.None())

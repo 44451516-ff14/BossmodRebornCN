@@ -10,33 +10,26 @@ public enum AID : uint
     Seedvolley = 14750 // Boss->player, no cast, single-target
 }
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add("For this stage Ice Spikes and Bomb Toss are recommended spells.\nUse Ice Spikes to instantly kill roselets once they become aggressive.\nHydnora in act 2 is weak against water and strong against earth spells.");
-    }
-}
-
 sealed class Stage12Act1States : StateMachineBuilder
 {
     public Stage12Act1States(BossModule module) : base(module)
     {
-        TrivialPhase()
-            .DeactivateOnEnter<Hints>();
+        TrivialPhase();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 622, NameID = 8103, SortOrder = 1)]
-public sealed class Stage12Act1 : BossModule
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 622u, NameID = 8103u, SortOrder = 1)]
+public sealed class Stage12Act1(WorldState ws, Actor primary) : BossModule(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
 {
-    public Stage12Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
-    {
-        ActivateComponent<Hints>();
-    }
-
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actors(Enemies((uint)OID.Boss));
     }
+
+    private readonly string[] _prePullHints =
+    [
+        "For this stage Ice Spikes and Bomb Toss are recommended spells. Use Ice Spikes to instantly kill roselets once they become aggressive. Hydnora in act 2 is weak against water and strong against earth spells."
+    ];
+
+    public override string[] PrePullHints => _prePullHints;
 }

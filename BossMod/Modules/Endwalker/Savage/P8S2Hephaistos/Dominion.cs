@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P8S2;
 
-class Dominion : Components.UniformStackSpread
+sealed class Dominion : Components.UniformStackSpread
 {
     public int NumDeformations;
     public int NumShifts;
@@ -35,7 +35,7 @@ class Dominion : Components.UniformStackSpread
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.OrogenicShift)
+        if (spell.Action.ID == (uint)AID.OrogenicShift)
         {
             Casters.Add(caster);
         }
@@ -43,7 +43,7 @@ class Dominion : Components.UniformStackSpread
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.OrogenicShift)
+        if (spell.Action.ID == (uint)AID.OrogenicShift)
         {
             ++NumShifts;
         }
@@ -51,7 +51,7 @@ class Dominion : Components.UniformStackSpread
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.OrogenicDeformation)
+        if (spell.Action.ID == (uint)AID.OrogenicDeformation)
         {
             Spreads.Clear();
             _secondOrder.Set(Raid.FindSlot(spell.MainTargetID));

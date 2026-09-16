@@ -1,4 +1,4 @@
-﻿namespace BossMod.RealmReborn;
+namespace BossMod.RealmReborn;
 
-[ConfigDisplay(Name = "重生之境2.x", Order = 0, Parent = typeof(ModuleConfig))]
-public class RealmRebornConfig() : ConfigNode();
+[ConfigDisplay(Name = "重生之境", Order = 0, Parent = typeof(ModuleConfig))]
+public sealed class RealmRebornConfig() : ConfigNode();

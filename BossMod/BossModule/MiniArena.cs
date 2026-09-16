@@ -9,11 +9,12 @@ namespace BossMod;
 //                       rotation 0 corresponds to South, and increases counterclockwise (so East is +pi/2, North is pi, West is -pi/2)
 // - camera azimuth 0 correpsonds to camera looking North and increases counterclockwise
 // - screen coordinates - X points left to right, Y points top to bottom
-[SkipLocalsInit]
 public sealed class MiniArena(WPos center, ArenaBounds bounds)
 {
     public static readonly BossModuleConfig Config = Service.Config.Get<BossModuleConfig>();
+    private const float ActorWorldProjectionHeight = 0.5f;
     private WPos _center = center;
+    private Vector2 _currentWindowSize = new(400f, 900f);
 
     public WPos Center
     {
@@ -65,9 +66,12 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
     private float _frameBillboardYOffset;
     private bool _frameShowWorldTextIconBillboards;
     private bool _frameShowOutlinesAndShadows;
+    private bool _frameProjectActorTriangles;
     private bool _frameProjectIntoWorld;
     private bool _frameClipWorldZonesToArena;
     private Camera? _frameWorldCamera;
+    private Camera.WorldProjectionLayer[]? _allWorldProjectionLayers;
+    private bool _allWorldProjectionLayersInitialized;
     private float _frameWorldProjectionY;
     private float _frameWorldBorderY;
     private float _frameWorldProjectionHeight = ArenaBounds.DefaultWorldProjectionHeight;
@@ -75,6 +79,9 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
     private RelSimplifiedComplexPolygon? _frameWorldProjectionArenaClip;
     private float _frameWorldBossY;
     private int? _frameArenaProjectionLayer;
+    // The player's complete 2D presentation domain remains stable across mechanic stencil scopes.
+    private RelSimplifiedComplexPolygon? _frameArenaProjectionShape;
+    private WDir _frameArenaCenterOffset;
     private RelSimplifiedComplexPolygon? _frameArenaStencilShape;
     private bool _frameSuppress2DZoneRendering;
     private float _worldProjectionFloorY;
@@ -117,16 +124,14 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
     private readonly List<WorldPathCommand> _worldPathCommands = [with(32)];
     private static MiniArena? _worldPathOwner;
 
-    // Actor markers normally sit directly under a known actor. 
-    // ActorProjected deliberately opts back into the bounds' WorldProjectionHeight because its
-    // destination marker is usually not underneath an actor. A zero bounds/layer height overrides
+    // Actor markers normally sit directly under a known actor.
+    // a destination marker is usually not underneath an actor. A zero bounds/layer height overrides
     // the shallow marker band as well so reference-plane projection remains arena-wide.
-    private const float WorldActorMarkerProjectionHeight = 0.10f;
     private const float WorldProjectionLayerSwitchHysteresis = 0.75f;
     private const float WorldOutlineUnit = 0.08f;
     // 3D arena-rim Dimensions
     private const float WorldArenaRimHeight = 0.35f;
-    // Keep the lower rail slightly above the provisional reference plane. This avoids fighting the scene depth of a coplanar floor while 
+    // Keep the lower rail slightly above the provisional reference plane. This avoids fighting the scene depth of a coplanar floor while
     // still reading visually as the arena's ground contact edge
     private const float WorldArenaRimBaseLift = 0.075f;
     private const float WorldArenaRimSupportSpacing = 2.0f;
@@ -137,6 +142,40 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
     public WPos ClampToBounds(WPos position) => _center + _bounds.ClampToBounds(position - _center);
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public float IntersectRayBounds(WPos rayOrigin, in WDir rayDir) => _bounds.IntersectRay(rayOrigin - _center, rayDir);
+
+    public void SetWindowSize(Vector2 fullSize)
+    {
+        var resize = new Vector2(400, 900);
+
+        if (Config.RadarResize)
+        {
+            // Resize the radar arena back to original value also.
+            Config.ArenaScale = 1.0f;
+
+            _currentWindowSize = resize;
+            Config.RadarResize = false;
+        }
+        else
+        {
+            _currentWindowSize = ImGui.GetWindowSize();
+        }
+        var requiredWindowSize = Vector2.Max(fullSize, _currentWindowSize);
+        ImGui.SetWindowSize(requiredWindowSize, ImGuiCond.Always);
+    }
+
+    // Right click anywhere on mini radar window to recenter and resize.
+    public void DrawContextMenu()
+    {
+        // Opens context menu on right mouse click of the mini radar
+        if (ImGui.BeginPopupContextWindow("MyWindowContext", ImGuiPopupFlags.MouseButtonRight))
+        {
+            if (ImGui.MenuItem("Recenter and Resize Radar"))
+            {
+                Service.BossModWindow?.RecenterWindow();
+            }
+            ImGui.EndPopup();
+        }
+    }
 
     // prepare for drawing - set up internal state, clip rect etc.
     public void Begin(Angle cameraAzimuth, Actor primaryActor, Actor player, bool draw2D = true)
@@ -155,15 +194,10 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         _frameActorScale = Config.ActorScale;
         _frameShowOutlinesAndShadows = Config.ShowOutlinesAndShadows;
         _frameCardinalsFontSize = Config.CardinalsFontSize;
-        _frameWorldTextFontSize = Config.TextBillboardFontSize;
-        _frameWorldIconFontSize = Config.IconBillboardFontSize;
-        _frameBillboardYOffset = Config.BillboardHeightOffset;
-        _frameShowWorldTextIconBillboards = Config.EnableTextIconBillboards;
-        _frameWorldCamera = Config.ProjectRadarInto3DWorld ? Camera.Instance : null;
-        _frameProjectIntoWorld = _frameWorldCamera != null;
+        _allWorldProjectionLayersInitialized = false;
+        _frameWorldCamera?.ProjectedShapeLayers = null;
         // World clipping is a property of the bounds, not of whether its visible 3D border is enabled.
-        _frameClipWorldZonesToArena = _frameProjectIntoWorld && _bounds.AllowDrawing3DArenaBounds;
-        _frameWorldBossY = primaryActor.PosRot.Y;
+
         _frameSuppress2DZoneRendering = !draw2D;
 
         ArenaBoundsCustom? layeredBounds = null;
@@ -191,8 +225,19 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
             _frameArenaProjectionLayer = null;
         }
 
+        _frameWorldCamera = Config.ProjectRadarInto3DWorld ? Camera.Instance : null;
+        _frameProjectIntoWorld = _frameWorldCamera != null;
+
         if (_frameProjectIntoWorld)
         {
+            _frameWorldTextFontSize = Config.TextBillboardFontSize;
+            _frameWorldIconFontSize = Config.IconBillboardFontSize;
+            _frameProjectActorTriangles = Config.ShowActorTrianglesIn3DWorld;
+            _frameShowWorldTextIconBillboards = Config.EnableTextIconBillboards;
+            _frameBillboardYOffset = Config.BillboardHeightOffset;
+            _frameClipWorldZonesToArena = _frameProjectIntoWorld && _bounds.AllowDrawing3DArenaBounds;
+            _frameWorldBossY = primaryActor.PosRot.Y;
+
             if (layeredBounds != null && projectionLayers != null)
             {
                 // Authored vertical arenas have reliable floor heights. Null mechanic layer selection
@@ -232,6 +277,25 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         // bounds build Shape lazily from ScreenHalfSize. Vertical custom layers already supplied an explicit clip above; the normal single-floor path needs the now-initialized shape
         _frameWorldProjectionArenaClip ??= _bounds.Shape;
 
+        var arenaInvRadius = _bounds.InvRadius;
+        _frameArenaProjectionShape = null;
+        _frameArenaCenterOffset = default;
+        if (layeredBounds != null)
+        {
+            var presentation = layeredBounds.ProjectionLayer2DBounds(_frameArenaProjectionLayer);
+            _frameArenaProjectionShape = presentation.Shape;
+            _frameArenaCenterOffset = presentation.CenterOffset;
+            arenaInvRadius = 1f / presentation.Radius;
+            if (draw2D)
+            {
+                presentation.Shape.VerifyPolygonIndexExistance();
+            }
+        }
+        // Select the player's floor/group before submitting the opaque background. World-only
+        // stencil exclusions and temporary mechanic scopes do not change this presentation domain.
+        var arenaShape = _frameArenaProjectionShape ?? _bounds.Shape;
+        _frameArenaStencilShape = arenaShape;
+
         if (draw2D)
         {
             var screenHalfSize = _frameScreenHalfSize = 150f * arenaScale;
@@ -239,9 +303,10 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
 
             var centerOffset = new Vector2(screenMarginSize + Config.SlackForRotations * screenHalfSize);
             var fullSize = 2f * centerOffset;
-            var currentWindowSize = ImGui.GetWindowSize();
-            var requiredWindowSize = Vector2.Max(fullSize, currentWindowSize);
-            ImGui.SetWindowSize(requiredWindowSize);
+
+            SetWindowSize(fullSize);
+            DrawContextMenu();
+
             var cursor = ImGui.GetCursorScreenPos();
             ImGui.Dummy(fullSize);
 
@@ -249,22 +314,21 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
             {
                 _bounds.ScreenHalfSize = screenHalfSize;
             }
-            // The 2D MiniArena always uses the real bounds/layer shape. ArenaStencilExclusions belong only to the independently supplied world-projection clip
-            _frameArenaStencilShape = _bounds.Shape;
             var screenCenter = cursor + centerOffset;
             ScreenCenter = screenCenter;
 
             _cameraAzimuth = cameraAzimuth;
             (_cameraSinAzimuth, _cameraCosAzimuth) = MathF.SinCos(cameraAzimuth.Rad);
 
-            var screenScale = screenHalfSize * _bounds.InvRadius;
+            var screenScale = screenHalfSize * arenaInvRadius;
             var scaledCos = _cameraCosAzimuth * screenScale;
             var scaledSin = _cameraSinAzimuth * screenScale;
-            var centerX = screenCenter.X;
-            var centerY = screenCenter.Y;
-
             _scaledCos = scaledCos;
             _scaledSin = scaledSin;
+
+            // All submitted polygons/positions remain relative to the logical arena center.
+            // Move that origin on screen so the active layer/group is centered in the radar.
+            var renderCenter = screenCenter - WorldOffsetToScreenOffset(_frameArenaCenterOffset);
 
             var drawList = ImGui.GetWindowDrawList();
 
@@ -272,21 +336,13 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
             var wmax = wmin + ImGui.GetWindowSize();
             drawList.PushClipRect(Vector2.Max(cursor, wmin), Vector2.Min(cursor + fullSize, wmax));
 
-            Dx11ArenaRenderer.BeginArena(drawList, _bounds.Shape, centerX, centerY, _scaledCos, _scaledSin, screenScale);
+            Dx11ArenaRenderer.BeginArena(drawList, arenaShape, renderCenter.X, renderCenter.Y, _scaledCos, _scaledSin, screenScale);
 
             if (Config.OpaqueArenaBackground)
             {
                 Dx11ArenaRenderer.AppendArenaBackground(Colors.Background);
             }
         }
-        // Make the current player's authored floor (or its shared disjoint-island group) the 2D stencil. 
-        // Explicit mechanic scopes may switch to one physical floor without changing the transform.
-        if (layeredBounds != null && _frameArenaProjectionLayer is int currentLayer)
-        {
-            _frameArenaStencilShape = layeredBounds.ProjectionLayer2DShape(currentLayer);
-            Dx11ArenaRenderer.SetArenaStencil(_frameArenaStencilShape);
-        }
-
         if (_frameClipWorldZonesToArena && _frameWorldProjectionArenaClip != null)
         {
             // Prime the independent world clip at the radar's real screen scale without ever installing it as the live 2D stencil. Camera/world draws later reuse this immutable SDF
@@ -336,14 +392,13 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         return _worldProjectionDefaultLayerIndex = bounds.ResolveProjectionLayer(positionOffset, y, _worldProjectionDefaultLayerIndex, WorldProjectionLayerSwitchHysteresis);
     }
 
-    // Actor markers use the actor's containing/nearest authored floor only for their world-space mirror;
-    // unlike mechanic scopes, they must not disturb the current 2D Zone* stencil
+    // Actor markers resolve their own containing/nearest authored floor from their live PosRot.
+    // This keeps direct PosRot callers correct as well as Actor callers, without disturbing the 2D Zone* stencil.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private WorldProjectionLayerScope WorldProjectionLayerForActor(Actor actor)
+    private WorldProjectionLayerScope WorldProjectionLayerForActor(ref Vector4 posRot)
     {
         if (_frameProjectIntoWorld && _bounds is ArenaBoundsCustom { WorldProjectionLayers.Length: > 0 } customBounds)
         {
-            ref var posRot = ref actor.PosRot;
             return WorldProjectionLayer(customBounds.ResolveProjectionLayer(new WPos(ref posRot) - _center, posRot.Y), false, false);
         }
         return default;
@@ -351,21 +406,43 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
 
     public int? CurrentArenaProjectionLayer => _frameArenaProjectionLayer;
 
+    // True restricts 2D visibility to the selected floor/group. False preserves unrestricted legacy
+    // visibility. Null ignores layerID and applies/draws the mechanic on every authored floor.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public WorldProjectionLayerScope WorldProjectionLayer(int? layerID, bool restrictToArenaProjectionLayer = false) => WorldProjectionLayer(layerID, restrictToArenaProjectionLayer, true);
+    public WorldProjectionLayerScope WorldProjectionLayer(int? layerID, bool? restrictToArenaProjectionLayer = false) => WorldProjectionLayer(layerID, restrictToArenaProjectionLayer, true);
 
-    private WorldProjectionLayerScope WorldProjectionLayer(int? layerID, bool restrictToArenaProjectionLayer, bool switch2DStencil)
+    private WorldProjectionLayerScope WorldProjectionLayer(int? layerID, bool? restrictToArenaProjectionLayer, bool switch2DStencil)
     {
-        if (layerID is not int index || _bounds is not ArenaBoundsCustom { WorldProjectionLayers: { Length: > 0 } layers } customBounds || (uint)index >= (uint)layers.Length)
+        if (_bounds is not ArenaBoundsCustom { WorldProjectionLayers: { Length: > 0 } layers } customBounds)
+        {
+            return default;
+        }
+        var allLayers = !restrictToArenaProjectionLayer.HasValue;
+        var index = layerID.GetValueOrDefault(-1);
+        if (!allLayers && (uint)index >= (uint)layers.Length)
         {
             return default;
         }
 
         var scope = new WorldProjectionLayerScope(this, _frameWorldProjectionY, _frameWorldBorderY, _frameWorldProjectionHeight, _frameWorldProjectionHoleFillRadius,
             _frameWorldProjectionArenaClip, _frameArenaStencilShape, _frameSuppress2DZoneRendering);
+        if (allLayers)
+        {
+            // A wildcard uses the player's whole visible domain, including Shared2DGroup, and
+            // retains an outer scope's 2D suppression. It never changes the radar viewport.
+            var stencil = _frameArenaProjectionShape ?? _bounds.Shape;
+            if (switch2DStencil && !_frameSuppress2DZoneRendering && !ReferenceEquals(_frameArenaStencilShape, stencil))
+            {
+                Dx11ArenaRenderer.SetArenaStencil(stencil);
+                _frameArenaStencilShape = stencil;
+            }
+            _frameWorldCamera?.ProjectedShapeLayers = AllWorldProjectionLayers(customBounds, layers);
+            return scope;
+        }
+
         ref readonly var layer = ref layers[index];
         // Suppression is cumulative for nested scopes: an inner unrestricted scope must not make a mechanic visible again while an outer restricted scope is hiding it
-        var suppress2D = _frameSuppress2DZoneRendering || restrictToArenaProjectionLayer && !customBounds.ProjectionLayersShare2DGroup(_frameArenaProjectionLayer, index);
+        var suppress2D = _frameSuppress2DZoneRendering || restrictToArenaProjectionLayer == true && !customBounds.ProjectionLayersShare2DGroup(_frameArenaProjectionLayer, index);
         _frameSuppress2DZoneRendering = suppress2D;
         if (switch2DStencil && !suppress2D)
         {
@@ -377,6 +454,7 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         }
         if (_frameProjectIntoWorld)
         {
+            _frameWorldCamera!.ProjectedShapeLayers = null;
             _frameWorldProjectionY = ResolveWorldProjectionY(layer.Y);
             _frameWorldBorderY = ResolveWorldBorderY(layer.BorderY, _frameWorldProjectionY);
             _frameWorldProjectionHeight = ResolveWorldProjectionHeight(layer);
@@ -384,6 +462,27 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
             _frameWorldProjectionArenaClip = customBounds.WorldProjectionClip(index);
         }
         return scope;
+    }
+
+    private Camera.WorldProjectionLayer[] AllWorldProjectionLayers(ArenaBoundsCustom bounds, ArenaProjectionLayer[] layers)
+    {
+        var result = _allWorldProjectionLayers;
+        if (result == null || result.Length != layers.Length)
+        {
+            result = _allWorldProjectionLayers = new Camera.WorldProjectionLayer[layers.Length];
+            _allWorldProjectionLayersInitialized = false;
+        }
+        if (!_allWorldProjectionLayersInitialized)
+        {
+            for (var i = 0; i < layers.Length; ++i)
+            {
+                ref readonly var layer = ref layers[i];
+                result[i] = new(ResolveWorldProjectionY(layer.Y), ResolveWorldProjectionHeight(layer), ResolveWorldProjectionHoleFillRadius(layer),
+                    _frameClipWorldZonesToArena ? bounds.WorldProjectionClip(i) : null, _center);
+            }
+            _allWorldProjectionLayersInitialized = true;
+        }
+        return result;
     }
 
     public readonly struct WorldProjectionLayerScope : IDisposable
@@ -396,6 +495,7 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         private readonly RelSimplifiedComplexPolygon? _arenaClip;
         private readonly RelSimplifiedComplexPolygon? _stencilShape;
         private readonly bool _suppress2D;
+        private readonly Camera.WorldProjectionLayer[]? _worldProjectionLayers;
 
         internal WorldProjectionLayerScope(MiniArena arena, float projectionY, float borderY, float projectionHeight, float holeFillRadius,
             RelSimplifiedComplexPolygon? arenaClip, RelSimplifiedComplexPolygon? stencilShape, bool suppress2D)
@@ -408,6 +508,7 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
             _arenaClip = arenaClip;
             _stencilShape = stencilShape;
             _suppress2D = suppress2D;
+            _worldProjectionLayers = arena._frameWorldCamera?.ProjectedShapeLayers;
         }
 
         public void Dispose()
@@ -425,6 +526,7 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
                 _arena._frameWorldProjectionHeight = _projectionHeight;
                 _arena._frameWorldProjectionHoleFillRadius = _holeFillRadius;
                 _arena._frameWorldProjectionArenaClip = _arenaClip;
+                _arena._frameWorldCamera?.ProjectedShapeLayers = _worldProjectionLayers;
             }
         }
     }
@@ -437,6 +539,24 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private float ProjectedOutlineWidth(float thickness) => Math.Max(0.02f, thickness * _frameThicknessScale * WorldOutlineUnit);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private float CurrentActorWorldProjectionHeight() => _frameWorldProjectionHeight == 0f ? 0f : ActorWorldProjectionHeight;
+
+    // Once the actor's own layer is active, align small actor/layer Y discrepancies to that authored floor.
+    // Large discrepancies are treated as real vertical movement (jump/fall), so the marker can disappear
+    // naturally when the actor leaves the shallow projection band instead of being snapped back to the floor.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private float CurrentActorProjectionY(float actorY)
+    {
+        if (_bounds is not ArenaBoundsCustom { WorldProjectionLayers.Length: > 0 })
+        {
+            return actorY;
+        }
+
+        var delta = _frameWorldProjectionY - actorY;
+        return Math.Abs(delta) <= ActorWorldProjectionHeight ? actorY + delta : actorY;
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private RelSimplifiedComplexPolygon? ProjectedArenaClip() => _frameClipWorldZonesToArena ? _frameWorldProjectionArenaClip : null;
@@ -590,7 +710,7 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Vector2 WorldPositionToScreenPosition(WPos p) => ScreenCenter + WorldOffsetToScreenOffset(p - _center);
+    public Vector2 WorldPositionToScreenPosition(WPos p) => ScreenCenter + WorldOffsetToScreenOffset(p - _center - _frameArenaCenterOffset);
 
     // this is useful for drawing on margins (TODO better api)
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1360,7 +1480,19 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
     // use the Vector3 overload whenever the label's Y is authoritative
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void TextWorldBillboard(WPos center, string text, uint color, uint outlineColor = 0u, float outlineWidth = 0f)
-        => TextWorldBillboard(ProjectedPointBillboard(center), text, color, outlineColor, outlineWidth);
+    {
+        if (_frameShowWorldTextIconBillboards && _frameWorldCamera?.ProjectedShapeLayers is { Length: > 0 } layers)
+        {
+            for (var i = 0; i < layers.Length; ++i)
+            {
+                TextWorldBillboard(new Vector3(center.X, layers[i].Y + _frameBillboardYOffset, center.Z), text, color, outlineColor, outlineWidth);
+            }
+        }
+        else
+        {
+            TextWorldBillboard(ProjectedPointBillboard(center), text, color, outlineColor, outlineWidth);
+        }
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void IconScreen(Vector2 center, FontAwesomeIcon icon, uint color, float fontSize = 17f)
@@ -1383,7 +1515,17 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         }
         if (_frameShowWorldTextIconBillboards)
         {
-            _frameWorldCamera?.DrawWorldIconBillboard(ProjectedPointBillboard(center), text, color, _frameWorldIconFontSize);
+            if (_frameWorldCamera?.ProjectedShapeLayers is { Length: > 0 } layers)
+            {
+                for (var i = 0; i < layers.Length; ++i)
+                {
+                    _frameWorldCamera.DrawWorldIconBillboard(new Vector3(center.X, layers[i].Y + _frameBillboardYOffset, center.Z), text, color, _frameWorldIconFontSize);
+                }
+            }
+            else
+            {
+                _frameWorldCamera?.DrawWorldIconBillboard(ProjectedPointBillboard(center), text, color, _frameWorldIconFontSize);
+            }
         }
     }
 
@@ -1418,10 +1560,51 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ActorInsideBounds(WPos position, Angle rotation, uint color)
-        => ActorInsideBounds(position, rotation, color, _frameWorldProjectionHeight > 0f ? WorldActorMarkerProjectionHeight : 0f);
+        => ActorInsideBounds(position, rotation, color, _frameWorldProjectionHeight);
+
+    // Exact-world actor path. Keep PosRot intact for the 3D marker so the actor's real Y becomes
+    // the projection origin; only the 2D radar copy needs the X/Z + rotation decomposition
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void ActorInsideBounds(ref Vector4 posRot, uint color)
+        => ActorInsideBounds(ref posRot, color, true, true);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ActorInsideBounds(WPos position, Angle rotation, uint color, float worldProjectionHeight)
+    private void ActorInsideBounds(ref Vector4 posRot, uint color, bool draw2D, bool drawWorld)
+    {
+        var position = new WPos(ref posRot);
+        var rotation = new Angle(ref posRot);
+        var scale = _frameActorScale * _frameThicknessScale;
+        var dir = rotation.ToDirection();
+        var scale07 = scale * 0.7f * dir;
+        var scale035 = scale * 0.35f * dir;
+        var scale0433 = scale * 0.433f * dir.OrthoR();
+        var positionscale07 = position + scale07;
+        var positionscale035 = position - scale035;
+        var positionscale035pscale0433 = positionscale035 + scale0433;
+        var positionscale035mscale0433 = positionscale035 - scale0433;
+
+        if (draw2D && !_frameSuppress2DZoneRendering)
+        {
+            if (_frameShowOutlinesAndShadows)
+            {
+                Dx11ArenaRenderer.AppendPrimitiveTriangleStroke(positionscale07 - _center, positionscale035pscale0433 - _center, positionscale035mscale0433 - _center, Colors.Shadows, 2f * _frameThicknessScale);
+            }
+            Dx11ArenaRenderer.AppendPrimitiveTriangle(positionscale07 - _center, positionscale035pscale0433 - _center, positionscale035mscale0433 - _center, color);
+        }
+
+        if (drawWorld && _frameWorldCamera != null)
+        {
+            var outlineWidth = _frameShowOutlinesAndShadows ? ProjectedOutlineWidth(2f) : 0f;
+            var outlineColor = _frameShowOutlinesAndShadows ? Colors.Shadows : 0u;
+            var worldPosRot = posRot;
+            worldPosRot.Y = CurrentActorProjectionY(posRot.Y);
+            _frameWorldCamera.DrawProjectedActorTriangle(ref worldPosRot, scale, color, outlineColor, CurrentActorWorldProjectionHeight(), outlineWidth,
+                holeFillRadius: _frameWorldProjectionHoleFillRadius);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ActorInsideBounds(WPos position, Angle rotation, uint color, float worldProjectionHeight, bool draw2D = true, bool drawWorld = true)
     {
         var scale = _frameActorScale * _frameThicknessScale;
         var dir = rotation.ToDirection();
@@ -1433,7 +1616,7 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         var positionscale035pscale0433 = positionscale035 + scale0433;
         var positionscale035mscale0433 = positionscale035 - scale0433;
 
-        if (!_frameSuppress2DZoneRendering)
+        if (draw2D && !_frameSuppress2DZoneRendering)
         {
             if (_frameShowOutlinesAndShadows)
             {
@@ -1443,7 +1626,7 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         }
 
         // World actor marker: one projected triangle instance carries both fill and optional outline
-        if (_frameWorldCamera != null)
+        if (drawWorld && _frameWorldCamera != null)
         {
             var outlineWidth = _frameShowOutlinesAndShadows ? ProjectedOutlineWidth(2f) : 0f;
             var outlineColor = _frameShowOutlinesAndShadows ? Colors.Shadows : 0u;
@@ -1455,6 +1638,10 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ActorOutsideBounds(WPos position, Angle rotation, uint color)
+        => ActorOutsideBounds(position, rotation, color, true, true);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ActorOutsideBounds(WPos position, Angle rotation, float worldY, uint color, bool draw2D, bool drawWorld)
     {
         var scale = _frameActorScale;
         var dir = rotation.ToDirection();
@@ -1462,16 +1649,66 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         var scale035 = scale * 0.35f * dir;
         var scale0433 = scale * 0.433f * dir.OrthoR();
         var positionscale035 = position - scale035;
-        AddTriangle(position + scale07, positionscale035 + scale0433, positionscale035 - scale0433, color);
+        var a = position + scale07;
+        var b = positionscale035 + scale0433;
+        var c = positionscale035 - scale0433;
+        var actualColor = color != default ? color : Colors.Danger;
+        if (draw2D && !_frameSuppress2DZoneRendering)
+        {
+            Dx11ArenaRenderer.AppendPrimitiveTriangleStroke(a - _center, b - _center, c - _center, actualColor, _frameThicknessScale);
+        }
+        if (drawWorld)
+        {
+            worldY = CurrentActorProjectionY(worldY);
+            _frameWorldCamera?.DrawProjectedTriangle(a.ToVec3(worldY), b.ToVec3(worldY), c.ToVec3(worldY), actualColor, CurrentActorWorldProjectionHeight(),
+                ProjectedOutlineWidth(1f), holeFillRadius: _frameWorldProjectionHoleFillRadius);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ActorOutsideBounds(WPos position, Angle rotation, uint color, bool draw2D, bool drawWorld)
+    {
+        var scale = _frameActorScale;
+        var dir = rotation.ToDirection();
+        var scale07 = scale * 0.7f * dir;
+        var scale035 = scale * 0.35f * dir;
+        var scale0433 = scale * 0.433f * dir.OrthoR();
+        var positionscale035 = position - scale035;
+        var a = position + scale07;
+        var b = positionscale035 + scale0433;
+        var c = positionscale035 - scale0433;
+        var actualColor = color != default ? color : Colors.Danger;
+        if (draw2D && !_frameSuppress2DZoneRendering)
+        {
+            Dx11ArenaRenderer.AppendPrimitiveTriangleStroke(a - _center, b - _center, c - _center, actualColor, _frameThicknessScale);
+        }
+        if (drawWorld)
+        {
+            _frameWorldCamera?.DrawProjectedTriangle(ProjectedPoint(a), ProjectedPoint(b), ProjectedPoint(c), actualColor, _frameWorldProjectionHeight,
+                ProjectedOutlineWidth(1f), holeFillRadius: _frameWorldProjectionHoleFillRadius);
+        }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ActorProjected(WPos from, WPos to, Angle rotation, uint color)
     {
-        if (InBounds(to))
+        var shape = _frameArenaProjectionShape;
+        if (shape != null && !_frameSuppress2DZoneRendering && shape.Parts.Count > 0)
         {
-            // projected position is inside bounds
-            ActorInsideBounds(to, rotation, color, _frameWorldProjectionHeight);
+            ActorProjected(from, to, rotation, color, shape, true, false);
+        }
+        if (shape == null || _frameProjectIntoWorld)
+        {
+            ActorProjected(from, to, rotation, color, null, shape == null, true);
+        }
+    }
+
+    private void ActorProjected(WPos from, WPos to, Angle rotation, uint color, RelSimplifiedComplexPolygon? shape, bool draw2D, bool drawWorld)
+    {
+        if (shape?.Contains(to - _center) ?? InBounds(to))
+        {
+            // Use the same presentation polygon for the destination test and the boundary ray.
+            ActorInsideBounds(to, rotation, color, _frameWorldProjectionHeight, draw2D, drawWorld);
             return;
         }
 
@@ -1484,55 +1721,105 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         }
 
         dir /= l;
-        var t = IntersectRayBounds(from, dir);
+        var t = shape != null ? Intersect.RayPolygon(from - _center, dir, shape) : IntersectRayBounds(from, dir);
         if (t <= l)
         {
-            ActorOutsideBounds(from + t * dir, rotation, color);
+            ActorOutsideBounds(from + t * dir, rotation, color, draw2D, drawWorld);
         }
     }
 
+    // Preferred actor-marker overload for callers that have the native game PosRot. The real Y is
+    // preserved for world projection; Actor(WPos, Angle, ...) remains the synthetic/legacy path.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Actor(WPos position, Angle rotation, uint color)
+    public void Actor(ref Vector4 posRot, uint color, bool drawWorld = true)
     {
-        if (InBounds(position))
+        using (WorldProjectionLayerForActor(ref posRot))
         {
-            ActorInsideBounds(position, rotation, color);
-        }
-        else
-        {
-            ActorOutsideBounds(ClampToBounds(position), rotation, color);
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Actor(Actor? actor, uint color = default, bool allowDeadAndUntargetable = false)
-    {
-        if (actor != null && !actor.IsDestroyed && (allowDeadAndUntargetable || actor.IsTargetable && !actor.IsDead))
-        {
-            // Unlike generic mechanic footprints, actors already carry a world Y. In a vertical arena, project their marker onto the authored floor nearest the actor itself
-            using (WorldProjectionLayerForActor(actor))
+            var shape = _frameArenaProjectionShape;
+            if (shape != null && !_frameSuppress2DZoneRendering && shape.Parts.Count > 0)
             {
-                Actor(actor.Position, actor.Rotation, color == default ? Colors.Enemy : color);
+                Actor(ref posRot, color, shape, true, false);
+            }
+            if (shape == null || drawWorld && _frameProjectIntoWorld)
+            {
+                Actor(ref posRot, color, null, shape == null, drawWorld);
             }
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Actors(IEnumerable<Actor> actors, uint color = default, bool allowDeadAndUntargetable = false)
+    private void Actor(ref Vector4 posRot, uint color, RelSimplifiedComplexPolygon? shape, bool draw2D, bool drawWorld)
     {
-        foreach (var a in actors)
+        var position = new WPos(ref posRot);
+        var offset = position - _center;
+        if (shape?.Contains(offset) ?? InBounds(position))
         {
-            Actor(a, color == default ? Colors.Enemy : color, allowDeadAndUntargetable);
+            ActorInsideBounds(ref posRot, color, draw2D, drawWorld);
+        }
+        else
+        {
+            // Keep the actor's exact Y even when its 2D marker is clamped to the presentation boundary.
+            var clamped = shape != null ? _center + shape.ClosestPointOnBoundary(offset) : ClampToBounds(position);
+            ActorOutsideBounds(clamped, new Angle(ref posRot), posRot.Y, color, draw2D, drawWorld);
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Actors(List<Actor> actors, uint color = default, bool allowDeadAndUntargetable = false)
+    public void Actor(WPos position, Angle rotation, uint color, bool drawWorld = true)
+    {
+        var shape = _frameArenaProjectionShape;
+        if (shape != null && !_frameSuppress2DZoneRendering && shape.Parts.Count > 0)
+        {
+            Actor(position, rotation, color, shape, true, false);
+        }
+        // World markers keep the global logical bounds and their existing clamping exceptions.
+        if (shape == null || drawWorld && _frameProjectIntoWorld)
+        {
+            Actor(position, rotation, color, null, shape == null, drawWorld);
+        }
+    }
+
+    private void Actor(WPos position, Angle rotation, uint color, RelSimplifiedComplexPolygon? shape, bool draw2D, bool drawWorld)
+    {
+        var offset = position - _center;
+        if (shape?.Contains(offset) ?? InBounds(position))
+        {
+            ActorInsideBounds(position, rotation, color, _frameWorldProjectionHeight, draw2D, drawWorld);
+        }
+        else
+        {
+            // Do not apply the global custom-arena center/axis exceptions to a layer: those points
+            // can lie in a hole or an inactive island and must still clamp to the visible boundary.
+            var clamped = shape != null ? _center + shape.ClosestPointOnBoundary(offset) : ClampToBounds(position);
+            ActorOutsideBounds(clamped, rotation, color, draw2D, drawWorld);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Actor(Actor? actor, uint color = default, bool allowDeadAndUntargetable = false, bool? drawWorld = null)
+    {
+        if (actor != null && !actor.IsDestroyed && (allowDeadAndUntargetable || actor.IsTargetable && !actor.IsDead))
+        {
+            var showWorld = drawWorld ?? _frameProjectActorTriangles;
+            Actor(ref actor.PosRot, color == default ? Colors.Enemy : color, showWorld);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Actors(IEnumerable<Actor> actors, uint color = default, bool allowDeadAndUntargetable = false, bool? drawWorld = null)
+    {
+        foreach (var a in actors)
+        {
+            Actor(a, color == default ? Colors.Enemy : color, allowDeadAndUntargetable, drawWorld);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Actors(List<Actor> actors, uint color = default, bool allowDeadAndUntargetable = false, bool? drawWorld = null)
     {
         var count = actors.Count;
         for (var i = 0; i < count; ++i)
         {
-            Actor(actors[i], color == default ? Colors.Enemy : color, allowDeadAndUntargetable);
+            Actor(actors[i], color == default ? Colors.Enemy : color, allowDeadAndUntargetable, drawWorld);
         }
     }
 

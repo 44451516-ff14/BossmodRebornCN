@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Endwalker.Alliance.A11Byregot;
 
-class ByregotStrikeJump(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ByregotStrikeJump, (uint)AID.ByregotStrikeJumpCone], 8f);
+sealed class ByregotStrikeJump(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ByregotStrikeJump, (uint)AID.ByregotStrikeJumpCone], 8f);
 
-class ByregotStrikeKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.ByregotStrikeKnockback, 18f)
+sealed class ByregotStrikeKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.ByregotStrikeKnockback, 18f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -18,11 +18,11 @@ class ByregotStrikeKnockback(BossModule module) : Components.SimpleKnockbacks(mo
     }
 }
 
-class ByregotStrikeCone(BossModule module) : Components.GenericAOEs(module)
+sealed class ByregotStrikeCone(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(4)];
 
-    private static readonly AOEShapeCone _shape = new(90f, 22.5f.Degrees());
+    private readonly AOEShapeCone _shape = new(90f, 22.5f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

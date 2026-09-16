@@ -30,19 +30,6 @@ sealed class KingsWill1(BossModule module) : Components.CastInterruptHint(module
 sealed class KingsWill2(BossModule module) : Components.CastInterruptHint(module, (uint)AID.KingsWill2);
 sealed class KingsWill3(BossModule module) : Components.CastInterruptHint(module, (uint)AID.KingsWill3);
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"{Module.PrimaryActor.Name} will cast King's Will during the fight. Interrupt it with\nFlying Sardine or he will become stronger each time. After 3 casts he\nstarts using the interruptible enrage Black Nebula.");
-    }
-
-    public override void AddHints(int slot, Actor actor, TextHints hints)
-    {
-        hints.Add($"Requirement for achievement: Let {Module.PrimaryActor.Name} cast King's Will 3 times.", false);
-    }
-}
-
 sealed class Stage10States : StateMachineBuilder
 {
     public Stage10States(BossModule module) : base(module)
@@ -56,16 +43,24 @@ sealed class Stage10States : StateMachineBuilder
             .ActivateOnEnter<BlackNebula>()
             .ActivateOnEnter<KingsWill1>()
             .ActivateOnEnter<KingsWill2>()
-            .ActivateOnEnter<KingsWill3>()
-            .DeactivateOnEnter<Hints>();
+            .ActivateOnEnter<KingsWill3>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 620, NameID = 8100)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 620u, NameID = 8100u)]
 public sealed class Stage10 : BossModule
 {
     public Stage10(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {
-        ActivateComponent<Hints>();
+        var name = PrimaryActor.Name;
+        _prePullHints =
+        [
+            $"{name} will cast King's Will during the fight. Interrupt it with Flying Sardine or he will become stronger each time. After 3 casts he starts using the interruptible enrage Black Nebula.",
+            $"Requirement for achievement: Let {name} cast King's Will 3 times."
+        ];
     }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

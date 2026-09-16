@@ -2,7 +2,7 @@
 
 // state related to kampeos harma mechanic
 // note that it relies on waymarks to determine safe spots...
-class KampeosHarma(BossModule module) : Components.CastCounter(module, (uint)AID.KampeosHarmaChargeBoss)
+sealed class KampeosHarma(BossModule module) : Components.CastCounter(module, (uint)AID.KampeosHarmaChargeBoss)
 {
     private WDir _startingOffset;
     private readonly int[] _playerOrder = new int[8]; // 0 if unknown, then sq1 sq2 sq3 sq4 tri1 tri2 tri3 tri4
@@ -58,16 +58,16 @@ class KampeosHarma(BossModule module) : Components.CastCounter(module, (uint)AID
                 return Arena.Center + (NumCasts < 2 ? +1.4f : +1.2f) * _startingOffset;
             case 5: // tri 1 - waymark 1
                 var wm1 = WorldState.Waymarks[Waymark.N1];
-                return wm1 != null ? new(wm1.Value.XZ()) : null;
+                return wm1 != null ? new(wm1.Value) : null;
             case 6: // tri 2 - waymark 2
                 var wm2 = WorldState.Waymarks[Waymark.N2];
-                return wm2 != null ? new(wm2.Value.XZ()) : null;
+                return wm2 != null ? new(wm2.Value) : null;
             case 7: // tri 3 - waymark 3
                 var wm3 = WorldState.Waymarks[Waymark.N3];
-                return wm3 != null ? new(wm3.Value.XZ()) : null;
+                return wm3 != null ? new(wm3.Value) : null;
             case 8: // tri 4 - waymark 4
                 var wm4 = WorldState.Waymarks[Waymark.N4];
-                return wm4 != null ? new(wm4.Value.XZ()) : null;
+                return wm4 != null ? new(wm4.Value) : null;
         }
         return null;
     }

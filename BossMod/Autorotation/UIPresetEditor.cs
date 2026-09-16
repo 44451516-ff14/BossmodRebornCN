@@ -357,7 +357,7 @@ public sealed class UIPresetEditor
 
     private bool DrawModifier(ref Preset.Modifier mod, Preset.Modifier flag, string label)
     {
-        var value = mod.HasFlag(flag);
+        var value = (mod & flag) != 0;
         using var _ = ImRaii.Disabled(mod == flag);
 
         if (ImGui.Checkbox(label, ref value))

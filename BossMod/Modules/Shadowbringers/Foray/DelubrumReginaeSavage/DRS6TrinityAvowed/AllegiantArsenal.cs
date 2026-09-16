@@ -8,8 +8,8 @@ sealed class AllegiantArsenal(BossModule module) : Components.GenericAOEs(module
     private AOEInstance[] _aoe = [];
     public bool Active => _aoe.Length != 0;
 
-    private static readonly AOEShapeCone cone = new(70f, 135f.Degrees());
-    private static readonly AOEShapeCircle circle = new(10f);
+    private readonly AOEShapeCone cone = new(70f, 135f.Degrees());
+    private readonly AOEShapeCircle circle = new(10f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 

@@ -1,14 +1,14 @@
 ﻿namespace BossMod.RealmReborn.Extreme.Ex1Ultima;
 
 // note that it could be a GenericAOEs, but we customize everything anyway...
-class EyeOfTheStormGeocrush(BossModule module) : BossComponent(module)
+sealed class EyeOfTheStormGeocrush(BossModule module) : BossComponent(module)
 {
     private Actor? _eotsCaster;
     private Actor? _geocrushCaster;
     public bool Active => _eotsCaster != null || _geocrushCaster != null;
 
-    private static readonly AOEShapeDonut _aoeEOTS = new(12f, 25f);
-    private static readonly AOEShapeCircle _aoeGeocrush = new(18f); // TODO: check falloff
+    private readonly AOEShapeDonut _aoeEOTS = new(12f, 25f);
+    private readonly AOEShapeCircle _aoeGeocrush = new(18f); // TODO: check falloff
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {

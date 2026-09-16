@@ -20,31 +20,19 @@ sealed class Starstorm(BossModule module) : Components.SimpleAOEs(module, (uint)
 sealed class RagingAxe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RagingAxe, new AOEShapeCone(5f, 45f.Degrees()));
 sealed class LightningSpark(BossModule module) : Components.CastInterruptHint(module, (uint)AID.LightningSpark);
 
-sealed class Hints2(BossModule module) : BossComponent(module)
+sealed class Hints2(Stage24Act1 module) : BossComponent(module)
 {
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
-        if (!Module.PrimaryActor.IsDead)
+        var primary = Module.PrimaryActor;
+        if (!primary.IsDeadOrDestroyed)
         {
-            hints.Add($"{Module.PrimaryActor.Name} is immune to magical damage!");
+            hints.Add($"{primary.Name} is immune to magical damage!");
         }
-        var vikings = Module.Enemies((uint)OID.ArenaViking);
-        var count = vikings.Count;
-        if (count == 0)
-            return;
-        var viking = vikings[0];
-        if (!viking.IsDead)
+        if (module.Viking is Actor viking && !viking.IsDeadOrDestroyed)
         {
             hints.Add($"{viking.Name} is immune to physical damage!");
         }
-    }
-}
-
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"The {Module.PrimaryActor.Name} is immune to magic, the {Module.Enemies((uint)OID.ArenaViking)[0].Name} is immune to\nphysical attacks. For the 2nd act Diamondback is highly recommended.\nFor the 3rd act a ranged physical spell such as Fire Angon\nis highly recommended.");
     }
 }
 
@@ -53,7 +41,6 @@ sealed class Stage24Act1States : StateMachineBuilder
     public Stage24Act1States(BossModule module) : base(module)
     {
         TrivialPhase()
-            .DeactivateOnEnter<Hints>()
             .ActivateOnEnter<Starstorm>()
             .ActivateOnEnter<RagingAxe>()
             .ActivateOnEnter<LightningSpark>()
@@ -62,12 +49,17 @@ sealed class Stage24Act1States : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 634, NameID = 8127, SortOrder = 1)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 634u, NameID = 8127u, SortOrder = 1)]
 public sealed class Stage24Act1 : BossModule
 {
     public Stage24Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {
-        ActivateComponent<Hints>();
+        _prePullHints =
+        [
+            $"The {PrimaryActor.Name} is immune to magic, the viking is immune to physical attacks.",
+            "For the 2nd act Diamondback is highly recommended.",
+            "For the 3rd act a ranged physical spell such as Fire Angon is highly recommended."
+        ];
     }
     public static readonly uint[] Trash = [(uint)OID.ArenaViking, (uint)OID.Boss];
 
@@ -77,6 +69,13 @@ public sealed class Stage24Act1 : BossModule
     {
         Arena.Actor(PrimaryActor);
         Arena.Actors(Enemies((uint)OID.ArenaViking));
+    }
+
+    public Actor? Viking;
+
+    protected override void UpdatePreModuleActivation()
+    {
+        Viking ??= GetActor((uint)OID.ArenaViking);
     }
 
     // protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -91,4 +90,8 @@ public sealed class Stage24Act1 : BossModule
     //         };
     //     }
     // }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

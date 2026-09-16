@@ -1,6 +1,5 @@
 ﻿namespace BossMod.Dawntrail.Advanced.Ad01MerchantsTale.Ad013LoneSwordmaster;
 
-[SkipLocalsInit]
 sealed class Ad013LoneSwordmasterStates : StateMachineBuilder
 {
     public Ad013LoneSwordmasterStates(BossModule module) : base(module)

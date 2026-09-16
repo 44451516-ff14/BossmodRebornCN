@@ -3,7 +3,7 @@
 sealed class TurretsTour(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(6)];
-    private static readonly AOEShapeRect rect = new(50f, 3f);
+    private readonly AOEShapeRect rect = new(50f, 3f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -52,12 +52,14 @@ sealed class TurretsTour(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID is (uint)AID.TurretsTourFirst or (uint)AID.TurretsTourRest1 or (uint)AID.TurretsTourRest2)
         {
+            ++NumCasts;
             var count = _aoes.Count;
+            var id = caster.InstanceID;
+            var aoes = CollectionsMarshal.AsSpan(_aoes);
             for (var i = 0; i < count; ++i)
             {
-                if (_aoes[i].ActorID == caster.InstanceID)
+                if (aoes[i].ActorID == id)
                 {
-                    ++NumCasts;
                     _aoes.RemoveAt(i);
                     return;
                 }

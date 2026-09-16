@@ -2,8 +2,7 @@
 
 // generic 'twister' component: a set of aoes that appear under players, but can't be accurately predicted until it's too late
 // normally you'd predict them at the end (or slightly before the end) of some cast, or on component creation
-[SkipLocalsInit]
-public class GenericTwister(BossModule module, float radius, uint oid, uint aid = default, int? arenaProjectionLayer = null, bool restrictToArenaProjectionLayer = false) : GenericAOEs(module, aid, "GTFO from twister!")
+public abstract class GenericTwister(BossModule module, float radius, uint oid, uint aid = default, int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false) : GenericAOEs(module, aid, "GTFO from twister!")
 {
     private readonly AOEShapeCircle _shape = new(radius);
     private readonly uint _twisterOID = oid;
@@ -11,7 +10,7 @@ public class GenericTwister(BossModule module, float radius, uint oid, uint aid 
     protected DateTime PredictedActivation;
     protected readonly List<WPos> PredictedPositions = [];
     public int? ArenaProjectionLayer = arenaProjectionLayer;
-    public bool RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
+    public bool? RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
 
     public ReadOnlySpan<Actor> ActiveTwisters
     {
@@ -35,7 +34,7 @@ public class GenericTwister(BossModule module, float radius, uint oid, uint aid 
 
     public bool Active => ActiveTwisters.Length != 0;
 
-    public void AddPredicted(float activationDelay)
+    public void AddPredicted(double activationDelay)
     {
         PredictedPositions.Clear();
         foreach (var a in Raid.WithoutSlot())
@@ -87,21 +86,12 @@ public class GenericTwister(BossModule module, float radius, uint oid, uint aid 
     }
 }
 
-// twister that activates immediately on init
-[SkipLocalsInit]
-public class ImmediateTwister : GenericTwister
-{
-    public ImmediateTwister(BossModule module, float radius, uint oid, float activationDelay, int? arenaProjectionLayer = null, bool restrictToArenaProjectionLayer = false)
-        : base(module, radius, oid, arenaProjectionLayer: arenaProjectionLayer, restrictToArenaProjectionLayer: restrictToArenaProjectionLayer) => AddPredicted(activationDelay);
-}
-
 // twister that activates on cast end, or slightly before
-[SkipLocalsInit]
-public class CastTwister(BossModule module, float radius, uint oid, uint aid, float activationDelay, float predictBeforeCastEnd = 0, int? arenaProjectionLayer = null, bool restrictToArenaProjectionLayer = false)
+public abstract class CastTwister(BossModule module, float radius, uint oid, uint aid, double activationDelay, double predictBeforeCastEnd = 0d, int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false)
     : GenericTwister(module, radius, oid, aid, arenaProjectionLayer, restrictToArenaProjectionLayer)
 {
-    private readonly float _activationDelay = activationDelay; // from cast-end to twister spawn
-    private readonly float _predictBeforeCastEnd = predictBeforeCastEnd;
+    private readonly double _activationDelay = activationDelay; // from cast-end to twister spawn
+    private readonly double _predictBeforeCastEnd = predictBeforeCastEnd;
     private DateTime _predictStart = DateTime.MaxValue;
 
     public override void Update()

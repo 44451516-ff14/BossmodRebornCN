@@ -1,9 +1,8 @@
 ﻿namespace BossMod.Dawntrail.Foray.ForkedTowerMagic.Normal.FTMN2SwordDancer;
 
-[SkipLocalsInit]
-sealed class SwordDancerStates : StateMachineBuilder
+sealed class FTMN2SwordDancerStates : StateMachineBuilder
 {
-    public SwordDancerStates(BossModule module) : base(module)
+    public FTMN2SwordDancerStates(BossModule module) : base(module)
     {
         TrivialPhase()
             .ActivateOnEnter<SwordStormCast>()

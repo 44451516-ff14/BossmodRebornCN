@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un2Sephirot;
 
-class P3GevurahChesed(BossModule module) : Components.CastCounter(module, (uint)AID.LifeForce) // doesn't matter which spell to track
+sealed class P3GevurahChesed(BossModule module) : Components.CastCounter(module, (uint)AID.LifeForce) // doesn't matter which spell to track
 {
     private BitMask _physResistMask;
     private int _physSide; // 0 if not active, -1 if left, +1 if right
@@ -23,19 +23,19 @@ class P3GevurahChesed(BossModule module) : Components.CastCounter(module, (uint)
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        if ((SID)status.ID == SID.ForceAgainstMight)
+        if (status.ID == (uint)SID.ForceAgainstMight)
             _physResistMask.Set(Raid.FindSlot(actor.InstanceID));
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID is AID.GevurahChesed or AID.ChesedGevurah)
-            _physSide = (AID)spell.Action.ID == AID.GevurahChesed ? -1 : +1;
+        if (spell.Action.ID is var id && id is (uint)AID.GevurahChesed or (uint)AID.ChesedGevurah)
+            _physSide = id == (uint)AID.GevurahChesed ? -1 : +1;
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID is AID.GevurahChesed or AID.ChesedGevurah)
+        if (spell.Action.ID is (uint)AID.GevurahChesed or (uint)AID.ChesedGevurah)
             _physSide = 0;
     }
 

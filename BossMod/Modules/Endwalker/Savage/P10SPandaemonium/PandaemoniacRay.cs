@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Endwalker.Savage.P10SPandaemonium;
 
-class PandaemoniacRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PandaemoniacRayAOE, new AOEShapeRect(30f, 25f));
+sealed class PandaemoniacRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PandaemoniacRayAOE, new AOEShapeRect(30f, 25f));
 
-class JadePassage(BossModule module) : Components.GenericAOEs(module, (uint)AID.JadePassage)
+sealed class JadePassage(BossModule module) : Components.GenericAOEs(module, (uint)AID.JadePassage)
 {
     private readonly DateTime _activation = module.WorldState.FutureTime(3.6d);
 

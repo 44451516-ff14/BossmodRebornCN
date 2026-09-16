@@ -1,11 +1,11 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex1Zodiark;
 
 // state related to algedon mechanic
-class Algedon(BossModule module) : BossComponent(module)
+sealed class Algedon(BossModule module) : BossComponent(module)
 {
     private Actor? _caster;
 
-    private static readonly AOEShapeRect _shape = new(60, 15);
+    private readonly AOEShapeRect _shape = new(60f, 15f);
 
     public bool Done => _caster == null;
 
@@ -22,13 +22,13 @@ class Algedon(BossModule module) : BossComponent(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.AlgedonAOE)
+        if (spell.Action.ID == (uint)AID.AlgedonAOE)
             _caster = caster;
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.AlgedonAOE)
+        if (spell.Action.ID == (uint)AID.AlgedonAOE)
             _caster = null;
     }
 }

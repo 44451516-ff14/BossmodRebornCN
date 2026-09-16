@@ -1,6 +1,5 @@
 namespace BossMod;
 
-[SkipLocalsInit]
 public static class UIntExtensions
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

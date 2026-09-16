@@ -1,5 +1,4 @@
-﻿using BossMod.Autorotation.xan;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace BossMod.Autorotation;
 
@@ -10,6 +9,7 @@ public enum StrategyTarget
     Self,
     PartyByAssignment, // parameter is assignment; won't work if assignments aren't set up properly for a party
     PartyWithLowestHP, // parameter is StrategyPartyFiltering, which filters subset of party members
+    PartyByFilter, // parameter is StrategyPartyFiltering, but multiple targets can be matched
     EnemyWithHighestPriority, // parameter is StrategyEnemySelection, which determines selecton criteria if there are multiple matching enemies
     EnemyByOID, // parameter is oid; not really useful outside planner; selects closest if there are multiple
     PointAbsolute, // absolute x/y coordinates
@@ -19,7 +19,6 @@ public enum StrategyTarget
     Count
 }
 
-[Flags]
 public enum StrategyContext
 {
     None = 0,
@@ -30,7 +29,6 @@ public enum StrategyContext
 }
 
 // parameter for party member filtering
-[Flags]
 public enum StrategyPartyFiltering : int
 {
     None = 0,
@@ -58,6 +56,61 @@ public enum StrategyCondition : int
     AssignedRole = 1
 }
 
+[Renderer(typeof(OffensiveStrategyRenderer))]
+public enum OffensiveStrategy
+{
+    Automatic,
+    Delay,
+    Force
+}
+
+[Renderer(typeof(TargetingRenderer))]
+public enum Targeting
+{
+    [Option("Use player's target")]
+    Manual,
+    [Option("Automatically pick best target for all actions")]
+    Auto,
+    [Option("Automatically pick best target; player target must be hit")]
+    AutoPrimary,
+    [Option("Automatically pick best target; if player has a target, hit it")]
+    AutoTryPri
+}
+
+public enum AOEStrategy
+{
+    [Option("Use AOE rotation if beneficial")]
+    AOE,
+    [Option("Use single-target rotation")]
+    ST,
+    [Option("Always use AOE rotation, even on one target")]
+    ForceAOE,
+    [Option("Use single-target rotation; do not use ANY actions that can hit multiple targets")]
+    ForceST
+}
+
+[Renderer(typeof(DefaultOnRenderer))]
+public enum EnabledByDefault
+{
+    Enabled,
+    Disabled
+}
+
+[Renderer(typeof(DefaultOffRenderer))]
+public enum DisabledByDefault
+{
+    Disabled,
+    Enabled
+}
+
+public enum SharedTrack { Targeting, AOE, Buffs, Count }
+
+public interface IStrategyCommon
+{
+    public abstract Targeting Targeting { get; }
+    public abstract AOEStrategy AOE { get; }
+}
+
 [AttributeUsage(AttributeTargets.Field)]
 public sealed class TrackAttribute() : Attribute
 {
@@ -71,6 +124,8 @@ public sealed class TrackAttribute() : Attribute
     public float UiPriority;
     public Type? Renderer;
     public ActionID[] ActionIDs = [];
+
+    public StrategyContext Context = StrategyContext.All;
 
     public object Action
     {
@@ -288,7 +343,7 @@ public record class StrategyValueTrack : StrategyValue
         if (js.TryGetProperty(nameof(PriorityOverride), out var jprio))
             PriorityOverride = jprio.GetSingle();
         if (js.TryGetProperty(nameof(Target), out var jtarget))
-            Target = Enum.Parse<StrategyTarget>(jtarget.GetString() ?? "");
+            Target = GeneratedEnumMetadata.Parse<StrategyTarget>(jtarget.GetString() ?? "");
         if (js.TryGetProperty(nameof(TargetParam), out var jtp))
             TargetParam = jtp.GetInt32();
         if (js.TryGetProperty(nameof(Offset1), out var joff1))
@@ -414,28 +469,5 @@ public record struct Track<T>(T Value, StrategyValue Raw, float DefaultPriority)
 
 static class ValueConverter
 {
-    public static T FromValues<T>(StrategyValues values) where T : struct
-    {
-        object val = default(T);
-
-        var i = 0;
-        foreach (var field in typeof(T).GetFields())
-        {
-            switch (values.Values[i])
-            {
-                case StrategyValueTrack t:
-                    field.SetValue(val, Activator.CreateInstance(field.FieldType, [Enum.ToObject(field.FieldType.GenericTypeArguments[0], t.Option), t, ((StrategyConfigTrack)values.Configs[i]).Options[t.Option].DefaultPriority]));
-                    break;
-                case StrategyValueFloat f:
-                    field.SetValue(val, new Track<float>(f.Value, f, float.NaN));
-                    break;
-                case StrategyValueInt i2:
-                    field.SetValue(val, new Track<long>(i2.Value, i2, float.NaN));
-                    break;
-            }
-            ++i;
-        }
-
-        return (T)val;
-    }
+    public static T FromValues<T>(StrategyValues values) where T : struct => GeneratedStrategies.ConvertValues<T>(values);
 }

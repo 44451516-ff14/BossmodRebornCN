@@ -3,10 +3,8 @@
 sealed class HailOfHellflares(BossModule module) : Components.RaidwideCast(module, (uint)AID.HailOfHellflares);
 sealed class AncientFire(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.AncientFireIII, (uint)AID.AncientFireIII1, (uint)AID.SeveredFireIII], 18f); //necessary to predict Ancient Fire III1?
 sealed class AncientBlizzard(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.AncientBlizzardIII, (uint)AID.AncientBlizzardIII1, (uint)AID.SeveredBlizzardIII], new AOEShapeCross(45f, 7.5f));
-sealed class CorpseMangler(BossModule module) : Components.SingleTargetCast(module, (uint)AID.CorpseMangler, "");
+sealed class CorpseMangler(BossModule module) : Components.SingleTargetCast(module, (uint)AID.CorpseMangler);
 sealed class AncientThunder(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.AncientThunderIII1, (uint)AID.AncientThunderIII3, (uint)AID.SeveredThunderIII], new AOEShapeCone(60f, 22.5f.Degrees()));
-sealed class DarkCurrent1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DarkCurrent1, new AOEShapeRect(60f, 5f));
-sealed class DarkCurrent2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DarkCurrent2, new AOEShapeRect(10f, 30f)); // happens x2 on both sides, add predict since cast time so low
 sealed class DarkCurrent(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
@@ -86,25 +84,8 @@ sealed class DarkCurrent(BossModule module) : Components.GenericAOEs(module)
 sealed class DeathlyRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DeathlyRay, new AOEShapeRect(30f, 3f));
 sealed class VacuumWave(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VacuumWave, new AOEShapeCone(30f, 90f.Degrees()));
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
-    StatesType = typeof(NecrophobiaStates),
-    ConfigType = null, // replace null with typeof(NecrophobiaConfig) if applicable
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID),
-    StatusIDType = typeof(SID),
-    TetherIDType = typeof(TetherID),
-    IconIDType = typeof(IconID),
-    PrimaryActorOID = (uint)OID.Necrophobia,
-    Contributors = "gynorhino",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.Foray,
-    GroupType = BossModuleInfo.GroupType.TheForkedTowerMagic,
-    GroupID = 1093u,
-    NameID = 14503u,
-    SortOrder = 3,
-    PlanLevel = 0)]
-[SkipLocalsInit]
-public sealed class Necrophobia(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 800f), new ArenaBoundsCircle(24f))
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.Necrophobia, Contributors = "gynorhino", GroupType = BossModuleInfo.GroupType.TheForkedTowerMagicNormal, GroupID = 1093u, NameID = 14503u)]
+public sealed class FTMN3Necrophobia(WorldState ws, Actor primary) : BossModule(ws, primary, new WPos(100f, 800f).Quantized(), new ArenaBoundsCircle(24f))
 {
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 24f);
 }

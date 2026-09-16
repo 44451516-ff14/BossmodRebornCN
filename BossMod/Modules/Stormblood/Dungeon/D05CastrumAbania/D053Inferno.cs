@@ -46,25 +46,17 @@ public enum IconID : uint
     Spreadmarker = 74, // player
 }
 
-class ClawTether(BossModule module) : Components.StretchTetherSingle(module, (uint)TetherID.Claw, 10f, needToKite: true);
-class RahuRay(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, (uint)AID.RahuRay, 10f, 4.1f);
-class KetuSlash1(BossModule module) : Components.SingleTargetCast(module, (uint)AID.KetuSlash1);
-class KetuSlash2(BossModule module) : Components.SingleTargetCast(module, (uint)AID.KetuSlash2);
-class KetuSlash3(BossModule module) : Components.SingleTargetCast(module, (uint)AID.KetuSlash3);
-class KetuCutter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.KetuCutter, new AOEShapeCone(20.5f, 10f.Degrees()));
-class KetuWave(BossModule module) : Components.SimpleAOEs(module, (uint)AID.KetuWave, 10f);
+sealed class ClawTether(BossModule module) : Components.StretchTetherSingle(module, (uint)TetherID.Claw, 10f, needToKite: true);
+sealed class RahuRay(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, (uint)AID.RahuRay, 10f, 4.1f);
+sealed class KetuSlash(BossModule module) : Components.SingleTargetCasts(module, [(uint)AID.KetuSlash1, (uint)AID.KetuSlash2, (uint)AID.KetuSlash3]);
+sealed class KetuCutter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.KetuCutter, new AOEShapeCone(20.5f, 10f.Degrees()));
+sealed class KetuWave(BossModule module) : Components.SimpleAOEs(module, (uint)AID.KetuWave, 10f);
 
-class RahuBlaster(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(44.5f, 3f));
-class RahuBlaster1(BossModule module) : RahuBlaster(module, (uint)AID.RahuBlaster1);
-class RahuBlaster2(BossModule module) : RahuBlaster(module, (uint)AID.RahuBlaster2);
-class RahuBlaster3(BossModule module) : RahuBlaster(module, (uint)AID.RahuBlaster3);
+sealed class RahuBlaster(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RahuBlaster1, (uint)AID.RahuBlaster2, (uint)AID.RahuBlaster3], new AOEShapeRect(44.5f, 3f));
 
-class RahuComet(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 15f);
-class RahuComet1(BossModule module) : RahuComet(module, (uint)AID.RahuComet1);
-class RahuComet2(BossModule module) : RahuComet(module, (uint)AID.RahuComet2);
-class RahuComet3(BossModule module) : RahuComet(module, (uint)AID.RahuComet3);
+sealed class RahuComet(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RahuComet1, (uint)AID.RahuComet2, (uint)AID.RahuComet3], 15f);
 
-class RahuCometKB(BossModule module, uint aid, float distance) : Components.SimpleKnockbacks(module, aid, distance, stopAtWall: true)
+abstract class RahuCometKB(BossModule module, uint aid, float distance) : Components.SimpleKnockbacks(module, aid, distance, stopAtWall: true)
 {
     private readonly KetuWave _aoe1 = module.FindComponent<KetuWave>()!;
     private readonly KetuCutter _aoe2 = module.FindComponent<KetuCutter>()!;
@@ -91,7 +83,7 @@ class RahuCometKB(BossModule module, uint aid, float distance) : Components.Simp
             }
         }
         var count2 = _aoe2.Casters.Count;
-        var aoes2 = CollectionsMarshal.AsSpan(_aoe1.Casters);
+        var aoes2 = CollectionsMarshal.AsSpan(_aoe2.Casters);
         for (var i = 0; i < count2; ++i)
         {
             if (aoes2[i].Check(pos))
@@ -102,36 +94,39 @@ class RahuCometKB(BossModule module, uint aid, float distance) : Components.Simp
         return false;
     }
 }
-class RahuComet2KB(BossModule module) : RahuCometKB(module, (uint)AID.RahuComet2, 5f);
-class RahuComet3KB(BossModule module) : RahuCometKB(module, (uint)AID.RahuComet3, 10f);
 
-class D053InfernoStates : StateMachineBuilder
+sealed class RahuCometKB1(BossModule module) : RahuCometKB(module, (uint)AID.RahuComet2, 5f);
+sealed class RahuCometKB2(BossModule module) : RahuCometKB(module, (uint)AID.RahuComet3, 10f);
+
+sealed class D053InfernoStates : StateMachineBuilder
 {
     public D053InfernoStates(BossModule module) : base(module)
     {
         TrivialPhase()
             .ActivateOnEnter<KetuWave>()
             .ActivateOnEnter<ClawTether>()
-            .ActivateOnEnter<RahuComet1>()
-            .ActivateOnEnter<RahuComet2>()
-            .ActivateOnEnter<RahuComet3>()
-            .ActivateOnEnter<RahuBlaster1>()
-            .ActivateOnEnter<RahuBlaster2>()
-            .ActivateOnEnter<RahuBlaster3>()
-            .ActivateOnEnter<KetuSlash1>()
-            .ActivateOnEnter<KetuSlash2>()
-            .ActivateOnEnter<KetuSlash3>()
+            .ActivateOnEnter<RahuComet>()
+            .ActivateOnEnter<RahuBlaster>()
+            .ActivateOnEnter<KetuSlash>()
             .ActivateOnEnter<KetuCutter>()
             .ActivateOnEnter<RahuRay>()
-            .ActivateOnEnter<RahuComet2KB>()
-            .ActivateOnEnter<RahuComet3KB>();
+            .ActivateOnEnter<RahuCometKB1>()
+            .ActivateOnEnter<RahuCometKB2>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 242, NameID = 6268)]
-public class D053Inferno(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 242u, NameID = 6268u)]
+public sealed class D053Inferno : BossModule
 {
-    private static readonly ArenaBoundsCustom arena = new([new Circle(new(282.5f, -27.25f), 19.51f)], [new Rectangle(new(277.157f, -7.933f), 20, 1.25f, -17.532f.Degrees())]);
+    public D053Inferno(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private D053Inferno(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Circle(new(282.5f, -27.25f), 19.51f)], [new Rectangle(new(277.157f, -7.933f), 20, 1.25f, -17.532f.Degrees())]);
+        return (arena.Center, arena);
+    }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

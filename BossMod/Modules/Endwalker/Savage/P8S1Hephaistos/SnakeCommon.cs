@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Endwalker.Savage.P8S1Hephaistos;
 
-class SnakingKick(BossModule module) : Components.GenericAOEs(module, (uint)AID.SnakingKick)
+sealed class SnakingKick(BossModule module) : Components.GenericAOEs(module, (uint)AID.SnakingKick)
 {
-    private static readonly AOEShapeCircle _shape = new(10f);
+    private readonly AOEShapeCircle _shape = new(10f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

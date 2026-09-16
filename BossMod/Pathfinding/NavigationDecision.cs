@@ -11,7 +11,6 @@ namespace BossMod.Pathfinding;
 // 3. execute positionals - this is strictly less important than points above, we only do that if we can meet other conditions
 // 4. be in range of healers - even less important, but still nice to do
 
-[SkipLocalsInit]
 public struct NavigationDecision
 {
     // context that allows reusing large memory allocations
@@ -46,7 +45,7 @@ public struct NavigationDecision
         {
             RasterizeForbiddenZones(ctx.Map, [.. hints.ForbiddenZones], currentTime);
         }
-        if (player.CastInfo == null) // don't rasterize goal zones if casting or if inside a very dangerous pixel
+        if (hints.GoalZonesEnabled && player.CastInfo == null) // don't rasterize goal zones if casting or if inside a very dangerous pixel
         {
             var gridPos = ctx.Map.WorldToGrid(pos);
             var inBounds = ctx.Map.InBounds(gridPos.x, gridPos.y);

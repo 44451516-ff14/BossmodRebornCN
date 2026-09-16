@@ -75,25 +75,15 @@ public enum SID : uint
     Correction5 = 5018 // none->player, extra=0x0
 }
 
-[SkipLocalsInit]
 sealed class KnowledgeLevelCorrection(BossModule module) : Components.RaidwideCast(module, (uint)AID.KnowledgeLevelCorrectionCast);
-[SkipLocalsInit]
 sealed class Summon(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Summon, 4f);
-[SkipLocalsInit]
 sealed class Marginalia(BossModule module) : Components.RaidwideCast(module, (uint)AID.Marginalia);
-[SkipLocalsInit]
 sealed class UnboundInk(BossModule module) : Components.SimpleAOEs(module, (uint)AID.UnboundInk, 9f);
-[SkipLocalsInit]
 sealed class BookDrop(BossModule module) : Components.CastTowersOpenWorld(module, (uint)AID.BookDrop, 3f, 3, 5);
-[SkipLocalsInit]
 sealed class ThunderII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ThunderII, new AOEShapeRect(50f, 2.5f), 10);
-[SkipLocalsInit]
 sealed class FireII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FireII, new AOEShapeCone(60f, 22.5f.Degrees()));
-[SkipLocalsInit]
 sealed class QuadRule(BossModule module) : Components.SimpleAOEs(module, (uint)AID.QuadRule, new AOEShapeCross(25f, 5f));
-[SkipLocalsInit]
 sealed class HorizontalRule(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HorizontalRule, new AOEShapeRect(50f, 3f));
-[SkipLocalsInit]
 sealed class Blot : Components.SimpleAOEs
 {
     public Blot(BossModule module) : base(module, (uint)AID.Blot, 15f, 6)
@@ -101,10 +91,8 @@ sealed class Blot : Components.SimpleAOEs
         MaxDangerColor = 3;
     }
 }
-[SkipLocalsInit]
 sealed class Invincibility(BossModule module) : Components.InvincibleStatus(module, (uint)SID.Invincibility);
 
-[SkipLocalsInit]
 sealed class CoverToCover(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(2)];
@@ -147,7 +135,6 @@ sealed class CoverToCover(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class KnowledgeLevel(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(3)];
@@ -248,7 +235,6 @@ sealed class KnowledgeLevel(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class CE209ForbiddenFoliosStates : StateMachineBuilder
 {
     public CE209ForbiddenFoliosStates(BossModule module) : base(module)
@@ -270,24 +256,7 @@ sealed class CE209ForbiddenFoliosStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Contributed,
-    StatesType = typeof(CE209ForbiddenFoliosStates),
-    ConfigType = null, // replace null with typeof(ArbatelConfig) if applicable
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID),
-    StatusIDType = typeof(SID),
-    TetherIDType = null, // replace null with typeof(TetherID) if applicable
-    IconIDType = null, // replace null with typeof(IconID) if applicable
-    PrimaryActorOID = (uint)OID.Arbatel,
-    Contributors = "Equilius",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.Foray,
-    GroupType = BossModuleInfo.GroupType.CriticalEngagement,
-    GroupID = 1093u,
-    NameID = 52u,
-    SortOrder = 4,
-    PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.Contributed, PrimaryActorOID = (uint)OID.Arbatel, Contributors = "Equilius", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 1093u, NameID = 52u)]
 public sealed class CE209ForbiddenFolios : BossModule
 {
     public CE209ForbiddenFolios(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

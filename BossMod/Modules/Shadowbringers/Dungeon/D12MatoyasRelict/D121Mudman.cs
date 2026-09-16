@@ -45,20 +45,18 @@ public enum TetherID : uint
     Mudball = 7 // MudBubble1->player
 }
 
-class StoneAge(BossModule module) : Components.RaidwideCast(module, (uint)AID.StoneAge);
-class HardRock(BossModule module) : Components.SingleTargetCast(module, (uint)AID.HardRock);
-class MudVoidzone(BossModule module) : Components.Voidzone(module, 5f, GetVoidzone)
+sealed class StoneAge(BossModule module) : Components.RaidwideCast(module, (uint)AID.StoneAge);
+sealed class HardRock(BossModule module) : Components.SingleTargetCast(module, (uint)AID.HardRock);
+sealed class MudVoidzone(BossModule module) : Components.Voidzone(module, 5f, GetVoidzone)
 {
     private static List<Actor> GetVoidzone(BossModule module) => module.Enemies((uint)OID.MudVoidzone);
 }
-class Quagmire(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Quagmire, 6f);
-class FallingRock(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.FallingRock, 6f, 4, 4);
+sealed class Quagmire(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Quagmire, 6f);
+sealed class FallingRock(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.FallingRock, 6f, 4, 4);
 
-class BrittleBreccia(BossModule module) : Components.ConcentricAOEs(module, _shapes)
+sealed class BrittleBreccia(BossModule module) : Components.ConcentricAOEs(module,
+    [new AOEShapeCone(6.5f, 135f.Degrees()), new AOEShapeDonutSector(6.5f, 12.5f, 135f.Degrees()), new AOEShapeDonutSector(12.5f, 18.5f, 135f.Degrees())])
 {
-    private static readonly Angle a135 = 135f.Degrees();
-    private static readonly AOEShape[] _shapes = [new AOEShapeCone(6.5f, a135), new AOEShapeDonutSector(6.5f, 12.5f, a135), new AOEShapeDonutSector(12.5f, 18.5f, a135)];
-
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.BrittleBreccia1)
@@ -81,9 +79,9 @@ class BrittleBreccia(BossModule module) : Components.ConcentricAOEs(module, _sha
     }
 }
 
-class RockyRoll(BossModule module) : Components.GenericBaitAway(module)
+sealed class RockyRoll(BossModule module) : Components.GenericBaitAway(module)
 {
-    private static readonly AOEShapeRect rect1 = new(60f, 2f), rect2 = new(60f, 3f), rect3 = new(60f, 4f);
+    private readonly AOEShapeRect rect1 = new(60f, 2f), rect2 = new(60f, 3f), rect3 = new(60f, 4f);
     private readonly List<WPos> activeHoles = [with(4)];
 
     public override void OnMapEffect(byte index, uint state)
@@ -182,18 +180,25 @@ class RockyRoll(BossModule module) : Components.GenericBaitAway(module)
         var baits = ActiveBaitsOn(actor);
         var count = baits.Count;
         if (count == 0)
+        {
             return;
+        }
         var actHolesCount = activeHoles.Count;
+        if (actHolesCount == 0)
+        {
+            return;
+        }
         var forbidden = new ShapeDistance[actHolesCount];
-        var b = baits[0];
+        ref var b = ref baits.Ref(0);
         for (var i = 0; i < actHolesCount; ++i)
+        {
             forbidden[i] = new SDInvertedRect(b.Source.Position, activeHoles[i], 1f);
-        if (actHolesCount != 0)
-            hints.AddForbiddenZone(new SDIntersection(forbidden));
+        }
+        hints.AddForbiddenZone(new SDIntersection(forbidden));
     }
 }
 
-class D121MudmanStates : StateMachineBuilder
+sealed class D121MudmanStates : StateMachineBuilder
 {
     public D121MudmanStates(BossModule module) : base(module)
     {
@@ -208,5 +213,16 @@ class D121MudmanStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 746, NameID = 9735)]
-public class D121Mudman(WorldState ws, Actor primary) : BossModule(ws, primary, new(-180f, -140f), new ArenaBoundsCircle(19.5f));
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 746u, NameID = 9735u)]
+public sealed class D121Mudman : BossModule
+{
+    public D121Mudman(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private D121Mudman(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(-180f, -140f), 19.5f, 48)]);
+        return (arena.Center, arena);
+    }
+}

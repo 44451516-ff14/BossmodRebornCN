@@ -61,14 +61,6 @@ sealed class ZoomInKB(BossModule module) : Components.GenericKnockback(module)
     }
 }
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"{Module.PrimaryActor.Name} will spawn a cyclops a few seconds into the fight. Make sure\nto kill it before it reaches you. After that you can just slowly take down the\nboss. Use Diamondback to survive the 1111 Tonze Swing. Alternatively\nyou can try the Final Sting combo when he drops to about 75% health.\n(Off-guard->Bristle->Moonflute->Final Sting)");
-    }
-}
-
 sealed class Stage16Act2States : StateMachineBuilder
 {
     public Stage16Act2States(BossModule module) : base(module)
@@ -80,17 +72,20 @@ sealed class Stage16Act2States : StateMachineBuilder
             .ActivateOnEnter<CryOfRage>()
             .ActivateOnEnter<ZoomIn>()
             .ActivateOnEnter<ZoomInKB>()
-            .ActivateOnEnter<TenTonzeWaveDonut>()
-            .DeactivateOnEnter<Hints>();
+            .ActivateOnEnter<TenTonzeWaveDonut>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 626, NameID = 8113, SortOrder = 2)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 626u, NameID = 8113u, SortOrder = 2)]
 public sealed class Stage16Act2 : BossModule
 {
     public Stage16Act2(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {
-        ActivateComponent<Hints>();
+        _prePullHints =
+        [
+            $"{PrimaryActor.Name} will spawn a cyclops a few seconds into the fight. Make sure to kill it before it reaches you. After that you can just slowly take down the boss.",
+            "Use Diamondback to survive the 1111 Tonze Swing. Alternatively you can try the Final Sting combo when he drops to about 75% health. (Off-guard->Bristle->Moonflute->Final Sting)"
+        ];
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
@@ -112,4 +107,8 @@ public sealed class Stage16Act2 : BossModule
             };
         }
     }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

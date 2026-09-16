@@ -159,7 +159,7 @@ sealed class ClassDefinitions
                 _actionData[BozjaActionID.GetNormal(i)].IsBozjaHolster = true;
             }
 
-            foreach (var id in typeof(PhantomID).GetEnumValues())
+            foreach (var id in typeof(PhantomID).GeneratedEnumValues())
             {
                 if ((uint)id > 0)
                 {
@@ -724,9 +724,9 @@ sealed class ClassDefinitions
         return res;
     }
 
-    private static string ActionIDName(string ns, ActionID aid) => Type.GetType($"BossMod.{ns}.AID")?.GetEnumName(aid.ID) ?? Utils.StringToIdentifier(aid.Name());
-    private static string TraitIDName(string ns, Lumina.Excel.Sheets.Trait trait) => Type.GetType($"BossMod.{ns}.TraitID")?.GetEnumName(trait.RowId) ?? Utils.StringToIdentifier(trait.Name.ToString());
-    private static string StatusIDName(string ns, uint sid) => Type.GetType($"BossMod.{ns}.SID")?.GetEnumName(sid) ?? Utils.StringToIdentifier(Service.LuminaRow<Lumina.Excel.Sheets.Status>(sid)?.Name.ToString() ?? $"Status{sid}");
+    private static string ActionIDName(string ns, ActionID aid) => GeneratedFactories.FindType($"BossMod.{ns}.AID")?.GeneratedEnumName(aid.ID) ?? Utils.StringToIdentifier(aid.Name());
+    private static string TraitIDName(string ns, Lumina.Excel.Sheets.Trait trait) => GeneratedFactories.FindType($"BossMod.{ns}.TraitID")?.GeneratedEnumName(trait.RowId) ?? Utils.StringToIdentifier(trait.Name.ToString());
+    private static string StatusIDName(string ns, uint sid) => GeneratedFactories.FindType($"BossMod.{ns}.SID")?.GeneratedEnumName(sid) ?? Utils.StringToIdentifier(Service.LuminaRow<Lumina.Excel.Sheets.Status>(sid)?.Name.ToString() ?? $"Status{sid}");
 
     private static string AnimLockString(ActionData action)
     {

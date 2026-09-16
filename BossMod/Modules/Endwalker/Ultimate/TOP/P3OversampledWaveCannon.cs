@@ -53,23 +53,31 @@ sealed class P3OversampledWaveCannon(BossModule module) : BossComponent(module)
         al.Forbidden.Clear();
         al.Center = actor.Position;
 
-        var safeConePlayers = Raid.WithoutSlot().ClockOrder(actor, Arena.Center, !targetCW).Skip(2).Take(2).ToList();
-        if (targetCW)
-            safeConePlayers.Reverse();
+        var raid = Raid.WithoutSlot(false, true, true);
+        var raidL = ArrayListWrapper<Actor>.Wrap(raid);
+        var safeConePlayers = raidL.ClockOrder(actor, Arena.Center, !targetCW);
+        if (safeConePlayers.Length >= 4)
+        {
+            var scp = safeConePlayers.AsSpan().Slice(2, 2);
+            if (targetCW)
+            {
+                scp.Reverse();
+            }
 
-        var angleRight = actor.AngleTo(safeConePlayers[0]);
-        var angleLeft = actor.AngleTo(safeConePlayers[1]);
+            var angleRight = actor.AngleTo(scp[0]);
+            var angleLeft = actor.AngleTo(scp[1]);
 
-        // forbid angle ranges that don't face the player toward or away from their intended targets
-        al.ForbidArc(angleLeft, (angleRight + 180f.Degrees()).Normalized());
-        al.ForbidArc((angleLeft + 180f.Degrees()).Normalized(), angleRight);
+            // forbid angle ranges that don't face the player toward or away from their intended targets
+            al.ForbidArc(angleLeft, (angleRight + 180f.Degrees()).Normalized());
+            al.ForbidArc((angleLeft + 180f.Degrees()).Normalized(), angleRight);
 
-        // forbid any angle that would hit the boss with the monitor; eliminates one of the two remaining facing cones
-        var dirToUnsafeCleave = actor.DirectionTo(Arena.Center).ToAngle() - _playerAngles[slot];
-        al.ForbidArc(dirToUnsafeCleave - 90.Degrees(), dirToUnsafeCleave + 90f.Degrees());
+            // forbid any angle that would hit the boss with the monitor; eliminates one of the two remaining facing cones
+            var dirToUnsafeCleave = actor.DirectionTo(Arena.Center).ToAngle() - _playerAngles[slot];
+            al.ForbidArc(dirToUnsafeCleave - 90.Degrees(), dirToUnsafeCleave + 90f.Degrees());
 
-        foreach (var (min, max) in al.Allowed(2f.Degrees()))
-            hints.ForbiddenDirections.Add(((max + min) / 2f, (max - min) / 2f, _resolve));
+        foreach (var (min, max) in al.Forbidden.Segments)
+            hints.ForbiddenDirections.Add((((max + min) * 0.5f).Radians(), ((max - min) * 0.5f).Radians() + 1f.Degrees(), _resolve));
+        }
     }
 
     public override void DrawArenaBackground(int pcSlot, Actor pc)

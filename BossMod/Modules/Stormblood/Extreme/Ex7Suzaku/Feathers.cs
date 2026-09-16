@@ -3,8 +3,8 @@ namespace BossMod.Stormblood.Extreme.Ex7Suzaku;
 sealed class ScarletPlumeTailFeather(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = [with(5)];
-    private static readonly AOEShapeCircle circle = new(9f);
-    private static readonly uint[] _feathers = [(uint)OID.ScarletTailFeather, (uint)OID.ScarletPlume];
+    private readonly AOEShapeCircle circle = new(9f);
+    private readonly uint[] _feathers = [(uint)OID.ScarletTailFeather, (uint)OID.ScarletPlume];
     private readonly int party = module.Raid.WithoutSlot(true, false, false).Length;
     private readonly RekindleP1 _spread = module.FindComponent<RekindleP1>()!;
     private BitMask _target;
@@ -126,9 +126,10 @@ sealed class ScarletPlumeTailFeather(BossModule module) : Components.GenericAOEs
         else if (_target[slot])
         {
             var count = plumeCache.Count;
+            var center = Arena.Center;
             for (var i = 0; i < count; ++i)
             {
-                hints.GoalZones.Add(AIHints.GoalProximity(Ex7Suzaku.ArenaCenter - 20f * (plumeCache[i] - Ex7Suzaku.ArenaCenter).Normalized(), 5f, 100f));
+                hints.GoalZones.Add(AIHints.GoalProximity(center - 20f * (plumeCache[i] - center).Normalized(), 5f, 100f));
             }
         }
         else

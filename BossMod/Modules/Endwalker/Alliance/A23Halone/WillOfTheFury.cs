@@ -1,9 +1,7 @@
 ﻿namespace BossMod.Endwalker.Alliance.A23Halone;
 
-sealed class WillOfTheFury(BossModule module) : Components.ConcentricAOEs(module, _shapes)
+sealed class WillOfTheFury(BossModule module) : Components.ConcentricAOEs(module, [new AOEShapeDonut(24f, 30f), new AOEShapeDonut(18f, 24f), new AOEShapeDonut(12f, 18f), new AOEShapeDonut(6f, 12f), new AOEShapeCircle(6f)])
 {
-    private static readonly AOEShape[] _shapes = [new AOEShapeDonut(24f, 30f), new AOEShapeDonut(18f, 24f), new AOEShapeDonut(12f, 18f), new AOEShapeDonut(6f, 12f), new AOEShapeCircle(6f)];
-
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.WillOfTheFuryAOE1)

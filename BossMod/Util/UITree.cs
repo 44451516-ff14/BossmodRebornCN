@@ -2,7 +2,6 @@
 
 namespace BossMod;
 
-[SkipLocalsInit]
 public sealed class UITree
 {
     private uint _selectedId;

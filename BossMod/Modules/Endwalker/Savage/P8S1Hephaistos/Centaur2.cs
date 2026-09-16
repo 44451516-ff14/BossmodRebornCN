@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P8S1Hephaistos;
 
-class QuadrupedalImpact(BossModule module) : Components.GenericKnockback(module, (uint)AID.QuadrupedalImpactAOE)
+sealed class QuadrupedalImpact(BossModule module) : Components.GenericKnockback(module, (uint)AID.QuadrupedalImpactAOE)
 {
     private WPos? _source;
 
@@ -18,12 +18,12 @@ class QuadrupedalImpact(BossModule module) : Components.GenericKnockback(module,
     }
 }
 
-class QuadrupedalCrush(BossModule module) : Components.GenericAOEs(module, (uint)AID.QuadrupedalCrushAOE)
+sealed class QuadrupedalCrush(BossModule module) : Components.GenericAOEs(module, (uint)AID.QuadrupedalCrushAOE)
 {
     private WPos? _source;
     private DateTime _activation;
 
-    private static readonly AOEShapeCircle _shape = new(30f);
+    private readonly AOEShapeCircle _shape = new(30f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -37,12 +37,12 @@ class QuadrupedalCrush(BossModule module) : Components.GenericAOEs(module, (uint
         if (spell.Action.ID == (uint)AID.QuadrupedalCrush)
         {
             _source = spell.LocXZ;
-            _activation = Module.CastFinishAt(spell, 0.9f);
+            _activation = Module.CastFinishAt(spell, 0.9d);
         }
     }
 }
 
-class CentaurTetraflare(BossModule module) : TetraOctaFlareCommon(module)
+sealed class CentaurTetraflare(BossModule module) : TetraOctaFlareCommon(module)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -51,7 +51,7 @@ class CentaurTetraflare(BossModule module) : TetraOctaFlareCommon(module)
     }
 }
 
-class CentaurDiflare(BossModule module) : Components.UniformStackSpread(module, 6f, default, 4, 4)
+sealed class CentaurDiflare(BossModule module) : Components.UniformStackSpread(module, 6f, default, 4, 4)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -67,7 +67,7 @@ class CentaurDiflare(BossModule module) : Components.UniformStackSpread(module, 
 }
 
 // TODO: hints
-class BlazingFootfalls(BossModule module) : BossComponent(module)
+sealed class BlazingFootfalls(BossModule module) : BossComponent(module)
 {
     public int NumMechanicsDone;
     private int _seenVisuals;
@@ -75,12 +75,12 @@ class BlazingFootfalls(BossModule module) : BossComponent(module)
     private bool _firstSafeLeft;
     private bool _secondSafeTop;
 
-    private const float _trailblazeHalfWidth = 7;
-    private const float _trailblazeKnockbackDistance = 10;
-    private const float _crushRadius = 30;
-    private const float _impactKnockbackRadius = 30;
-    private const float _safespotOffset = 15;
-    private const float _safespotRadius = 3;
+    private const float _trailblazeHalfWidth = 7f;
+    private const float _trailblazeKnockbackDistance = 10f;
+    private const float _crushRadius = 30f;
+    private const float _impactKnockbackRadius = 30f;
+    private const float _safespotOffset = 15f;
+    private const float _safespotRadius = 3f;
 
     public override void DrawArenaBackground(int pcSlot, Actor pc)
     {

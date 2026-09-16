@@ -31,9 +31,9 @@ abstract class RubyGlowCommon(BossModule module, uint watchedAction = default) :
         return stones;
     }
 
-    public static readonly AOEShape ShapeQuadrant = new AOEShapeRect(7.5f, 7.5f, 7.5f);
-    public static readonly AOEShape ShapeHalf = new AOEShapeRect(45f, 45f);
-    public static readonly AOEShape ShapePoison = new AOEShapeCircle(13f);
+    public readonly AOEShape ShapeQuadrant = new AOEShapeRect(7.5f, 7.5f, 7.5f);
+    public readonly AOEShape ShapeHalf = new AOEShapeRect(45f, 45f);
+    public readonly AOEShape ShapePoison = new AOEShapeCircle(13f);
 
     public int QuadrantForPosition(WPos pos)
     {
@@ -142,12 +142,12 @@ abstract class RubyGlowCommon(BossModule module, uint watchedAction = default) :
         switch (state)
         {
             // 0x00100020 - happens ~1s after activation
-            case 0x00020001:
+            case 0x00020001u:
                 if (State != ArenaState.Normal)
                     ReportError($"Active state {State} while state {astate} is activated");
                 State = astate;
                 break;
-            case 0x00080004:
+            case 0x00080004u:
                 if (State != astate)
                     ReportError($"Active state {State} while state {astate} is deactivated");
                 State = ArenaState.Normal;

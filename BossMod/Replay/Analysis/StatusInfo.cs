@@ -46,7 +46,7 @@ sealed class StatusInfo : CommonEnumInfo
     {
         UITree.NodeProperties map(KeyValuePair<uint, StatusData> kv)
         {
-            var name = _sidType?.GetEnumName(kv.Key);
+            var name = _sidType?.GeneratedEnumName(kv.Key);
             return new($"{Utils.StatusString(kv.Key)} ({name})", false, name == null ? Colors.TextColor2 : Colors.TextColor1);
         }
         foreach (var (sid, data) in tree.Nodes(_data, map))
@@ -78,7 +78,7 @@ sealed class StatusInfo : CommonEnumInfo
         if (ImGui.MenuItem("为 Boss 模块生成缺失的枚举值"))
         {
             var sb = new StringBuilder();
-            foreach (var (sid, data) in _data.Where(kv => _sidType?.GetEnumName(kv.Key) == null))
+            foreach (var (sid, data) in _data.Where(kv => _sidType?.GeneratedEnumName(kv.Key) == null))
             {
                 sb.AppendLine(EnumMemberString(sid, data));
             }
@@ -89,7 +89,7 @@ sealed class StatusInfo : CommonEnumInfo
 
     private string EnumMemberString(uint sid, StatusData data)
     {
-        var name = _sidType?.GetEnumName(sid) ?? $"_Gen_{Utils.StringToIdentifier(Service.LuminaRow<Lumina.Excel.Sheets.Status>(sid)?.Name.ToString() ?? $"Status{sid}")}";
+        var name = _sidType?.GeneratedEnumName(sid) ?? $"_Gen_{Utils.StringToIdentifier(Service.LuminaRow<Lumina.Excel.Sheets.Status>(sid)?.Name.ToString() ?? $"Status{sid}")}";
         return $"{name} = {sid}, // {OIDListString(data.SourceOIDs)}->{OIDListString(data.TargetOIDs)}, extra={JoinStrings(data.Extras.Select(extra => $"0x{extra:X}"))}";
     }
 }

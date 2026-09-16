@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Endwalker.Savage.P8S2;
 
-class EndOfDaysTethered(BossModule module) : BossComponent(module)
+sealed class EndOfDaysTethered(BossModule module) : BossComponent(module)
 {
     private readonly List<(Actor source, Actor target)> _tethers = []; // enemy -> player
 
-    private static readonly AOEShapeRect _shape = new(60, 5);
+    private readonly AOEShapeRect _shape = new(60f, 5f);
 
     public bool Active => _tethers.Count > 0;
 
@@ -34,7 +34,7 @@ class EndOfDaysTethered(BossModule module) : BossComponent(module)
 
     public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
-        if ((OID)source.OID == OID.IllusoryHephaistosMovable)
+        if (source.OID == (uint)OID.IllusoryHephaistosMovable)
         {
             var target = WorldState.Actors.Find(tether.Target);
             if (target != null)
@@ -44,7 +44,7 @@ class EndOfDaysTethered(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.EndOfDaysMovable)
+        if (spell.Action.ID == (uint)AID.EndOfDaysMovable)
             _tethers.RemoveAll(e => e.source == caster);
     }
 }

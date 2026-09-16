@@ -41,9 +41,9 @@ public enum TetherID : uint
     Gurgle = 3 // Boss->Helper
 }
 
-class Gurgle(BossModule module) : Components.GenericAOEs(module)
+sealed class Gurgle(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeRect rect = new(60f, 5f);
+    private readonly AOEShapeRect rect = new(60f, 5f);
     private readonly List<AOEInstance> _aoes = [with(3)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
@@ -53,7 +53,7 @@ class Gurgle(BossModule module) : Components.GenericAOEs(module)
         if (state == 0x00020001u && index is > 0x12 and < 0x1B)
         {
             var posX = index < 0x17 ? -20f : 20f;
-            var posZ = posX == -20f ? -165 + (index - 0x13) * 10f : -165f + (index - 0x17) * 10f;
+            var posZ = posX == -20f ? -165f + (index - 0x13) * 10f : -165f + (index - 0x17) * 10f;
             var rot = posX == -20f ? Angle.AnglesCardinals[3] : Angle.AnglesCardinals[0];
             _aoes.Add(new(rect, new WPos(posX, posZ).Quantized(), rot, WorldState.FutureTime(9d)));
         }
@@ -62,13 +62,15 @@ class Gurgle(BossModule module) : Components.GenericAOEs(module)
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.Gurgle)
+        {
             _aoes.Clear();
+        }
     }
 }
 
-class Crack(BossModule module) : Components.GenericBaitAway(module, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster)
+sealed class Crack(BossModule module) : Components.GenericBaitAway(module, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster)
 {
-    private static readonly AOEShapeRect rect = new(80f, 1.5f);
+    private readonly AOEShapeRect rect = new(80f, 1.5f);
 
     public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
@@ -76,7 +78,9 @@ class Crack(BossModule module) : Components.GenericBaitAway(module, tankbuster: 
         {
             var target = WorldState.Actors.Find(tether.Target);
             if (target is Actor t)
+            {
                 CurrentBaits.Add(new(source, t, rect, WorldState.FutureTime(5.4d)));
+            }
         }
     }
 
@@ -91,24 +95,28 @@ class Crack(BossModule module) : Components.GenericBaitAway(module, tankbuster: 
 
 sealed class GeysersCloudPlatform(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCircle circle = new(6f);
+    private readonly AOEShapeCircle circle = new(6f);
     private readonly List<AOEInstance> _aoes = [with(5)];
+    private readonly WPos bottomCenter = new(0f, -150f);
+    private readonly WPos topPlatformCenter = new(0f, -175f);
     private bool active;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
+
+    public override void Update()
     {
         var count = _aoes.Count;
-        if (count != 0 && Arena.Bounds.Radius == 19.5f)
+        if (count != 0)
         {
-            var aoes = CollectionsMarshal.AsSpan(_aoes);
             if (active)
             {
                 ulong id = default; // id of geyer closest to the platform
                 var minDistanceSq = float.MaxValue;
+                var aoes = CollectionsMarshal.AsSpan(_aoes);
                 for (var i = 0; i < count; ++i)
                 {
                     ref var aoe = ref aoes[i];
-                    var distanceSq = (aoe.Origin - D122Nixie.CloudCenter).LengthSq();
+                    var distanceSq = (aoe.Origin - topPlatformCenter).LengthSq();
                     if (distanceSq < minDistanceSq)
                     {
                         minDistanceSq = distanceSq;
@@ -124,13 +132,12 @@ sealed class GeysersCloudPlatform(BossModule module) : Components.GenericAOEs(mo
                         {
                             aoe.Shape.InvertForbiddenZone = true;
                             aoe.Color = Colors.SafeFromAOE;
+                            break;
                         }
                     }
                 }
             }
-            return aoes;
         }
-        return [];
     }
 
     public override void OnMapEffect(byte index, uint state)
@@ -139,11 +146,21 @@ sealed class GeysersCloudPlatform(BossModule module) : Components.GenericAOEs(mo
         {
             if (state == 0x00020001u)
             {
+                var bottom = new Square(bottomCenter, 19.5f);
+                var top = new Rectangle(topPlatformCenter, 9.5f, 5.5f);
+                var combinedCenter = new WPos(0f, -155.5f);
+                var polybottom = new RelSimplifiedComplexPolygon(bottom.Contour(combinedCenter));
+                var polytop = new RelSimplifiedComplexPolygon(top.Contour(combinedCenter));
+                var arena = new ArenaBoundsCustom([bottom, top], WorldProjectionLayers: [new(polybottom, 150f, borderY: 150f), new(polytop, 160f, borderY: 160f)]);
                 active = true;
+                Arena.Bounds = arena;
+                Arena.Center = arena.Center;
             }
             else if (state == 0x00080004u)
             {
                 active = false;
+                Arena.Bounds = new ArenaBoundsSquare(19.5f) { Y = 150f, BorderY = 150f };
+                Arena.Center = bottomCenter;
             }
         }
     }
@@ -152,7 +169,7 @@ sealed class GeysersCloudPlatform(BossModule module) : Components.GenericAOEs(mo
     {
         if (actor.OID == (uint)OID.Geyser)
         {
-            _aoes.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(3.9d), actorID: actor.InstanceID));
+            _aoes.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(3.9d), actorID: actor.InstanceID, arenaProjectionLayer: 0, restrictToArenaProjectionLayer: true));
         }
     }
 
@@ -174,30 +191,9 @@ sealed class GeysersCloudPlatform(BossModule module) : Components.GenericAOEs(mo
         }
     }
 
-    public override void DrawArenaBackground(int pcSlot, Actor pc)
-    {
-        base.DrawArenaBackground(pcSlot, pc);
-        var r = Arena.Bounds.Radius;
-        var onCloud = pc.Position.InRect(D122Nixie.CloudCenter, 9.5f, 5.5f);
-        if (r == 19.5f && onCloud)
-        {
-            SetArena(new ArenaBoundsRect(9.5f, 5.5f), D122Nixie.CloudCenter);
-        }
-        else if (r == 9.5f && !onCloud)
-        {
-            SetArena(new ArenaBoundsSquare(19.5f), D122Nixie.ArenaCenter);
-        }
-
-        void SetArena(ArenaBounds bounds, WPos center)
-        {
-            Arena.Bounds = bounds;
-            Arena.Center = center;
-        }
-    }
-
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (active && Arena.Bounds.Radius == 19.5f)
+        if (active && Module.ActorMatchesArenaProjectionLayer(actor, 0, true))
         {
             var aoes = ActiveAOEs(slot, actor);
             var len = aoes.Length;
@@ -221,9 +217,9 @@ sealed class GeysersCloudPlatform(BossModule module) : Components.GenericAOEs(mo
     }
 }
 
-class Sputter(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Sputter, 6f);
+sealed class Sputter(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Sputter, 6f);
 
-class D122NixieStates : StateMachineBuilder
+sealed class D122NixieStates : StateMachineBuilder
 {
     public D122NixieStates(BossModule module) : base(module)
     {
@@ -236,14 +232,13 @@ class D122NixieStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 746u, NameID = 9738u)]
-public class D122Nixie(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, new ArenaBoundsSquare(19.5f))
+public sealed class D122Nixie(WorldState ws, Actor primary) : BossModule(ws, primary, new(0f, -150f), new ArenaBoundsSquare(19.5f) { Y = 150f, BorderY = 150f })
 {
-    public static readonly WPos ArenaCenter = new(default, -150f);
-    public static readonly WPos CloudCenter = new(default, -175f);
-
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
         Arena.Actors(Enemies((uint)OID.UnfinishedNixie));
     }
+
+    public override bool ShouldPrioritizeAllEnemies => true;
 }

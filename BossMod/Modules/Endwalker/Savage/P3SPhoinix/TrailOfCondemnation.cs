@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Endwalker.Savage.P3SPhoinix;
 
 // state related to trail of condemnation mechanic
-class TrailOfCondemnation(BossModule module) : BossComponent(module)
+sealed class TrailOfCondemnation(BossModule module) : BossComponent(module)
 {
-    public bool Done { get; private set; }
-    private readonly bool _isCenter = module.PrimaryActor.CastInfo?.IsSpell(AID.TrailOfCondemnationCenter) ?? false;
+    public bool Done;
+    private readonly bool _isCenter = (module.PrimaryActor.CastInfo?.Action.ID ?? 0u) == (uint)AID.TrailOfCondemnationCenter;
     private const float _aoeRadius = 6;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
@@ -42,10 +42,14 @@ class TrailOfCondemnation(BossModule module) : BossComponent(module)
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         // draw all raid members, to simplify positioning
-        foreach (var player in Raid.WithoutSlot(false, true, true).Exclude(pc))
+        foreach (var player in Raid.WithoutSlot(false, true, true))
         {
+            if (player == pc)
+            {
+                continue;
+            }
             var inRange = player.Position.InCircle(pc.Position, _aoeRadius);
-            Arena.Actor(player, inRange ? Colors.PlayerInteresting : Colors.PlayerGeneric);
+            Arena.Actor(player, inRange ? Colors.PlayerInteresting : Colors.PlayerGeneric, drawWorld: inRange ? true : null);
         }
 
         // draw circle around pc
@@ -54,7 +58,7 @@ class TrailOfCondemnation(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.FlareOfCondemnation or AID.SparksOfCondemnation)
+        if (spell.Action.ID is (uint)AID.FlareOfCondemnation or (uint)AID.SparksOfCondemnation)
             Done = true;
     }
 }

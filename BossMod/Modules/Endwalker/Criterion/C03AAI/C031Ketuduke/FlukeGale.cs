@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C03AAI.C031Ketuduke;
 
-class FlukeGale(BossModule module) : Components.GenericKnockback(module)
+sealed class FlukeGale(BossModule module) : Components.GenericKnockback(module)
 {
     public enum Debuff { None, BubbleWeave, FoamyFetters }
     public enum Resolve { None, Stack, Spread }

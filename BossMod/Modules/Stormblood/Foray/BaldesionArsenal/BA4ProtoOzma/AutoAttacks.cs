@@ -3,7 +3,7 @@ namespace BossMod.Stormblood.Foray.BaldesionArsenal.BA4ProtoOzma;
 sealed class AutoAttacksCube(BossModule module) : Components.GenericBaitAway(module)
 {
     private readonly List<Actor> targets = [with(3)];
-    private static readonly AOEShapeRect rect = new(40.5f, 2f);
+    private readonly AOEShapeRect rect = new(40.5f, 2f);
 
     // todo: this is a hack, ideally we need to determine who has the current highest enmity on each platform
     // the hack just assumes that people with highest enmity for cube auto attack never changes
@@ -53,8 +53,9 @@ sealed class AutoAttacksCube(BossModule module) : Components.GenericBaitAway(mod
 
 sealed class AutoAttacksPyramid(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
-    private static readonly AOEShapeCircle circle = new(4f);
+    private readonly AOEShapeCircle circle = new(4f);
     private readonly List<Actor> players = [];
+    private readonly WDir[] directions = [new(default, 1f), 120f.Degrees().ToDirection(), (-120f.Degrees()).ToDirection()];
     private bool active;
 
     // this is just an estimation, targets quickly look random if not in predetermined spots behind platform black hole buffers...
@@ -81,7 +82,7 @@ sealed class AutoAttacksPyramid(BossModule module) : Components.GenericBaitAway(
                     continue;
                 for (var j = 0; j < 3; ++j)
                 {
-                    if (a.Position.InRect(primaryPos, BA4ProtoOzma.Directions[j], 100f, default, 5f))
+                    if (a.Position.InRect(primaryPos, directions[j], 100f, default, 5f))
                     {
                         platformActors[j].Add(a);
                         break;
@@ -131,10 +132,11 @@ sealed class AutoAttacksPyramid(BossModule module) : Components.GenericBaitAway(
     }
 }
 
-class AutoAttacksStar(BossModule module) : Components.GenericStackSpread(module)
+sealed class AutoAttacksStar(BossModule module) : Components.GenericStackSpread(module)
 {
     private bool active;
     private readonly List<Actor> players = [];
+    private readonly WDir[] directions = [new(default, 1f), 120f.Degrees().ToDirection(), (-120f.Degrees()).ToDirection()];
 
     public override void Update()
     {
@@ -159,7 +161,7 @@ class AutoAttacksStar(BossModule module) : Components.GenericStackSpread(module)
                     continue;
                 for (var j = 0; j < 3; ++j)
                 {
-                    if (a.Position.InRect(primaryPos, BA4ProtoOzma.Directions[j], 100f, default, 5f))
+                    if (a.Position.InRect(primaryPos, directions[j], 100f, default, 5f))
                     {
                         platformActors[j].Add(a);
                         break;

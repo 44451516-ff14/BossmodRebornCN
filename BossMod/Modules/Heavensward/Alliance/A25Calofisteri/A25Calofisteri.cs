@@ -16,7 +16,6 @@ class SplitEnd1(BossModule module) : SplitEnd(module, (uint)AID.SplitEnd1);
 class SplitEnd2(BossModule module) : SplitEnd(module, (uint)AID.SplitEnd2);
 
 [ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "The Combat Reborn Team", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 168, NameID = 4897)]
-[SkipLocalsInit]
 public sealed class A25Calofisteri : BossModule
 {
     public A25Calofisteri(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

@@ -1,13 +1,13 @@
 ﻿namespace BossMod.Endwalker.Savage.P7SAgdistis;
 
 // TODO: currently we don't expose aggro to components, so we just assume tanks are doing their job...
-class DispersedCondensedAero(BossModule module) : BossComponent(module)
+sealed class DispersedCondensedAero(BossModule module) : BossComponent(module)
 {
-    public bool Done { get; private set; }
+    public bool Done;
     private bool _condensed;
 
-    private const float _radiusDispersed = 8;
-    private const float _radiusCondensed = 6;
+    private const float _radiusDispersed = 8f;
+    private const float _radiusCondensed = 6f;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {

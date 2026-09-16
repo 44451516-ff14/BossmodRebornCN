@@ -25,7 +25,7 @@ sealed class AntiPersonnelMissile(BossModule module) : Components.SpreadFromCast
 sealed class Touchdown(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Touchdown1, 30f, stopAtWall: true);
 sealed class WildfireWinds(BossModule module) : Components.RaidwideCast(module, (uint)AID.WildfireWinds1);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.TheDalriada, GroupID = 778, NameID = 10192, SortOrder = 5)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.TheDalriada, GroupID = 778u, NameID = 10192u, SortOrder = 5)]
 public sealed class DAL3SaunionDawon(WorldState ws, Actor primary) : BossModule(ws, primary, new(650f, -659f), new ArenaBoundsSquare(26.5f))
 {
     public Actor? BossDawon;

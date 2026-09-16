@@ -1,4 +1,4 @@
-﻿namespace BossMod.Modules.Dawntrail.Extreme.Ex8Enuo;
+﻿namespace BossMod.Dawntrail.Extreme.Ex8Enuo;
 
 sealed class MeltdownAoE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Meltdown1, new AOEShapeCircle(5f));
 

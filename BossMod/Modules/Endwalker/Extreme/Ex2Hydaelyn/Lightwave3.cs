@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex2Hydaelyn;
 
 // component for third lightwave (safe zone)
-class Lightwave3(BossModule module) : LightwaveCommon(module)
+sealed class Lightwave3(BossModule module) : LightwaveCommon(module)
 {
     public override void Update()
     {
@@ -36,6 +36,6 @@ class Lightwave3(BossModule module) : LightwaveCommon(module)
     private bool IsInitialLightwave(Actor a)
     {
         var pos = a.Position;
-        return Math.Abs(pos.X - 70) < 1 || Math.Abs(pos.X - 130) < 1 || Math.Abs(pos.Z - 70) < 1 || Math.Abs(pos.Z - 130) < 1;
+        return Math.Abs(pos.X - 70f) < 1f || Math.Abs(pos.X - 130f) < 1f || Math.Abs(pos.Z - 70f) < 1f || Math.Abs(pos.Z - 130f) < 1f;
     }
 }

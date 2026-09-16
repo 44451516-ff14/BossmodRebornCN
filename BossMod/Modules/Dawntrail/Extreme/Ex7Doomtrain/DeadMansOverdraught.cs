@@ -1,12 +1,11 @@
 namespace BossMod.Dawntrail.Extreme.Ex7Doomtrain;
 
-[SkipLocalsInit]
 sealed class DeadMansOverdraught(BossModule module) : Components.GenericStackSpread(module)
 {
     private bool? partnerStack;
     public uint Counter;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (partnerStack is bool stack)
         {

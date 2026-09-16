@@ -1,9 +1,7 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-[SkipLocalsInit]
 sealed class P2IntermissionLimitCut(BossModule module) : LimitCut(module, 3.2d);
 
-[SkipLocalsInit]
 sealed class P2IntermissionHawkBlaster(BossModule module) : Components.GenericAOEs(module, (uint)AID.HawkBlasterIntermission)
 {
     private Angle _blasterStartingDirection;

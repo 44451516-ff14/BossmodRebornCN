@@ -73,7 +73,7 @@ sealed class P3HelloWorld(BossModule module) : Components.GenericTowers(module)
         base.AddHints(slot, actor, hints);
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_defamationTowerColor != TowerColor.None && NumCasts < 16)
             hints.Add($"Defamation color: {_defamationTowerColor}");

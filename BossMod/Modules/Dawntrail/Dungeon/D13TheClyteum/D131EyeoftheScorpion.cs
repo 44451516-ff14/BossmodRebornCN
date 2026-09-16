@@ -29,7 +29,6 @@ public enum SID : uint
     MotionTracker = 5191, // none->41EF/41F0/41F1/player, extra=0x0
 }
 
-[SkipLocalsInit]
 
 sealed class PetrifyingBeam(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PetrifyingBeam, (uint)AID.PetrifyingBeam2], new AOEShapeCone(70f, 50f.Degrees()), maxCasts: 2);
 
@@ -119,22 +118,5 @@ sealed class D131EyeOfTheScorpionStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
-StatesType = typeof(D131EyeOfTheScorpionStates),
-ConfigType = null, // replace null with typeof(EyeOfTheScorpionConfig) if applicable
-ObjectIDType = typeof(OID),
-ActionIDType = typeof(AID), // replace null with typeof(AID) if applicable
-StatusIDType = null, // replace null with typeof(SID) if applicable
-TetherIDType = null, // replace null with typeof(TetherID) if applicable
-IconIDType = null, // replace null with typeof(IconID) if applicable
-PrimaryActorOID = (uint)OID.EyeOfTheScorpion,
-Contributors = "HerStolenLight",
-Expansion = BossModuleInfo.Expansion.Dawntrail,
-Category = BossModuleInfo.Category.Dungeon,
-GroupType = BossModuleInfo.GroupType.CFC,
-GroupID = 1011u,
-NameID = 14716u,
-SortOrder = 1,
-PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.EyeOfTheScorpion, Contributors = "HerStolenLight", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1011u, NameID = 14716u, SortOrder = 1)]
 public sealed class D131EyeOfTheScorpion(WorldState ws, Actor primary) : BossModule(ws, primary, new(-615f, 575f), new ArenaBoundsSquare(20f));

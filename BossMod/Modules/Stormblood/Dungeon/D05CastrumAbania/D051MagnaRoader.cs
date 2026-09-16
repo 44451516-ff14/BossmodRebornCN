@@ -34,7 +34,7 @@ public enum SID : uint
     Fetters = 1399 // Helper->player/Helper/Boss, extra=0x0
 }
 
-class MagitekPulsePlayer(BossModule module) : BossComponent(module)
+sealed class MagitekPulsePlayer(BossModule module) : BossComponent(module)
 {
     private readonly WildSpeedHaywire _aoe = module.FindComponent<WildSpeedHaywire>()!;
 
@@ -69,10 +69,12 @@ class MagitekPulsePlayer(BossModule module) : BossComponent(module)
             }
         }
         else if (Module.PrimaryActor.FindStatus((uint)SID.Fetters) != null)
+        {
             hints.ForcedTarget = Module.PrimaryActor;
+        }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_aoe.AOEs.Count == 0)
             return;
@@ -103,10 +105,10 @@ class MagitekPulsePlayer(BossModule module) : BossComponent(module)
     }
 }
 
-class WildSpeedHaywire(BossModule module) : Components.GenericAOEs(module)
+sealed class WildSpeedHaywire(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = [with(4)];
-    private static readonly AOEShapeRect rect = new(40.5f, 3f);
+    private readonly AOEShapeRect rect = new(40.5f, 3f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -123,27 +125,33 @@ class WildSpeedHaywire(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.HaywireTelegraph)
-            AOEs.Add(new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell, -0.2f))); // actual dmg AOE happens ~0.2s before cast ends
+        {
+            AOEs.Add(new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell, -0.2d))); // actual dmg AOE happens ~0.2s before cast ends
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (AOEs.Count != 0 && spell.Action.ID == (uint)AID.WildSpeed)
+        {
             AOEs.RemoveAt(0);
+        }
     }
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Fetters && actor == Module.PrimaryActor)
+        {
             AOEs.Clear();
+        }
     }
 }
 
-class MagitekPulse(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekPulse, 6f);
-class MagitekFireII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekFireII, 5f);
-class MagitekFireIII(BossModule module) : Components.RaidwideCast(module, (uint)AID.MagitekFireIII);
+sealed class MagitekPulse(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekPulse, 6f);
+sealed class MagitekFireII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekFireII, 5f);
+sealed class MagitekFireIII(BossModule module) : Components.RaidwideCast(module, (uint)AID.MagitekFireIII);
 
-class D051MagnaRoaderStates : StateMachineBuilder
+sealed class D051MagnaRoaderStates : StateMachineBuilder
 {
     public D051MagnaRoaderStates(BossModule module) : base(module)
     {
@@ -156,10 +164,19 @@ class D051MagnaRoaderStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 242, NameID = 6263)]
-public class D051MagnaRoader(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 242u, NameID = 6263u)]
+public sealed class D051MagnaRoader : BossModule
 {
-    private static readonly ArenaBoundsCustom arena = new([new Circle(new(-212.99f, 186.99f), 19.55f)], [new Rectangle(new(-213, 167), 20, 1.25f), new Rectangle(new(-213, 208), 20, 2.1f)]);
+    public D051MagnaRoader(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private D051MagnaRoader(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Circle(new(-212.99f, 186.99f), 19.55f)], [new Rectangle(new(-213f, 167f), 20, 1.25f), new Rectangle(new(-213f, 208f), 20f, 2.1f)]);
+        return (arena.Center, arena);
+    }
+
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);

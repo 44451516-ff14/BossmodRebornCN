@@ -357,7 +357,7 @@ sealed class P5DeltaOpticalLaser(BossModule module) : Components.GenericAOEs(mod
     public Actor? Source;
     private DateTime _activation;
 
-    private static readonly AOEShapeRect _shape = new(100f, 8f);
+    private readonly AOEShapeRect _shape = new(100f, 8f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -470,7 +470,7 @@ sealed class P5DeltaOversampledWaveCannon(BossModule module) : Components.Unifor
     private Angle _playerAngle;
     private BitMask _playerIntendedTargets;
 
-    private static readonly AOEShapeRect _shape = new(50, 50);
+    private readonly AOEShapeRect _shape = new(50f, 50f);
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -559,7 +559,7 @@ sealed class P5DeltaSwivelCannon(BossModule module) : Components.GenericAOEs(mod
 {
     public AOEInstance[] AOE = [];
 
-    private static readonly AOEShapeCone _shape = new(60f, 105f.Degrees());
+    private readonly AOEShapeCone _shape = new(60f, 105f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOE;
 

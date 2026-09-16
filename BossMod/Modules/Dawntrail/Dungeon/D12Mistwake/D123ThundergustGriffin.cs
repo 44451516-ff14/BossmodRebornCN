@@ -36,7 +36,6 @@ public enum AID : uint
     StormSurge = 45299 // ThundergustGriffin->self, 3.0s cast, range 50 width 10 rect
 }
 
-[SkipLocalsInit]
 sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance[] _aoe = [];
@@ -63,25 +62,18 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class Thunderspark(BossModule module) : Components.RaidwideCast(module, (uint)AID.Thunderspark);
 
-[SkipLocalsInit]
 sealed class LightningBoltSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.LightningBoltSpread, 5f);
 
-[SkipLocalsInit]
 sealed class LightningBoltAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LightningBoltAOE, 5f);
 
-[SkipLocalsInit]
 sealed class Thunderbolt(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Thunderbolt1, (uint)AID.Thunderbolt2, (uint)AID.Thunderbolt3], new AOEShapeRect(92f, 3f));
 
-[SkipLocalsInit]
 sealed class GoldenTalons(BossModule module) : Components.SingleTargetCast(module, (uint)AID.GoldenTalons);
 
-[SkipLocalsInit]
 sealed class Rush(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Rush, new AOEShapeRect(40f, 5f));
 
-[SkipLocalsInit]
 sealed class ElectrogeneticForce(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ElectrogeneticForce, new AOEShapeRect(40f, 9f))
 {
     private readonly Rush aoe = module.FindComponent<Rush>()!;
@@ -96,7 +88,6 @@ sealed class ElectrogeneticForce(BossModule module) : Components.SimpleAOEs(modu
     }
 }
 
-[SkipLocalsInit]
 sealed class StormSurge(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance[] _aoe = [];
@@ -123,7 +114,6 @@ sealed class StormSurge(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class ElectrifyingFlight(BossModule module) : Components.GenericKnockback(module)
 {
     private readonly List<Knockback> _kbs = [with(2)];
@@ -171,7 +161,6 @@ sealed class ElectrifyingFlight(BossModule module) : Components.GenericKnockback
     }
 }
 
-[SkipLocalsInit]
 sealed class D123ThundergustGriffinStates : StateMachineBuilder
 {
     public D123ThundergustGriffinStates(BossModule module) : base(module)
@@ -207,7 +196,6 @@ GroupID = 1064u,
 NameID = 14288u,
 SortOrder = 3,
 PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class D123ThundergustGriffin : BossModule
 {
     public D123ThundergustGriffin(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

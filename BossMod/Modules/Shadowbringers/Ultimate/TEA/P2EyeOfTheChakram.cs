@@ -1,6 +1,5 @@
 namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-[SkipLocalsInit]
 sealed class P2EyeOfTheChakram(BossModule module) : Components.GenericAOEs(module, (uint)AID.EyeOfTheChakram)
 {
     private readonly List<AOEInstance> _aoes = [with(2)];

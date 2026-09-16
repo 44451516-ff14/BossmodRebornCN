@@ -1,6 +1,5 @@
 ﻿namespace BossMod.Dawntrail.Raid.M12NLindwurm;
 
-[SkipLocalsInit]
 sealed class ArenaChanges(BossModule module) : BossComponent(module)
 {
     private Rectangle[] _rects = [];

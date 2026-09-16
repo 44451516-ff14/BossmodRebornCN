@@ -1,6 +1,5 @@
 namespace BossMod;
 
-[SkipLocalsInit]
 public sealed class SDComplexPolygonInvertedContains(RelSimplifiedComplexPolygon Polygon, WPos Center) : ShapeDistance
 {
     private readonly RelSimplifiedComplexPolygon polygon = Polygon;
@@ -16,7 +15,6 @@ public sealed class SDComplexPolygonInvertedContains(RelSimplifiedComplexPolygon
     public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
 }
 
-[SkipLocalsInit]
 public readonly struct SDPolygonWithHolesBase
 {
     private readonly RelSimplifiedComplexPolygon _polygon;
@@ -145,7 +143,6 @@ public readonly struct SDPolygonWithHolesBase
     }
 }
 
-[SkipLocalsInit]
 public sealed class SDPolygonWithHoles(SDPolygonWithHolesBase core) : ShapeDistance
 {
     private readonly SDPolygonWithHolesBase _core = core;
@@ -160,7 +157,6 @@ public sealed class SDPolygonWithHoles(SDPolygonWithHolesBase core) : ShapeDista
     public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
 }
 
-[SkipLocalsInit]
 public sealed class SDInvertedPolygonWithHoles(SDPolygonWithHolesBase core) : ShapeDistance
 {
     private readonly SDPolygonWithHolesBase _core = core;

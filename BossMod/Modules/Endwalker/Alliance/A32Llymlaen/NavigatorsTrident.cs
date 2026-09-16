@@ -3,7 +3,7 @@
 sealed class DireStraits(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(2)];
-    private static readonly AOEShapeRect _shape = new(40f, 40f);
+    private readonly AOEShapeRect _shape = new(40f, 40f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -51,7 +51,7 @@ sealed class NavigatorsTridentKnockback(BossModule module) : Components.GenericK
     private SerpentsTide? _serpentsTide = module.FindComponent<SerpentsTide>();
     private readonly List<Knockback> _sources = [with(2)];
 
-    private static readonly AOEShapeCone _shape = new(30f, 90f.Degrees());
+    private readonly AOEShapeCone _shape = new(30f, 90f.Degrees());
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => CollectionsMarshal.AsSpan(_sources);
 

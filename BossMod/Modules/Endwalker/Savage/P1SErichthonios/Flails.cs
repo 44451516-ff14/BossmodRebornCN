@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Savage.P1SErichthonios;
 
 // state related to [aether]flails mechanics
-class Flails : BossComponent
+sealed class Flails : BossComponent
 {
     public int NumCasts;
     private AOEShape? _first;
@@ -9,27 +9,27 @@ class Flails : BossComponent
     private bool _detectSecond;
     private bool _showSecond;
 
-    private static readonly AOEShape _aoeLeft = new AOEShapeCone(60, 135.Degrees(), 90.Degrees());
-    private static readonly AOEShape _aoeRight = new AOEShapeCone(60, 135.Degrees(), -90.Degrees());
-    private static readonly AOEShape _aoeInner = new AOEShapeCircle(P1S.InnerCircleRadius);
-    private static readonly AOEShape _aoeOuter = new AOEShapeDonut(P1S.InnerCircleRadius, 60);
+    private readonly AOEShape _aoeLeft = new AOEShapeCone(60f, 135f.Degrees(), 90f.Degrees());
+    private readonly AOEShape _aoeRight = new AOEShapeCone(60f, 135f.Degrees(), -90f.Degrees());
+    private readonly AOEShape _aoeInner = new AOEShapeCircle(P1S.InnerCircleRadius);
+    private readonly AOEShape _aoeOuter = new AOEShapeDonut(P1S.InnerCircleRadius, 60f);
 
     public Flails(BossModule module) : base(module)
     {
-        (_first, _second) = (AID)(Module.PrimaryActor.CastInfo?.Action.ID ?? 0) switch
+        (_first, _second) = (Module.PrimaryActor.CastInfo?.Action.ID ?? 0u) switch
         {
-            AID.GaolerFlailRL => (_aoeRight, _aoeLeft),
-            AID.GaolerFlailLR => (_aoeLeft, _aoeRight),
-            AID.GaolerFlailIO1 => (_aoeInner, _aoeOuter),
-            AID.GaolerFlailIO2 => (_aoeInner, _aoeOuter),
-            AID.GaolerFlailOI1 => (_aoeOuter, _aoeInner),
-            AID.GaolerFlailOI2 => (_aoeOuter, _aoeInner),
-            AID.AetherflailRX => (_aoeRight, null),
-            AID.AetherflailLX => (_aoeLeft, null),
-            AID.AetherflailIL => (_aoeInner, _aoeLeft),
-            AID.AetherflailIR => (_aoeInner, _aoeRight),
-            AID.AetherflailOL => (_aoeOuter, _aoeLeft),
-            AID.AetherflailOR => (_aoeOuter, _aoeRight),
+            (uint)AID.GaolerFlailRL => (_aoeRight, _aoeLeft),
+            (uint)AID.GaolerFlailLR => (_aoeLeft, _aoeRight),
+            (uint)AID.GaolerFlailIO1 => (_aoeInner, _aoeOuter),
+            (uint)AID.GaolerFlailIO2 => (_aoeInner, _aoeOuter),
+            (uint)AID.GaolerFlailOI1 => (_aoeOuter, _aoeInner),
+            (uint)AID.GaolerFlailOI2 => (_aoeOuter, _aoeInner),
+            (uint)AID.AetherflailRX => (_aoeRight, null),
+            (uint)AID.AetherflailLX => (_aoeLeft, null),
+            (uint)AID.AetherflailIL => (_aoeInner, _aoeLeft),
+            (uint)AID.AetherflailIR => (_aoeInner, _aoeRight),
+            (uint)AID.AetherflailOL => (_aoeOuter, _aoeLeft),
+            (uint)AID.AetherflailOR => (_aoeOuter, _aoeRight),
             _ => (null, null)
         };
 
@@ -37,7 +37,7 @@ class Flails : BossComponent
             ReportError("Failed to detect flail zones");
 
         _detectSecond = _first != null && _second == null;
-        _showSecond = _first is AOEShapeCone != _second is AOEShapeCone;
+        _showSecond = (_first is AOEShapeCone) != (_second is AOEShapeCone);
     }
 
     public override void Update()
@@ -80,20 +80,20 @@ class Flails : BossComponent
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.GaolerFlailR1:
-            case AID.GaolerFlailL1:
-            case AID.GaolerFlailI1:
-            case AID.GaolerFlailO1:
+            case (uint)AID.GaolerFlailR1:
+            case (uint)AID.GaolerFlailL1:
+            case (uint)AID.GaolerFlailI1:
+            case (uint)AID.GaolerFlailO1:
                 ++NumCasts;
                 _first = null;
                 _showSecond = true;
                 break;
-            case AID.GaolerFlailR2:
-            case AID.GaolerFlailL2:
-            case AID.GaolerFlailI2:
-            case AID.GaolerFlailO2:
+            case (uint)AID.GaolerFlailR2:
+            case (uint)AID.GaolerFlailL2:
+            case (uint)AID.GaolerFlailI2:
+            case (uint)AID.GaolerFlailO2:
                 ++NumCasts;
                 _second = null;
                 break;

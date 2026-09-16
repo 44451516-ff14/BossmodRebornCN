@@ -1,12 +1,12 @@
 ﻿namespace BossMod.Endwalker.Savage.P5SProtoCarbuncle;
 
-class VenomTowers(BossModule module) : BossComponent(module)
+sealed class VenomTowers(BossModule module) : BossComponent(module)
 {
     private readonly List<WDir> _activeTowerOffsets = [];
 
-    private const float _radius = 3; // not sure...
-    private const float _meleeOffset = 7;
-    private const float _rangedOffset = 11; // not sure...
+    private const float _radius = 3f; // not sure...
+    private const float _meleeOffset = 7f;
+    private const float _rangedOffset = 11f; // not sure...
 
     public bool Active => _activeTowerOffsets.Count > 0;
 

@@ -1,13 +1,13 @@
 ﻿namespace BossMod.Endwalker.Savage.P6SHegemone;
 
-class Synergy(BossModule module) : BossComponent(module)
+sealed class Synergy(BossModule module) : BossComponent(module)
 {
-    public bool Done { get; private set; }
+    public bool Done;
     private readonly Actor?[] _targets = [null, null]; // second target is for non-chelic synergy
     private bool _chelic;
 
-    private static readonly AOEShapeCircle _shapeNormal = new(5);
-    private static readonly AOEShapeCone _shapeChelic = new(60, 30.Degrees());
+    private readonly AOEShapeCircle _shapeNormal = new(5f);
+    private readonly AOEShapeCone _shapeChelic = new(60f, 30f.Degrees());
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -51,15 +51,15 @@ class Synergy(BossModule module) : BossComponent(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.SynergyAOE1:
+            case (uint)AID.SynergyAOE1:
                 _targets[0] = WorldState.Actors.Find(spell.TargetID);
                 break;
-            case AID.SynergyAOE2:
+            case (uint)AID.SynergyAOE2:
                 _targets[1] = WorldState.Actors.Find(spell.TargetID);
                 break;
-            case AID.ChelicSynergy:
+            case (uint)AID.ChelicSynergy:
                 _targets[0] = WorldState.Actors.Find(spell.TargetID);
                 _chelic = true;
                 break;
@@ -68,7 +68,7 @@ class Synergy(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.SynergyAOE1 or AID.SynergyAOE2 or AID.ChelicSynergy)
+        if (spell.Action.ID is (uint)AID.SynergyAOE1 or (uint)AID.SynergyAOE2 or (uint)AID.ChelicSynergy)
             Done = true;
     }
 }

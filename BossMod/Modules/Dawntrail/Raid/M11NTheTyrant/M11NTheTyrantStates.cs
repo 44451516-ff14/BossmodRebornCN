@@ -1,8 +1,8 @@
-namespace BossMod.Modules.Dawntrail.Raid.M11NTheTyrant;
+namespace BossMod.Dawntrail.Raid.M11NTheTyrant;
 
-sealed class M11TheTyrantStates : StateMachineBuilder
+sealed class M11NTheTyrantStates : StateMachineBuilder
 {
-    public M11TheTyrantStates(BossModule module) : base(module)
+    public M11NTheTyrantStates(BossModule module) : base(module)
     {
         TrivialPhase()
             .ActivateOnEnter<CrownOfArcadia>()

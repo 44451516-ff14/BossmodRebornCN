@@ -2,7 +2,7 @@
 
 sealed class TasteOfBloodAndDuelOrDie(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly AOEShape _tasteOfBloodShape = new AOEShapeCone(40, 90.Degrees());
+    private readonly AOEShape _tasteOfBloodShape = new AOEShapeCone(40f, 90f.Degrees());
     public readonly List<Actor> Casters = [];
     public readonly List<Actor> Duelers = [];
 

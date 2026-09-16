@@ -5,7 +5,7 @@ sealed class AkhMorn(BossModule module) : Components.GenericBaitAway(module, cen
     private DateTime _activation;
     private static readonly AOEShapeCircle circle = new(4f);
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_activation != default)
             hints.Add($"Tankbuster x{NumExpectedCasts()}");

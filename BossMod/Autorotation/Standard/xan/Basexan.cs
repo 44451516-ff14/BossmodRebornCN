@@ -1,63 +1,8 @@
-using BossMod.Data;
+﻿using BossMod.Data;
 using System.Diagnostics.CodeAnalysis;
 using static BossMod.AIHints;
 
 namespace BossMod.Autorotation.xan;
-
-[Renderer(typeof(TargetingRenderer))]
-public enum Targeting
-{
-    [Option("Use player's target")]
-    Manual,
-    [Option("Automatically pick best target for all actions")]
-    Auto,
-    [Option("Automatically pick best target; player target must be hit")]
-    AutoPrimary,
-    [Option("Automatically pick best target; if player has a target, hit it")]
-    AutoTryPri
-}
-
-[Renderer(typeof(OffensiveStrategyRenderer))]
-public enum OffensiveStrategy
-{
-    Automatic,
-    Delay,
-    Force
-}
-
-[Renderer(typeof(DefaultOnRenderer))]
-public enum EnabledByDefault
-{
-    Enabled,
-    Disabled
-}
-
-[Renderer(typeof(DefaultOffRenderer))]
-public enum DisabledByDefault
-{
-    Disabled,
-    Enabled
-}
-
-public enum AOEStrategy
-{
-    [Option("Use AOE rotation if beneficial")]
-    AOE,
-    [Option("Use single-target rotation")]
-    ST,
-    [Option("Always use AOE rotation, even on one target")]
-    ForceAOE,
-    [Option("Use single-target rotation; do not use ANY actions that can hit multiple targets")]
-    ForceST
-}
-
-public enum SharedTrack { Targeting, AOE, Buffs, Count }
-
-public interface IStrategyCommon
-{
-    public abstract Targeting Targeting { get; }
-    public abstract AOEStrategy AOE { get; }
-}
 
 public abstract class Attackxan<AID, TraitID, TValues>(RotationModuleManager manager, Actor player, PotionType potType = PotionType.None) : Basexan<AID, TraitID, TValues>(manager, player, potType)
     where AID : struct, Enum
@@ -160,10 +105,10 @@ public abstract class Basexan<AID, TraitID, TValues>(RotationModuleManager manag
     // override if some action requires specific runtime checks that aren't covered by the existing framework code
     protected virtual bool CanUse(AID action) => true;
 
-    protected void PushGCD<P>(AID aid, Actor? target, P priority, float delay = 0) where P : Enum
-        => PushGCD(aid, target, (int)(object)priority, delay);
+    protected void PushGCD<P>(AID aid, Actor? target, P priority, float delay = 0, bool setRotation = false) where P : Enum
+        => PushGCD(aid, target, (int)(object)priority, delay, setRotation);
 
-    protected void PushGCD<P>(AID aid, Enemy? target, P priority, float delay = 0, bool useOnDyingTarget = true) where P : Enum
+    protected void PushGCD<P>(AID aid, Enemy? target, P priority, float delay = 0, bool useOnDyingTarget = true, bool setRotation = false) where P : Enum
     {
         if (target?.Priority is Enemy.PriorityInvincible or Enemy.PriorityForbidden)
             return;
@@ -171,27 +116,29 @@ public abstract class Basexan<AID, TraitID, TValues>(RotationModuleManager manag
         if (!useOnDyingTarget && target?.Priority is Enemy.PriorityPointless)
             return;
 
-        PushGCD(aid, target?.Actor, (int)(object)priority, delay);
+        PushGCD(aid, target?.Actor, (int)(object)priority, delay, setRotation);
     }
 
-    protected void PushGCD(AID aid, Enemy? target, int priority = 2, float delay = 0) => PushGCD(aid, target?.Actor, priority, delay);
+    protected void PushGCD(AID aid, Enemy? target, int priority = 2, float delay = 0, bool setRotation = false) => PushGCD(aid, target?.Actor, priority, delay, setRotation);
 
-    protected void PushGCD(AID aid, Actor? target, int priority = 2, float delay = 0)
+    protected void PushGCD(AID aid, Actor? target, int priority = 2, float delay = 0, bool setRotation = false)
     {
         if (priority == 0)
             return;
 
-        if (PushAction(aid, target, ActionQueue.Priority.High + priority, delay) && priority > NextGCDPrio)
+        Angle? facing = setRotation && target is { } tar ? Player.AngleTo(tar) : null;
+
+        if (PushAction(aid, target, ActionQueue.Priority.High + priority, delay, facingAngle: facing) && priority > NextGCDPrio)
         {
             NextGCD = aid;
             NextGCDPrio = priority;
         }
     }
 
-    protected void PushOGCD<P>(AID aid, Actor? target, P priority, float delay = 0) where P : Enum
-        => PushOGCD(aid, target, (int)(object)priority, delay);
+    protected void PushOGCD<P>(AID aid, Actor? target, P priority, float delay = 0, bool setRotation = false) where P : Enum
+        => PushOGCD(aid, target, (int)(object)priority, delay, setRotation);
 
-    protected void PushOGCD<P>(AID aid, Enemy? target, P priority, float delay = 0, bool useOnDyingTarget = true) where P : Enum
+    protected void PushOGCD<P>(AID aid, Enemy? target, P priority, float delay = 0, bool useOnDyingTarget = true, bool setRotation = false) where P : Enum
     {
         if (target?.Priority is Enemy.PriorityInvincible or Enemy.PriorityForbidden)
             return;
@@ -199,40 +146,46 @@ public abstract class Basexan<AID, TraitID, TValues>(RotationModuleManager manag
         if (!useOnDyingTarget && target?.Priority is Enemy.PriorityPointless)
             return;
 
-        PushOGCD(aid, target?.Actor, (int)(object)priority, delay);
+        PushOGCD(aid, target?.Actor, (int)(object)priority, delay, setRotation);
     }
 
-    protected void PushOGCD(AID aid, Enemy? target, int priority = 1, float delay = 0) => PushOGCD(aid, target?.Actor, priority, delay);
+    protected void PushOGCD(AID aid, Enemy? target, int priority = 1, float delay = 0, bool setRotation = false) => PushOGCD(aid, target?.Actor, priority, delay, setRotation);
 
-    protected void PushOGCD(AID aid, Actor? target, int priority = 1, float delay = 0)
+    protected void PushOGCD(AID aid, Actor? target, int priority = 1, float delay = 0, bool setRotation = false)
     {
         if (priority == 0)
             return;
 
-        PushAction(aid, target, ActionQueue.Priority.Low + priority, delay);
+        Angle? facing = setRotation && target is { } tar ? Player.AngleTo(tar) : null;
+
+        PushAction(aid, target, ActionQueue.Priority.Low + priority, delay, facingAngle: facing);
     }
 
-    protected bool UsePlanned<T>(in Track<T> strategyTrack, AID action, Enemy? defaultTarget, float delay = 0, float additionalPriority = 0, bool forced = false, Func<Enemy?, bool>? predicate = null) where T : struct
+    protected bool UsePlanned<T>(in Track<T> strategyTrack, AID action, Enemy? defaultTarget, float delay = 0, float additionalPriority = 0, bool forced = false, Func<Enemy?, bool>? predicate = null, bool setRotation = false) where T : struct
     {
         var realTarget = ResolveEnemy(strategyTrack) ?? defaultTarget;
 
         if (predicate?.Invoke(realTarget) == false)
             return false;
 
-        return PushAction(action, realTarget?.Actor, strategyTrack.Priority() + additionalPriority, delay, forced);
+        Angle? facing = setRotation && realTarget is { Actor: var a } ? Player.AngleTo(a) : null;
+
+        return PushAction(action, realTarget?.Actor, strategyTrack.Priority() + additionalPriority, delay, forced, facingAngle: facing);
     }
 
-    protected bool UsePlanned<T>(in Track<T> strategyTrack, AID action, Actor? defaultTarget, float delay = 0, float additionalPriority = 0, bool forced = false, Func<Actor?, bool>? predicate = null) where T : struct
+    protected bool UsePlanned<T>(in Track<T> strategyTrack, AID action, Actor? defaultTarget, float delay = 0, float additionalPriority = 0, bool forced = false, Func<Actor?, bool>? predicate = null, bool setRotation = false) where T : struct
     {
         var realTarget = ResolveTarget(strategyTrack) ?? defaultTarget;
 
         if (predicate?.Invoke(realTarget) == false)
             return false;
 
-        return PushAction(action, realTarget, strategyTrack.Priority() + additionalPriority, delay, forced);
+        Angle? facing = setRotation && realTarget is { } a ? Player.AngleTo(a) : null;
+
+        return PushAction(action, realTarget, strategyTrack.Priority() + additionalPriority, delay, forced, facingAngle: facing);
     }
 
-    protected bool PushAction(AID aid, Actor? target, float priority, float delay, bool forced = false)
+    protected bool PushAction(AID aid, Actor? target, float priority, float delay, bool forced = false, Angle? facingAngle = null)
     {
         if ((uint)(object)aid == 0)
             return false;
@@ -252,7 +205,7 @@ public abstract class Basexan<AID, TraitID, TValues>(RotationModuleManager manag
 
         Vector3 targetPos = default;
 
-        if (def.AllowedTargets.HasFlag(ActionTargets.Area))
+        if ((def.AllowedTargets & ActionTargets.Area) != 0)
         {
             if (def.Range == 0)
                 targetPos = Player.PosRot.XYZ();
@@ -260,7 +213,7 @@ public abstract class Basexan<AID, TraitID, TValues>(RotationModuleManager manag
                 targetPos = target.PosRot.XYZ();
         }
 
-        Hints.ActionsToExecute.Push(ActionID.MakeSpell(aid), target, priority, delay: delay, targetPos: targetPos, castTime: GetSlidecastTime(aid), forced: forced);
+        Hints.ActionsToExecute.Push(ActionID.MakeSpell(aid), target, priority, delay: delay, targetPos: targetPos, castTime: GetSlidecastTime(aid), facingAngle: facingAngle, forced: forced);
         return true;
     }
 
@@ -318,16 +271,14 @@ public abstract class Basexan<AID, TraitID, TValues>(RotationModuleManager manag
         var targeting = strategy.Targeting;
         var aoe = strategy.AOE;
 
-        var targetOutOfCombat = primaryTarget?.Priority == Enemy.PriorityUndesirable;
-
         P targetPrio(Actor potentialTarget)
         {
             var numForbidden = 0;
-            var pottargets = Hints.PotentialTargets;
-            var count = pottargets.Count;
+            var forbiddentargets = Hints.ForbiddenTargetsSpan;
+            var count = forbiddentargets.Length;
             for (var i = 0; i < count; ++i)
             {
-                var enemy = pottargets[i];
+                var enemy = forbiddentargets[i];
                 if (isInAOE(potentialTarget, enemy.Actor))
                 {
                     ++numForbidden;
@@ -346,14 +297,23 @@ public abstract class Basexan<AID, TraitID, TValues>(RotationModuleManager manag
                 }
             }
 
-            var numTargets = targetOutOfCombat && numForbidden == 1 && numOk == 0
-                // primary target will be the only one hit by aoe so they are ok to target
-                ? 1
-                : numForbidden > 0
-                    // unwanted targets will be hit
-                    ? 0
-                    // wanted targets will be hit
-                    : numOk;
+            var isOutOfCombat = potentialTarget == primaryTarget?.Actor && primaryTarget?.Priority == Enemy.PriorityUndesirable;
+
+            int numTargets;
+
+            // manually selected target is out of combat and nobody else will be hit
+            if (isOutOfCombat && numForbidden == 1 && numOk == 0)
+                numTargets = 1;
+
+            // forbidden target will be hit
+            else if (numForbidden > 0)
+                numTargets = 0;
+
+            // for player-sourced targeted AOEs, the action is hardcoded to hit the main target
+            // this means that even if the primary target technically isn't in the shape (e.g. MCH chainsaw, at maximum range, is 0.5 units too short to hit the targeted mob) it will still be counted
+            // for all other targets, the server checks based on our rotation and position at snapshot time (yes, seriously)
+            else
+                numTargets = Math.Max(1, numOk);
 
             return prioritize(AdjustNumTargets(aoe, numTargets), potentialTarget);
         }
@@ -434,7 +394,7 @@ public abstract class Basexan<AID, TraitID, TValues>(RotationModuleManager manag
     protected void GoalZoneSingle(float range)
     {
         if (PlayerTarget != null)
-            Hints.GoalZones.Add(GoalSingleTarget(PlayerTarget.Actor, range));
+            Hints.GoalZones.Add(Hints.GoalSingleTarget(PlayerTarget.Actor, Player, World.Actors, range));
     }
 
     protected void GoalZoneCombined(in IStrategyCommon strategy, float range, Func<WPos, float> fAoe, AID firstUnlockedAoeAction, int minAoe, float? maximumActionRange = null)
@@ -452,9 +412,9 @@ public abstract class Basexan<AID, TraitID, TValues>(RotationModuleManager manag
         }
         else
         {
-            Hints.GoalZones.Add(GoalCombined(GoalSingleTarget(PlayerTarget.Actor, imminent ? positional : Positional.Any, range), fAoe, minAoe));
+            Hints.GoalZones.Add(GoalCombined(Hints.GoalSingleTarget(PlayerTarget.Actor, imminent ? positional : Positional.Any, Player, World.Actors, range), fAoe, minAoe));
             if (maximumActionRange is float r)
-                Hints.GoalZones.Add(GoalSingleTarget(PlayerTarget.Actor, r, 0.5f));
+                Hints.GoalZones.Add(Hints.GoalSingleTarget(PlayerTarget.Actor, Player, World.Actors, r, 0.5f));
         }
     }
 
@@ -472,8 +432,8 @@ public abstract class Basexan<AID, TraitID, TValues>(RotationModuleManager manag
             _ => 0
         };
 
-    protected PositionCheck IsSplashTarget => (primary, other) => TargetInAOECircle(other, primary.Position, 5f);
-    protected PositionCheck Is25yRectTarget => (primary, other) => TargetInAOERect(other, Player.Position, Player.DirectionTo(primary), 25f, 2f);
+    protected PositionCheck IsSplashTarget => (primary, other) => TargetInAOECircle(other, primary.Position, 5);
+    protected PositionCheck Is25yRectTarget => (primary, other) => TargetInAOERect(other, Player.Position, Player.DirectionTo(primary), 25, 2);
 
     /// <summary>
     /// Get <em>effective</em> cast time for the provided action.<br/>
@@ -526,6 +486,7 @@ public abstract class Basexan<AID, TraitID, TValues>(RotationModuleManager manag
             // enemy is targeting us and is not busy casting, so we assume they will turn to face the player
             // (excluding striking dummies, which don't move)
             || target is { TargetID: var t, CastInfo: null, IsStrikingDummy: false } && t == Player.InstanceID
+            || enemy?.Priority < 0
         )
             positional = (Positional.Any, false);
 
@@ -546,7 +507,7 @@ public abstract class Basexan<AID, TraitID, TValues>(RotationModuleManager manag
     [SuppressMessage("Security", "CA5394:Do not use insecure randomness", Justification = "determinism is intentional here")]
     private void PretendCountdown()
     {
-        if (CountdownRemaining == null)
+        if (CountdownRemaining == null || Player.InCombat)
         {
             _cdLockout = DateTime.MinValue;
             _prevCountdown = null;
@@ -677,11 +638,11 @@ static class Extendxan
 
     public static RotationModuleDefinition DefineSharedTA(this RotationModuleDefinition def)
     {
-        def.Define(SharedTrack.Targeting).As<Targeting>("目标选择", uiPriority: 500, renderer: typeof(TargetingRenderer))
-            .AddOption(xan.Targeting.Manual, "Use player's current target for all actions")
-            .AddOption(xan.Targeting.Auto, "Automatically select best target (highest number of nearby targets) for AOE actions")
-            .AddOption(xan.Targeting.AutoPrimary, "Automatically select best target for AOE actions - ensure player target is hit")
-            .AddOption(xan.Targeting.AutoTryPri, "Automatically select best target for AOE actions - if player has a target, ensure that target is hit");
+        def.Define(SharedTrack.Targeting).As<Targeting>("Targeting", uiPriority: 500, renderer: typeof(TargetingRenderer))
+            .AddOption(Autorotation.Targeting.Manual, "所有技能使用玩家当前目标")
+            .AddOption(Autorotation.Targeting.Auto, "自动为 AOE 技能选择最佳目标（附近目标最多）")
+            .AddOption(Autorotation.Targeting.AutoPrimary, "自动为 AOE 技能选择最佳目标，并确保命中玩家当前目标")
+            .AddOption(Autorotation.Targeting.AutoTryPri, "自动为 AOE 技能选择最佳目标；若玩家有目标，确保命中该目标");
 
         def.Define(SharedTrack.AOE).As<AOEStrategy>("AOE", uiPriority: 499)
             .AddOption(AOEStrategy.AOE, "Use AOE rotation if beneficial")
@@ -696,8 +657,8 @@ static class Extendxan
     {
         return def.Define(track).As<OffensiveStrategy>(name, displayName, uiPriority: uiPriority, renderer: renderer ?? typeof(OffensiveStrategyRenderer))
             .AddOption(OffensiveStrategy.Automatic, "Use when optimal", minLevel: minLevel)
-            .AddOption(OffensiveStrategy.Delay, "不要使用", minLevel: minLevel)
-            .AddOption(OffensiveStrategy.Force, "尽快使用", minLevel: minLevel);
+            .AddOption(OffensiveStrategy.Delay, "Don't use", minLevel: minLevel)
+            .AddOption(OffensiveStrategy.Force, "Use ASAP", minLevel: minLevel);
     }
 
     public static AOEStrategy AOE(this StrategyValues strategy) => strategy.Option(SharedTrack.AOE).As<AOEStrategy>();

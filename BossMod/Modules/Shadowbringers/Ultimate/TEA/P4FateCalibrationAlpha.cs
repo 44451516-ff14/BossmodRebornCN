@@ -1,13 +1,12 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-[SkipLocalsInit]
 sealed class P4FateCalibrationAlphaStillnessMotion(BossModule module) : Components.StayMove(module)
 {
     public int NumCasts;
     private Requirement _first;
     private Requirement _second;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_first != Requirement.None)
             hints.Add($"Movement: {_first} -> {(_second != Requirement.None ? _second.ToString() : "???")}");
@@ -50,7 +49,6 @@ sealed class P4FateCalibrationAlphaStillnessMotion(BossModule module) : Componen
     }
 }
 
-[SkipLocalsInit]
 sealed class P4FateCalibrationAlphaDebuffs(BossModule module) : Components.UniformStackSpread(module, 4f, 30f, 3)
 {
     public enum Debuff { None, Defamation, SharedSentence, AggravatedAssault }
@@ -98,13 +96,12 @@ sealed class P4FateCalibrationAlphaDebuffs(BossModule module) : Components.Unifo
     }
 }
 
-[SkipLocalsInit]
 sealed class P4FateCalibrationAlphaSacrament(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<(Actor caster, DateTime activation)> _casters = [];
     private WPos[]? _safespots;
 
-    private static readonly AOEShapeCross _shape = new(100f, 8f);
+    private readonly AOEShapeCross _shape = new(100f, 8f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

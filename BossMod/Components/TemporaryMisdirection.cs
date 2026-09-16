@@ -1,7 +1,6 @@
 namespace BossMod.Components;
 
 // generic temporary misdirection component
-[SkipLocalsInit]
 public abstract class TemporaryMisdirection(BossModule module, uint aid, string hint = "Applies temporary misdirection") : CastHint(module, aid, hint)
 {
     private BitMask mask;
@@ -32,7 +31,6 @@ public abstract class TemporaryMisdirection(BossModule module, uint aid, string 
 }
 
 // component for Spinning mechanic
-[SkipLocalsInit]
 public abstract class Spinning(BossModule module, uint aid, bool createforbiddenzones = true, uint statusID = 2973u, string hint = "Applies spinning") : CastHint(module, aid, hint)
 {
     internal BitMask mask;

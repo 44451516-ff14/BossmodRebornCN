@@ -1,6 +1,5 @@
 namespace BossMod;
 
-[SkipLocalsInit]
 public sealed class SDKnockbackTowardsOriginPlusAOECirclesPlusAABBSquareIntersection(WPos Center, float Distance, WPos[] AOEs, float Radius, WPos CenterTile, float TileHalfWidth, int Length) : ShapeDistance
 {
     private readonly WPos center = Center;

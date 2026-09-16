@@ -20,7 +20,7 @@ sealed class InvocationOfVengeance(BossModule module) : Components.UniformStackS
     private DateTime _spreadResolve;
     private DateTime _stackResolve;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_spreadResolve == default || _stackResolve == default)
             return;

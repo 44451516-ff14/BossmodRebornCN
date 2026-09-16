@@ -10,7 +10,7 @@
 // 4. at the same time, all players get 12s penance debuff, which is a deadline to resolve
 // 5. right after that, boss starts casting visual cast - at this point we start showing the mechanic
 // 5. penance expires and is replaced with 9s shackles debuff, this happens right before cast end
-class OrdealOfPurgation(BossModule module) : Components.GenericAOEs(module)
+sealed class OrdealOfPurgation(BossModule module) : Components.GenericAOEs(module)
 {
     public enum Symbol { Unknown, Tri, Sq }
 
@@ -22,8 +22,8 @@ class OrdealOfPurgation(BossModule module) : Components.GenericAOEs(module)
     private readonly Symbol[] _symbols = new Symbol[8];
     private readonly List<AOEInstance> _aoes = [with(2)];
 
-    private static readonly AOEShapeCone _shapeTri = new(60f, 30f.Degrees());
-    private static readonly AOEShapeRect _shapeSq = new(20f, 40f);
+    private readonly AOEShapeCone _shapeTri = new(60f, 30f.Degrees());
+    private readonly AOEShapeRect _shapeSq = new(20f, 40f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

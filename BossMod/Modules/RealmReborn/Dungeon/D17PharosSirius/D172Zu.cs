@@ -66,7 +66,6 @@ sealed class NoKillEggs1(BossModule module) : Components.AddsPointless(module, (
     public override void DrawArenaForeground(int pcSlot, Actor pc) { }
 }
 
-[SkipLocalsInit]
 sealed class ZuStates : StateMachineBuilder
 {
     public ZuStates(BossModule module) : base(module)
@@ -100,7 +99,6 @@ sealed class ZuStates : StateMachineBuilder
     NameID = 2259u,
     SortOrder = 2,
     PlanLevel = 0)]
-[SkipLocalsInit]
 // technically arena center is (0, 90, 0) if you want to visit in hyperborea. It is an irregular shape that can go out to 22.
 public sealed class D172Zu : BossModule
 {

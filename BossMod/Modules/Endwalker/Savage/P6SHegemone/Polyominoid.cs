@@ -5,7 +5,7 @@
 // 4  5  6  7
 // 8  9  A  B
 // C  D  E  F
-class Polyominoid(BossModule module) : Components.GenericAOEs(module, (uint)AID.PolyominousDark)
+sealed class Polyominoid(BossModule module) : Components.GenericAOEs(module, (uint)AID.PolyominousDark)
 {
     public enum State { None, Plus, Cross }
 
@@ -14,7 +14,7 @@ class Polyominoid(BossModule module) : Components.GenericAOEs(module, (uint)AID.
     private BitMask _dangerCells;
     private bool _dangerDirty;
 
-    private static readonly AOEShape _shape = new AOEShapeRect(5f, 5f, 5f);
+    private readonly AOEShape _shape = new AOEShapeRect(5f, 5f, 5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -115,10 +115,10 @@ class Polyominoid(BossModule module) : Components.GenericAOEs(module, (uint)AID.
             //case 0x00080004:
             //    _states[square] = State.None;
             //    break;
-            case 0x00020001: // +
+            case 0x00020001u: // +
                 _states[square] = State.Plus;
                 break;
-            case 0x00400020: // x
+            case 0x00400020u: // x
                 _states[square] = State.Cross;
                 break;
         }
@@ -127,9 +127,9 @@ class Polyominoid(BossModule module) : Components.GenericAOEs(module, (uint)AID.
 
     private static int CoordinateToIndex(float c) => c switch
     {
-        < 90 => 0,
-        < 100 => 1,
-        < 110 => 2,
+        < 90f => 0,
+        < 100f => 1,
+        < 110f => 2,
         _ => 3
     };
     private static int PositionToIndex(WPos pos) => CoordinateToIndex(pos.Z) * 4 + CoordinateToIndex(pos.X);

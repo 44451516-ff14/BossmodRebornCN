@@ -25,7 +25,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     private bool active;
     private AOEInstance[] _aoe = [];
     public bool Repaired => polygons.Count == 5;
-    private static readonly AOEShapeCircle circle = new(8f);
+    private readonly AOEShapeCircle circle = new(8f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
@@ -40,10 +40,10 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
                     break;
                 case 0x00020001u:
                     _aoe = [];
-                    Arena.Bounds = M08SHowlingBlade.DonutArena;
+                    Arena.Bounds = new ArenaBoundsCustom(M08SHowlingBlade.GetStartingArenaPolygon(), [new Polygon(Arena.Center, 8f, 40)]) { Y = 0f, BorderY = 0f };
                     break;
                 case 0x00080004u:
-                    Arena.Bounds = M08SHowlingBlade.StartingArena;
+                    Arena.Bounds = M08SHowlingBlade.BuildArena().arena;
                     break;
             }
         }
@@ -54,16 +54,13 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
                 polygons.Add(pillarPolygons[index - 0x10]);
                 if (polygons.Count == 2)
                 {
-                    var arena = new ArenaBoundsCustom(M08SHowlingBlade.StartingArenaPolygon, [.. polygons]);
-                    Arena.Bounds = arena;
-                    Arena.Center = arena.Center;
+                    Arena.Bounds = new ArenaBoundsCustom(M08SHowlingBlade.GetStartingArenaPolygon(), [.. polygons]);
                 }
             }
-            else if (state is 0x04000004u or 0x00200004u && Arena.Bounds != M08SHowlingBlade.StartingArena)
+            else if (state is 0x04000004u or 0x00200004u && Arena.Bounds.GetVerticeCount() != 40) // pillar arena got 72 vertices, check avoids generating the arena twice
             {
                 polygons.Clear();
-                Arena.Bounds = M08SHowlingBlade.StartingArena;
-                Arena.Center = M08SHowlingBlade.ArenaCenter;
+                Arena.Bounds = M08SHowlingBlade.BuildArena().arena;
             }
         }
         else if (index is >= 0x16 and <= 0x1A)
@@ -75,7 +72,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
                 activePlatforms[i] = true;
                 if (polygons.Count == 5)
                 {
-                    var arena = new ArenaBoundsCustom([.. polygons]);
+                    var arena = new ArenaBoundsCustom([.. polygons]) { Y = -150f, BorderY = -150f };
                     Arena.Bounds = arena;
                     Arena.Center = arena.Center;
                     active = true;
@@ -88,10 +85,10 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
                 activePlatforms[i] = false;
                 if (polygons.Count == 0)
                 {
-                    Arena.Bounds = M08SHowlingBlade.StartingArena;
+                    Arena.Bounds = M08SHowlingBlade.BuildArena().arena;
                     return;
                 }
-                var arena = new ArenaBoundsCustom([.. polygons]);
+                var arena = new ArenaBoundsCustom([.. polygons]) { Y = -150f, BorderY = -150f };
                 Arena.Bounds = arena;
                 Arena.Center = arena.Center;
             }
@@ -114,23 +111,24 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 
     private static Angle[] CalculateAngles()
     {
-        Span<Angle> platformAngles = stackalloc Angle[5];
+        var platformAngles = new Angle[5];
         var angle = -72f.Degrees();
         for (var i = 0; i < 5; ++i)
         {
             platformAngles[i] = angle * i;
         }
-        return [.. platformAngles];
+        return platformAngles;
     }
 
     private static WPos[] CalculateNumberPositions()
     {
-        Span<WPos> positions = stackalloc WPos[5];
+        var positions = new WPos[5];
+        var center = new WPos(100f, 100f);
         for (var i = 0; i < 5; ++i)
         {
-            positions[i] = M08SHowlingBlade.ArenaCenter + 7f * PlatformAngles[i].ToDirection();
+            positions[i] = center + 7f * PlatformAngles[i].ToDirection();
         }
-        return [.. positions];
+        return positions;
     }
 }
 
@@ -144,7 +142,7 @@ sealed class Teleporters(BossModule module) : BossComponent(module)
 
     private static WPos[] CalculateTeleporterPositions()
     {
-        Span<WPos> positions = stackalloc WPos[10];
+        var positions = new WPos[10];
         var index = 0;
         for (var i = 0; i < 5; ++i)
         {
@@ -153,7 +151,7 @@ sealed class Teleporters(BossModule module) : BossComponent(module)
             positions[index++] = ArenaChanges.EndArenaPlatforms[i].Center + 6f * (zero ? -120f : 120f + angle).Degrees().ToDirection();
             positions[zero ? 9 : index++] = ArenaChanges.EndArenaPlatforms[i].Center + 6f * (zero ? 120f : -120f + angle).Degrees().ToDirection();
         }
-        return [.. positions];
+        return positions;
     }
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Alliance.A14Naldthal;
 
-class FortuneFluxOrder(BossModule module) : BossComponent(module)
+sealed class FortuneFluxOrder(BossModule module) : BossComponent(module)
 {
     public enum Mechanic { None, AOE, Knockback }
 
@@ -10,20 +10,24 @@ class FortuneFluxOrder(BossModule module) : BossComponent(module)
     private Mechanic _currentMechanic;
     private DateTime activation;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var orderBuilder = new StringBuilder();
         var count = Mechanics.Count;
         for (var i = NumComplete; i < count; ++i)
         {
             if (i > NumComplete)
+            {
                 orderBuilder.Append(" > ");
+            }
             orderBuilder.Append(Mechanics[i].mechanic);
         }
 
         var order = orderBuilder.ToString();
         if (order.Length != 0)
+        {
             hints.Add($"Order: {order}");
+        }
     }
 
     public override void OnTethered(Actor source, in ActorTetherInfo tether)
@@ -75,8 +79,10 @@ class FortuneFluxOrder(BossModule module) : BossComponent(module)
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.FortuneFluxAOE1 or (uint)AID.FortuneFluxAOE2 or (uint)AID.FortuneFluxAOE3 or (uint)AID.FortuneFluxKnockback1
-        or (uint)AID.FortuneFluxKnockback2 or (uint)AID.FortuneFluxKnockback3)
+            or (uint)AID.FortuneFluxKnockback2 or (uint)AID.FortuneFluxKnockback3)
+        {
             ++NumComplete;
+        }
     }
 
     private void TryAdd()
@@ -84,7 +90,9 @@ class FortuneFluxOrder(BossModule module) : BossComponent(module)
         if (_currentTethered != null && _currentMechanic != Mechanic.None)
         {
             if (activation == default)
+            {
                 activation = WorldState.FutureTime(100d);
+            }
             Mechanics.Add((_currentTethered.Position, _currentMechanic, activation, _currentTethered.Rotation));
             _currentTethered = null;
             _currentMechanic = Mechanic.None;
@@ -120,11 +128,11 @@ class FortuneFluxOrder(BossModule module) : BossComponent(module)
     }
 }
 
-class FortuneFluxAOE(BossModule module) : Components.GenericAOEs(module)
+sealed class FortuneFluxAOE(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly FortuneFluxOrder? _order = module.FindComponent<FortuneFluxOrder>();
 
-    private static readonly AOEShapeCircle _shape = new(20f);
+    private readonly AOEShapeCircle _shape = new(20f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -155,10 +163,10 @@ class FortuneFluxAOE(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class FortuneFluxKnockback(BossModule module) : Components.GenericKnockback(module)
+sealed class FortuneFluxKnockback(BossModule module) : Components.GenericKnockback(module)
 {
     private readonly FortuneFluxOrder? _order = module.FindComponent<FortuneFluxOrder>();
-    private static readonly Angle a45 = 45f.Degrees(), a180 = 180f.Degrees();
+    private readonly Angle a45 = 45f.Degrees(), a180 = 180f.Degrees();
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {

@@ -3,8 +3,8 @@
 sealed class OnmyoSerpentEyeSigil(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance[] _aoe = [];
-    private static readonly AOEShapeDonut donut = new(7f, 30f);
-    private static readonly AOEShapeCircle circle = new(12f);
+    private readonly AOEShapeDonut donut = new(7f, 30f);
+    private readonly AOEShapeCircle circle = new(12f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
@@ -18,7 +18,7 @@ sealed class OnmyoSerpentEyeSigil(BossModule module) : Components.GenericAOEs(mo
         };
         if (shape != null)
         {
-            _aoe = [new(shape, actor.Position.Quantized(), default, WorldState.FutureTime(5.6d))];
+            _aoe = [new(shape, actor.Position.Quantized(), default, WorldState.FutureTime(5.6d), restrictToArenaProjectionLayer: null)];
         }
     }
 

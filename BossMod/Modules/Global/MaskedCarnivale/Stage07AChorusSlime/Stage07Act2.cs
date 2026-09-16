@@ -55,14 +55,6 @@ sealed class SlimeExplosion(BossModule module) : Components.GenericStackSpread(m
     }
 }
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add("Pull or push the Lava Slimes to the Ice Sprites and then hit the slimes\nfrom a distance to set of the explosions.");
-    }
-}
-
 sealed class Stage07Act2States : StateMachineBuilder
 {
     public Stage07Act2States(BossModule module) : base(module)
@@ -72,12 +64,11 @@ sealed class Stage07Act2States : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 617, NameID = 8094, SortOrder = 2)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 617u, NameID = 8094u, SortOrder = 2)]
 public sealed class Stage07Act2 : BossModule
 {
     public Stage07Act2(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.Layout4Quads)
     {
-        ActivateComponent<Hints>();
         ActivateComponent<SlimeExplosion>();
     }
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.Sprite];
@@ -89,4 +80,11 @@ public sealed class Stage07Act2 : BossModule
         Arena.Actors(Enemies((uint)OID.Boss));
         Arena.Actors(Enemies((uint)OID.Sprite));
     }
+
+    private readonly string[] _prePullHints =
+    [
+        "Pull or push the Lava Slimes to the Ice Sprites and then hit the slimes from a distance to set of the explosions."
+    ];
+
+    public override string[] PrePullHints => _prePullHints;
 }

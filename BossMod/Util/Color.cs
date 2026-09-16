@@ -4,7 +4,6 @@ using System.Text.Json.Serialization;
 namespace BossMod;
 
 [JsonConverter(typeof(JsonColorConverter))]
-[SkipLocalsInit]
 public readonly struct Color(uint abgr)
 {
     public readonly uint ABGR = abgr;
@@ -33,7 +32,6 @@ public readonly struct Color(uint abgr)
     public readonly Vector4 ToFloat4() => new Vector4(R, G, B, A) * ToFloat;
 }
 
-[SkipLocalsInit]
 public class JsonColorConverter : JsonConverter<Color>
 {
     public override Color Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -45,7 +43,6 @@ public class JsonColorConverter : JsonConverter<Color>
     public override void Write(Utf8JsonWriter writer, Color value, JsonSerializerOptions options) => writer.WriteStringValue($"#{value.ToRGBA():X8}");
 }
 
-[SkipLocalsInit]
 public static class Colors
 {
     private static readonly ColorConfig _config = Service.Config.Get<ColorConfig>();

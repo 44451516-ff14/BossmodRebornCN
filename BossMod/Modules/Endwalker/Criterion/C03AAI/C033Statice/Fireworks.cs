@@ -1,13 +1,15 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C03AAI.C033Statice;
 
-class Fireworks(BossModule module) : Components.UniformStackSpread(module, 3f, 20f, 2, 2)
+sealed class Fireworks(BossModule module) : Components.UniformStackSpread(module, 3f, 20f, 2, 2)
 {
     public Actor?[] TetheredAdds = new Actor?[4];
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (TetheredAdds[slot] is var add && add != null)
+        {
             hints.Add($"Tether: {(add.OID is (uint)OID.NSurprisingMissile or (uint)OID.SSurprisingMissile ? "missile" : "claw")}", false);
+        }
         base.AddHints(slot, actor, hints);
     }
 
@@ -24,7 +26,9 @@ class Fireworks(BossModule module) : Components.UniformStackSpread(module, 3f, 2
     public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.Follow && Raid.FindSlot(tether.Target) is var slot && slot >= 0 && slot < TetheredAdds.Length)
+        {
             TetheredAdds[slot] = source;
+        }
     }
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
@@ -56,7 +60,7 @@ class Fireworks(BossModule module) : Components.UniformStackSpread(module, 3f, 2
     }
 }
 
-class BurningChains(BossModule module) : BossComponent(module)
+sealed class BurningChains(BossModule module) : BossComponent(module)
 {
     private BitMask _chains;
 
@@ -65,7 +69,9 @@ class BurningChains(BossModule module) : BossComponent(module)
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (_chains[slot])
+        {
             hints.Add("Break chains!");
+        }
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
@@ -74,24 +80,30 @@ class BurningChains(BossModule module) : BossComponent(module)
         {
             var partner = Raid[_chains.WithoutBit(pcSlot).LowestSetBit()];
             if (partner != null)
+            {
                 Arena.AddLine(pc.Position, partner.Position, Colors.Safe, 1f);
+            }
         }
     }
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.BurningChains)
-            _chains[Raid.FindSlot(actor.InstanceID)] = true;
+        {
+            _chains.Set(Raid.FindSlot(actor.InstanceID));
+        }
     }
 
     public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.BurningChains)
-            _chains[Raid.FindSlot(actor.InstanceID)] = false;
+        {
+            _chains.Clear(Raid.FindSlot(actor.InstanceID));
+        }
     }
 }
 
-class FireSpread(BossModule module) : Components.GenericAOEs(module)
+sealed class FireSpread(BossModule module) : Components.GenericAOEs(module)
 {
     public struct Sequence
     {
@@ -103,7 +115,7 @@ class FireSpread(BossModule module) : Components.GenericAOEs(module)
     public List<Sequence> Sequences = [];
     private Angle _rotation;
 
-    private static readonly AOEShapeRect _shape = new(20f, 2.5f, -8f);
+    private readonly AOEShapeRect _shape = new(20f, 2.5f, -8f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -188,7 +200,7 @@ class FireSpread(BossModule module) : Components.GenericAOEs(module)
 }
 
 // TODO: assign spread safespots based on initial missile position
-class Fireworks1Hints(BossModule module) : BossComponent(module)
+sealed class Fireworks1Hints(BossModule module) : BossComponent(module)
 {
     private readonly RingARingOExplosions? _bombs = module.FindComponent<RingARingOExplosions>();
     private readonly Fireworks? _fireworks = module.FindComponent<Fireworks>();
@@ -269,7 +281,7 @@ class Fireworks1Hints(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_pattern.Any())
             hints.Add($"Pattern: {_pattern}");
@@ -293,7 +305,7 @@ class Fireworks1Hints(BossModule module) : BossComponent(module)
     private void AddSafeSpot(List<WPos> list, Angle angle) => list.Add(Arena.Center + 19f * angle.ToDirection());
 }
 
-class Fireworks2Hints(BossModule module) : BossComponent(module)
+sealed class Fireworks2Hints(BossModule module) : BossComponent(module)
 {
     private readonly C033SStaticeConfig _config = Service.Config.Get<C033SStaticeConfig>();
     private readonly Fireworks? _fireworks = module.FindComponent<Fireworks>();

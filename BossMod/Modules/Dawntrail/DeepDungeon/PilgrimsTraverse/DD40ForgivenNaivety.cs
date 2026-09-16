@@ -1,4 +1,4 @@
-namespace BossMod.Endwalker.DeepDungeon.PilgrimsTraverse.DD40ForgivenNaivety;
+namespace BossMod.Dawntrail.DeepDungeon.PilgrimsTraverse.DD40ForgivenNaivety;
 
 public enum OID : uint
 {
@@ -33,14 +33,10 @@ public enum AID : uint
     SelfDestruct = 43290 // ForgivenAdulation->self, no cast, range 40 circle
 }
 
-[SkipLocalsInit]
 sealed class Chaser(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Chaser1, (uint)AID.Chaser2], 5f);
-[SkipLocalsInit]
 sealed class NearTide(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NearTide, 13f);
-[SkipLocalsInit]
 sealed class FarTide(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FarTide, new AOEShapeDonut(8f, 60f));
 
-[SkipLocalsInit]
 sealed class ShiningShot : Components.SimpleAOEs
 {
     public ShiningShot(BossModule module) : base(module, (uint)AID.ShiningShot, 20f, 2)
@@ -49,7 +45,6 @@ sealed class ShiningShot : Components.SimpleAOEs
     }
 }
 
-[SkipLocalsInit]
 sealed class SaltwaterShot(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.SaltwaterShot, 21f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -81,7 +76,6 @@ sealed class SaltwaterShot(BossModule module) : Components.SimpleKnockbacks(modu
     }
 }
 
-[SkipLocalsInit]
 sealed class DD40ForgivenNaivetyStates : StateMachineBuilder
 {
     public DD40ForgivenNaivetyStates(BossModule module) : base(module)
@@ -95,24 +89,7 @@ sealed class DD40ForgivenNaivetyStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
-StatesType = typeof(DD40ForgivenNaivetyStates),
-ConfigType = null,
-ObjectIDType = typeof(OID),
-ActionIDType = typeof(AID),
-StatusIDType = null,
-TetherIDType = null,
-IconIDType = null,
-PrimaryActorOID = (uint)OID.ForgivenNaivety,
-Contributors = "The Combat Reborn Team (Malediktus)",
-Expansion = BossModuleInfo.Expansion.Dawntrail,
-Category = BossModuleInfo.Category.DeepDungeon,
-GroupType = BossModuleInfo.GroupType.CFC,
-GroupID = 1035u,
-NameID = 13977u,
-SortOrder = 1,
-PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.ForgivenNaivety, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1035u, NameID = 13977u)]
 public sealed class DD40ForgivenNaivety : BossModule
 {
     private static readonly WPos arenaCenter = new(-600f, -300f);

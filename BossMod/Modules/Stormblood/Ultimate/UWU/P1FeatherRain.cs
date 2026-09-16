@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UWU;
 
 // predict puddles under all players until actual casts start
-class P1FeatherRain(BossModule module) : Components.GenericAOEs(module, (uint)AID.FeatherRain)
+sealed class P1FeatherRain(BossModule module) : Components.GenericAOEs(module, (uint)AID.FeatherRain)
 {
     private readonly List<WPos> _predicted = [with(8)];
     private readonly List<AOEInstance> _aoes = [with(8)];

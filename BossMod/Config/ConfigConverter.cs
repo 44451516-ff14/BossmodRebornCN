@@ -84,7 +84,7 @@ public static class ConfigConverter
                         continue;
                     }
 
-                    var c = Enum.Parse<Class>(cls);
+                    var c = GeneratedEnumMetadata.Parse<Class>(cls);
                     foreach (var plan in avail)
                     {
                         if (plan?["PlanAbilities"] is not JsonObject abilities)
@@ -169,9 +169,9 @@ public static class ConfigConverter
 
         var defaults = ColorConfig.DefaultConfig;
         var serializationOptions = Serialization.BuildSerializationOptions();
-        foreach (var field in typeof(ColorConfig).GetFields())
+        foreach (var field in GeneratedConfigMetadata.Get<ColorConfig>().Fields)
         {
-            if (field.FieldType != typeof(Color[]) || field.GetValue(defaults) is not Color[] defaultColors || config[field.Name] is not JsonArray configuredColors)
+            if (field.FieldType != typeof(Color[]) || field.Getter(defaults) is not Color[] defaultColors || config[field.Name] is not JsonArray configuredColors)
             {
                 continue;
             }
@@ -226,7 +226,7 @@ public static class ConfigConverter
             }
 
             var t = ct[..^6];
-            var type = Type.GetType(t);
+            var moduleInfo = BossModuleRegistry.FindByTypeName(t);
             manifest.WriteStartObject(t);
             foreach (var (cls, plans) in cdplans!.AsObject())
             {
@@ -258,7 +258,7 @@ public static class ConfigConverter
                     jplan.WriteString("Name", plan!["Name"]!.GetValue<string>());
                     jplan.WriteString("Encounter", t);
                     jplan.WriteString("Class", cls);
-                    jplan.WriteNumber("Level", type != null ? BossModuleRegistry.FindByType(type)?.PlanLevel ?? 0 : 0);
+                    jplan.WriteNumber("Level", moduleInfo?.PlanLevel ?? 0);
                     jplan.WriteStartArray("PhaseDurations");
                     foreach (var d in plan["Timings"]!["PhaseDurations"]!.AsArray())
                     {

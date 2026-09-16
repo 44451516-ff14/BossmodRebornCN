@@ -4,7 +4,7 @@
 // when small birds die and large birds appear, they cast 26328, and if it hits any other large bird, they buff
 // when large birds die and sparkfledgeds appear, they cast 26329, and if it hits any other sparkfledged, they wipe the raid or something
 // so we show range helper for dead birds
-class BirdDistance(BossModule module, uint watchedBirdsID) : BossComponent(module)
+abstract class BirdDistance(BossModule module, uint watchedBirdsID) : BossComponent(module)
 {
     private readonly uint _watchedBirdsID = watchedBirdsID;
     private BitMask _birdsAtRisk;
@@ -58,5 +58,5 @@ class BirdDistance(BossModule module, uint watchedBirdsID) : BossComponent(modul
     }
 }
 
-class SmallBirdDistance(BossModule module) : BirdDistance(module, (uint)OID.SunbirdSmall);
-class LargeBirdDistance(BossModule module) : BirdDistance(module, (uint)OID.SunbirdLarge);
+sealed class SmallBirdDistance(BossModule module) : BirdDistance(module, (uint)OID.SunbirdSmall);
+sealed class LargeBirdDistance(BossModule module) : BirdDistance(module, (uint)OID.SunbirdLarge);

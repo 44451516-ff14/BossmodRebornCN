@@ -1,4 +1,4 @@
-﻿namespace BossMod.Modules.Dawntrail.Advanced.Ad01TheMerchantsTale.Ad011PariofPlenty;
+﻿namespace BossMod.Dawntrail.Advanced.Ad01TheMerchantsTale.Ad011PariofPlenty;
 
 sealed class FireFlight(BossModule module) : Components.GenericAOEs(module)
 {

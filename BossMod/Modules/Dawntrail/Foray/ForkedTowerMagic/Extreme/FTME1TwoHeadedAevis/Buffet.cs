@@ -1,10 +1,8 @@
 ﻿namespace BossMod.Dawntrail.Foray.ForkedTowerMagic.Extreme.FTME1TwoHeadedAevis;
 
-[SkipLocalsInit]
-sealed class Buffet(BossModule module) : BossComponent(module)
+sealed class Buffet(FTME1TwoHeadedAevis module) : BossComponent(module)
 {
     private readonly Actor?[] AssignedBoss = new Actor?[PartyState.MaxPartySize];
-    private readonly FTME1TwoHeadedAevis bossModule = (FTME1TwoHeadedAevis)module;
     //private readonly FTME1TwoHeadedAevisConfig _config = Service.Config.Get<FTME1TwoHeadedAevisConfig>();
 
     public Actor? GetAssignedBoss(int slot)
@@ -25,8 +23,8 @@ sealed class Buffet(BossModule module) : BossComponent(module)
     {
         var boss = status.ID switch
         {
-            (uint)SID.EpicHero => bossModule.GreenHead(),
-            (uint)SID.FatedHero => bossModule.BlueHead(),
+            (uint)SID.EpicHero => Module.PrimaryActor,
+            (uint)SID.FatedHero => module.BlueHead(),
             _ => null
         };
         if (boss != null && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)

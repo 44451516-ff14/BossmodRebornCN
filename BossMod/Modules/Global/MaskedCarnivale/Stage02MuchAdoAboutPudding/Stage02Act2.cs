@@ -17,26 +17,17 @@ public enum AID : uint
 
 sealed class GoldenTongue(BossModule module) : Components.CastInterruptHint(module, (uint)AID.GoldenTongue);
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add("Gelato is weak to fire spells.\nFlan is weak to lightning spells.\nLicorice is weak to water spells.");
-    }
-}
-
 sealed class Stage02Act2States : StateMachineBuilder
 {
     public Stage02Act2States(BossModule module) : base(module)
     {
         TrivialPhase()
             .ActivateOnEnter<GoldenTongue>()
-            .ActivateOnEnter<Hints>()
             .Raw.Update = () => AllDeadOrDestroyed(Stage02Act2.Trash);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 612, NameID = 8079, SortOrder = 2)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 612u, NameID = 8079u, SortOrder = 2)]
 public sealed class Stage02Act2(WorldState ws, Actor primary) : BossModule(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
 {
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.Flan, (uint)OID.Licorice];
@@ -49,4 +40,11 @@ public sealed class Stage02Act2(WorldState ws, Actor primary) : BossModule(ws, p
         Arena.Actors(Enemies((uint)OID.Flan));
         Arena.Actors(Enemies((uint)OID.Licorice));
     }
+
+    private readonly string[] _prePullHints =
+    [
+        "Gelato is weak to fire spells. Flan is weak to lightning spells. Licorice is weak to water spells."
+    ];
+
+    public override string[] PrePullHints => _prePullHints;
 }

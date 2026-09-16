@@ -33,7 +33,7 @@ class Hints(BossModule module) : BossComponent(module)
 {
     private DateTime _heartSpawn;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var heartExists = ((T07TitanH)Module).ActiveHeart.Any();
         if (_heartSpawn == default && heartExists)

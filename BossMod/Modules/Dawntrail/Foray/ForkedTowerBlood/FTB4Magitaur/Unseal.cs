@@ -120,7 +120,7 @@ sealed class Unseal(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (isClose is bool close)
         {
@@ -131,7 +131,7 @@ sealed class Unseal(BossModule module) : Components.GenericAOEs(module)
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        Arena.Actors(targets, Colors.Vulnerable);
+        Arena.Actors(targets, Colors.Vulnerable, drawWorld: true);
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)

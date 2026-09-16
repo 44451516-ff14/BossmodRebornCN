@@ -25,7 +25,7 @@ sealed class IceSprite(BossModule module) : Components.Adds(module, (uint)OID.Ic
 
 sealed class LifelessLegacy(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.LifelessLegacyVisual, (uint)AID.LifelessLegacy, 1.8f)
 {
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var castInfo = Module.PrimaryActor.CastInfo;
         if (castInfo is ActorCastInfo info && info.RemainingTime < 6f)

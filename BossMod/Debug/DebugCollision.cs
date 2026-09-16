@@ -1005,7 +1005,7 @@ public sealed unsafe class DebugCollision() : IDisposable
                     var dx = p.X - cast->Translation.X;
                     var dz = p.Y - cast->Translation.Z;
                     // Equivalent to distance-to-sphere-surface <= filter distance, but avoids sqrt.
-                    var expandedRadius = _maxColliderDistanceXZ + MathF.Abs(cast->Scale.X);
+                    var expandedRadius = _maxColliderDistanceXZ + Math.Abs(cast->Scale.X);
                     return dx * dx + dz * dz <= expandedRadius * expandedRadius;
                 }
             case ColliderType.Plane:
@@ -1065,7 +1065,7 @@ public sealed unsafe class DebugCollision() : IDisposable
         return dx * dx + dz * dz;
     }
 
-    private readonly CollisionOutlinesExtractor.MaterialMatchMode[] modes = Enum.GetValues<CollisionOutlinesExtractor.MaterialMatchMode>();
+    private readonly CollisionOutlinesExtractor.MaterialMatchMode[] modes = GeneratedEnumMetadata.Values<CollisionOutlinesExtractor.MaterialMatchMode>();
 
     private void DrawSettings()
     {

@@ -9,7 +9,7 @@ sealed class GunberdShot(BossModule module) : BossComponent(module)
 
     public bool Gunberding;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (Gunberding)
         {

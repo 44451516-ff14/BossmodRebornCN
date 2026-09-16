@@ -458,7 +458,7 @@ public sealed class AkechiDRG(RotationModuleManager manager, Actor player) : Ake
             AutoTarget &&
             Unlocked(AID.DoomSpike) &&
             (NumAOETargets >= 3 || aoeStrat is AOEStrategy.ForceAOEFinish or AOEStrategy.ForceAOEBreak);
-        ChaosLeft = MathF.Max(
+        ChaosLeft = Math.Max(
             StatusDetails(mainTarget, SID.ChaosThrust, Player.InstanceID).Left,
             StatusDetails(mainTarget, SID.ChaoticSpring, Player.InstanceID).Left);
         var buffed1m =

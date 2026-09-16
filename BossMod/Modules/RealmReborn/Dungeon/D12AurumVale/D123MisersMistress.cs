@@ -31,16 +31,12 @@ public enum SID : uint
     Burrs = 303 // Boss->player, extra=0x1/0x2/0x3
 }
 
-[SkipLocalsInit]
 sealed class BurrBurrow(BossModule module) : Components.RaidwideCast(module, (uint)AID.BurrBurrow);
 
-[SkipLocalsInit]
 sealed class VineProbe(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.VineProbe);
 
-[SkipLocalsInit]
 sealed class BadBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BadBreath, new AOEShapeCone(15.85f, 60f.Degrees()));
 
-[SkipLocalsInit]
 sealed class MorbolFruit(BossModule module) : BossComponent(module)
 {
     private BitMask burrs;
@@ -132,7 +128,6 @@ sealed class MorbolFruit(BossModule module) : BossComponent(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class D123MisersMistressStates : StateMachineBuilder
 {
     public D123MisersMistressStates(BossModule module) : base(module)
@@ -162,7 +157,6 @@ GroupID = 5u,
 NameID = 1532u,
 SortOrder = 3,
 PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class D123MisersMistress : BossModule
 {
     public D123MisersMistress(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

@@ -9,7 +9,7 @@ sealed class P4DarklitDragonsong(BossModule module) : BossComponent(module)
     public BitMask AssignE;
     private readonly List<(Actor from, Actor to)> _tethers = [];
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var southTower = TowerSoakers & AssignS;
         if (southTower.Any())

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Alliance.A14Naldthal;
 
-public class A14NaldthalStates : StateMachineBuilder
+public sealed class A14NaldthalStates : StateMachineBuilder
 {
     public A14NaldthalStates(BossModule module) : base(module)
     {
@@ -58,116 +58,115 @@ public class A14NaldthalStates : StateMachineBuilder
 
     private State AsAboveSoBelow(uint id, float delay)
     {
-        return CastMulti(id, [(uint)AID.AsAboveSoBelowNald, (uint)AID.AsAboveSoBelowThal], delay, 5f, "Raidwide")
+        return CastMulti(id, [AID.AsAboveSoBelowNald, AID.AsAboveSoBelowThal], delay, 5f, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void HellsTrial(uint id, float delay)
     {
-        Cast(id, (uint)AID.HellsTrial, delay, 5f, "Raidwide")
+        Cast(id, AID.HellsTrial, delay, 5f, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void HeavensTrial(uint id, float delay)
     {
-        CastStart(id, (uint)AID.HeavensTrial, delay);
+        CastStart(id, AID.HeavensTrial, delay);
         CastEnd(id + 1u, 5f);
-        ComponentCondition<HeavensTrialStack>(id + 2u, 0.5f, comp => !comp.Active, "Stack");
-        ComponentCondition<HeavensTrialCone>(id + 3u, 0.4f, comp => comp.NumCasts != 0, "Baited cones")
-            .ResetComp<HeavensTrialCone>();
+        ComponentCondition<HeavensTrialStack>(id + 2u, 0.5f, static comp => !comp.Active, "Stack");
+        ComponentCondition<HeavensTrialCone>(id + 3u, 0.4f, static comp => comp.NumCasts != 0, "Baited cones")
+            .ExecOnExit<HeavensTrialCone>(static comp => comp.NumCasts = 0);
     }
 
     private State GoldenTenet(uint id, float delay)
     {
-        Cast(id, (uint)AID.GoldenTenet, delay, 5f);
-        return ComponentCondition<GoldenTenet>(id + 2u, 0.5f, comp => comp.NumCasts > 0, "Shared tankbuster")
-            .ResetComp<GoldenTenet>()
+        Cast(id, AID.GoldenTenet, delay, 5f);
+        return ComponentCondition<GoldenTenet>(id + 2u, 0.5f, static comp => comp.NumCasts > 0, "Shared tankbuster")
+            .ExecOnExit<GoldenTenet>(static comp => comp.NumCasts = 0)
             .SetHint(StateMachine.StateHint.Tankbuster);
     }
 
     private void StygianTenet(uint id, float delay)
     {
-        Cast(id, (uint)AID.StygianTenet, delay, 5f);
-        ComponentCondition<StygianTenet>(id + 0x10u, 0.5f, comp => comp.NumCasts > 0, "Tankbusters")
-            .ResetComp<StygianTenet>()
+        Cast(id, AID.StygianTenet, delay, 5f);
+        ComponentCondition<StygianTenet>(id + 0x10u, 0.5f, static comp => comp.NumCasts > 0, "Tankbusters")
+            .ExecOnExit<StygianTenet>(static comp => comp.NumCasts = 0)
             .SetHint(StateMachine.StateHint.Tankbuster);
     }
 
     private void HeatAboveFlamesBelow(uint id, float delay)
     {
         // unfortunately, one of the boss casts ends 1s earlier - just use actual casts instead
-        CastStartMulti(id, [(uint)AID.HeatAboveFlamesBelowNald, (uint)AID.HeatAboveFlamesBelowThal], delay);
-        ComponentCondition<HeatAboveFlamesBelow>(id + 1u, 12f, comp => comp.NumCasts != 0, "In or out")
-            .ResetComp<HeatAboveFlamesBelow>()
+        CastStartMulti(id, [AID.HeatAboveFlamesBelowNald, AID.HeatAboveFlamesBelowThal], delay);
+        ComponentCondition<HeatAboveFlamesBelow>(id + 1u, 12f, static comp => comp.NumCasts != 0, "In or out")
+            .ExecOnExit<HeatAboveFlamesBelow>(static comp => comp.NumCasts = 0)
             .SetHint(StateMachine.StateHint.BossCastEnd);
     }
 
     private void FarAboveDeepBelow(uint id, float delay)
     {
-        CastStartMulti(id, [(uint)AID.FarAboveDeepBelowThal, (uint)AID.FarAboveDeepBelowNald], delay);
+        CastStartMulti(id, [AID.FarAboveDeepBelowThal, AID.FarAboveDeepBelowNald], delay);
         CastEnd(id + 1u, 12);
         Condition(id + 0x10u, 0.9f, () => Module.FindComponent<FarFlungFire>()!.NumCasts != 0 || Module.FindComponent<DeepestPit>()!.Active, "Line stack or baited puddles start") // note: deepest pit start is 1.4s instead
-            .ResetComp<FarFlungFire>();
-        AsAboveSoBelow(id + 0x100, 5.3f) // note: 5.8s for deepest pit
-            .ResetComp<DeepestPit>();
+            .ExecOnExit<FarFlungFire>(static comp => comp.NumCasts = 0);
+        AsAboveSoBelow(id + 0x100, 5.3f); // note: 5.8s for deepest pit
     }
 
     private void OnceAboveEverBelowStart(uint id, float delay)
     {
         // unfortunately, one of the boss casts ends 1s earlier - just use actual casts instead
-        CastStartMulti(id, [(uint)AID.OnceAboveEverBelowThalNald, (uint)AID.OnceAboveEverBelowThal, (uint)AID.OnceAboveEverBelowNaldThal, (uint)AID.OnceAboveEverBelowNald], delay);
-        ComponentCondition<OnceAboveEverBelow>(id + 2u, 12.6f, comp => comp.NumCasts != 0, "Exaflares start")
+        CastStartMulti(id, [AID.OnceAboveEverBelowThalNald, AID.OnceAboveEverBelowThal, AID.OnceAboveEverBelowNaldThal, AID.OnceAboveEverBelowNald], delay);
+        ComponentCondition<OnceAboveEverBelow>(id + 2u, 12.6f, static comp => comp.NumCasts != 0, "Exaflares start")
             .SetHint(StateMachine.StateHint.BossCastEnd);
     }
 
     private void OnceAboveEverBelow(uint id, float delay)
     {
         OnceAboveEverBelowStart(id, delay);
-        ComponentCondition<OnceAboveEverBelow>(id + 0x10u, 6f, comp => comp.NumCasts > 30, "Exaflares end");
+        ComponentCondition<OnceAboveEverBelow>(id + 0x10u, 6f, static comp => comp.NumCasts > 30, "Exaflares end");
     }
 
     private void OnceAboveEverBelowHeavensTrialOrStygianTenet(uint id, float delay)
     {
         OnceAboveEverBelowStart(id, delay);
-        CastStartMulti(id + 0x10u, [(uint)AID.HeavensTrial, (uint)AID.StygianTenet], 5.6f);
-        ComponentCondition<OnceAboveEverBelow>(id + 0x20u, 0.4f, comp => comp.NumCasts > 30);
+        CastStartMulti(id + 0x10u, [AID.HeavensTrial, AID.StygianTenet], 5.6f);
+        ComponentCondition<OnceAboveEverBelow>(id + 0x20u, 0.4f, static comp => comp.NumCasts > 30);
         CastEnd(id + 0x30u, 4.6f)
-            .ResetComp<OnceAboveEverBelow>();
+            .ExecOnExit<OnceAboveEverBelow>(static comp => comp.NumCasts = 0);
         Condition(id + 0x40u, 0.5f, () => Module.FindComponent<HeavensTrialStack>()!.NumFinishedStacks != 0 ||
         Module.FindComponent<HeavensTrialCone>()!.NumCasts != 0 && Module.FindComponent<StygianTenet>()!.NumCasts != 0, "Tankbusters -or- Stack & baited cones")
-            .ResetComp<StygianTenet>()
-            .ResetComp<HeavensTrialStack>()
-            .ResetComp<HeavensTrialCone>();
+            .ExecOnExit<StygianTenet>(static comp => comp.NumCasts = 0)
+            .ExecOnExit<HeavensTrialStack>(static comp => comp.NumFinishedStacks = 0)
+            .ExecOnExit<HeavensTrialCone>(static comp => comp.NumCasts = 0);
     }
 
     private void HearthAboveFlightBelow(uint id, float delay)
     {
         // unfortunately, one of the boss casts ends 1s earlier - just use actual casts instead
-        CastStartMulti(id, [(uint)AID.HearthAboveFlightBelowThalNald, (uint)AID.HearthAboveFlightBelowThal, (uint)AID.HearthAboveFlightBelowNald, (uint)AID.HearthAboveFlightBelowNaldThal], delay);
-        ComponentCondition<HeatAboveFlamesBelow>(id + 1u, 12f, comp => comp.NumCasts != 0, "In or out")
-            .ResetComp<HeatAboveFlamesBelow>()
+        CastStartMulti(id, [AID.HearthAboveFlightBelowThalNald, AID.HearthAboveFlightBelowThal, AID.HearthAboveFlightBelowNald, AID.HearthAboveFlightBelowNaldThal], delay);
+        ComponentCondition<HeatAboveFlamesBelow>(id + 1u, 12f, static comp => comp.NumCasts != 0, "In or out")
+            .ExecOnExit<HeatAboveFlamesBelow>(static comp => comp.NumCasts = 0)
             .SetHint(StateMachine.StateHint.BossCastEnd);
         Condition(id + 0x10u, 0.9f, () => Module.FindComponent<FarFlungFire>()!.NumCasts != 0 || Module.FindComponent<DeepestPit>()!.Active, "Line stack or baited puddles start") // note: deepest pit start is 1.4s instead; sometimes we get 0.1 delay instead
-            .ResetComp<FarFlungFire>();
+            .ExecOnExit<FarFlungFire>(static comp => comp.NumCasts = 0);
         // orange => golden tenet, blue => hell's trial
-        CastMulti(id + 0x100u, [(uint)AID.GoldenTenet, (uint)AID.HellsTrial], 5.3f, 5, "Shared tankbuster -or- Raidwide")
-            .ResetComp<DeepestPit>() // last puddle ends ~3s into cast
-            .ResetComp<GoldenTenet>(); // note: actual aoe happens ~0.5s later, but that would complicate the condition...
+        CastMulti(id + 0x100u, [AID.GoldenTenet, AID.HellsTrial], 5.3f, 5f, "Shared tankbuster -or- Raidwide")
+            // last puddle ends ~3s into cast
+            .ExecOnExit<GoldenTenet>(static comp => comp.NumCasts = 0); // note: actual aoe happens ~0.5s later, but that would complicate the condition...
     }
 
     private State HellOfFire(uint id, float delay)
     {
-        CastMulti(id, [(uint)AID.HellOfFireFront, (uint)AID.HellOfFireBack], delay, 8f)
-            .ResetComp<OnceAboveEverBelow>();
+        CastMulti(id, [AID.HellOfFireFront, AID.HellOfFireBack], delay, 8f)
+            .ExecOnExit<OnceAboveEverBelow>(static comp => comp.NumCasts = 0);
         return Condition(id + 2u, 1f, () => Module.FindComponent<HellOfFire>()!.NumCasts != 0, "Half-arena cleave")
-            .ResetComp<HellOfFire>();
+            .ExecOnExit<HellOfFire>(static comp => comp.NumCasts = 0);
     }
 
     private void WaywardSoulStart(uint id, float delay)
     {
-        Cast(id, (uint)AID.WaywardSoul, delay, 3f);
-        ComponentCondition<WaywardSoul>(id + 0x10u, 0.8f, comp => comp.Casters.Count != 0);
-        ComponentCondition<WaywardSoul>(id + 0x20u, 8, comp => comp.NumCasts != 0, "Circles start");
+        Cast(id, AID.WaywardSoul, delay, 3f);
+        ComponentCondition<WaywardSoul>(id + 0x10u, 0.8f, static comp => comp.Casters.Count != 0);
+        ComponentCondition<WaywardSoul>(id + 0x20u, 8, static comp => comp.NumCasts != 0, "Circles start");
         // +5.5s: second set of 3
         // +11.0s: third set of 3
     }
@@ -175,48 +174,50 @@ public class A14NaldthalStates : StateMachineBuilder
     private void WaywardSoul(uint id, float delay)
     {
         WaywardSoulStart(id, delay);
-        ComponentCondition<WaywardSoul>(id + 0x100, 32.2f, comp => comp.Casters.Count == 0, "Circles resolve")
-            .ResetComp<WaywardSoul>();
+        ComponentCondition<WaywardSoul>(id + 0x100, 32.2f, static comp => comp.Casters.Count == 0, "Circles resolve")
+            .ExecOnExit<WaywardSoul>(static comp => comp.NumCasts = 0);
     }
 
     private void WaywardSoulHellOfFire(uint id, float delay)
     {
         WaywardSoulStart(id, delay);
         HellOfFire(id + 0x100u, 14.1f) // sometimes it's 9.2s instead...
-            .ResetComp<WaywardSoul>(); // last aoe ends ~2.5s into cast
+            .ExecOnExit<WaywardSoul>(static comp => comp.NumCasts = 0);// last aoe ends ~2.5s into cast
     }
 
     private void FiredUp(uint id, float delay, bool three)
     {
-        CastMulti(id, [(uint)AID.FiredUp1Knockback, (uint)AID.FiredUp1AOE], delay, 4f);
-        CastMulti(id + 0x10u, [(uint)AID.FiredUp2Knockback, (uint)AID.FiredUp2AOE], 2.1f, 4f);
+        CastMulti(id, [AID.FiredUp1Knockback, AID.FiredUp1AOE], delay, 4f);
+        CastMulti(id + 0x10u, [AID.FiredUp2Knockback, AID.FiredUp2AOE], 2.1f, 4f);
         if (three)
-            CastMulti(id + 0x20u, [(uint)AID.FiredUp3Knockback, (uint)AID.FiredUp3AOE], 2.1f, 4f);
-        Cast(id + 0x100u, (uint)AID.FortuneFlux, 2.1f, 8);
-        ComponentCondition<FortuneFluxOrder>(id + 0x110u, 2.5f, comp => comp.NumComplete != 0, "AOE/Knockback 1");
-        var resolve = ComponentCondition<FortuneFluxOrder>(id + 0x120u, 2.0f, comp => comp.NumComplete > 1, "AOE/Knockback 2");
+        {
+            CastMulti(id + 0x20u, [AID.FiredUp3Knockback, AID.FiredUp3AOE], 2.1f, 4f);
+        }
+        Cast(id + 0x100u, AID.FortuneFlux, 2.1f, 8f);
+        ComponentCondition<FortuneFluxOrder>(id + 0x110u, 2.5f, static comp => comp.NumComplete != 0, "AOE/Knockback 1");
+        var resolve = ComponentCondition<FortuneFluxOrder>(id + 0x120u, 2.0f, static comp => comp.NumComplete > 1, "AOE/Knockback 2");
         if (three)
-            resolve = ComponentCondition<FortuneFluxOrder>(id + 0x130u, 1.5f, comp => comp.NumComplete > 2, "AOE/Knockback 3");
+        {
+            resolve = ComponentCondition<FortuneFluxOrder>(id + 0x130u, 1.5f, static comp => comp.NumComplete > 2, "AOE/Knockback 3");
+        }
         resolve
-            .ResetComp<FortuneFluxOrder>()
-            .ResetComp<FortuneFluxAOE>()
-            .ResetComp<FortuneFluxKnockback>();
+            .ExecOnExit<FortuneFluxOrder>(static comp => comp.NumComplete = 0);
     }
 
     private void SoulMeasure(uint id, float delay)
     {
-        Cast(id, (uint)AID.SoulsMeasure, delay, 6f);
+        Cast(id, AID.SoulsMeasure, delay, 6f);
         Targetable(id + 0x10u, false, 1.1f, "Boss disappears");
-        ComponentCondition<SoulVessel>(id + 0x20u, 20.6f, comp => comp.ActiveActors.Count != 0, "Adds appear")
+        ComponentCondition<SoulVessel>(id + 0x20u, 20.6f, static comp => comp.ActiveActors.Count != 0, "Adds appear")
             .SetHint(StateMachine.StateHint.DowntimeEnd);
-        ComponentCondition<SoulVessel>(id + 0x30u, 100, comp => comp.ActiveActors.Count == 0, "Adds enrage")
-            .ResetComp<Twingaze>()
-            .ResetComp<MagmaticSpell>()
-            .ResetComp<SoulVessel>()
+        ComponentCondition<SoulVessel>(id + 0x30u, 100, static comp => comp.ActiveActors.Count == 0, "Adds enrage")
+            .DeactivateOnExit<Twingaze>()
+            .DeactivateOnExit<MagmaticSpell>()
+            .DeactivateOnExit<SoulVessel>()
             .SetHint(StateMachine.StateHint.DowntimeStart);
-        Cast(id + 0x100u, (uint)AID.Balance, 5.2f, 12.5f, "Balance check");
-        ComponentCondition<TippedScales>(id + 0x110u, 38.2f, comp => comp.NumCasts > 0, "Raidwide")
-            .ResetComp<TippedScales>();
+        Cast(id + 0x100u, AID.Balance, 5.2f, 12.5f, "Balance check");
+        ComponentCondition<TippedScales>(id + 0x110u, 38.2f, static comp => comp.NumCasts > 0, "Raidwide")
+            .DeactivateOnExit<TippedScales>();
         Targetable(id + 0x120, true, 8.1f, "Boss reappears");
     }
 }

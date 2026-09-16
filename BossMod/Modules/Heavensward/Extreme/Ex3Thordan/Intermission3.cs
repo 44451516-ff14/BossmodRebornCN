@@ -75,11 +75,9 @@ sealed class FaithUnmoving(BossModule module) : Components.GenericKnockback(modu
 sealed class CometCircle(BossModule module) : Components.Adds(module, (uint)OID.CometCircle);
 sealed class MeteorCircle(BossModule module) : Components.Adds(module, (uint)OID.MeteorCircle);
 
-sealed class HeavyImpact(BossModule module) : Components.ConcentricAOEs(module, _shapes)
+sealed class HeavyImpact(BossModule module) : Components.ConcentricAOEs(module,
+    [new AOEShapeCone(6.5f, 135f.Degrees()), new AOEShapeDonutSector(6.5f, 12.5f, 135f.Degrees()), new AOEShapeDonutSector(12.5f, 18.5f, 135f.Degrees()), new AOEShapeDonutSector(18.5f, 27.5f, 135f.Degrees())])
 {
-    private static readonly Angle a135 = 135f.Degrees();
-    private static readonly AOEShape[] _shapes = [new AOEShapeCone(6.5f, a135), new AOEShapeDonutSector(6.5f, 12.5f, a135), new AOEShapeDonutSector(12.5f, 18.5f, a135), new AOEShapeDonutSector(18.5f, 27.5f, a135)];
-
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.HeavyImpactAOE1)

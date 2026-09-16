@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UWU;
 
-class FlamingCrush(BossModule module) : Components.UniformStackSpread(module, 4f, default, 6, 6)
+abstract class FlamingCrush(BossModule module) : Components.UniformStackSpread(module, 4f, default, 6, 6)
 {
     protected BitMask Avoid;
 
@@ -22,7 +22,7 @@ class FlamingCrush(BossModule module) : Components.UniformStackSpread(module, 4f
 }
 
 // during P2, everyone except searing wind targets (typically two healers) should stack
-class P2FlamingCrush : FlamingCrush
+sealed class P2FlamingCrush : FlamingCrush
 {
     public P2FlamingCrush(BossModule module) : base(module)
     {
@@ -33,10 +33,10 @@ class P2FlamingCrush : FlamingCrush
 }
 
 // during P4 (annihilation), everyone should stack (except maybe ranged/caster that will handle mesohigh)
-class P4FlamingCrush(BossModule module) : FlamingCrush(module) { }
+sealed class P4FlamingCrush(BossModule module) : FlamingCrush(module) { }
 
 // during P5 (suppression), everyone except mesohigh handler (typically tank) should stack
-class P5FlamingCrush : FlamingCrush
+sealed class P5FlamingCrush : FlamingCrush
 {
     public P5FlamingCrush(BossModule module) : base(module)
     {

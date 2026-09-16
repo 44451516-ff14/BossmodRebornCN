@@ -195,7 +195,7 @@ class DivineCall(BossModule module) : Components.StatusDrivenForcedMarch(module,
         return false;
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         switch (Module.PrimaryActor.CastInfo?.Action.ID)
         {

@@ -1,11 +1,11 @@
 ﻿namespace BossMod.Endwalker.Savage.P11SThemis;
 
-class DivisiveOverruling(BossModule module) : Components.GenericAOEs(module)
+sealed class DivisiveOverruling(BossModule module) : Components.GenericAOEs(module)
 {
     public List<AOEInstance> AOEs = [];
 
-    private static readonly AOEShapeRect _shapeNarrow = new(46f, 8f);
-    private static readonly AOEShapeRect _shapeWide = new(46f, 13f);
+    private readonly AOEShapeRect _shapeNarrow = new(46f, 8f);
+    private readonly AOEShapeRect _shapeWide = new(46f, 13f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

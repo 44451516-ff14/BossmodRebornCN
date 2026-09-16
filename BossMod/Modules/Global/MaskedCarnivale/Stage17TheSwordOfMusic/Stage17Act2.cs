@@ -47,46 +47,18 @@ sealed class MagitekRay(BossModule module) : Components.VoidzoneAtCastTarget(mod
 sealed class TheHand(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheHand, new AOEShapeCone(8f, 60f.Degrees()));
 sealed class Shred(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Shred, new AOEShapeRect(6f, 2f));
 
-sealed class Hints2(BossModule module) : BossComponent(module)
+sealed class Hints(Stage17Act2 module) : BossComponent(module)
 {
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
-        var clawsL = Module.Enemies((uint)OID.LeftClaw);
-        var countL = clawsL.Count;
-        if (countL != 0)
+        if (module.LeftClaw is Actor clawL && !clawL.IsDeadOrDestroyed)
         {
-            for (var i = 0; i < countL; ++i)
-            {
-                var clawL = clawsL[i];
-                if (!clawL.IsDead)
-                {
-                    hints.Add($"{clawL.Name} counters magical damage!");
-                    break;
-                }
-            }
+            hints.Add($"{clawL.Name} counters magical damage!");
         }
-        var clawsR = Module.Enemies((uint)OID.RightClaw);
-        var countR = clawsR.Count;
-        if (countR != 0)
+        if (module.RightClaw is Actor clawR && !clawR.IsDeadOrDestroyed)
         {
-            for (var i = 0; i < countR; ++i)
-            {
-                var clawR = clawsR[i];
-                if (!clawR.IsDead)
-                {
-                    hints.Add($"{clawR.Name} counters physical damage!");
-                    return;
-                }
-            }
+            hints.Add($"{clawR.Name} counters physical damage!");
         }
-    }
-}
-
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"{Module.PrimaryActor.Name} is weak to lightning spells.\nDuring the fight he will spawn one of each claws as known from act 1.\nIf available use the Ram's Voice + Ultravibration combo for instant kill.");
     }
 }
 
@@ -100,24 +72,36 @@ sealed class Stage17Act2States : StateMachineBuilder
             .ActivateOnEnter<TheHand>()
             .ActivateOnEnter<GrandStrike>()
             .ActivateOnEnter<Shred>()
-            .ActivateOnEnter<Hints2>()
-            .DeactivateOnEnter<Hints>();
+            .ActivateOnEnter<Hints>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 627, NameID = 8087, SortOrder = 2)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 627u, NameID = 8087u, SortOrder = 2)]
 public sealed class Stage17Act2 : BossModule
 {
     public Stage17Act2(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {
-        ActivateComponent<Hints>();
+        _prePullHints =
+        [
+            $"{PrimaryActor.Name} is weak to lightning spells. During the fight he will spawn one of each claws as known from act 1.",
+            "If available use the Ram's Voice + Ultravibration combo for instant kill."
+        ];
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies((uint)OID.LeftClaw), Colors.Object);
-        Arena.Actors(Enemies((uint)OID.RightClaw), Colors.Object);
+        Arena.Actor(RightClaw, Colors.Object);
+        Arena.Actor(LeftClaw, Colors.Object);
+    }
+
+    public Actor? RightClaw;
+    public Actor? LeftClaw;
+
+    protected override void UpdateModule()
+    {
+        RightClaw ??= GetActor((uint)OID.RightClaw);
+        LeftClaw ??= GetActor((uint)OID.RightClaw);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -133,4 +117,8 @@ public sealed class Stage17Act2 : BossModule
             };
         }
     }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

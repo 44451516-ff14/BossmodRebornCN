@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C03AAI.C031Ketuduke;
 
-class StrewnBubbles(BossModule module) : Components.GenericAOEs(module)
+sealed class StrewnBubbles(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
 
-    private static readonly AOEShapeRect _shape = new(20f, 5f);
+    private readonly AOEShapeRect _shape = new(20f, 5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -38,11 +38,11 @@ class StrewnBubbles(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class RecedingEncroachingTwintides(BossModule module) : Components.GenericAOEs(module)
+sealed class RecedingEncroachingTwintides(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(2)];
-    private static readonly AOEShapeCircle _shapeOut = new(14f);
-    private static readonly AOEShapeDonut _shapeIn = new(8f, 60f);
+    private readonly AOEShapeCircle _shapeOut = new(14f);
+    private readonly AOEShapeDonut _shapeIn = new(8f, 60f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoes.Count != 0 ? CollectionsMarshal.AsSpan(_aoes)[..1] : [];
 

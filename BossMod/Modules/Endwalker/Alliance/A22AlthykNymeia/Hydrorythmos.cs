@@ -1,12 +1,12 @@
 ﻿namespace BossMod.Endwalker.Alliance.A22AlthykNymeia;
 
-class Hydrorythmos(BossModule module) : Components.GenericAOEs(module)
+sealed class Hydrorythmos(BossModule module) : Components.GenericAOEs(module)
 {
     private Angle _dir;
     private DateTime _activation;
 
-    private static readonly AOEShapeRect _shapeFirst = new(25f, 5f, 25f);
-    private static readonly AOEShapeRect _shapeRest = new(25f, 2.5f, 25f);
+    private readonly AOEShapeRect _shapeFirst = new(25f, 5f, 25f);
+    private readonly AOEShapeRect _shapeRest = new(25f, 2.5f, 25f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

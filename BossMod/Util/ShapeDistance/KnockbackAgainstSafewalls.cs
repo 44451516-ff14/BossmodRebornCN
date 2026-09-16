@@ -1,6 +1,5 @@
 namespace BossMod;
 
-[SkipLocalsInit]
 public sealed class SDKnockbackFixedDirectionAgainstSafewalls(WDir Direction, Components.GenericKnockback.SafeWall[] SafeWalls, float Distance, int Length) : ShapeDistance
 {
     private readonly WDir direction = Direction;
@@ -29,7 +28,6 @@ public sealed class SDKnockbackFixedDirectionAgainstSafewalls(WDir Direction, Co
     public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
 }
 
-[SkipLocalsInit]
 public sealed class SDKnockbackFixedDirectionAgainstSafewallsPlusRectAOE(WDir Direction, Components.GenericKnockback.SafeWall[] SafeWalls, float Distance, int Length, WPos RectOrigin, WDir RectDirection, float LengthFront, float HalfWidth) : ShapeDistance
 {
     private readonly WDir direction = Direction;
@@ -67,7 +65,6 @@ public sealed class SDKnockbackFixedDirectionAgainstSafewallsPlusRectAOE(WDir Di
     public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
 }
 
-[SkipLocalsInit]
 public sealed class SDKnockbackWithWallsAwayFromOriginMultiAimIntoDonuts((WPos Origin, WDir Direction)[] Knockbacks, int LengthKnockbacks, float RectLengthFront, float RectHalfWidth, float Distance, WPos[] DonutOrigins, float DonutInnerRadius, int LengthDonuts) : ShapeDistance
 {
     private readonly (WPos origin, WDir direction)[] knockbacks = Knockbacks;

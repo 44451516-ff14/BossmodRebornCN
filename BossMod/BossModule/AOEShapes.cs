@@ -1,6 +1,5 @@
 ﻿namespace BossMod;
 
-[SkipLocalsInit]
 public abstract class AOEShape(bool invertForbiddenZone)
 {
     public bool InvertForbiddenZone = invertForbiddenZone;
@@ -30,7 +29,6 @@ public abstract class AOEShape(bool invertForbiddenZone)
     }
 }
 
-[SkipLocalsInit]
 public sealed class AOEShapeCone(float radius, Angle halfAngle, Angle directionOffset = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     public readonly float Radius = radius;
@@ -273,7 +271,6 @@ public sealed class AOEShapeCone(float radius, Angle halfAngle, Angle directionO
     }
 }
 
-[SkipLocalsInit]
 public sealed class AOEShapeCircle(float radius, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     public readonly float Radius = radius;
@@ -288,7 +285,6 @@ public sealed class AOEShapeCircle(float radius, bool invertForbiddenZone = fals
     public override ShapeDistance InvertedDistance(WPos origin, Angle rotation) => new SDInvertedCircle(origin, Radius);
 }
 
-[SkipLocalsInit]
 public sealed class AOEShapeDonut(float innerRadius, float outerRadius, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     public readonly float InnerRadius = innerRadius;
@@ -305,7 +301,6 @@ public sealed class AOEShapeDonut(float innerRadius, float outerRadius, bool inv
     public override ShapeDistance InvertedDistance(WPos origin, Angle rotation) => new SDInvertedDonut(origin, InnerRadius, OuterRadius);
 }
 
-[SkipLocalsInit]
 public sealed class AOEShapeDonutSector(float innerRadius, float outerRadius, Angle halfAngle, Angle directionOffset = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     public readonly float InnerRadius = innerRadius;
@@ -323,7 +318,6 @@ public sealed class AOEShapeDonutSector(float innerRadius, float outerRadius, An
     public override ShapeDistance InvertedDistance(WPos origin, Angle rotation) => new SDInvertedDonutSector(origin, InnerRadius, OuterRadius, rotation + DirectionOffset, HalfAngle);
 }
 
-[SkipLocalsInit]
 public sealed class AOEShapeRect(float lengthFront, float halfWidth, float lengthBack = default, Angle directionOffset = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     public readonly float LengthFront = lengthFront;
@@ -342,7 +336,6 @@ public sealed class AOEShapeRect(float lengthFront, float halfWidth, float lengt
 
 }
 
-[SkipLocalsInit]
 public sealed class AOEShapeCross(float length, float halfWidth, Angle directionOffset = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     public readonly float Length = length;
@@ -360,7 +353,6 @@ public sealed class AOEShapeCross(float length, float halfWidth, Angle direction
     public override ShapeDistance InvertedDistance(WPos origin, Angle rotation) => new SDInvertedCross(origin, rotation + DirectionOffset, Length, HalfWidth);
 }
 
-[SkipLocalsInit]
 public sealed class AOEShapeTriCone(float sideLength, Angle halfAngle, Angle directionOffset = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     public readonly float SideLength = sideLength;
@@ -390,7 +382,6 @@ public sealed class AOEShapeTriCone(float sideLength, Angle halfAngle, Angle dir
     }
 }
 
-[SkipLocalsInit]
 public sealed class AOEShapeCapsule(float radius, float length, Angle directionOffset = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     public readonly float Radius = radius;
@@ -407,7 +398,6 @@ public sealed class AOEShapeCapsule(float radius, float length, Angle directionO
     public override ShapeDistance InvertedDistance(WPos origin, Angle rotation) => new SDInvertedCapsule(origin, rotation, Length, Radius);
 }
 
-[SkipLocalsInit]
 public sealed class AOEShapeArcCapsule(float radius, Angle angularLength, WPos orbitCenter, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     public readonly float Radius = radius;
@@ -427,7 +417,7 @@ public sealed class AOEShapeArcCapsule(float radius, Angle angularLength, WPos o
 // shapes1 for unions, shapes 2 for shapes for XOR/intersection with shapes1, differences for shapes that get subtracted after previous operations
 // always create a new instance of AOEShapeCustom if something other than the invertforbiddenzone changes
 // if the origin of the AOE can change, edit the origin default value to prevent cache issues
-[SkipLocalsInit]
+
 public sealed class AOEShapeCustom : AOEShape
 {
     public RelSimplifiedComplexPolygon Polygon;

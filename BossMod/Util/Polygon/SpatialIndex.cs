@@ -1,6 +1,5 @@
 namespace BossMod;
 
-[SkipLocalsInit]
 public readonly struct Edge(float ax, float ay, float dx, float dy)
 {
     private const float Epsilon = 1e-8f;
@@ -8,7 +7,6 @@ public readonly struct Edge(float ax, float ay, float dx, float dy)
     public readonly float Ax = ax, Ay = ay, Dx = dx, Dy = dy, InvLengthSq = 1f / (dx * dx + dy * dy + Epsilon);
 }
 
-[SkipLocalsInit]
 public sealed class SpatialIndex
 {
     private int[][] _grid = [];

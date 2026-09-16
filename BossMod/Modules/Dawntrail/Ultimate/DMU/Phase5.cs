@@ -11,11 +11,12 @@ sealed class UltimaRepeater(BossModule module) : Components.RaidwideCast(module,
     }
 }
 
-sealed class FellForces(BossModule module) : Components.GenericBaitStack(module)
+sealed class FellForces(DMU module) : Components.GenericBaitStack(module)
 {
     public bool active = false;
     private bool setup = false;
     public int expectedCasts = 9;
+    private readonly Actor boss = module.KefkaP5()!;
 
     public override void Update()
     {
@@ -29,10 +30,9 @@ sealed class FellForces(BossModule module) : Components.GenericBaitStack(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action.ID is ((uint)AID.FellForces) or ((uint)AID.FellForces1) or
-            ((uint)AID.FellForces2))
+        if (spell.Action.ID is ((uint)AID.FellForces) or ((uint)AID.FellForces1) or ((uint)AID.FellForces2))
         {
-            NumCasts++;
+            ++NumCasts;
 
             if (NumCasts == expectedCasts)
             {
@@ -43,18 +43,13 @@ sealed class FellForces(BossModule module) : Components.GenericBaitStack(module)
 
     private void SetupBaits()
     {
-        var boss = ((DMU)Module).KefkaP5();
-        if (boss == null)
-        {
-            return;
-        }
-
         var party = Raid.WithSlot(true, true, true);
         BitMask allowedTanks = default;
         BitMask allowedHealers = default;
         BitMask allowedDDs = default;
 
-        for (var i = 0; i < party.Length; ++i)
+        var len = party.Length;
+        for (var i = 0; i < len; ++i)
         {
             ref var p = ref party[i];
 
@@ -62,13 +57,11 @@ sealed class FellForces(BossModule module) : Components.GenericBaitStack(module)
             {
                 allowedTanks.Set(p.Item1);
             }
-
-            if (p.Item2.Role == Role.Healer)
+            else if (p.Item2.Role == Role.Healer)
             {
                 allowedHealers.Set(p.Item1);
             }
-
-            if (p.Item2.Role is Role.Melee or Role.Ranged)
+            else if (p.Item2.Role is Role.Melee or Role.Ranged)
             {
                 allowedDDs.Set(p.Item1);
             }
@@ -78,7 +71,7 @@ sealed class FellForces(BossModule module) : Components.GenericBaitStack(module)
         var addedHealer = false;
         var addedDD = false;
 
-        for (var i = 0; i < party.Length; ++i)
+        for (var i = 0; i < len; ++i)
         {
             ref var player = ref party[i];
             var p = player.Item2;
@@ -96,8 +89,7 @@ sealed class FellForces(BossModule module) : Components.GenericBaitStack(module)
                     addedTank = true;
                 }
             }
-
-            if (p.Role == Role.Healer)
+            else if (p.Role == Role.Healer)
             {
                 if (!addedHealer)
                 {
@@ -105,8 +97,7 @@ sealed class FellForces(BossModule module) : Components.GenericBaitStack(module)
                     addedHealer = true;
                 }
             }
-
-            if (p.Role is Role.Melee or Role.Ranged)
+            else if (p.Role is Role.Melee or Role.Ranged)
             {
                 if (!addedDD)
                 {
@@ -264,11 +255,12 @@ sealed class ChaoticFloodStack(BossModule module) : Components.GenericStackSprea
     }
 }
 
-sealed class MaddeningOrchestra(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
+sealed class MaddeningOrchestra(DMU module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
     private bool active = false;
     private readonly DateTime[] magicVulnerability = new DateTime[PartyState.MaxPartySize];
     private bool firstWave = false;
+    private readonly Actor boss = module.KefkaP5()!;
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
@@ -294,7 +286,7 @@ sealed class MaddeningOrchestra(BossModule module) : Components.GenericBaitAway(
     {
         if (spell.Action.ID is ((uint)AID.Holy) or ((uint)AID.Flare))
         {
-            NumCasts++;
+            ++NumCasts;
 
             if (NumCasts >= 5)
             {
@@ -308,12 +300,6 @@ sealed class MaddeningOrchestra(BossModule module) : Components.GenericBaitAway(
         CurrentBaits.Clear();
 
         if (!active)
-        {
-            return;
-        }
-
-        var boss = ((DMU)Module).KefkaP5();
-        if (boss == null)
         {
             return;
         }
@@ -357,9 +343,10 @@ sealed class MaddeningOrchestra(BossModule module) : Components.GenericBaitAway(
     }
 }
 
-sealed class ChaoticFlareTB(BossModule module) : Components.GenericBaitStack(module, (uint)AID.ChaoticFlareTB)
+sealed class ChaoticFlareTB(DMU module) : Components.GenericBaitStack(module, (uint)AID.ChaoticFlareTB)
 {
     public bool active = false;
+    private readonly Actor boss = module.KefkaP5()!;
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
@@ -373,12 +360,6 @@ sealed class ChaoticFlareTB(BossModule module) : Components.GenericBaitStack(mod
     public override void Update()
     {
         if (!active)
-        {
-            return;
-        }
-
-        var boss = ((DMU)Module).KefkaP5();
-        if (boss == null)
         {
             return;
         }
@@ -801,9 +782,10 @@ sealed class P5ForsakenGround(BossModule module) : Components.SimpleAOEs(module,
     }
 }
 
-sealed class P5ForsakenBait(BossModule module) : Components.GenericBaitProximity(module)
+sealed class P5ForsakenBait(DMU module) : Components.GenericBaitProximity(module)
 {
     private bool active = true;
+    private readonly Actor boss = module.KefkaP5()!;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -833,12 +815,6 @@ sealed class P5ForsakenBait(BossModule module) : Components.GenericBaitProximity
 
         CurrentBaits.Clear();
         OnlyShowOutlines = true;
-
-        var boss = ((DMU)Module).KefkaP5();
-        if (boss == null)
-        {
-            return;
-        }
 
         var target = Raid.WithoutSlot().SortedByRange(boss.Position).Closest(boss.Position);
         if (target == null)

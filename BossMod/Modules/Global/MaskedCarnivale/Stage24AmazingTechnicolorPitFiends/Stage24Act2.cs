@@ -29,7 +29,7 @@ sealed class Silence(BossModule module) : Components.CastInterruptHint(module, (
 
 sealed class Hints2(BossModule module) : BossComponent(module)
 {
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var magi = Module.Enemies((uint)OID.ArenaMagus);
         var countM = magi.Count;
@@ -62,20 +62,11 @@ sealed class Hints2(BossModule module) : BossComponent(module)
     }
 }
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"The {Module.PrimaryActor.Name} casts Silence which should be interrupted.\nCondensed Libra puts a debuff on you. Use Diamondback to survive the\nfollowing attack. Alternatively you can cleanse the debuff with Exuviation.");
-    }
-}
-
 sealed class Stage24Act2States : StateMachineBuilder
 {
     public Stage24Act2States(BossModule module) : base(module)
     {
         TrivialPhase()
-            .DeactivateOnEnter<Hints>()
             .ActivateOnEnter<Starstorm>()
             .ActivateOnEnter<RagingAxe>()
             .ActivateOnEnter<Silence>()
@@ -85,12 +76,17 @@ sealed class Stage24Act2States : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 634, NameID = 8128, SortOrder = 2)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 634u, NameID = 8128u, SortOrder = 2)]
 public sealed class Stage24Act2 : BossModule
 {
     public Stage24Act2(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {
-        ActivateComponent<Hints>();
+        _prePullHints =
+        [
+            $"The {PrimaryActor.Name} casts Silence which should be interrupted.",
+            "Condensed Libra puts a debuff on you. Use Diamondback to survive thefollowing attack.",
+            "Alternatively you can cleanse the debuff with Exuviation."
+        ];
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
@@ -113,4 +109,8 @@ public sealed class Stage24Act2 : BossModule
             };
         }
     }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

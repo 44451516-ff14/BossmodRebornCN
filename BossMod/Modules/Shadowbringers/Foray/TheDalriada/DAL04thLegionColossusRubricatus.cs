@@ -19,7 +19,7 @@ public enum AID : uint
 
 sealed class MagitekSlash(BossModule module) : Components.GenericRotatingAOE(module)
 {
-    private static readonly AOEShapeCone cone = new(20f, 30f.Degrees());
+    private readonly AOEShapeCone cone = new(20f, 30f.Degrees());
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -68,9 +68,17 @@ sealed class DAL04thLegionColossusRubricatusStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.TheDalriada, GroupID = 778, NameID = 9432, SortOrder = 4)]
-public sealed class DAL04thLegionColossusRubricatus(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.TheDalriada, GroupID = 778u, NameID = 9432u, SortOrder = 4)]
+public sealed class DAL04thLegionColossusRubricatus : BossModule
 {
-    private static readonly WPos rect = new(650f, -556f);
-    private static readonly ArenaBoundsCustom arena = new([new Rectangle(new(650f, -546.1f), 18.81f, 18.51f), new Rectangle(rect, 2.85f, 17.6f), new Rectangle(rect, 2.6f, 18.56f)]);
+    public DAL04thLegionColossusRubricatus(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private DAL04thLegionColossusRubricatus(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var center = new WPos(650f, -556f);
+        var arena = new ArenaBoundsCustom([new Rectangle(new(650f, -546.1f), 18.81f, 18.51f), new Rectangle(center, 2.85f, 17.6f), new Rectangle(center, 2.6f, 18.56f)]);
+        return (arena.Center, arena);
+    }
 }

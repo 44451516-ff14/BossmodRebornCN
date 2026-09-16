@@ -47,7 +47,7 @@ sealed class Dialogos(BossModule module) : Components.UniformStackSpread(module,
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_type != Type.None && NumCasts < 2)
         {

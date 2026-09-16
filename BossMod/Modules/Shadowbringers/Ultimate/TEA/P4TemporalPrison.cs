@@ -1,6 +1,5 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-[SkipLocalsInit]
 sealed class P4TemporalPrison(BossModule module) : Components.GenericTowers(module)
 {
     public int NumPrisons;

@@ -101,8 +101,8 @@ sealed unsafe class DebugAction : IDisposable
         if (hover.ActionId != 0)
         {
             var mnemonic = Service.PlayerState.ClassJob.ValueNullable?.Abbreviation.ToString();
-            var rotationType = mnemonic != null ? Type.GetType($"BossMod.{mnemonic}Rotation")?.GetNestedType("AID") : null;
-            ImGui.TextUnformatted($"Hover action: {hover.DetailKind} {hover.ActionId} (base={hover.BaseActionId}) ({mnemonic}: {rotationType?.GetEnumName(hover.ActionId)})");
+            var rotationType = mnemonic != null ? GeneratedFactories.FindType($"BossMod.{mnemonic}Rotation+AID") : null;
+            ImGui.TextUnformatted($"Hover action: {hover.DetailKind} {hover.ActionId} (base={hover.BaseActionId}) ({mnemonic}: {rotationType?.GeneratedEnumName(hover.ActionId)})");
 
             var name = "";
             var type = FFXIVClientStructs.FFXIV.Client.Game.ActionType.None;

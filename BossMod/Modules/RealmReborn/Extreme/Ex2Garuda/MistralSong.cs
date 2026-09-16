@@ -1,6 +1,6 @@
 ﻿namespace BossMod.RealmReborn.Extreme.Ex2Garuda;
 
-class MistralSong : Components.GenericLineOfSightAOE
+abstract class MistralSong : Components.GenericLineOfSightAOE
 {
     private readonly WPos _predictedPosition;
 
@@ -24,5 +24,5 @@ class MistralSong : Components.GenericLineOfSightAOE
 
     private IEnumerable<(WPos, float)> ActiveBlockers() => Module.Enemies((uint)OID.Monolith).Where(a => !a.IsDead).Select(a => (a.Position, a.HitboxRadius - 0.5f));
 }
-class MistralSong1(BossModule module) : MistralSong(module, new(0, -13));
-class MistralSong2(BossModule module) : MistralSong(module, new(13, 0));
+sealed class MistralSong1(BossModule module) : MistralSong(module, new(0f, -13f));
+sealed class MistralSong2(BossModule module) : MistralSong(module, new(13f, 0f));

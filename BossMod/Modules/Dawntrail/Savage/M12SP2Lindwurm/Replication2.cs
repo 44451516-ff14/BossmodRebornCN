@@ -282,7 +282,7 @@ class Replication2ScaldingWaves : Components.GenericBaitProximity
                     continue;
 
                 var angle = (player.Position - caster.Position).ToAngle();
-                var diff = MathF.Abs(angle.Rad - spell.Rotation.Rad);
+                var diff = Math.Abs(angle.Rad - spell.Rotation.Rad);
 
                 if (diff < bestDiff)
                 {

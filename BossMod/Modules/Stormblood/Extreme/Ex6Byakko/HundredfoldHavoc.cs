@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Stormblood.Extreme.Ex6Byakko;
 
-class HundredfoldHavoc(BossModule module) : Components.Exaflare(module, 5f)
+sealed class HundredfoldHavoc(BossModule module) : Components.Exaflare(module, 5f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

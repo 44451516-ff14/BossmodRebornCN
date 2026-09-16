@@ -1,8 +1,8 @@
-﻿namespace BossMod.Modules.Dawntrail.Raid.M09NVampFatale;
+﻿namespace BossMod.Dawntrail.Raid.M09NVampFatale;
 
-sealed class M09VampFataleStates : StateMachineBuilder
+sealed class M09NVampFataleStates : StateMachineBuilder
 {
-    public M09VampFataleStates(BossModule module) : base(module)
+    public M09NVampFataleStates(BossModule module) : base(module)
     {
         TrivialPhase()
             .ActivateOnEnter<ArenaChanges>()

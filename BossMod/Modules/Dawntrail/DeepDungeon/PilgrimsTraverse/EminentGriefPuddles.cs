@@ -1,4 +1,4 @@
-namespace BossMod.Endwalker.DeepDungeon.PilgrimsTraverse;
+namespace BossMod.Dawntrail.DeepDungeon.PilgrimsTraverse;
 
 abstract class LightAndDarkBase(BossModule module) : Components.GenericAOEs(module)
 {
@@ -102,7 +102,7 @@ abstract class LightAndDarkBase(BossModule module) : Components.GenericAOEs(modu
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (hpDifference != default)
         {

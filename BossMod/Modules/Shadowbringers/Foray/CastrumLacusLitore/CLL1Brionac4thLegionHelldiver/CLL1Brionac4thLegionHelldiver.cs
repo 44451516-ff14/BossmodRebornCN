@@ -1,182 +1,60 @@
-using static BossMod.Shadowbringers.Foray.CastrumLacusLitore.CLL1Brionac4thLegionHelldiver.CLL1Brionac4thLegionHelldiver;
-
 namespace BossMod.Shadowbringers.Foray.CastrumLacusLitore.CLL1Brionac4thLegionHelldiver;
 
-sealed class ElectricAnvil(BossModule module) : Components.SingleTargetCast(module, (uint)AID.ElectricAnvil)
+sealed class ElectricAnvil(BossModule module) : Components.SingleTargetCast(module, (uint)AID.ElectricAnvil, arenaProjectionLayer: 1);
+
+sealed class MagitekMissiles(BossModule module) : Components.SingleTargetCast(module, (uint)AID.MagitekMissiles, arenaProjectionLayer: 0);
+
+sealed class MRVMissile(BossModule module) : Components.RaidwideCast(module, (uint)AID.MRVMissile, arenaProjectionLayer: 0);
+sealed class LightningShower(BossModule module) : Components.RaidwideCast(module, (uint)AID.LightningShower, arenaProjectionLayer: 1);
+
+sealed class FalseThunder(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.FalseThunder1, (uint)AID.FalseThunder2], new AOEShapeCone(47f, 65f.Degrees()), arenaProjectionLayer: 1);
+
+sealed class Voltstream(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Voltstream, new AOEShapeRect(40f, 5f), 3, arenaProjectionLayer: 1);
+
+sealed class SurfaceMissile(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SurfaceMissile, 6f, arenaProjectionLayer: 0);
+
+sealed class CommandSuppressiveFormation(BossModule module) : Components.ChargeAOEs(module, (uint)AID.CommandSuppressiveFormation, 3f, arenaProjectionLayer: 0);
+
+sealed class BossHealths(CLL1Brionac4thLegionHelldiver module) : BossComponent(module)
 {
-    private readonly DetermineArena _arena = module.FindComponent<DetermineArena>()!;
-
-    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
-        if (_arena.IsBrionacArena)
-            base.AddAIHints(slot, actor, assignment, hints);
-    }
-
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        if (_arena.IsBrionacArena)
-            base.AddGlobalHints(hints);
+        hints.Add($"Top: {Module.PrimaryActor.HPRatio * 100f:f1}%, Bottom: {module.BossHellDiver?.HPRatio * 100f:f1}%");
     }
 }
 
-sealed class MagitekMissiles(BossModule module) : Components.SingleTargetCast(module, (uint)AID.MagitekMissiles)
-{
-    private readonly DetermineArena _arena = module.FindComponent<DetermineArena>()!;
-
-    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        if (!_arena.IsBrionacArena)
-            base.AddAIHints(slot, actor, assignment, hints);
-    }
-
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        if (!_arena.IsBrionacArena)
-        {
-            base.AddGlobalHints(hints);
-        }
-    }
-}
-
-sealed class MRVMissile(BossModule module) : Components.RaidwideCast(module, (uint)AID.MRVMissile)
-{
-    private readonly DetermineArena _arena = module.FindComponent<DetermineArena>()!;
-
-    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        if (!_arena.IsBrionacArena)
-            base.AddAIHints(slot, actor, assignment, hints);
-    }
-
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        if (!_arena.IsBrionacArena)
-            base.AddGlobalHints(hints);
-    }
-}
-
-sealed class LightningShower(BossModule module) : Components.RaidwideCast(module, (uint)AID.LightningShower)
-{
-    private readonly DetermineArena _arena = module.FindComponent<DetermineArena>()!;
-
-    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        if (_arena.IsBrionacArena)
-            base.AddAIHints(slot, actor, assignment, hints);
-    }
-
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        if (_arena.IsBrionacArena)
-            base.AddGlobalHints(hints);
-    }
-}
-
-sealed class FalseThunder(BossModule module) : Components.SimpleAOEGroupsByTimewindow(module, [(uint)AID.FalseThunder1, (uint)AID.FalseThunder2], new AOEShapeCone(47f, 65f.Degrees()))
-{
-    private readonly DetermineArena _arena = module.FindComponent<DetermineArena>()!;
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        if (_arena.IsBrionacArena)
-            return base.ActiveAOEs(slot, actor);
-        else
-            return [];
-    }
-}
-
-sealed class Voltstream(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Voltstream, new AOEShapeRect(40f, 5f), 3)
-{
-    private readonly DetermineArena _arena = module.FindComponent<DetermineArena>()!;
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        if (_arena.IsBrionacArena)
-            return base.ActiveAOEs(slot, actor);
-        else
-            return [];
-    }
-}
-
-sealed class SurfaceMissile(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SurfaceMissile, 6f)
-{
-    private readonly DetermineArena _arena = module.FindComponent<DetermineArena>()!;
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        if (!_arena.IsBrionacArena)
-            return base.ActiveAOEs(slot, actor);
-        else
-            return [];
-    }
-}
-
-sealed class CommandSuppressiveFormation(BossModule module) : Components.ChargeAOEs(module, (uint)AID.CommandSuppressiveFormation, 3f)
-{
-    private readonly DetermineArena _arena = module.FindComponent<DetermineArena>()!;
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        if (!_arena.IsBrionacArena)
-            return base.ActiveAOEs(slot, actor);
-        else
-            return [];
-    }
-}
-
-sealed class DetermineArena(BossModule module) : BossComponent(module)
-{
-    public bool IsBrionacArena;
-
-    public override void DrawArenaBackground(int pcSlot, Actor pc)
-    {
-        if (IsBrionacArena && ArenaBottom.Contains(pc.Position - ArenaCenterBottom))
-        {
-            IsBrionacArena = false;
-            Arena.Center = ArenaCenterBottom;
-            Arena.Bounds = ArenaBottom;
-        }
-        else if (!IsBrionacArena && ArenaTop.Contains(pc.Position - ArenaCenterTop))
-        {
-            IsBrionacArena = true;
-            Arena.Center = ArenaCenterTop;
-            Arena.Bounds = ArenaTop;
-        }
-    }
-}
-
-sealed class BossHealths(BossModule module) : BossComponent(module)
-{
-    private readonly Actor BossHelldiver = ((CLL1Brionac4thLegionHelldiver)module).BossHellDiver!;
-
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"Top: {Module.PrimaryActor.HPRatio * 100f:f1}%, Bottom: {BossHelldiver.HPRatio * 100f:f1}%");
-    }
-}
-
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CastrumLacusLitore, GroupID = 735, NameID = 9436)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CastrumLacusLitore, GroupID = 735u, NameID = 9436u)]
 public sealed class CLL1Brionac4thLegionHelldiver : BossModule
 {
-    public CLL1Brionac4thLegionHelldiver(WorldState ws, Actor primary) : base(ws, primary, ArenaCenterBottom, ArenaBottom)
+    public CLL1Brionac4thLegionHelldiver(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private CLL1Brionac4thLegionHelldiver(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
     {
-        ActivateComponent<DetermineArena>();
+        var bottom = new Rectangle(new(80f, -179.41f), 29.58f, 24.59f);
+        var top = new Rectangle(new(80f, -222f), 29.5f, 14.5f);
+        var combinedCenter = new WPos(80f, -195.66f);
+        var polybottom = new RelSimplifiedComplexPolygon(bottom.Contour(combinedCenter));
+        var polytop = new RelSimplifiedComplexPolygon(top.Contour(combinedCenter));
+        var arena = new ArenaBoundsCustom([bottom, top], WorldProjectionLayers: [new(polybottom, 230f, borderY: 230f), new(polytop, 249.5f, borderY: 249.5f)]);
+        return (arena.Center, arena);
     }
 
     public Actor? BossHellDiver;
-    private Actor? tunnelArmor;
+    public Actor? TunnelArmor;
 
     protected override void UpdateModule()
     {
         BossHellDiver ??= GetActor((uint)OID.FourthLegionHelldiver1);
-        tunnelArmor ??= GetActor((uint)OID.TunnelArmor);
+        TunnelArmor ??= GetActor((uint)OID.TunnelArmor);
     }
 
     protected override bool CheckPull() => base.CheckPull() || (BossHellDiver?.InCombat ?? false);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        if (Arena.Center == ArenaCenterTop)
+        if (ActorMatchesArenaProjectionLayer(pc, 1, true))
         {
             Arena.Actor(PrimaryActor);
         }
@@ -190,30 +68,25 @@ public sealed class CLL1Brionac4thLegionHelldiver : BossModule
         for (var i = 0; i < count; ++i)
         {
             var skyarmor = skyarmors[i];
-            if (Arena.InBounds(skyarmor.Position))
+            if (ActorsMatchArenaProjectionLayer(pc, skyarmor))
             {
                 Arena.Actor(skyarmor);
             }
         }
     }
 
-    public static readonly WPos ArenaCenterBottom = new(80f, -179.41f);
-    public static readonly ArenaBoundsRect ArenaBottom = new(29.58f, 24.59f);
-    public static readonly WPos ArenaCenterTop = new(80f, -222f);
-    public static readonly ArenaBoundsRect ArenaTop = new(29.5f, 14.5f);
-
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var count = hints.PotentialTargets.Count;
         var potHints = CollectionsMarshal.AsSpan(hints.PotentialTargets);
-        var center = Arena.Center;
+        var isTop = ActorMatchesArenaProjectionLayer(actor, 1, true);
         for (var i = 0; i < count; ++i)
         {
             var h = potHints[i];
             var e = h.Actor;
             var enemyPrio = h.Priority;
             var oid = e.OID;
-            if (center == ArenaCenterTop)
+            if (isTop)
             {
                 if (oid == (uint)OID.MagitekCore)
                 {
@@ -224,7 +97,7 @@ public sealed class CLL1Brionac4thLegionHelldiver : BossModule
                 {
                     enemyPrio = AIHints.Enemy.PriorityForbidden;
                 }
-                else if (oid == (uint)OID.FourthLegionSkyArmor && Arena.InBounds(e.Position))
+                else if (oid == (uint)OID.FourthLegionSkyArmor && ActorMatchesArenaProjectionLayer(actor, 1, true))
                 {
                     enemyPrio = 0;
                 }
@@ -241,11 +114,11 @@ public sealed class CLL1Brionac4thLegionHelldiver : BossModule
                 }
                 // if bottom boss got less than 20% hp, but hp difference to upper boss is > 10%, forbid attacking
                 // unless tunnel armor is almost dead, then risk the enrage sequence
-                else if (e == BossHellDiver && e.HPRatio is var ratio && ratio <= 0.2f && ratio - PrimaryActor.HPRatio < -0.1f && tunnelArmor?.HPRatio > 0.1f)
+                else if (e == BossHellDiver && e.HPRatio is var ratio && ratio <= 0.2f && ratio - PrimaryActor.HPRatio < -0.1f && TunnelArmor?.HPRatio > 0.1f)
                 {
                     enemyPrio = AIHints.Enemy.PriorityForbidden;
                 }
-                else if (oid == (uint)OID.FourthLegionSkyArmor && Arena.InBounds(e.Position))
+                else if (oid == (uint)OID.FourthLegionSkyArmor && ActorMatchesArenaProjectionLayer(actor, 0, true))
                 {
                     enemyPrio = 0;
                 }

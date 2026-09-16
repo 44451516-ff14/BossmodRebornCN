@@ -1,9 +1,9 @@
 ﻿namespace BossMod.Endwalker.Savage.P2SHippokampos;
 
 // state related to dissociation mechanic
-class Dissociation(BossModule module) : BossComponent(module)
+sealed class Dissociation(BossModule module) : BossComponent(module)
 {
-    private AOEShapeRect? _shape = new(50, 10);
+    private AOEShapeRect? _shape = new(50f, 10f);
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {

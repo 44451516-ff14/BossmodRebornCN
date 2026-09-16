@@ -31,7 +31,6 @@ sealed class AgeOfEndlessFrost(BossModule module) : Components.SimpleAOEs(module
 sealed class TheStormWithin(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheStormWithin, 10f);
 sealed class TheStormWithout(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheStormWithout, new AOEShapeDonut(10f, 40f));
 
-[SkipLocalsInit]
 sealed class TerritorialDisputeStates : StateMachineBuilder
 {
     public TerritorialDisputeStates(BossModule module) : base(module)
@@ -47,21 +46,11 @@ sealed class TerritorialDisputeStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Contributed,
-    StatesType = typeof(TerritorialDisputeStates),
-    ConfigType = null, // replace null with typeof(RuinHoundConfig) if applicable
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID), // replace null with typeof(AID) if applicable
-    StatusIDType = null, // replace null with typeof(SID) if applicable
-    TetherIDType = null, // replace null with typeof(TetherID) if applicable
-    IconIDType = null, // replace null with typeof(IconID) if applicable
     PrimaryActorOID = (uint)OID.RuinHound,
     Contributors = "Equilius",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.Foray,
     GroupType = BossModuleInfo.GroupType.ForayFATE,
     GroupID = 1093u,
     NameID = 2080u,
     SortOrder = 9,
     PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class TerritorialDispute(WorldState ws, Actor primary) : OpenWorldFate(ws, primary);

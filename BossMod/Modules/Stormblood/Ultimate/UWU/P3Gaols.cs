@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UWU;
 
 // TODO: add sludge voidzones?..
-class P3Gaols(BossModule module) : Components.GenericAOEs(module)
+sealed class P3Gaols(BossModule module) : Components.GenericAOEs(module)
 {
     public enum State { None, TargetSelection, Fetters, Done }
     private readonly UWUConfig _config = Service.Config.Get<UWUConfig>();
@@ -9,7 +9,7 @@ class P3Gaols(BossModule module) : Components.GenericAOEs(module)
     public State CurState;
     private BitMask _targets;
 
-    private static readonly AOEShapeCircle _freefireShape = new(6f);
+    private readonly AOEShapeCircle _freefireShape = new(6f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -34,7 +34,7 @@ class P3Gaols(BossModule module) : Components.GenericAOEs(module)
         return aoes;
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (CurState == State.TargetSelection && _targets.Any())
         {

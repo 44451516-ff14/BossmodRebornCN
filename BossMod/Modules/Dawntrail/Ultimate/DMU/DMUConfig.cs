@@ -1,7 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.DMU;
 
 [ConfigDisplay(Order = 0x400, Parent = typeof(DawntrailConfig))]
-[SkipLocalsInit]
 public sealed class DMUConfig : ConfigNode
 {
 

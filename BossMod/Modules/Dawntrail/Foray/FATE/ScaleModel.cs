@@ -36,7 +36,6 @@ sealed class LamianLesion(BossModule module) : Components.SimpleAOEs(module, (ui
 sealed class Dark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Dark, 6f);
 sealed class TortoiseStomp(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TortoiseStomp, 8f);
 
-[SkipLocalsInit]
 sealed class ScaleModelStates : StateMachineBuilder
 {
     public ScaleModelStates(BossModule module) : base(module)
@@ -66,5 +65,4 @@ sealed class ScaleModelStates : StateMachineBuilder
     NameID = 2083u,
     SortOrder = 12,
     PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class DemiMedusa(WorldState ws, Actor primary) : OpenWorldFate(ws, primary);

@@ -5,48 +5,60 @@ sealed class TagTeamLariatCombo(BossModule module) : Components.GenericAOEs(modu
     public readonly List<AOEInstance> AOEs = [with(2)];
     private readonly Actor?[] _tetherSource = new Actor?[PartyState.MaxPartySize];
     private readonly AOEInstance[][] _safespot = new AOEInstance[PartyState.MaxPartySize][];
-    private static readonly AOEShapeRect rect = new(70f, 17f);
+    private readonly AOEShapeRect rect = new(70f, 17f);
     private ConeHA[] cone = [];
+    private bool waitforcone;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        var count = AOEs.Count;
-        if (count == 0)
-        {
-            return [];
-        }
         if (_tetherSource[slot] != null)
         {
-            var safespot = _safespot[slot];
-            if (safespot == null)
+            if (_safespot[slot] != null)
             {
-                var safeShapes = new RectangleSE[1];
-                var dangerShapes = new RectangleSE[1];
-                var aoes = CollectionsMarshal.AsSpan(AOEs);
-                for (var i = 0; i < count; ++i)
-                {
-                    ref var aoe = ref aoes[i];
-                    var isSafe = _tetherSource[slot]!.Position.AlmostEqual(aoe.Origin, 25f);
-                    var shape = new RectangleSE(aoe.Origin, aoe.Origin + rect.LengthFront * aoe.Rotation.ToDirection(), rect.HalfWidth);
-
-                    if (isSafe)
-                    {
-                        safeShapes[0] = shape;
-                    }
-                    else
-                    {
-                        dangerShapes[0] = shape;
-                    }
-                }
-
-                ref var aoe0 = ref aoes[0];
-                var center = Arena.Center;
-                var aoeShape = new AOEShapeCustom(center, safeShapes, dangerShapes, cone, cone.Length != 0 ? OperandType.Intersection : OperandType.Union, invertForbiddenZone: true);
-                safespot = [new(aoeShape, center, default, aoe0.Activation, Colors.SafeFromAOE, shapeDistance: aoeShape.InvertedDistance(center, default))];
+                return _safespot[slot];
             }
-            return safespot;
+
+            var safespot = AddSafespots(slot);
+            if (safespot != null)
+            {
+                return _safespot[slot] = safespot;
+            }
+            return [];
         }
         return CollectionsMarshal.AsSpan(AOEs);
+    }
+
+    private AOEInstance[]? AddSafespots(int slot)
+    {
+        var count = AOEs.Count;
+        if (AOEs.Count == 2 && waitforcone == (cone.Length != 0))
+        {
+            var safeShapes = new RectangleSE[1];
+            var dangerShapes = new RectangleSE[1];
+            var aoes = CollectionsMarshal.AsSpan(AOEs);
+            for (var i = 0; i < count; ++i)
+            {
+                ref var aoe = ref aoes[i];
+                var origin = aoe.Origin;
+                var isSafe = _tetherSource[slot]!.Position.AlmostEqual(origin, 25f);
+                var shape = new RectangleSE(origin, origin + rect.LengthFront * aoe.Rotation.ToDirection(), rect.HalfWidth);
+
+                if (isSafe)
+                {
+                    safeShapes[0] = shape;
+                }
+                else
+                {
+                    dangerShapes[0] = shape;
+                }
+            }
+
+            ref var aoe0 = ref aoes[0];
+            var center = Arena.Center;
+            var aoeShape = new AOEShapeCustom(center, safeShapes, dangerShapes, cone, cone.Length != 0 ? OperandType.Intersection : OperandType.Union, invertForbiddenZone: true);
+            return [new(aoeShape, center, default, aoe0.Activation, Colors.SafeFromAOE, shapeDistance: aoeShape.InvertedDistance(center, default))];
+        }
+        return null;
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
@@ -76,14 +88,18 @@ sealed class TagTeamLariatCombo(BossModule module) : Components.GenericAOEs(modu
         {
             case (uint)AID.TagTeamLariatComboFirstRAOE:
             case (uint)AID.TagTeamLariatComboFirstLAOE:
+                AddAOE();
+                break;
             case (uint)AID.FusesOfFuryLariatComboFirstRAOE:
             case (uint)AID.FusesOfFuryLariatComboFirstLAOE:
-                AOEs.Add(new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
+                AddAOE();
+                waitforcone = true;
                 break;
             case (uint)AID.FusesOfFuryMurderousMist:
                 cone = [new(spell.LocXZ, 40f, spell.Rotation, 135f.Degrees())];
                 break;
         }
+        void AddAOE() => AOEs.Add(new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -121,7 +137,8 @@ sealed class TagTeamLariatCombo(BossModule module) : Components.GenericAOEs(modu
                 else if (id is (uint)AID.TagTeamLariatComboFirstRAOE or (uint)AID.TagTeamLariatComboFirstLAOE or (uint)AID.FusesOfFuryLariatComboFirstRAOE or (uint)AID.FusesOfFuryLariatComboFirstLAOE)
                 {
                     ref var aoe = ref aoes[index];
-                    aoe.Origin = (Arena.Center - (aoe.Origin - Arena.Center)).Quantized();
+                    var center = Arena.Center;
+                    aoe.Origin = (center - (aoe.Origin - center)).Quantized();
                     aoe.Rotation += 180f.Degrees();
                     aoe.Activation = WorldState.FutureTime(4.3d);
                 }

@@ -2,7 +2,7 @@
 
 // note: this assumes rinon strat - initial markers stack center, everyone else spreads
 // TODO: reconsider visualization (player prios etc - spread part is not real...)
-class CaloricTheory1Part1(BossModule module) : Components.UniformStackSpread(module, 7f, 7f, 1)
+sealed class CaloricTheory1Part1(BossModule module) : Components.UniformStackSpread(module, 7f, 7f, 1)
 {
     private BitMask _initialMarkers; // these shouldn't spread
 
@@ -32,7 +32,7 @@ class CaloricTheory1Part1(BossModule module) : Components.UniformStackSpread(mod
     }
 }
 
-class CaloricTheory1Part2(BossModule module) : Components.UniformStackSpread(module, 7f, default, 2)
+sealed class CaloricTheory1Part2(BossModule module) : Components.UniformStackSpread(module, 7f, default, 2)
 {
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -61,7 +61,7 @@ class CaloricTheory1Part2(BossModule module) : Components.UniformStackSpread(mod
     }
 }
 
-class CaloricTheory1Part3(BossModule module) : Components.UniformStackSpread(module, 7f, 7f, 2)
+sealed class CaloricTheory1Part3(BossModule module) : Components.UniformStackSpread(module, 7f, 7f, 2)
 {
     private BitMask _spreads;
 
@@ -108,7 +108,7 @@ class CaloricTheory1Part3(BossModule module) : Components.UniformStackSpread(mod
     }
 }
 
-class CaloricTheory2Part1(BossModule module) : Components.UniformStackSpread(module, 7, 7, 1, 1)
+sealed class CaloricTheory2Part1(BossModule module) : Components.UniformStackSpread(module, 7, 7, 1, 1)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -135,7 +135,7 @@ class CaloricTheory2Part1(BossModule module) : Components.UniformStackSpread(mod
     }
 }
 
-class CaloricTheory2Part2(BossModule module) : Components.UniformStackSpread(module, 7f, 7f)
+sealed class CaloricTheory2Part2(BossModule module) : Components.UniformStackSpread(module, 7f, 7f)
 {
     public bool Done;
 
@@ -166,4 +166,4 @@ class CaloricTheory2Part2(BossModule module) : Components.UniformStackSpread(mod
     }
 }
 
-class EntropicExcess(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EntropicExcess, 7);
+sealed class EntropicExcess(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EntropicExcess, 7f);

@@ -1,10 +1,9 @@
 ﻿namespace BossMod.Endwalker.Alliance.A10RhalgrEmissary;
 
-class DestructiveCharge(BossModule module) : Components.GenericAOEs(module)
+sealed class DestructiveCharge(BossModule module) : Components.GenericAOEs(module)
 {
     public List<AOEInstance> AOEs = [with(2)];
-
-    private static readonly AOEShapeCone _shape = new(25f, 45f.Degrees());
+    private readonly AOEShapeCone _shape = new(25f, 45f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);
 

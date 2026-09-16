@@ -29,31 +29,32 @@ sealed class IPCProvider : IDisposable
             }
 
             var sm = module.StateMachine;
-            if (sm.ActiveState == null)
+            var activestate = sm.ActiveState;
+            if (activestate == null)
             {
                 return "ActiveState is null";
             }
 
             var sb = new StringBuilder();
-            sb.Append($"Phase={sm.ActivePhaseIndex} State={sm.ActiveState.ID:X}({sm.ActiveState.Name}) Dur={sm.ActiveState.Duration:F1}s Hint={sm.ActiveState.EndHint}");
+            sb.Append($"Phase={sm.ActivePhaseIndex} State={activestate.ID:X}({activestate.Name}) Dur={activestate.Duration:F1}s Hint={activestate.EndHint}");
             var count = 0;
-            var next = sm.ActiveState;
+            var next = activestate;
             var foundRW = false;
             var foundTB = false;
             while (next != null && count < 20)
             {
-                if (!foundRW && next.EndHint.HasFlag(StateMachine.StateHint.Raidwide))
+                if (!foundRW && (next.EndHint & StateMachine.StateHint.Raidwide) != 0)
                 {
                     foundRW = true;
                     sb.Append($" | RW@{next.ID:X}({next.Name})");
                 }
-                if (!foundTB && next.EndHint.HasFlag(StateMachine.StateHint.Tankbuster))
+                if (!foundTB && (next.EndHint & StateMachine.StateHint.Tankbuster) != 0)
                 {
                     foundTB = true;
                     sb.Append($" | TB@{next.ID:X}({next.Name})");
                 }
                 next = next.NextStates?.Length == 1 ? next.NextStates[0] : null;
-                count++;
+                ++count;
             }
             if (!foundRW)
             {
@@ -394,7 +395,7 @@ sealed class IPCProvider : IDisposable
 
         bool addTransientStrategy(string presetName, string moduleTypeName, string trackName, string value, StrategyTarget target = StrategyTarget.Automatic, int targetParam = 0)
         {
-            var mt = Type.GetType(moduleTypeName);
+            var mt = RotationModuleRegistry.FindType(moduleTypeName);
             if (mt == null || !RotationModuleRegistry.Modules.TryGetValue(mt, out var md))
             {
                 return false;
@@ -453,7 +454,7 @@ sealed class IPCProvider : IDisposable
 
         Register("Presets.ClearTransientStrategy", (string presetName, string moduleTypeName, string trackName) =>
         {
-            var mt = Type.GetType(moduleTypeName);
+            var mt = RotationModuleRegistry.FindType(moduleTypeName);
             if (mt == null || !RotationModuleRegistry.Modules.TryGetValue(mt, out var md))
             {
                 return false;
@@ -482,7 +483,7 @@ sealed class IPCProvider : IDisposable
         });
         Register("Presets.ClearTransientModuleStrategies", (string presetName, string moduleTypeName) =>
         {
-            var mt = Type.GetType(moduleTypeName);
+            var mt = RotationModuleRegistry.FindType(moduleTypeName);
             if (mt == null || !RotationModuleRegistry.Modules.TryGetValue(mt, out var md))
             {
                 return false;

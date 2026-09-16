@@ -178,7 +178,6 @@ sealed class Devour(BossModule module) : Components.SimpleAOEs(module, (uint)AID
 sealed class PoisonHeart(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PoisonHeart2, 5f);
 sealed class VenomMist(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.VenomMist2, (uint)AID.VenomMist3, (uint)AID.VenomMist4, (uint)AID.VenomMist6], new AOEShapeCone(30f, 45f.Degrees()));
 
-[SkipLocalsInit]
 sealed class CE212ManyMouthstoFeedStates : StateMachineBuilder
 {
     public CE212ManyMouthstoFeedStates(BossModule module) : base(module)
@@ -195,24 +194,7 @@ sealed class CE212ManyMouthstoFeedStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Contributed,
-    StatesType = typeof(CE212ManyMouthstoFeedStates),
-    ConfigType = null, // replace null with typeof(ManyMouthstoFeedConfig) if applicable
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID), // replace null with typeof(AID) if applicable
-    StatusIDType = null, // replace null with typeof(SID) if applicable
-    TetherIDType = null, // replace null with typeof(TetherID) if applicable
-    IconIDType = null, // replace null with typeof(IconID) if applicable
-    PrimaryActorOID = (uint)OID.Pelekys,
-    Contributors = "gynorhino",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.Foray,
-    GroupType = BossModuleInfo.GroupType.CriticalEngagement,
-    GroupID = 1093u,
-    NameID = 49u,
-    SortOrder = 1,
-    PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.Contributed, PrimaryActorOID = (uint)OID.Pelekys, Contributors = "gynorhino", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 1093u, NameID = 49u)]
 public sealed class CE212ManyMouthstoFeed(WorldState ws, Actor primary) : BossModule(ws, primary, new(-870f, -560f), new ArenaBoundsCircle(25f))
 {
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 30f);

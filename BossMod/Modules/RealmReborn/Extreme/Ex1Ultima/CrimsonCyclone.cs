@@ -1,13 +1,13 @@
 ﻿namespace BossMod.RealmReborn.Extreme.Ex1Ultima;
 
-class CrimsonCyclone(BossModule module) : Components.GenericAOEs(module, (uint)AID.CrimsonCyclone)
+sealed class CrimsonCyclone(BossModule module) : Components.GenericAOEs(module, (uint)AID.CrimsonCyclone)
 {
     private Actor? _ifrit; // non-null while mechanic is active
     private DateTime _resolve;
 
     public bool Active => _ifrit != null;
 
-    private static readonly AOEShapeRect _shape = new(43f, 6f, 5f);
+    private readonly AOEShapeRect _shape = new(43f, 6f, 5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

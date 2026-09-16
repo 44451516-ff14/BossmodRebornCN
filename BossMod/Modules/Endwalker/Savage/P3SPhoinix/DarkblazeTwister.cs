@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Savage.P3SPhoinix;
 
 // state related to darkblaze twister mechanics
-class TwisterVoidzone(BossModule module) : Components.Voidzone(module, 5f, GetVoidzones)
+sealed class TwisterVoidzone(BossModule module) : Components.Voidzone(module, 5f, GetVoidzones)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -21,9 +21,9 @@ class TwisterVoidzone(BossModule module) : Components.Voidzone(module, 5f, GetVo
         return voidzones[..index];
     }
 }
-class BurningTwister(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BurningTwister, new AOEShapeDonut(7f, 20f));
+sealed class BurningTwister(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BurningTwister, new AOEShapeDonut(7f, 20f));
 
-class DarkTwister(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.DarkTwister, _knockbackRange, true)
+sealed class DarkTwister(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.DarkTwister, _knockbackRange, true)
 {
     private const float _knockbackRange = 17f;
     private const float _aoeInnerRadius = 5f;

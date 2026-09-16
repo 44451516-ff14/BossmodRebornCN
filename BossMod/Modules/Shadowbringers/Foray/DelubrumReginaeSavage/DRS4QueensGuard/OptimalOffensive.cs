@@ -6,10 +6,15 @@ sealed class OptimalOffensiveShield(BossModule module) : Components.ChargeAOEs(m
 // note: there are two casters (as usual in bozja content for raidwides)
 sealed class OptimalOffensiveShieldKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.OptimalOffensiveShieldKnockback, 10f, true, 1);
 
-sealed class UnluckyLot(BossModule module) : Components.GenericAOEs(module)
+sealed class UnluckyLot : Components.GenericAOEs
 {
-    private static readonly AOEShapeCircle circle = new(20f);
-    private AOEInstance[] _aoe = [new(circle, module.Center, default, module.WorldState.FutureTime(7.6d))];
+    public UnluckyLot(BossModule module) : base(module)
+    {
+        circle = new(20f);
+        _aoe = [new(circle, module.Center, default, module.WorldState.FutureTime(7.6d))];
+    }
+    private readonly AOEShapeCircle circle;
+    private AOEInstance[] _aoe;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 

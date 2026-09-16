@@ -45,7 +45,7 @@ sealed class BladeOfTheTengu(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(2)];
 
-    private static readonly AOEShapeCone _shape = new(50f, 45f.Degrees()); // TODO: verify angle
+    private readonly AOEShapeCone _shape = new(50f, 45f.Degrees()); // TODO: verify angle
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -68,7 +68,9 @@ sealed class BladeOfTheTengu(BossModule module) : Components.GenericAOEs(module)
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (_aoes.Count != 0 && spell.Action.ID is (uint)AID.NBladeOfTheTengu or (uint)AID.SBladeOfTheTengu)
+        {
             _aoes.RemoveAt(0);
+        }
     }
 }
 
@@ -92,7 +94,7 @@ abstract class Huton(BossModule module, uint aid) : Components.SingleTargetCast(
 sealed class NHuton(BossModule module) : Huton(module, (uint)AID.NHuton);
 sealed class SHuton(BossModule module) : Huton(module, (uint)AID.SHuton);
 
-abstract class JujiShuriken(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(40, 1.5f));
+abstract class JujiShuriken(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(40f, 1.5f));
 sealed class NJujiShuriken(BossModule module) : JujiShuriken(module, (uint)AID.NJujiShuriken);
 sealed class SJujiShuriken(BossModule module) : JujiShuriken(module, (uint)AID.SJujiShuriken);
 sealed class NJujiShurikenFast(BossModule module) : JujiShuriken(module, (uint)AID.NJujiShurikenFast);
@@ -125,10 +127,10 @@ abstract class C020Trash2States : StateMachineBuilder
 sealed class C020NTrash2States(BossModule module) : C020Trash2States(module, false);
 sealed class C020STrash2States(BossModule module) : C020Trash2States(module, true);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.NOnmitsugashira, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 946, NameID = 12424, SortOrder = 3)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.NOnmitsugashira, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 946u, NameID = 12424u, SortOrder = 3)]
 public sealed class C020NTrash2(WorldState ws, Actor primary) : C020Trash2(ws, primary, false);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.SOnmitsugashira, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 947, NameID = 12424, SortOrder = 3)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.SOnmitsugashira, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 947u, NameID = 12424u, SortOrder = 3)]
 public sealed class C020STrash2(WorldState ws, Actor primary) : C020Trash2(ws, primary, true);
 
 public abstract class C020Trash2(WorldState ws, Actor primary, bool savage) : BossModule(ws, primary, new(300f, default), new ArenaBoundsRect(19.5f, 39.5f))

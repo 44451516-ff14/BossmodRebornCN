@@ -8,7 +8,7 @@ sealed class CeruleumExplosion(BossModule module) : Components.CastHint(module, 
 sealed class FlamingCyclone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlamingCyclone, 10f);
 sealed class SeventyFourDegrees(BossModule module) : Components.DonutStack(module, (uint)AID.SeventyFourDegrees, (uint)IconID.SeventyFourDegrees, 4f, 8f, 9f);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.TheDalriada, GroupID = 778, NameID = 10212, SortOrder = 1)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.TheDalriada, GroupID = 778u, NameID = 10212u, SortOrder = 1)]
 public sealed class DAL1Gauntlet(WorldState ws, Actor primary) : BossModule(ws, primary, new(222f, -689f), new ArenaBoundsSquare(29.5f))
 {
     public Actor? BossAugur;

@@ -1,6 +1,5 @@
 ﻿namespace BossMod.Dawntrail.Raid.M12NLindwurm;
 
-[SkipLocalsInit]
 sealed class BurstingGrotesquerie(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.SpreadBurstingGrotesquerie, (uint)AID.DramaticLysis, 5f, 5d)
 {
     public override void OnStatusLose(Actor actor, ref ActorStatus status)

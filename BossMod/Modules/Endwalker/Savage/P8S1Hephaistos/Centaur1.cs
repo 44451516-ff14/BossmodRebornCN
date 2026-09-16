@@ -1,9 +1,9 @@
 ﻿namespace BossMod.Endwalker.Savage.P8S1Hephaistos;
 
-class RearingRampageSecond(BossModule module) : Components.CastCounter(module, (uint)AID.RearingRampageSecond);
-class RearingRampageLast(BossModule module) : Components.CastCounter(module, (uint)AID.RearingRampageLast);
+sealed class RearingRampageSecond(BossModule module) : Components.CastCounter(module, (uint)AID.RearingRampageSecond);
+sealed class RearingRampageLast(BossModule module) : Components.CastCounter(module, (uint)AID.RearingRampageLast);
 
-class UpliftStompDead : Components.UniformStackSpread
+sealed class UpliftStompDead : Components.UniformStackSpread
 {
     public int NumUplifts;
     public int NumStomps;
@@ -48,9 +48,9 @@ class UpliftStompDead : Components.UniformStackSpread
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.Uplift:
+            case (uint)AID.Uplift:
                 Spreads.RemoveAll(s => s.Target.InstanceID == spell.MainTargetID);
                 var slot = Raid.FindSlot(spell.MainTargetID);
                 if (slot >= 0)
@@ -59,7 +59,7 @@ class UpliftStompDead : Components.UniformStackSpread
                 }
                 ++NumUplifts;
                 break;
-            case AID.StompDeadAOE:
+            case (uint)AID.StompDeadAOE:
                 ++NumStomps;
                 break;
         }

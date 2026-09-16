@@ -12,7 +12,6 @@ public enum AID : uint
     Inhale = 45719 // Boss->self, 4.0s cast, range 23 120-degree cone
 }
 
-[SkipLocalsInit]
 sealed class ForbiddenGoobue(BossModule module) : Components.GenericInvincible(module)
 {
     private readonly GemHints _hints = module.FindComponent<GemHints>()!;
@@ -27,10 +26,8 @@ sealed class ForbiddenGoobue(BossModule module) : Components.GenericInvincible(m
     }
 }
 
-[SkipLocalsInit]
 sealed class Inhale(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Inhale, new AOEShapeCone(23f, 60f.Degrees()));
 
-[SkipLocalsInit]
 sealed class GemHints(BossModule module) : BossComponent(module)
 {
     public readonly List<Actor> Gems = module.Enemies((uint)OID.Gems);
@@ -107,7 +104,6 @@ sealed class GemHints(BossModule module) : BossComponent(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class V08YawningMawStates : StateMachineBuilder
 {
     public V08YawningMawStates(BossModule module) : base(module)
@@ -136,5 +132,4 @@ GroupID = 1066u,
 NameID = 14402u,
 SortOrder = 8,
 PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class V08YawningMaw(WorldState ws, Actor primary) : BossModule(ws, primary, new(299.77f, 681.98f), new ArenaBoundsCircle(15f));

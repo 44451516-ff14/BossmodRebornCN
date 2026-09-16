@@ -3,7 +3,7 @@
 sealed class BalefulSwathe(BossModule module) : Components.GenericAOEs(module, (uint)AID.BalefulSwathe)
 {
     private readonly DateTime _activation = module.WorldState.FutureTime(7.6d); // from verdant path cast start
-    private static readonly AOEShapeRect _shape = new(50f, 50f, -5f);
+    private readonly AOEShapeRect _shape = new(50f, 50f, -5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

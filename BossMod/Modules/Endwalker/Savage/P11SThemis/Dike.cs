@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P11SThemis;
 
-class Dike(BossModule module) : Components.CastCounter(module, (uint)AID.DikeSecond)
+sealed class Dike(BossModule module) : Components.CastCounter(module, (uint)AID.DikeSecond)
 {
     private ulong _firstPrimaryTarget;
 
@@ -12,7 +12,7 @@ class Dike(BossModule module) : Components.CastCounter(module, (uint)AID.DikeSec
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.DikeAOE1Primary)
+        if (spell.Action.ID == (uint)AID.DikeAOE1Primary)
             _firstPrimaryTarget = spell.TargetID;
     }
 }

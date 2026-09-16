@@ -1,13 +1,13 @@
 ﻿namespace BossMod.Endwalker.Savage.P4S1Hesperos;
 
 // state related to shift mechanics
-class Shift(BossModule module) : BossComponent(module)
+sealed class Shift(BossModule module) : BossComponent(module)
 {
-    private readonly AOEShapeCone _swordAOE = new(50, 60.Degrees());
+    private readonly AOEShapeCone _swordAOE = new(50f, 60f.Degrees());
     private Actor? _swordCaster;
     private Actor? _cloakCaster;
 
-    private const float _knockbackRange = 30;
+    private const float _knockbackRange = 30f;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -43,12 +43,12 @@ class Shift(BossModule module) : BossComponent(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.ShiftingStrikeCloak:
+            case (uint)AID.ShiftingStrikeCloak:
                 _cloakCaster = caster;
                 break;
-            case AID.ShiftingStrikeSword:
+            case (uint)AID.ShiftingStrikeSword:
                 _swordCaster = caster;
                 break;
         }
@@ -56,12 +56,12 @@ class Shift(BossModule module) : BossComponent(module)
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.ShiftingStrikeCloak:
+            case (uint)AID.ShiftingStrikeCloak:
                 _cloakCaster = null;
                 break;
-            case AID.ShiftingStrikeSword:
+            case (uint)AID.ShiftingStrikeSword:
                 _swordCaster = null;
                 break;
         }

@@ -6,7 +6,7 @@ class FreedomOfBozja : TemperatureAOE
     private readonly DateTime _activation;
     private readonly bool _risky;
 
-    private static readonly AOEShapeCircle _shape = new(22);
+    private readonly AOEShapeCircle _shape = new(22);
 
     public FreedomOfBozja(BossModule module, bool risky) : base(module)
     {

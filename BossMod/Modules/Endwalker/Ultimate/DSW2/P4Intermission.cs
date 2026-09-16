@@ -34,7 +34,7 @@ sealed class P4IntermissionSkyblindBait(BossModule module) : BossComponent(modul
 {
     private BitMask _baiters;
 
-    private const float _radius = 3;
+    private const float _radius = 3f;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {

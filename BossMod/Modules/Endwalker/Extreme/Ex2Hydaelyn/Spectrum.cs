@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex2Hydaelyn;
 
-class Spectrum(BossModule module) : Components.CastCounter(module, (uint)AID.BrightSpectrum)
+sealed class Spectrum(BossModule module) : Components.CastCounter(module, (uint)AID.BrightSpectrum)
 {
-    private const float _radius = 5;
+    private const float _radius = 5f;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -25,7 +25,14 @@ class Spectrum(BossModule module) : Components.CastCounter(module, (uint)AID.Bri
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         Arena.ZoneCircleOutline(pc.Position, _radius, Colors.Danger);
-        foreach (var player in Raid.WithoutSlot(false, true, true).Exclude(pc))
-            Arena.Actor(player, player.Position.InCircle(pc.Position, _radius) ? Colors.PlayerInteresting : Colors.PlayerGeneric);
+        foreach (var player in Raid.WithoutSlot(false, true, true))
+        {
+            if (player == pc)
+            {
+                continue;
+            }
+            var inaoe = player.Position.InCircle(pc.Position, _radius);
+            Arena.Actor(player, inaoe ? Colors.PlayerInteresting : Colors.PlayerGeneric, drawWorld: inaoe ? true : null);
+        }
     }
 }

@@ -46,7 +46,7 @@ sealed class StormsBreath(BossModule module) : Components.SimpleKnockbacks(modul
         }
     }
 }
-sealed class ThunderfrostTempest(BossModule module) : Components.RaidwideCast(module, (uint)AID.ThunderfrostTempest)
+sealed class ThunderfrostTempest(BossModule module) : Components.RaidwideCast(module, (uint)AID.ThunderfrostTempestVisual)
 {
     // don't show raidwide hint twice
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -187,25 +187,8 @@ sealed class ArcaneBeacon(BossModule module) : Components.SimpleAOEs(module, (ui
 sealed class Archaeofury1(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Archaeofury1, 6f);
 sealed class Archaeofury2(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Archaeofury2, 6f);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
-    StatesType = typeof(TwoHeadedAevisStates),
-    ConfigType = typeof(TwoHeadedAevisConfig),
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID),
-    StatusIDType = typeof(SID),
-    TetherIDType = typeof(TetherID),
-    IconIDType = typeof(IconID),
-    PrimaryActorOID = (uint)OID.GreenHead,
-    Contributors = "Equilius + gynorhino",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.Foray,
-    GroupType = BossModuleInfo.GroupType.TheForkedTowerMagic,
-    GroupID = 1093u,
-    NameID = 14489u,
-    SortOrder = 1,
-    PlanLevel = 0)]
-[SkipLocalsInit]
-public sealed class TwoHeadedAevis(WorldState ws, Actor primary) : BossModule(ws, primary, new(-900f, 700f), new ArenaBoundsSquare(20f))
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.GreenHead, Contributors = "Equilius + gynorhino", GroupType = BossModuleInfo.GroupType.TheForkedTowerMagicNormal, GroupID = 1093u, NameID = 14489u)]
+public sealed class FTMN1TwoHeadedAevis(WorldState ws, Actor primary) : BossModule(ws, primary, new(-900f, 700f), new ArenaBoundsSquare(20f))
 {
     private Actor? _blueHead;
     public Actor? BlueHead()
@@ -213,7 +196,7 @@ public sealed class TwoHeadedAevis(WorldState ws, Actor primary) : BossModule(ws
         return _blueHead;
     }
 
-    protected override void UpdateModule()
+    protected override void UpdatePreModuleActivation()
     {
         _blueHead ??= GetActor((uint)OID.BlueHead);
     }

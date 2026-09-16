@@ -1,4 +1,4 @@
-﻿using BossMod.Autorotation;
+using BossMod.Autorotation;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility.Raii;
@@ -6,47 +6,112 @@ using Dalamud.Utility;
 using Lumina.Excel.Sheets;
 using Lumina.Text.ReadOnly;
 using System.Globalization;
-using System.Text.RegularExpressions;
 
 namespace BossMod;
 
-public sealed class ModuleViewer : IDisposable
+public sealed class ModuleViewer(PlanDatabase? planDB, WorldState ws) : IDisposable
 {
-    private record struct ModuleInfo(BossModuleRegistry.Info Info, string Name, int SortOrder);
-    private record struct ModuleGroupInfo(string Name, uint Id, uint SortOrder, uint Icon = default);
-    private record struct ModuleGroup(ModuleGroupInfo Info, List<ModuleInfo> Modules);
+    private readonly struct ModuleInfo
+    {
+        public readonly BossModuleRegistry.Info Info;
+        public readonly int SortOrder;
+        public readonly string DisplayName;
+        public readonly string EnableID;
+        public readonly string ConfigID;
+        public readonly string PlansID;
+        public readonly string PopupID;
+        public readonly string HelpText;
 
-    private readonly PlanDatabase? _planDB;
-    private readonly WorldState _ws; // TODO: reconsider...
+        public ModuleInfo(BossModuleRegistry.Info info, string name, int sortOrder)
+        {
+            Info = info;
+            SortOrder = sortOrder;
+
+            var typeName = info.ModuleType.FullName ?? info.ModuleType.Name;
+            DisplayName = $"{name} [{info.ModuleType.Name}]";
+            EnableID = $"##enable-module-{info.PrimaryActorOID:X8}";
+            ConfigID = $"{typeName}_cfg";
+            PlansID = $"{typeName}_plans";
+            PopupID = $"{typeName}_popup";
+            HelpText = BuildModuleHelpText(info);
+        }
+    }
+
+    private readonly struct ModuleGroupInfo(string name, uint id, uint sortOrder, uint icon = default)
+    {
+        public readonly string Name = name;
+        public readonly uint Id = id;
+        public readonly uint SortOrder = sortOrder;
+        public readonly uint Icon = icon;
+
+        public static bool operator ==(ModuleGroupInfo left, ModuleGroupInfo right) => left.Id == right.Id;
+        public static bool operator !=(ModuleGroupInfo left, ModuleGroupInfo right) => left.Id != right.Id;
+
+        public readonly bool Equals(ModuleGroupInfo other) => this == other;
+        public override readonly bool Equals(object? obj) => obj is ModuleGroupInfo other && Equals(other);
+        public override readonly int GetHashCode() => (Name, Id, SortOrder, Icon).GetHashCode();
+    }
+
+    private sealed class ModuleGroup(ModuleGroupInfo info, int expansion, int category)
+    {
+        public readonly ModuleGroupInfo Info = info;
+        public readonly List<BossModuleRegistry.Info> ModuleInfos = [];
+        public readonly List<uint> ModuleOIDs = [];
+        public readonly List<uint> NonDummyModuleOIDs = [];
+        public readonly string EnableID = $"##enable-group-{expansion}-{category}-{info.Id:X8}";
+        public readonly string NodeLabel = $"{info.Name}###{expansion}/{category}/{info.Id}";
+        public List<ModuleInfo>? Modules;
+    }
+
+    private readonly struct GroupClassificationKey(BossModuleInfo.Expansion expansion, BossModuleInfo.Category category, BossModuleInfo.GroupType groupType, uint groupID)
+    {
+        public readonly BossModuleInfo.Expansion Expansion = expansion;
+        public readonly BossModuleInfo.Category Category = category;
+        public readonly BossModuleInfo.GroupType GroupType = groupType;
+        public readonly uint GroupID = groupID;
+    }
+
+    private readonly PlanDatabase? _planDB = planDB;
+    private readonly WorldState _ws = ws; // TODO: reconsider...
+    private readonly BossModuleConfig _moduleConfig = Service.Config.Get<BossModuleConfig>();
 
     private BitMask _filterExpansions;
     private BitMask _filterCategories;
 
-    private readonly (string name, uint icon)[] _expansions = new (string, uint)[(int)BossModuleInfo.Expansion.Count];
-    private readonly (string name, uint icon)[] _categories = new (string, uint)[(int)BossModuleInfo.Category.Count];
-    private readonly uint _iconFATE;
-    private readonly uint _iconHunt;
-    private readonly List<ModuleGroup>[,] _groups;
+    private (string name, uint icon)[]? _expansions;
+    private (string name, uint icon)[]? _categories;
+    private uint _iconFATE;
+    private uint _iconHunt;
+    private List<ModuleGroup>?[,]? _groups;
+    private bool _initialized;
     private readonly Vector2 _iconSize = new(30f, 30f);
+
+    private (string name, uint icon)[] Expansions => _expansions!;
+    private (string name, uint icon)[] Categories => _categories!;
+    private List<ModuleGroup>?[,] Groups => _groups!;
 
     private string _searchText = "";
 
-    public ModuleViewer(PlanDatabase? planDB, WorldState ws)
+    private void EnsureInitialized()
     {
-        _planDB = planDB;
-        _ws = ws;
-
-        const uint defaultIcon = 61762u;
-        var expansionNames = Enum.GetNames<BossModuleInfo.Expansion>();
-        for (var i = 0; i < (int)BossModuleInfo.Expansion.Count; ++i)
+        if (_initialized)
         {
-            _expansions[i] = (expansionNames[i], defaultIcon);
+            return;
         }
 
-        var categoryNames = Enum.GetNames<BossModuleInfo.Category>();
+        _expansions = new (string, uint)[(int)BossModuleInfo.Expansion.Count];
+        _categories = new (string, uint)[(int)BossModuleInfo.Category.Count];
+        const uint defaultIcon = 61762u;
+        var expansionNames = GeneratedEnumMetadata.Names<BossModuleInfo.Expansion>();
+        for (var i = 0; i < (int)BossModuleInfo.Expansion.Count; ++i)
+        {
+            Expansions[i] = (expansionNames[i], defaultIcon);
+        }
+
+        var categoryNames = GeneratedEnumMetadata.Names<BossModuleInfo.Category>();
         for (var i = 0; i < (int)BossModuleInfo.Category.Count; ++i)
         {
-            _categories[i] = (categoryNames[i], defaultIcon);
+            Categories[i] = (categoryNames[i], defaultIcon);
         }
 
         var exVersion = Service.LuminaSheet<ExVersion>()!;
@@ -72,63 +137,79 @@ public sealed class ModuleViewer : IDisposable
         Customize(BossModuleInfo.Category.Ultimate, contentType.GetRow(28u));
         Customize(BossModuleInfo.Category.VariantCriterion, contentType.GetRow(30u));
         Customize(BossModuleInfo.Category.HallOfTheNovice, contentType.GetRow(20u), "Hall of the Novice");
+        Customize(BossModuleInfo.Category.CrucibleOfTheUnbroken, contentType.GetRow(40u), "Beastmaster");
 
         var playStyle = Service.LuminaSheet<CharaCardPlayStyle>()!;
         Customize(BossModuleInfo.Category.Foray, playStyle.GetRow(6u));
         Customize(BossModuleInfo.Category.MaskedCarnivale, playStyle.GetRow(8u));
         Customize(BossModuleInfo.Category.Hunt, playStyle.GetRow(10u));
 
-        _categories[(int)BossModuleInfo.Category.Extreme].icon = _categories[(int)BossModuleInfo.Category.Trial].icon;
-        _categories[(int)BossModuleInfo.Category.Extreme].name = "极神";
-        _categories[(int)BossModuleInfo.Category.Unreal].icon = _categories[(int)BossModuleInfo.Category.Trial].icon;
-        _categories[(int)BossModuleInfo.Category.Unreal].name = "幻巧战";
-        _categories[(int)BossModuleInfo.Category.Savage].icon = _categories[(int)BossModuleInfo.Category.Raid].icon;
-        _categories[(int)BossModuleInfo.Category.Savage].name = "零式大型任务";
-        _categories[(int)BossModuleInfo.Category.Alliance].icon = _categories[(int)BossModuleInfo.Category.Raid].icon;
-        _categories[(int)BossModuleInfo.Category.Alliance].name = "团队任务";
-        //_categories[(int)BossModuleInfo.Category.Event].icon = GetIcon(61757);
+        Categories[(int)BossModuleInfo.Category.Extreme].icon = Categories[(int)BossModuleInfo.Category.Trial].icon;
+        Categories[(int)BossModuleInfo.Category.Extreme].name = "极神";
+        Categories[(int)BossModuleInfo.Category.Unreal].icon = Categories[(int)BossModuleInfo.Category.Trial].icon;
+        Categories[(int)BossModuleInfo.Category.Unreal].name = "幻巧战";
+        Categories[(int)BossModuleInfo.Category.Savage].icon = Categories[(int)BossModuleInfo.Category.Raid].icon;
+        Categories[(int)BossModuleInfo.Category.Savage].name = "零式大型任务";
+        Categories[(int)BossModuleInfo.Category.Alliance].icon = Categories[(int)BossModuleInfo.Category.Raid].icon;
+        Categories[(int)BossModuleInfo.Category.Alliance].name = "团队任务";
+        //Categories[(int)BossModuleInfo.Category.Event].icon = GetIcon(61757);
 
         _iconFATE = contentType.GetRow(8u).Icon;
         _iconHunt = (uint)playStyle.GetRow(10u).Icon;
 
-        _groups = new List<ModuleGroup>[(int)BossModuleInfo.Expansion.Count, (int)BossModuleInfo.Category.Count];
-        for (var i = 0; i < (int)BossModuleInfo.Expansion.Count; ++i)
-        {
-            for (var j = 0; j < (int)BossModuleInfo.Category.Count; ++j)
-            {
-                _groups[i, j] = [];
-            }
-        }
+        _groups = new List<ModuleGroup>?[(int)BossModuleInfo.Expansion.Count, (int)BossModuleInfo.Category.Count];
+        var groupInfoCache = new Dictionary<GroupClassificationKey, ModuleGroupInfo>();
+        var groupCache = new Dictionary<(int Expansion, int Category, uint ID), ModuleGroup>();
 
         foreach (var info in BossModuleRegistry.RegisteredModules.Values)
         {
-            var groups = _groups[(int)info.Expansion, (int)info.Category];
-            var (groupInfo, moduleInfo) = Classify(info);
-            var groupIndex = groups.FindIndex(g => g.Info.Id == groupInfo.Id);
-            if (groupIndex < 0)
+            var expansion = (int)info.Expansion;
+            var category = (int)info.Category;
+            var classificationKey = GroupKey(info);
+            if (!groupInfoCache.TryGetValue(classificationKey, out var groupInfo))
             {
-                groupIndex = groups.Count;
-                groups.Add(new(groupInfo, []));
+                groupInfo = ClassifyGroup(info);
+                groupInfoCache.Add(classificationKey, groupInfo);
             }
-            else if (groups[groupIndex].Info != groupInfo)
+
+            var groupKey = (expansion, category, groupInfo.Id);
+            if (!groupCache.TryGetValue(groupKey, out var group))
             {
-                Service.Log($"[ModuleViewer] Group properties mismatch between {groupInfo} and {groups[groupIndex].Info}");
+                group = new(groupInfo, expansion, category);
+                (Groups[expansion, category] ??= []).Add(group);
+                groupCache.Add(groupKey, group);
             }
-            groups[groupIndex].Modules.Add(moduleInfo);
+            else if (group.Info != groupInfo)
+            {
+                Service.Log($"[ModuleViewer] Group properties mismatch between {groupInfo} and {group.Info}");
+            }
+
+            group.ModuleInfos.Add(info);
+            group.ModuleOIDs.Add(info.PrimaryActorOID);
+            if (info.Maturity != BossModuleInfo.Maturity.Dummy)
+            {
+                group.NonDummyModuleOIDs.Add(info.PrimaryActorOID);
+            }
         }
 
         for (var i = 0; i < (int)BossModuleInfo.Expansion.Count; ++i)
         {
             for (var j = 0; j < (int)BossModuleInfo.Category.Count; ++j)
             {
-                var groups = _groups[i, j];
-                groups.Sort(static (a, b) => a.Info.SortOrder.CompareTo(b.Info.SortOrder));
-
-                var count = groups.Count;
-                for (var g = 0; g < count - 1; ++g)
+                var groups = Groups[i, j];
+                if (groups == null)
                 {
-                    var g1 = groups[g];
-                    var g2 = groups[g + 1];
+                    continue;
+                }
+
+                groups.Sort(static (a, b) => a.Info.SortOrder.CompareTo(b.Info.SortOrder));
+                var groupsSpan = CollectionsMarshal.AsSpan(groups);
+                var count = groups.Count;
+                var countAdj = count - 1;
+                for (var g = 0; g < countAdj; ++g)
+                {
+                    var g1 = groupsSpan[g];
+                    var g2 = groupsSpan[g + 1];
                     if (g1.Info.SortOrder == g2.Info.SortOrder)
                     {
                         Service.Log($"[ModuleViewer] Same sort order between groups {g1.Info} and {g2.Info}");
@@ -137,30 +218,34 @@ public sealed class ModuleViewer : IDisposable
 
                 for (var g = 0; g < count; ++g)
                 {
-                    var group = groups[g];
-                    group.Modules.Sort(static (a, b) => a.SortOrder.CompareTo(b.SortOrder));
+                    var group = groupsSpan[g];
+                    var moduleInfos = group.ModuleInfos;
+                    moduleInfos.Sort(static (a, b) => a.SortOrder.CompareTo(b.SortOrder));
 
-                    var countM = group.Modules.Count - 1;
-                    for (var m = 0; m < countM; ++m)
+                    var moduleCount = moduleInfos.Count;
+                    var moduleInfosSpan = CollectionsMarshal.AsSpan(moduleInfos);
+                    for (var m = 0; m + 1 < moduleCount; ++m)
                     {
-                        var m1 = group.Modules[m];
-                        var m2 = group.Modules[m + 1];
+                        ref readonly var m1 = ref moduleInfosSpan[m];
+                        ref readonly var m2 = ref moduleInfosSpan[m + 1];
                         if (m1.SortOrder == m2.SortOrder)
                         {
-                            Service.Log($"[ModuleViewer] Same sort order between modules {m1.Info.ModuleType.FullName} and {m2.Info.ModuleType.FullName}");
+                            Service.Log($"[ModuleViewer] Same sort order between modules {m1.ModuleType.FullName} and {m2.ModuleType.FullName}");
                         }
                     }
                 }
             }
         }
+
+        _initialized = true;
     }
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
 
     public void Draw(UITree tree, WorldState ws)
     {
+        EnsureInitialized();
+
         var availWidth = ImGui.GetContentRegionAvail().X;
         var filterWidth = 300f; // Fixed width for filter panel
         var moduleWidth = availWidth - filterWidth - ImGui.GetStyle().ItemSpacing.X;
@@ -168,66 +253,105 @@ public sealed class ModuleViewer : IDisposable
         using (var child = ImRaii.Child("FiltersPanel", new Vector2(filterWidth, 0), true))
         {
             if (child)
+            {
                 DrawFilters();
+            }
         }
 
         ImGui.SameLine();
         using (var child = ImRaii.Child("ModulesPanel", new Vector2(moduleWidth, 0), true))
         {
             if (child)
+            {
                 DrawModules(tree, ws);
+            }
         }
     }
 
     private void DrawFilters()
     {
-        using var table = ImRaii.Table("Filters", 1, ImGuiTableFlags.BordersInner | ImGuiTableFlags.NoHostExtendX | ImGuiTableFlags.SizingFixedSame);
-        if (!table)
-        {
-            return;
-        }
-
-        ImGui.TableNextColumn();
-        ImGui.TableNextColumn(); //spacing with only one seemed to be a bit small on certain window sizes
         ImGui.AlignTextToFramePadding();
-        ImGui.Text("搜索：");
+        ImGui.TextUnformatted("搜索:");
         ImGui.SameLine();
-        ImGui.SetNextItemWidth(-1);
+        ImGui.SetNextItemWidth(-1f);
         DrawSearchBar();
-        ImGui.TableNextColumn();
 
-        ImGui.TableNextColumn();
-        ImGui.TableHeader("资料片");
-        ImGui.TableNextRow(ImGuiTableRowFlags.None);
-        ImGui.TableNextColumn();
+        ImGui.Spacing();
         DrawExpansionFilters();
 
-        ImGui.TableNextRow();
-
-        ImGui.TableNextColumn();
-        ImGui.TableHeader("内容");
-        ImGui.TableNextRow(ImGuiTableRowFlags.None);
-        ImGui.TableNextColumn();
+        ImGui.Spacing();
         DrawContentTypeFilters();
     }
 
     private void DrawSearchBar()
     {
-        ImGui.InputTextWithHint("##search", "例如：\"绝\"", ref _searchText, 100, ImGuiInputTextFlags.CallbackCompletion);
+        ImGui.InputTextWithHint("##search", "e.g. \"Ultimate\"", ref _searchText, 100, ImGuiInputTextFlags.CallbackCompletion);
 
         if (ImGui.IsItemHovered() && !ImGui.IsItemFocused())
         {
             ImGui.BeginTooltip();
-            ImGui.Text("在此输入副本标题来搜索指定内容。");
+            ImGui.Text("Type here to search for any specific instance by its respective title.");
             ImGui.EndTooltip();
+        }
+    }
+
+    private static float EnabledColumnWidth()
+    {
+        var style = ImGui.GetStyle();
+        return ImGui.CalcTextSize("Enabled").X + style.CellPadding.X * 2f + style.FramePadding.X * 2f;
+    }
+
+    private static void CenterEnableCheckbox()
+    {
+        var available = ImGui.GetContentRegionAvail().X;
+        var checkboxWidth = ImGui.GetFrameHeight();
+        if (available > checkboxWidth)
+        {
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (available - checkboxWidth) * 0.5f);
         }
     }
 
     private void DrawExpansionFilters()
     {
+        using var table = ImRaii.Table("ExpansionFilters", 2, ImGuiTableFlags.BordersInnerV | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingStretchProp);
+        if (!table)
+        {
+            return;
+        }
+
+        ImGui.TableSetupColumn("Enabled", ImGuiTableColumnFlags.WidthFixed, EnabledColumnWidth());
+        ImGui.TableSetupColumn("##showExpac", ImGuiTableColumnFlags.WidthStretch);
+        ImGui.TableHeadersRow();
+
         for (var e = BossModuleInfo.Expansion.RealmReborn; e < BossModuleInfo.Expansion.Count; ++e)
         {
-            ref var expansion = ref _expansions[(int)e];
+            ImGui.TableNextRow();
+
+            ImGui.TableNextColumn();
+            var (anyEnabled, allEnabled) = _moduleConfig.ExpansionEnabledState(e);
+            var enabled = allEnabled;
+            var mixed = anyEnabled && !allEnabled;
+            if (mixed)
+            {
+                ImGuiP.PushItemFlag(ImGuiItemFlags.MixedValue, true);
+            }
+            CenterEnableCheckbox();
+            var changed = ImGui.Checkbox($"##enable-expansion-{e}", ref enabled);
+            if (mixed)
+            {
+                ImGuiP.PopItemFlag();
+            }
+            if (changed)
+            {
+                _moduleConfig.SetExpansionEnabled(e, enabled);
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip(anyEnabled != allEnabled ? "Some modules in this expansion are disabled. Click to enable all." : enabled ? "Disable all modules in this expansion." : "Enable all modules in this expansion.");
+            }
+
+            ImGui.TableNextColumn();
+            ref var expansion = ref Expansions[(int)e];
             UIMisc.ImageToggleButton(Service.Texture?.GetFromGameIcon(expansion.icon), _iconSize, !_filterExpansions[(int)e], expansion.name);
             if (ImGui.IsItemClicked())
             {
@@ -243,9 +367,45 @@ public sealed class ModuleViewer : IDisposable
 
     private void DrawContentTypeFilters()
     {
+        using var table = ImRaii.Table("ContentFilters", 2, ImGuiTableFlags.BordersInnerV | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingStretchProp);
+        if (!table)
+        {
+            return;
+        }
+
+        ImGui.TableSetupColumn("Enabled", ImGuiTableColumnFlags.WidthFixed, EnabledColumnWidth());
+        ImGui.TableSetupColumn("##showType", ImGuiTableColumnFlags.WidthStretch);
+        ImGui.TableHeadersRow();
+
         for (var c = BossModuleInfo.Category.Uncategorized; c < BossModuleInfo.Category.Count; ++c)
         {
-            ref var category = ref _categories[(int)c];
+            ImGui.TableNextRow();
+
+            ImGui.TableNextColumn();
+            var (anyEnabled, allEnabled) = _moduleConfig.CategoryEnabledState(c);
+            var enabled = allEnabled;
+            var mixed = anyEnabled && !allEnabled;
+            if (mixed)
+            {
+                ImGuiP.PushItemFlag(ImGuiItemFlags.MixedValue, true);
+            }
+            CenterEnableCheckbox();
+            var changed = ImGui.Checkbox($"##enable-category-{c}", ref enabled);
+            if (mixed)
+            {
+                ImGuiP.PopItemFlag();
+            }
+            if (changed)
+            {
+                _moduleConfig.SetCategoryEnabled(c, enabled);
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip(anyEnabled != allEnabled ? "Some modules in this category are disabled. Click to enable all." : enabled ? "Disable all modules in this category." : "Enable all modules in this category.");
+            }
+
+            ImGui.TableNextColumn();
+            ref var category = ref Categories[(int)c];
             UIMisc.ImageToggleButton(Service.Texture?.GetFromGameIcon(category.icon), _iconSize, !_filterCategories[(int)c], category.name);
             if (ImGui.IsItemClicked())
             {
@@ -261,11 +421,16 @@ public sealed class ModuleViewer : IDisposable
 
     private void DrawModules(UITree tree, WorldState ws)
     {
-        using var table = ImRaii.Table("ModulesTable", 2, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.BordersInner | ImGuiTableFlags.BordersV | ImGuiTableFlags.RowBg | ImGuiTableFlags.NoHostExtendX);
+        using var table = ImRaii.Table("ModulesTable", 3, ImGuiTableFlags.BordersInnerV | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingStretchProp);
         if (!table)
         {
             return;
         }
+
+        ImGui.TableSetupColumn("##type", ImGuiTableColumnFlags.WidthFixed, 80f);
+        ImGui.TableSetupColumn("Enabled", ImGuiTableColumnFlags.WidthFixed, EnabledColumnWidth());
+        ImGui.TableSetupColumn("##fight", ImGuiTableColumnFlags.WidthStretch);
+        ImGui.TableHeadersRow();
 
         for (var i = 0; i < (int)BossModuleInfo.Expansion.Count; ++i)
         {
@@ -281,32 +446,91 @@ public sealed class ModuleViewer : IDisposable
                     continue;
                 }
 
-                foreach (var group in _groups[i, j])
+                var groupList = Groups[i, j];
+                if (groupList == null)
                 {
+                    continue;
+                }
+
+                var groups = CollectionsMarshal.AsSpan(groupList);
+                var countG = groups.Length;
+                for (var k = 0; k < countG; ++k)
+                {
+                    var group = groups[k];
+                    var groupModuleOIDs = _moduleConfig.MinMaturity == BossModuleInfo.Maturity.Dummy ? group.ModuleOIDs : group.NonDummyModuleOIDs;
+                    if (groupModuleOIDs.Count == 0)
+                    {
+                        continue;
+                    }
+
                     if (!_searchText.IsNullOrEmpty() && !group.Info.Name.Contains(_searchText, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }
 
                     ImGui.TableNextRow();
-                    ImGui.TableNextColumn();
-                    UIMisc.Image(Service.Texture?.GetFromGameIcon(_expansions[i].icon), new(36));
-                    ImGui.SameLine();
-                    UIMisc.Image(Service.Texture?.GetFromGameIcon(group.Info.Icon != 0 ? group.Info.Icon : _categories[j].icon), new(36));
-                    ImGui.TableNextColumn();
 
-                    foreach (var ng in tree.Node($"{group.Info.Name}###{i}/{j}/{group.Info.Id}"))
+                    ImGui.TableNextColumn();
+                    UIMisc.Image(Service.Texture?.GetFromGameIcon(Expansions[i].icon), new(36f));
+                    ImGui.SameLine();
+                    UIMisc.Image(Service.Texture?.GetFromGameIcon(group.Info.Icon != 0u ? group.Info.Icon : Categories[j].icon), new(36f));
+
+                    ImGui.TableNextColumn();
+                    var (groupAnyEnabled, groupAllEnabled) = _moduleConfig.ModulesEnabledState(groupModuleOIDs);
+                    var groupEnabled = groupAllEnabled;
+                    var groupMixed = groupAnyEnabled && !groupAllEnabled;
+                    if (groupMixed)
                     {
-                        foreach (var mod in group.Modules)
+                        ImGuiP.PushItemFlag(ImGuiItemFlags.MixedValue, true);
+                    }
+                    CenterEnableCheckbox();
+                    var groupChanged = ImGui.Checkbox(group.EnableID, ref groupEnabled);
+                    if (groupMixed)
+                    {
+                        ImGuiP.PopItemFlag();
+                    }
+                    if (groupChanged)
+                    {
+                        _moduleConfig.SetModulesEnabled(groupModuleOIDs, groupEnabled);
+                    }
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.SetTooltip(groupAnyEnabled != groupAllEnabled ? "Some modules in this group are disabled. Click to enable all." : groupEnabled ? "Disable all modules in this group." : "Enable all modules in this group.");
+                    }
+
+                    ImGui.TableNextColumn();
+                    foreach (var ng in tree.Node(group.NodeLabel))
+                    {
+                        var modules = CollectionsMarshal.AsSpan(EnsureModules(group));
+                        var len = modules.Length;
+                        for (var l = 0; l < len; ++l)
                         {
-                            if (mod.Info.Maturity == BossModuleInfo.Maturity.Dummy)
+                            ref readonly var mod = ref modules[l];
+                            if (!_moduleConfig.IncludeInSupportedFightControls(mod.Info))
                             {
                                 continue;
                             }
 
-                            using (ImRaii.Disabled(mod.Info.ConfigType == null))
+                            ImGui.TableNextRow();
+
+                            ImGui.TableNextColumn();
+
+                            ImGui.TableNextColumn();
+                            var moduleEnabled = _moduleConfig.IsModuleEnabled(mod.Info.PrimaryActorOID);
+                            CenterEnableCheckbox();
+                            if (ImGui.Checkbox(mod.EnableID, ref moduleEnabled))
                             {
-                                if (UIMisc.IconButton(FontAwesomeIcon.Cog, $"{mod.Info.ModuleType.FullName}_cfg"))
+                                _moduleConfig.SetModuleEnabled(mod.Info.PrimaryActorOID, moduleEnabled);
+                            }
+                            if (ImGui.IsItemHovered())
+                            {
+                                ImGui.SetTooltip(moduleEnabled ? "Disable this module." : "Enable this module.");
+                            }
+
+                            ImGui.TableNextColumn();
+                            using (ImRaii.Disabled(mod.Info.ConfigType == null && !mod.Info.HasPrePullHints))
+                            {
+                                if (UIMisc.IconButton(FontAwesomeIcon.Cog, mod.ConfigID))
                                 {
                                     _ = new BossModuleConfigWindow(mod.Info, ws);
                                 }
@@ -315,28 +539,22 @@ public sealed class ModuleViewer : IDisposable
                             ImGui.SameLine();
                             using (ImRaii.Disabled(mod.Info.PlanLevel == 0))
                             {
-                                if (UIMisc.IconButton(FontAwesomeIcon.ClipboardList, $"{mod.Info.ModuleType.FullName}_plans"))
+                                if (UIMisc.IconButton(FontAwesomeIcon.ClipboardList, mod.PlansID))
                                 {
-                                    ImGui.OpenPopup($"{mod.Info.ModuleType.FullName}_popup");
+                                    ImGui.OpenPopup(mod.PopupID);
                                 }
                             }
 
                             ImGui.SameLine();
-                            UIMisc.HelpMarker(() => ModuleHelpText(mod));
+                            DrawModuleHelpMarker(mod.Info, mod.HelpText);
                             ImGui.SameLine();
-                            var textColor = mod.Info.Maturity switch
-                            {
-                                BossModuleInfo.Maturity.WIP => Colors.TextColor3,
-                                BossModuleInfo.Maturity.Verified => Colors.TextColor4,
-                                BossModuleInfo.Maturity.AISupport => Colors.TextColor2,
-                                _ => Colors.TextColor1
-                            };
+                            var textColor = MaturityColor(mod.Info.Maturity);
                             using (ImRaii.PushColor(ImGuiCol.Text, textColor))
                             {
-                                ImGui.TextUnformatted($"{mod.Name} [{mod.Info.ModuleType.Name}]");
+                                ImGui.TextUnformatted(mod.DisplayName);
                             }
 
-                            using (var popup = ImRaii.Popup($"{mod.Info.ModuleType.FullName}_popup"))
+                            using (var popup = ImRaii.Popup(mod.PopupID))
                             {
                                 if (popup)
                                 {
@@ -350,8 +568,8 @@ public sealed class ModuleViewer : IDisposable
         }
     }
 
-    private void Customize(BossModuleInfo.Expansion expansion, uint iconId, ReadOnlySeString name) => _expansions[(int)expansion] = (name.ToString(), iconId);
-    private void Customize(BossModuleInfo.Category category, uint iconId, ReadOnlySeString name) => _categories[(int)category] = (name.ToString(), iconId);
+    private void Customize(BossModuleInfo.Expansion expansion, uint iconId, ReadOnlySeString name) => Expansions[(int)expansion] = (name.ToString(), iconId);
+    private void Customize(BossModuleInfo.Category category, uint iconId, ReadOnlySeString name) => Categories[(int)category] = (name.ToString(), iconId);
     private void Customize(BossModuleInfo.Category category, ContentType ct, string? name = null) => Customize(category, ct.Icon, name ?? ct.Name);
     private void Customize(BossModuleInfo.Category category, CharaCardPlayStyle ps) => Customize(category, (uint)ps.Icon, ps.Name);
 
@@ -359,7 +577,25 @@ public sealed class ModuleViewer : IDisposable
     public static string FixCase(ReadOnlySeString str) => CultureInfo.InvariantCulture.TextInfo.ToTitleCase(str.ToString());
     public static string BNpcName(uint id) => FixCase(Service.LuminaRow<BNpcName>(id)!.Value.Singular);
 
-    private (ModuleGroupInfo, ModuleInfo) Classify(BossModuleRegistry.Info module)
+    private static GroupClassificationKey GroupKey(BossModuleRegistry.Info module)
+    {
+        var groupID = module.GroupType switch
+        {
+            BossModuleInfo.GroupType.CFC or
+            BossModuleInfo.GroupType.MaskedCarnivale or
+            BossModuleInfo.GroupType.CrucibleOfTheUnbroken or
+            BossModuleInfo.GroupType.ForayFATE or
+            BossModuleInfo.GroupType.Quest or
+            BossModuleInfo.GroupType.Hunt or
+            BossModuleInfo.GroupType.CriticalEngagement or
+            BossModuleInfo.GroupType.BozjaDuel or
+            BossModuleInfo.GroupType.EurekaNM => module.GroupID,
+            _ => 0u
+        };
+        return new(module.Expansion, module.Category, module.GroupType, groupID);
+    }
+
+    private ModuleGroupInfo ClassifyGroup(BossModuleRegistry.Info module)
     {
         var groupId = (uint)module.GroupType << 24;
         switch (module.GroupType)
@@ -368,69 +604,197 @@ public sealed class ModuleViewer : IDisposable
                 groupId |= module.GroupID;
                 var cfcRow = Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value;
                 var cfcSort = cfcRow.SortKey;
-                var fixedName = RegexHelper.RemoveTags(cfcRow.Name.ToString());
-                return (new(FixCase(fixedName), groupId, cfcSort != 0 ? cfcSort : groupId),
-                        new(module, BNpcName(module.NameID), module.SortOrder));
+                return new(FixCase(cfcRow.Name), groupId, cfcSort != 0 ? cfcSort : groupId);
             case BossModuleInfo.GroupType.MaskedCarnivale:
                 groupId |= module.GroupID;
                 var mcRow = Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value;
                 var mcSort = uint.Parse(mcRow.ShortCode.ToString().AsSpan(3), CultureInfo.InvariantCulture); // 'aozNNN'
-                var mcName = $"第 {mcSort} 关：{FixCase(mcRow.Name)}";
-                return (new(mcName, groupId, mcSort), new(module, BNpcName(module.NameID), module.SortOrder));
+                return new($"第 {mcSort} 关：{FixCase(mcRow.Name)}", groupId, mcSort);
+            case BossModuleInfo.GroupType.CrucibleOfTheUnbroken:
+                groupId |= module.GroupID;
+                var bmRow = Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value;
+                var bmSort = uint.Parse(bmRow.ShortCode.ToString().AsSpan(3), CultureInfo.InvariantCulture);
+                var bmName = $"不破的试炼：{FixCase(bmRow.Name)}";
+                const string suffix = " Of the Unbroken"; // EN suffix stripped if present
+                if (bmName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+                {
+                    bmName = bmName[..^suffix.Length];
+                }
+                return new(bmName, groupId, bmSort);
             case BossModuleInfo.GroupType.RemovedUnreal:
-                return (new("已移除内容", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
+                return new("已移除内容", groupId, groupId);
             case BossModuleInfo.GroupType.BaldesionArsenal:
-                return (new("巴尔德西昂兵武塔", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
+                return new("巴尔德西昂兵武塔", groupId, groupId);
             case BossModuleInfo.GroupType.CastrumLacusLitore:
-                return (new("南方博兹雅战线攻城战", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
+                return new("南方博兹雅战线攻城战", groupId, groupId);
             case BossModuleInfo.GroupType.TheDalriada:
-                return (new("旗舰达尔里阿达攻略战", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
+                return new("旗舰达尔里阿达攻略战", groupId, groupId);
             case BossModuleInfo.GroupType.TheForkedTowerBlood:
-                return (new("蜃景幻界：血之塔", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
-            case BossModuleInfo.GroupType.TheForkedTowerMagic:
-                return (new("蜃景幻界：魔之塔", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
+                return new("蜃景幻界：血之塔", groupId, groupId);
+            case BossModuleInfo.GroupType.TheForkedTowerMagicNormal:
+                return new("蜃景幻界：魔之塔（普通）", groupId, groupId);
+            case BossModuleInfo.GroupType.TheForkedTowerMagicExtreme:
+                return new("蜃景幻界：魔之塔（极）", groupId, groupId);
             case BossModuleInfo.GroupType.ForayFATE:
                 groupId |= module.GroupID;
-                var fateRowBozjaSkirmish = Service.LuminaRow<Fate>(module.NameID)!.Value;
-                var skirmishName = $"{FixCase(Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value.Name)} 临危受命";
-                return (new(skirmishName, groupId, groupId), new(module, $"{fateRowBozjaSkirmish.Name}", module.SortOrder));
+                return new($"{FixCase(Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value.Name)} 临危受命", groupId, groupId);
             case BossModuleInfo.GroupType.Quest:
                 var questRow = Service.LuminaRow<Quest>(module.GroupID)!.Value;
                 groupId |= questRow.JournalGenre.RowId;
-                var questCategoryName = questRow.JournalGenre.ValueNullable?.Name.ToString() ?? "";
-                return (new(questCategoryName, groupId, groupId), new(module, $"{questRow.Name}: {BNpcName(module.NameID)}", module.SortOrder));
+                return new(questRow.JournalGenre.ValueNullable?.Name.ToString() ?? "", groupId, groupId);
             case BossModuleInfo.GroupType.Fate:
-                var fateRow = Service.LuminaRow<Fate>(module.GroupID)!.Value;
-                return (new($"{module.Expansion.ShortName()} 临危受命", groupId, groupId, _iconFATE), new(module, $"{fateRow.Name}: {BNpcName(module.NameID)}", module.SortOrder));
+                return new($"{module.Expansion.ShortName()} 临危受命", groupId, groupId, _iconFATE);
             case BossModuleInfo.GroupType.Hunt:
                 groupId |= module.GroupID;
-                return (new($"{module.Expansion.ShortName()} 狩猎 {(BossModuleInfo.HuntRank)module.GroupID}", groupId, groupId, _iconHunt), new(module, BNpcName(module.NameID), module.SortOrder));
+                return new($"{module.Expansion.ShortName()} 狩猎 {(BossModuleInfo.HuntRank)module.GroupID}", groupId, groupId, _iconHunt);
             case BossModuleInfo.GroupType.CriticalEngagement:
                 groupId |= module.GroupID;
-                var ceName = $"{FixCase(Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value.Name)} 关键遭遇战";
-                return (new(ceName, groupId, groupId), new(module, Service.LuminaRow<DynamicEvent>(module.NameID)!.Value.Name.ToString(), module.SortOrder));
+                return new($"{FixCase(Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value.Name)} 紧急遭遇战", groupId, groupId);
             case BossModuleInfo.GroupType.BozjaDuel:
                 groupId |= module.GroupID;
-                var duelName = $"{FixCase(Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value.Name)} 单挑";
-                return (new(duelName, groupId, groupId), new(module, Service.LuminaRow<DynamicEvent>(module.NameID)!.Value.Name.ToString(), module.SortOrder));
+                return new($"{FixCase(Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value.Name)} 单挑", groupId, groupId);
             case BossModuleInfo.GroupType.EurekaNM:
                 groupId |= module.GroupID;
-                var nmName = FixCase(Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value.Name);
-                return (new(nmName, groupId, groupId), new(module, Service.LuminaRow<Fate>(module.NameID)!.Value.Name.ToString(), module.SortOrder));
+                return new(FixCase(Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value.Name), groupId, groupId);
             case BossModuleInfo.GroupType.GoldSaucer:
-                return (new("金碟游乐场", groupId, groupId), new(module, $"{Service.LuminaRow<GoldSaucerTextData>(module.GroupID)?.Text}: {BNpcName(module.NameID)}", module.SortOrder));
+                return new("金碟游乐场", groupId, groupId);
             default:
-                return (new("未分组", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
+                return new("未分组", groupId, groupId);
         }
     }
 
-    private string ModuleHelpText(ModuleInfo info)
+    private List<ModuleInfo> EnsureModules(ModuleGroup group)
     {
-        var sb = new StringBuilder();
-        sb.AppendLine(CultureInfo.CurrentCulture, $"冷却规划：{(info.Info.PlanLevel > 0 ? $"L{info.Info.PlanLevel}" : "不支持")}");
-        if (info.Info.Contributors.Length > 0)
-            sb.AppendLine(CultureInfo.CurrentCulture, $"贡献者：{info.Info.Contributors}");
-        return sb.ToString();
+        if (group.Modules != null)
+        {
+            return group.Modules;
+        }
+
+        var infos = group.ModuleInfos;
+        var count = infos.Count;
+        var modules = new List<ModuleInfo>(count);
+        CollectionsMarshal.SetCount(modules, count);
+        var infosSpan = CollectionsMarshal.AsSpan(infos);
+        var modulesSpan = CollectionsMarshal.AsSpan(modules);
+
+        for (var i = 0; i < count; ++i)
+        {
+            modulesSpan[i] = BuildModuleInfo(infosSpan[i]);
+        }
+        group.Modules = modules;
+        return modules;
+    }
+
+    private static ModuleInfo BuildModuleInfo(BossModuleRegistry.Info module)
+    {
+        var name = module.GroupType switch
+        {
+            BossModuleInfo.GroupType.ForayFATE => Service.LuminaRow<Fate>(module.NameID)!.Value.Name.ToString(),
+            BossModuleInfo.GroupType.Quest => $"{Service.LuminaRow<Quest>(module.GroupID)!.Value.Name}: {BNpcName(module.NameID)}",
+            BossModuleInfo.GroupType.Fate => $"{Service.LuminaRow<Fate>(module.GroupID)!.Value.Name}: {BNpcName(module.NameID)}",
+            BossModuleInfo.GroupType.CriticalEngagement or BossModuleInfo.GroupType.BozjaDuel => Service.LuminaRow<DynamicEvent>(module.NameID)!.Value.Name.ToString(),
+            BossModuleInfo.GroupType.EurekaNM => Service.LuminaRow<Fate>(module.NameID)!.Value.Name.ToString(),
+            BossModuleInfo.GroupType.GoldSaucer => $"{Service.LuminaRow<GoldSaucerTextData>(module.GroupID)?.Text}: {BNpcName(module.NameID)}",
+            _ => BNpcName(module.NameID)
+        };
+        return new(module, name, module.SortOrder);
+    }
+
+    internal readonly struct SupportedFightSortKey(bool dummy, BossModuleInfo.Expansion expansion, BossModuleInfo.Category category, uint groupOrder, int moduleOrder) : IComparable<SupportedFightSortKey>
+    {
+        private readonly bool Dummy = dummy;
+        private readonly BossModuleInfo.Expansion Expansion = expansion;
+        private readonly BossModuleInfo.Category Category = category;
+        private readonly uint GroupOrder = groupOrder;
+        private readonly int ModuleOrder = moduleOrder;
+
+        public readonly int CompareTo(SupportedFightSortKey other)
+        {
+            var cmp = Dummy.CompareTo(other.Dummy);
+            if (cmp != 0)
+            {
+                return cmp;
+            }
+            cmp = ((int)Expansion).CompareTo((int)other.Expansion);
+
+            if (cmp != 0)
+            {
+                return cmp;
+            }
+            cmp = ((int)Category).CompareTo((int)other.Category);
+            if (cmp != 0)
+            {
+                return cmp;
+            }
+            cmp = GroupOrder.CompareTo(other.GroupOrder);
+            return cmp != 0 ? cmp : ModuleOrder.CompareTo(other.ModuleOrder);
+        }
+    }
+
+    internal static SupportedFightSortKey GetSupportedFightSortKey(BossModuleRegistry.Info module)
+        => new(module.Maturity == BossModuleInfo.Maturity.Dummy, module.Expansion, module.Category, SupportedGroupSortOrder(module), module.SortOrder);
+
+    private static uint SupportedGroupSortOrder(BossModuleRegistry.Info module)
+    {
+        var groupId = (uint)module.GroupType << 24;
+        switch (module.GroupType)
+        {
+            case BossModuleInfo.GroupType.CFC:
+                groupId |= module.GroupID;
+                var cfcSort = Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value.SortKey;
+                return cfcSort != 0 ? cfcSort : groupId;
+            case BossModuleInfo.GroupType.MaskedCarnivale:
+            case BossModuleInfo.GroupType.CrucibleOfTheUnbroken:
+                var shortCode = Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value.ShortCode.ToString();
+                return uint.Parse(shortCode.AsSpan(3), CultureInfo.InvariantCulture);
+            case BossModuleInfo.GroupType.Quest:
+                return groupId | Service.LuminaRow<Quest>(module.GroupID)!.Value.JournalGenre.RowId;
+            case BossModuleInfo.GroupType.ForayFATE:
+            case BossModuleInfo.GroupType.Hunt:
+            case BossModuleInfo.GroupType.CriticalEngagement:
+            case BossModuleInfo.GroupType.BozjaDuel:
+            case BossModuleInfo.GroupType.EurekaNM:
+                return groupId | module.GroupID;
+            default:
+                return groupId;
+        }
+    }
+
+    private static uint MaturityColor(BossModuleInfo.Maturity maturity) => maturity switch
+    {
+        BossModuleInfo.Maturity.WIP => Colors.TextColor3,
+        BossModuleInfo.Maturity.Verified => Colors.TextColor4,
+        BossModuleInfo.Maturity.AISupport => Colors.TextColor2,
+        BossModuleInfo.Maturity.Dummy => Colors.TextColor17,
+        _ => Colors.TextColor1
+    };
+
+    private static void DrawModuleHelpMarker(BossModuleRegistry.Info info, string helpText)
+    {
+        UIMisc.IconText(FontAwesomeIcon.InfoCircle);
+        if (!ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
+        {
+            return;
+        }
+
+        using var tooltip = ImRaii.Tooltip();
+        using var wrap = ImRaii.TextWrapPos(ImGui.GetFontSize() * 35f);
+        var maturityDescription = GeneratedEnumMetadata.For(info.Maturity).Attribute<PropertyDisplayAttribute>()?.Label ?? info.Maturity.ToString();
+        ImGui.TextUnformatted("Maturity: ");
+        ImGui.SameLine(0f, 0f);
+        using (ImRaii.PushColor(ImGuiCol.Text, MaturityColor(info.Maturity)))
+        {
+            ImGui.TextUnformatted(maturityDescription);
+        }
+        ImGui.TextUnformatted(helpText);
+    }
+
+    private static string BuildModuleHelpText(BossModuleRegistry.Info info)
+    {
+        var planning = info.PlanLevel > 0 ? $"L{info.PlanLevel}" : "not supported";
+        return info.Contributors.Length > 0
+            ? $"Cooldown planning: {planning}\nContributors: {info.Contributors}\n"
+            : $"Cooldown planning: {planning}\n";
     }
 
     private void ModulePlansPopup(BossModuleRegistry.Info info)
@@ -443,9 +807,12 @@ public sealed class ModuleViewer : IDisposable
         var mplans = _planDB.Plans.GetOrAdd(info.ModuleType);
         foreach (var (cls, plans) in mplans)
         {
-            foreach (var plan in plans.Plans)
+            var plansL = CollectionsMarshal.AsSpan(plans.Plans);
+            var count = plansL.Length;
+            for (var i = 0; i < count; ++i)
             {
-                if (ImGui.Selectable($"编辑 {cls} '{plan.Name}' ({plan.Guid})"))
+                var plan = plansL[i];
+                if (ImGui.Selectable($"Edit {cls} '{plan.Name}' ({plan.Guid})"))
                 {
                     UIPlanDatabaseEditor.StartPlanEditor(_planDB, plan);
                 }
@@ -455,21 +822,13 @@ public sealed class ModuleViewer : IDisposable
         var player = _ws.Party.Player();
         if (player != null)
         {
-            if (ImGui.Selectable($"为 {player.Class} 新建计划..."))
+            if (ImGui.Selectable($"New plan for {player.Class}..."))
             {
                 var plans = mplans.GetOrAdd(player.Class);
-                var plan = new Plan($"新建 {plans.Plans.Count + 1}", info.ModuleType) { Guid = Guid.NewGuid().ToString(), Class = player.Class, Level = info.PlanLevel };
+                var plan = new Plan($"New {plans.Plans.Count + 1}", info.ModuleType) { Guid = Guid.NewGuid().ToString(), Class = player.Class, Level = info.PlanLevel };
                 _planDB.ModifyPlan(null, plan);
                 UIPlanDatabaseEditor.StartPlanEditor(_planDB, plan);
             }
         }
     }
-}
-
-public static partial class RegexHelper
-{
-    [GeneratedRegex("<italic\\(\\d\\)>|<-->")]
-    private static partial Regex TagsRegex();
-
-    public static string RemoveTags(string input) => TagsRegex().Replace(input, string.Empty);
 }

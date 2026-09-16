@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C03AAI.C031Ketuduke;
 
-class FlukeTyphoon(BossModule module) : Components.CastCounter(module, (uint)AID.FlukeTyphoonAOE);
+sealed class FlukeTyphoon(BossModule module) : Components.CastCounter(module, (uint)AID.FlukeTyphoonAOE);
 
-class FlukeTyphoonBurst(BossModule module) : Components.GenericTowers(module)
+sealed class FlukeTyphoonBurst(BossModule module) : Components.GenericTowers(module)
 {
     public override void OnMapEffect(byte index, uint state)
     {

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Alliance.A11Byregot;
 
-class HammersCells(BossModule module) : Components.GenericAOEs(module, (uint)AID.DestroySideTiles, "GTFO from dangerous tile!")
+sealed class HammersCells(BossModule module) : Components.GenericAOEs(module, (uint)AID.DestroySideTiles, "GTFO from dangerous tile!")
 {
     public bool Active;
     public bool MovementPending;
@@ -101,10 +101,10 @@ class HammersCells(BossModule module) : Components.GenericAOEs(module, (uint)AID
 }
 
 abstract class Rect(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(50f, 5f));
-class DestroySideTiles(BossModule module) : Rect(module, (uint)AID.DestroySideTiles);
-class HammersLevinforge(BossModule module) : Rect(module, (uint)AID.Levinforge);
+sealed class DestroySideTiles(BossModule module) : Rect(module, (uint)AID.DestroySideTiles);
+sealed class HammersLevinforge(BossModule module) : Rect(module, (uint)AID.Levinforge);
 
-class HammersSpire(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ByregotSpire, new AOEShapeRect(50f, 15f))
+sealed class HammersSpire(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ByregotSpire, new AOEShapeRect(50f, 15f))
 {
     private WPos? _safespot;
     private readonly HammersCells _cells = module.FindComponent<HammersCells>()!;
@@ -175,7 +175,7 @@ class HammersSpire(BossModule module) : Components.SimpleAOEs(module, (uint)AID.
         _safespot = null;
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_safespot != null)
         {

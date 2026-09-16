@@ -1,10 +1,4 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex6Golbez;
 
-class BlackFang(BossModule module) : Components.CastCounter(module, default)
-{
-    public override void OnEventCast(Actor caster, ActorCastEvent spell)
-    {
-        if ((AID)spell.Action.ID is AID.BlackFangAOE1 or AID.BlackFangAOE2 or AID.BlackFangAOE3 or AID.BlackFangEnrageAOE1 or AID.BlackFangEnrageAOE2 or AID.BlackFangEnrageAOE3)
-            ++NumCasts;
-    }
-}
+sealed class BlackFang(BossModule module) : Components.CastCounterMulti(module,
+    [(uint)AID.BlackFangAOE1, (uint)AID.BlackFangAOE2, (uint)AID.BlackFangAOE3, (uint)AID.BlackFangEnrageAOE1, (uint)AID.BlackFangEnrageAOE2, (uint)AID.BlackFangEnrageAOE3]);

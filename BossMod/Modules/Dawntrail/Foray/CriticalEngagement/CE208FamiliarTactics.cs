@@ -27,20 +27,13 @@ public enum AID : uint
     UnbowedSpirit = 47531, // Helper->self, no cast, range 4 circle
 }
 
-[SkipLocalsInit]
 sealed class AncientAeroIII(BossModule module) : Components.RaidwideCast(module, (uint)AID.AncientAeroIII);
-[SkipLocalsInit]
-sealed class SpinningSweep(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpinningSweep, new AOEShapeCone(40.0f, 60.0f.Degrees()));
-[SkipLocalsInit]
-sealed class InspiritedCrosswinds(BossModule module) : Components.SimpleAOEs(module, (uint)AID.InspiritedCrosswinds, new AOEShapeCross(60.0f, 4.0f));
-[SkipLocalsInit]
-sealed class InspiritedHurricaneCross(BossModule module) : Components.SimpleAOEs(module, (uint)AID.InspiritedHurricaneCross, new AOEShapeCross(60.0f, 5.0f));
-[SkipLocalsInit]
+sealed class SpinningSweep(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpinningSweep, new AOEShapeCone(40f, 60f.Degrees()));
+sealed class InspiritedCrosswinds(BossModule module) : Components.SimpleAOEs(module, (uint)AID.InspiritedCrosswinds, new AOEShapeCross(60f, 4f));
+sealed class InspiritedHurricaneCross(BossModule module) : Components.SimpleAOEs(module, (uint)AID.InspiritedHurricaneCross, new AOEShapeCross(60f, 5f));
 sealed class InspiritedHurricaneCircleCyclone(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.InspiritedHurricaneCircle, (uint)AID.InspiritedCyclone], 12f);
-[SkipLocalsInit]
-sealed class AncientAero(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AncientAero, new AOEShapeRect(70.0f, 3.0f));
+sealed class AncientAero(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AncientAero, new AOEShapeRect(70f, 3f));
 
-[SkipLocalsInit]
 sealed class UnbowedSpirit(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance[] _aoes = [];
@@ -54,7 +47,7 @@ sealed class UnbowedSpirit(BossModule module) : Components.GenericAOEs(module)
             if (puddles.Count == 0)
             {
                 var offset = actor.Position - Arena.Center;
-                circular = MathF.Abs(offset.X % 10f) > 1f || MathF.Abs(offset.Z % 10f) > 1f;
+                circular = Math.Abs(offset.X % 10f) > 1f || Math.Abs(offset.Z % 10f) > 1f;
             }
 
             puddles.Add(actor);
@@ -107,10 +100,8 @@ sealed class UnbowedSpirit(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class InspiritedImpact(BossModule module) : Components.SimpleAOEs(module, (uint)AID.InspiritedImpact, 25f, 3);
 
-[SkipLocalsInit]
 sealed class CE208FamiliarTacticsStates : StateMachineBuilder
 {
     public CE208FamiliarTacticsStates(BossModule module) : base(module)
@@ -128,24 +119,7 @@ sealed class CE208FamiliarTacticsStates : StateMachineBuilder
 }
 
 //TODO: Needs extended moving AOE support- once implemented can be moved to Verified after testing
-[ModuleInfo(BossModuleInfo.Maturity.Contributed,
-    StatesType = typeof(CE208FamiliarTacticsStates),
-    ConfigType = null, // replace null with typeof(ElmGigasConfig) if applicable
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID),
-    StatusIDType = null, // replace null with typeof(SID) if applicable
-    TetherIDType = null, // replace null with typeof(TetherID) if applicable
-    IconIDType = null, // replace null with typeof(IconID) if applicable
-    PrimaryActorOID = (uint)OID.ElmGigas,
-    Contributors = "Equilius",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.Foray,
-    GroupType = BossModuleInfo.GroupType.CriticalEngagement,
-    GroupID = 1093u,
-    NameID = 58u,
-    SortOrder = 10,
-    PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.Contributed, PrimaryActorOID = (uint)OID.ElmGigas, Contributors = "Equilius", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 1093u, NameID = 58u)]
 public sealed class CE208FamiliarTactics : BossModule
 {
     public CE208FamiliarTactics(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

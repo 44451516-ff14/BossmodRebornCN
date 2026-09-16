@@ -1,15 +1,13 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
 // TODO: determine when mechanic is selected; determine threshold
-[SkipLocalsInit]
-sealed class P1HandOfPartingPrayer(BossModule module) : BossComponent(module)
+sealed class P1HandOfPartingPrayer(TEA module) : BossComponent(module)
 {
-    private readonly TEA bossmod = (TEA)module;
     public bool Resolved;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
-        var hint = (bossmod.LiquidHand2?.ModelState.ModelState ?? default) switch
+        var hint = (module.LiquidHand2?.ModelState.ModelState ?? default) switch
         {
             19 => "Split boss & hand",
             20 => "Stack boss & hand",

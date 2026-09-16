@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Alliance.A13ArkAngels;
 
 sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeDonut donut = new(25f, 35f);
+    private readonly AOEShapeDonut donut = new(25f, 35f);
     private AOEInstance[] _aoe = [];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
@@ -19,7 +19,7 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     {
         if (index == 0x00 && state == 0x00020001u)
         {
-            Arena.Bounds = A13ArkAngels.DefaultBounds;
+            Arena.Bounds = new ArenaBoundsCircle(25f);
             _aoe = [];
         }
     }

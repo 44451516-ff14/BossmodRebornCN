@@ -21,10 +21,24 @@ sealed class P5AetherochemicalLaser(BossModule module) : Components.SimpleAOEGro
 sealed class P5LightPillar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LightPillarAOE, 3); // TODO: consider showing circle around baiter
 sealed class P5AethericBoom(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.AethericBoom, 10);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.Garuda, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 539, PlanLevel = 70)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.Garuda, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 539u, NameID = 2137u, PlanLevel = 70)]
 public sealed class UWU : BossModule
 {
-    public static readonly WPos ArenaCenter = new(100f, 100f);
+    public UWU(WorldState ws, Actor primary) : this(ws, primary, BuildArena())
+    {
+        Ifrits = Enemies((uint)OID.Ifrit);
+        _titan = Enemies((uint)OID.Titan);
+        _lahabrea = Enemies((uint)OID.Lahabrea);
+        _ultima = Enemies((uint)OID.UltimaWeapon);
+    }
+
+    private UWU(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(100f, 100f), 20f, 64)]);
+        return (arena.Center, arena);
+    }
     private readonly List<Actor> _titan;
     private readonly List<Actor> _lahabrea;
     private readonly List<Actor> _ultima;
@@ -37,14 +51,6 @@ public sealed class UWU : BossModule
     public Actor? Titan() => _titan.Count != 0 ? _titan[0] : null;
     public Actor? Lahabrea() => _lahabrea.Count != 0 ? _lahabrea[0] : null;
     public Actor? Ultima() => _ultima.Count != 0 ? _ultima[0] : null;
-
-    public UWU(WorldState ws, Actor primary) : base(ws, primary, ArenaCenter, new ArenaBoundsCustom([new Polygon(ArenaCenter, 20f, 64)]))
-    {
-        Ifrits = Enemies((uint)OID.Ifrit);
-        _titan = Enemies((uint)OID.Titan);
-        _lahabrea = Enemies((uint)OID.Lahabrea);
-        _ultima = Enemies((uint)OID.UltimaWeapon);
-    }
 
     public override bool ShouldPrioritizeAllEnemies => true;
 

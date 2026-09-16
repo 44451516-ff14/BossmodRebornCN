@@ -91,7 +91,7 @@ sealed class WideningNarrowingWitchHuntBait(BossModule module) : Components.Gene
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (CurMechanic != Mechanic.None)
             hints.Add($"Next bait: {CurMechanic}");

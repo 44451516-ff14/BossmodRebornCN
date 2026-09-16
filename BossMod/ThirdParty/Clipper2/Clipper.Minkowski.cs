@@ -11,7 +11,6 @@ using System.Buffers;
 
 namespace Clipper2Lib;
 
-[SkipLocalsInit]
 public static class Minkowski
 {
     private const int StackScratchThreshold = 128;
@@ -56,7 +55,7 @@ public static class Minkowski
     {
         Span<Point64> quad = stackalloc Point64[4];
         var lenPath = path.Length;
-        var lenPattern = lenPath;
+        var lenPattern = pattern.Length;
         var g = delta == 0 ? lenPath - 1 : 0;
         TranslatePattern(pattern, path[g], isSum, previous);
         for (var i = delta; i < lenPath; ++i)

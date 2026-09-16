@@ -1,18 +1,19 @@
-namespace BossMod.Components;
+﻿namespace BossMod.Components;
 
 // generic component for tankbuster at tethered targets; tanks are supposed to intercept tethers and gtfo from the raid
-[SkipLocalsInit]
-public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOEShape shape, double activationDelay = default, bool centerAtTarget = false) : CastCounter(module, aid)
+public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOEShape shape, double activationDelay = default, bool centerAtTarget = false, int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false) : CastCounter(module, aid)
 {
-    public TankbusterTether(BossModule module, uint aid, uint tetherID, float radius, double activationDelay = default) : this(module, aid, tetherID, new AOEShapeCircle(radius), activationDelay, true) { }
+    public int? ArenaProjectionLayer = arenaProjectionLayer;
+    public bool? RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
+    public TankbusterTether(BossModule module, uint aid, uint tetherID, float radius, double activationDelay = default, int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false) : this(module, aid, tetherID, new AOEShapeCircle(radius), activationDelay, true, arenaProjectionLayer, restrictToArenaProjectionLayer) { }
     public readonly uint TID = tetherID;
     public readonly AOEShape Shape = shape;
-    private readonly List<(Actor Player, Actor Enemy)> _tethers = [];
+    protected readonly List<(Actor Player, Actor Enemy)> _tethers = [];
     protected BitMask _tetheredPlayers;
     private BitMask _inAnyAOE; // players hit by aoe, excluding selves
     protected DateTime activation;
 
-    public bool Active => _tetheredPlayers != default;
+    public bool Active => _tetheredPlayers != default && (RestrictToArenaProjectionLayer != true || _tethers.Exists(t => ArenaProjectionLayerParticipantApplies(t.Player, ArenaProjectionLayer, RestrictToArenaProjectionLayer)));
 
     public override void Update()
     {
@@ -28,11 +29,11 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
         var len = party.Length;
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var p = ref party[i];
+            ref var p = ref party[i];
             for (var j = 0; j < count; ++j)
             {
                 var t = _tethers[j];
-                if (t.Player == p.Item2)
+                if (t.Player == p.Item2 || !ArenaProjectionLayerParticipantApplies(t.Player, ArenaProjectionLayer, RestrictToArenaProjectionLayer) || !ArenaProjectionLayerParticipantApplies(p.Item2, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
                 {
                     continue;
                 }
@@ -50,6 +51,11 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
+        if (!ArenaProjectionLayerParticipantApplies(actor, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+        {
+            return;
+        }
+
         if (!Active)
         {
             return;
@@ -59,7 +65,7 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
         {
             if (!_tetheredPlayers[slot])
             {
-                hints.Add("接线！");
+                hints.Add("Grab the tether!");
                 return;
             }
             var party = Raid.WithoutSlot();
@@ -67,7 +73,7 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
             for (var i = 0; i < len; ++i)
             {
                 var p = party[i];
-                if (p == actor)
+                if (p == actor || !ArenaProjectionLayerParticipantApplies(p, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
                 {
                     continue;
                 }
@@ -76,7 +82,7 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
                 for (var j = 0; j < count; ++j)
                 {
                     var t = _tethers[j];
-                    if (t.Player == actor)
+                    if (t.Player == actor || !ArenaProjectionLayerParticipantApplies(t.Player, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
                     {
                         continue;
                     }
@@ -85,7 +91,7 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
                     var enemyPos = t.Enemy.Position;
                     if (Shape.Check(playerPos, centerAtTarget ? playerPos : enemyPos, centerAtTarget ? default : Angle.FromDirection(playerPos - enemyPos)))
                     {
-                        hints.Add("远离队伍！");
+                        hints.Add("GTFO from raid!");
                         return;
                     }
                 }
@@ -106,6 +112,10 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
 
     public override PlayerPriority CalcPriority(int pcSlot, Actor pc, int playerSlot, Actor player, ref uint customColor)
     {
+        if (!ArenaProjectionLayerApplies(pc, ArenaProjectionLayer, RestrictToArenaProjectionLayer) || !ArenaProjectionLayerParticipantApplies(player, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+        {
+            return PlayerPriority.Irrelevant;
+        }
         if (_tetheredPlayers[playerSlot])
         {
             return PlayerPriority.Danger;
@@ -123,11 +133,16 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
+        using var projection = Arena.WorldProjectionLayer(ArenaProjectionLayer, RestrictToArenaProjectionLayer);
         // show tethered targets with circles
         var count = _tethers.Count;
         for (var i = 0; i < count; ++i)
         {
             var side = _tethers[i];
+            if (!ArenaProjectionLayerParticipantApplies(side.Player, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+            {
+                continue;
+            }
             var playerPos = side.Player.Position;
             var enemyPos = side.Enemy.Position;
             Arena.AddLine(enemyPos, playerPos, side.Player.Role == Role.Tank ? Colors.Safe : default);
@@ -142,11 +157,16 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
 
     public override void DrawArenaBackground(int pcSlot, Actor pc)
     {
+        using var projection = Arena.WorldProjectionLayer(ArenaProjectionLayer, RestrictToArenaProjectionLayer);
         // show tethered targets with circles
         var count = _tethers.Count;
         for (var i = 0; i < count; ++i)
         {
             var side = _tethers[i];
+            if (!ArenaProjectionLayerParticipantApplies(side.Player, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+            {
+                continue;
+            }
             if (side.Player == pc)
             {
                 continue;
@@ -212,6 +232,11 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
+        if (!ArenaProjectionLayerApplies(actor, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+        {
+            return;
+        }
+
         if (_tetheredPlayers == default)
         {
             return;
@@ -223,18 +248,22 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
         for (var i = 0; i < count; ++i)
         {
             var t = _tethers[i];
+            if (!ArenaProjectionLayerParticipantApplies(t.Player, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+            {
+                continue;
+            }
             var playerPos = t.Player.Position;
             var enemyPos = t.Enemy.Position;
             if (t.Player != actor)
             {
-                hints.AddForbiddenZone(Shape, centerAtTarget ? playerPos : enemyPos, centerAtTarget ? default : Angle.FromDirection(playerPos - enemyPos), activation);
+                hints.AddForbiddenZone(Shape, centerAtTarget ? playerPos : enemyPos, centerAtTarget ? default : Angle.FromDirection(playerPos - enemyPos), activation, arenaProjectionLayer: ArenaProjectionLayerForAI(ArenaProjectionLayer, RestrictToArenaProjectionLayer));
             }
             else if (t.Player.Role == Role.Tank) // avoid non tanks trying to dodge tanks...
             {
                 for (var j = 0; j < len; ++j)
                 {
                     var p = party[j];
-                    if (p == t.Player)
+                    if (p == t.Player || !ArenaProjectionLayerParticipantApplies(p, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
                     {
                         continue;
                     }
@@ -243,13 +272,13 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
                     {
                         case AOEShapeDonut:
                         case AOEShapeCircle:
-                            hints.AddForbiddenZone(Shape, pos, default, activation);
+                            hints.AddForbiddenZone(Shape, pos, default, activation, arenaProjectionLayer: ArenaProjectionLayerForAI(ArenaProjectionLayer, RestrictToArenaProjectionLayer));
                             break;
                         case AOEShapeCone cone:
-                            hints.AddForbiddenZone(new SDCone(enemyPos, 100f, Angle.FromDirection(pos - enemyPos), cone.HalfAngle), activation);
+                            hints.AddForbiddenZone(new SDCone(enemyPos, 100f, Angle.FromDirection(pos - enemyPos), cone.HalfAngle), activation, arenaProjectionLayer: ArenaProjectionLayerForAI(ArenaProjectionLayer, RestrictToArenaProjectionLayer));
                             break;
                         case AOEShapeRect rect:
-                            hints.AddForbiddenZone(new SDCone(enemyPos, 100f, Angle.FromDirection(pos - enemyPos), Angle.Asin(rect.HalfWidth / (pos - enemyPos).Length())), activation);
+                            hints.AddForbiddenZone(new SDCone(enemyPos, 100f, Angle.FromDirection(pos - enemyPos), Angle.Asin(rect.HalfWidth / (pos - enemyPos).Length())), activation, arenaProjectionLayer: ArenaProjectionLayerForAI(ArenaProjectionLayer, RestrictToArenaProjectionLayer));
                             break;
                     }
                 }
@@ -260,9 +289,10 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
 }
 
 // generic component for AOE at tethered targets; players are supposed to intercept tethers and gtfo from the raid
-[SkipLocalsInit]
-public class InterceptTetherAOE(BossModule module, uint aid, uint tetherID, float radius, uint[]? excludedAllies = null) : CastCounter(module, aid)
+public class InterceptTetherAOE(BossModule module, uint aid, uint tetherID, float radius, uint[]? excludedAllies = null, int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false) : CastCounter(module, aid)
 {
+    public int? ArenaProjectionLayer = arenaProjectionLayer;
+    public bool? RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
     public readonly uint[]? ExcludedAllies = excludedAllies;
     public readonly uint TID = tetherID;
     public readonly float Radius = radius;
@@ -271,23 +301,48 @@ public class InterceptTetherAOE(BossModule module, uint aid, uint tetherID, floa
     private BitMask _inAnyAOE; // players hit by aoe, excluding selves
     public DateTime Activation;
 
-    public bool Active => Tethers.Count != 0;
+    public bool Active => Tethers.Count != 0 && (RestrictToArenaProjectionLayer != true || Tethers.Exists(t => ArenaProjectionLayerParticipantApplies(t.Player, ArenaProjectionLayer, RestrictToArenaProjectionLayer)));
 
     public override void Update()
     {
         _inAnyAOE = default;
-        foreach (var slot in _tetheredPlayers.SetBits())
+        var raid = Raid.WithSlot();
+        var len = raid.Length;
+        for (var j = 0; j < len; ++j)
         {
-            var target = Raid[slot];
-            if (target != null)
+            if (_tetheredPlayers[j])
             {
-                _inAnyAOE |= Raid.WithSlot().InRadiusExcluding(target, Radius).Mask();
+                var target = Raid[j];
+                if (target != null && ArenaProjectionLayerParticipantApplies(target, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+                {
+                    for (var i = 0; i < len; ++i)
+                    {
+                        var p = raid[i];
+                        var actor = p.Item2;
+                        if (target == actor)
+                        {
+                            continue;
+                        }
+                        if (actor.Position.InCircle(target.Position, Radius))
+                        {
+                            if (ArenaProjectionLayerParticipantApplies(actor, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+                            {
+                                _inAnyAOE.Set(p.Item1);
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
+        if (!ArenaProjectionLayerParticipantApplies(actor, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+        {
+            return;
+        }
+
         if (!Active)
         {
             return;
@@ -295,7 +350,7 @@ public class InterceptTetherAOE(BossModule module, uint aid, uint tetherID, floa
 
         if (!_tetheredPlayers[slot])
         {
-            hints.Add("接线！");
+            hints.Add("Grab the tether!");
             return;
         }
         var party = Raid.WithoutSlot();
@@ -303,14 +358,14 @@ public class InterceptTetherAOE(BossModule module, uint aid, uint tetherID, floa
         for (var i = 0; i < len; ++i)
         {
             var p = party[i];
-            if (p == actor)
+            if (p == actor || !ArenaProjectionLayerParticipantApplies(p, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
             {
                 continue;
             }
 
             if (p.Position.InCircle(actor.Position, Radius))
             {
-                hints.Add("远离队伍！");
+                hints.Add("GTFO from raid!");
                 break;
             }
         }
@@ -327,6 +382,11 @@ public class InterceptTetherAOE(BossModule module, uint aid, uint tetherID, floa
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
+        if (!ArenaProjectionLayerApplies(actor, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+        {
+            return;
+        }
+
         var count = Tethers.Count;
         if (count == 0)
         {
@@ -337,18 +397,22 @@ public class InterceptTetherAOE(BossModule module, uint aid, uint tetherID, floa
         for (var i = 0; i < count; ++i)
         {
             var tether = Tethers[i];
+            if (!ArenaProjectionLayerParticipantApplies(tether.Player, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+            {
+                continue;
+            }
             if (tether.Player != actor)
             {
-                hints.AddForbiddenZone(new SDCircle(tether.Player.Position, Radius), Activation);
+                hints.AddForbiddenZone(new SDCircle(tether.Player.Position, Radius), Activation, arenaProjectionLayer: ArenaProjectionLayerForAI(ArenaProjectionLayer, RestrictToArenaProjectionLayer));
             }
             else
             {
                 for (var j = 0; j < raid.Length; ++j)
                 {
-                    ref var member = ref raid[i];
-                    if (member != actor)
+                    ref var member = ref raid[j];
+                    if (member != actor && ArenaProjectionLayerParticipantApplies(member, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
                     {
-                        hints.AddForbiddenZone(new SDCircle(member.Position, Radius), Activation);
+                        hints.AddForbiddenZone(new SDCircle(member.Position, Radius), Activation, arenaProjectionLayer: ArenaProjectionLayerForAI(ArenaProjectionLayer, RestrictToArenaProjectionLayer));
                     }
                 }
             }
@@ -357,6 +421,7 @@ public class InterceptTetherAOE(BossModule module, uint aid, uint tetherID, floa
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
+        using var projection = Arena.WorldProjectionLayer(ArenaProjectionLayer, RestrictToArenaProjectionLayer);
         // show tethered targets with circles
         var count = Tethers.Count;
         if (count == 0)
@@ -377,6 +442,10 @@ public class InterceptTetherAOE(BossModule module, uint aid, uint tetherID, floa
         for (var i = 0; i < count; ++i)
         {
             var side = Tethers[i];
+            if (!ArenaProjectionLayerParticipantApplies(side.Player, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+            {
+                continue;
+            }
             var inParty = false;
             foreach (var a in Raid.WithoutSlot())
             {
@@ -432,19 +501,25 @@ public class InterceptTetherAOE(BossModule module, uint aid, uint tetherID, floa
 }
 
 // generic component for tethers that need to be intercepted eg. to prevent a boss from gaining buffs
-[SkipLocalsInit]
-public class InterceptTether(BossModule module, uint aid, uint tetherIDBad = 84u, uint tetherIDGood = 17u, uint[]? excludedAllies = null) : CastCounter(module, aid)
+public class InterceptTether(BossModule module, uint aid, uint tetherIDBad = 84u, uint tetherIDGood = 17u, uint[]? excludedAllies = null, int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false) : CastCounter(module, aid)
 {
+    public int? ArenaProjectionLayer = arenaProjectionLayer;
+    public bool? RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
     public readonly uint TIDGood = tetherIDGood;
     public readonly uint TIDBad = tetherIDBad;
     public readonly uint[]? ExcludedAllies = excludedAllies;
     protected readonly List<(Actor Player, Actor Enemy)> _tethers = [];
     protected BitMask _tetheredPlayers;
-    protected const string hint = "接线！";
-    public bool Active => _tethers.Count != 0;
+    protected const string hint = "Grab the tether!";
+    public bool Active => _tethers.Count != 0 && (RestrictToArenaProjectionLayer != true || _tethers.Exists(t => ArenaProjectionLayerParticipantApplies(t.Player, ArenaProjectionLayer, RestrictToArenaProjectionLayer)));
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
+        if (!ArenaProjectionLayerParticipantApplies(actor, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+        {
+            return;
+        }
+
         if (!Active)
         {
             return;
@@ -458,6 +533,7 @@ public class InterceptTether(BossModule module, uint aid, uint tetherIDBad = 84u
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
+        using var projection = Arena.WorldProjectionLayer(ArenaProjectionLayer, RestrictToArenaProjectionLayer);
         if (!Active)
         {
             return;
@@ -477,6 +553,10 @@ public class InterceptTether(BossModule module, uint aid, uint tetherIDBad = 84u
         for (var i = 0; i < count; ++i)
         {
             var side = _tethers[i];
+            if (!ArenaProjectionLayerParticipantApplies(side.Player, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+            {
+                continue;
+            }
             var inParty2 = false;
             foreach (var a in Raid.WithoutSlot())
             {
@@ -532,9 +612,10 @@ public class InterceptTether(BossModule module, uint aid, uint tetherIDBad = 84u
 
 // generic component for tethers that need to be stretched and switch between a "good" and "bad" tether
 // at the end of the mechanic various things are possible, eg. single target dmg, knockback/pull, AOE etc.
-[SkipLocalsInit]
-public class StretchTetherDuo(BossModule module, float minimumDistance, double activationDelay, uint tetherIDBad = 57u, uint tetherIDGood = 1u, AOEShape? shape = null, uint aid = default, uint enemyOID = default, bool knockbackImmunity = false) : GenericBaitAway(module, aid, damageType: AIHints.PredictedDamageType.Tankbuster)
+public class StretchTetherDuo(BossModule module, float minimumDistance, double activationDelay, uint tetherIDBad = 57u, uint tetherIDGood = 1u, AOEShape? shape = null, uint aid = default, uint enemyOID = default, bool knockbackImmunity = false, int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = true) : GenericBaitAway(module, aid, damageType: AIHints.PredictedDamageType.Tankbuster)
 {
+    public int? ArenaProjectionLayer = arenaProjectionLayer;
+    public bool? RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
     public readonly AOEShape? Shape = shape;
     public readonly uint TIDGood = tetherIDGood;
     public readonly uint TIDBad = tetherIDBad;
@@ -641,9 +722,12 @@ public class StretchTetherDuo(BossModule module, float minimumDistance, double a
         for (var i = 0; i < count; ++i)
         {
             ref var bait = ref baits[i];
-            if (bait.Target == target)
+            if (bait.Target == target && BaitParticipantAppliesToArenaProjectionLayer(target, bait))
             {
-                Arena.AddLine(bait.Source.Position, bait.Target.Position, color);
+                using (Arena.WorldProjectionLayer(bait.ResolveArenaProjectionLayer(Module), bait.RestrictToArenaProjectionLayer))
+                {
+                    Arena.AddLine(bait.Source.Position, bait.Target.Position, color);
+                }
             }
         }
     }
@@ -678,7 +762,7 @@ public class StretchTetherDuo(BossModule module, float minimumDistance, double a
                 }
             }
 
-            CurrentBaits.Add(new(enemy, player, Shape ?? new AOEShapeCircle(default), playerActivation));
+            CurrentBaits.Add(new(enemy, player, Shape ?? new AOEShapeCircle(default), playerActivation, arenaProjectionLayer: ArenaProjectionLayer, restrictToArenaProjectionLayer: RestrictToArenaProjectionLayer));
             TetherOnActor.Add((player, tether.ID));
         }
     }
@@ -761,7 +845,7 @@ public class StretchTetherDuo(BossModule module, float minimumDistance, double a
         DateTime actorBaitActivation = default;
         for (var bi = 0; bi < ActiveBaits.Count; ++bi)
         {
-            if (ActiveBaits[bi].Target == actor)
+            if (ActiveBaits[bi].Target == actor && BaitParticipantAppliesToArenaProjectionLayer(actor, ActiveBaits[bi]))
             {
                 actorBaitActivation = ActiveBaits[bi].Activation;
                 break;
@@ -781,7 +865,7 @@ public class StretchTetherDuo(BossModule module, float minimumDistance, double a
             }
         }
 
-        if (couldBeImmune && actorHasTimedBait)
+        if (couldBeImmune && actorHasTimedBait && IsBaitTarget(actor))
         {
             hints.ActionsToExecute.Push(ActionDefinitions.Armslength, actor, ActionQueue.Priority.High);
             hints.ActionsToExecute.Push(ActionDefinitions.Surecast, actor, ActionQueue.Priority.High);
@@ -796,9 +880,9 @@ public class StretchTetherDuo(BossModule module, float minimumDistance, double a
             for (var bi = 0; bi < ActiveBaits.Count; ++bi)
             {
                 var b = ActiveBaits[bi];
-                if (b.Target == actor)
+                if (b.Target == actor && BaitParticipantAppliesToArenaProjectionLayer(actor, b))
                 {
-                    hints.AddForbiddenZone(new SDCircle(b.Source.Position, MinimumDistance), b.Activation);
+                    hints.AddForbiddenZone(new SDCircle(b.Source.Position, MinimumDistance), b.Activation, arenaProjectionLayer: ArenaProjectionLayerForAI(b.ResolveArenaProjectionLayer(Module), b.RestrictToArenaProjectionLayer));
                 }
             }
         }
@@ -806,13 +890,12 @@ public class StretchTetherDuo(BossModule module, float minimumDistance, double a
 }
 
 // generic component for tethers that need to be stretched
-[SkipLocalsInit]
-public class StretchTetherSingle(BossModule module, uint tetherID, float minimumDistance, AOEShape? shape = null, uint aid = default, uint enemyOID = default, double activationDelay = default, bool knockbackImmunity = false, bool needToKite = false) :
-StretchTetherDuo(module, minimumDistance, activationDelay, tetherID, tetherID, shape, aid, enemyOID, knockbackImmunity)
+public class StretchTetherSingle(BossModule module, uint tetherID, float minimumDistance, AOEShape? shape = null, uint aid = default, uint enemyOID = default, double activationDelay = default, bool knockbackImmunity = false, bool needToKite = false, int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = true) :
+StretchTetherDuo(module, minimumDistance, activationDelay, tetherID, tetherID, shape, aid, enemyOID, knockbackImmunity, arenaProjectionLayer, restrictToArenaProjectionLayer)
 {
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (CurrentBaits.Count == 0)
+        if (ActiveBaitsOn(actor).Count == 0)
         {
             return;
         }
@@ -843,10 +926,10 @@ StretchTetherDuo(module, minimumDistance, activationDelay, tetherID, tetherID, s
 }
 
 //generic component for Tethers that must be avoided if you have a status and intercepted if you don't
-
-[SkipLocalsInit]
-public class InterceptTetherStatus(BossModule module, uint aid, uint tetherID, uint sid, float radius = 0f, uint[]? excludedAllies = null) : CastCounter(module, aid)
+public class InterceptTetherStatus(BossModule module, uint aid, uint tetherID, uint sid, float radius = 0f, uint[]? excludedAllies = null, int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false) : CastCounter(module, aid)
 {
+    public int? ArenaProjectionLayer = arenaProjectionLayer;
+    public bool? RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
     public readonly uint[]? ExcludedAllies = excludedAllies;
     public readonly uint TID = tetherID;
     public readonly uint statusid = sid;
@@ -857,23 +940,48 @@ public class InterceptTetherStatus(BossModule module, uint aid, uint tetherID, u
     private BitMask _hasStatus;
     public DateTime Activation;
 
-    public bool Active => Tethers.Count != 0;
+    public bool Active => Tethers.Count != 0 && (RestrictToArenaProjectionLayer != true || Tethers.Exists(t => ArenaProjectionLayerParticipantApplies(t.Player, ArenaProjectionLayer, RestrictToArenaProjectionLayer)));
 
     public override void Update()
     {
         _inAnyAOE = default;
-        foreach (var slot in _tetheredPlayers.SetBits())
+        var raid = Raid.WithSlot();
+        var len = raid.Length;
+        for (var j = 0; j < len; ++j)
         {
-            var target = Raid[slot];
-            if (target != null)
+            if (_tetheredPlayers[j])
             {
-                _inAnyAOE |= Raid.WithSlot().InRadiusExcluding(target, Radius).Mask();
+                var target = Raid[j];
+                if (target != null && ArenaProjectionLayerParticipantApplies(target, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+                {
+                    for (var i = 0; i < len; ++i)
+                    {
+                        var p = raid[i];
+                        var actor = p.Item2;
+                        if (target == actor)
+                        {
+                            continue;
+                        }
+                        if (actor.Position.InCircle(target.Position, Radius))
+                        {
+                            if (ArenaProjectionLayerParticipantApplies(actor, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+                            {
+                                _inAnyAOE.Set(p.Item1);
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
+        if (!ArenaProjectionLayerParticipantApplies(actor, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+        {
+            return;
+        }
+
         if (!Active)
         {
             return;
@@ -881,7 +989,7 @@ public class InterceptTetherStatus(BossModule module, uint aid, uint tetherID, u
 
         if (!_tetheredPlayers[slot] && !_hasStatus[slot])
         {
-            hints.Add("接线！");
+            hints.Add("Grab the tether!");
             return;
         }
         var party = Raid.WithoutSlot();
@@ -889,14 +997,14 @@ public class InterceptTetherStatus(BossModule module, uint aid, uint tetherID, u
         for (var i = 0; i < len; ++i)
         {
             var p = party[i];
-            if (p == actor)
+            if (p == actor || !ArenaProjectionLayerParticipantApplies(p, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
             {
                 continue;
             }
 
             if (p.Position.InCircle(actor.Position, Radius))
             {
-                hints.Add("远离队伍！");
+                hints.Add("GTFO from raid!");
                 break;
             }
         }
@@ -919,6 +1027,11 @@ public class InterceptTetherStatus(BossModule module, uint aid, uint tetherID, u
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
+        if (!ArenaProjectionLayerApplies(actor, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+        {
+            return;
+        }
+
         var count = Tethers.Count;
         if (count == 0)
         {
@@ -929,18 +1042,22 @@ public class InterceptTetherStatus(BossModule module, uint aid, uint tetherID, u
         for (var i = 0; i < count; ++i)
         {
             var tether = Tethers[i];
+            if (!ArenaProjectionLayerParticipantApplies(tether.Player, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+            {
+                continue;
+            }
             if (tether.Player != actor)
             {
-                hints.AddForbiddenZone(new SDCircle(tether.Player.Position, Radius), Activation);
+                hints.AddForbiddenZone(new SDCircle(tether.Player.Position, Radius), Activation, arenaProjectionLayer: ArenaProjectionLayerForAI(ArenaProjectionLayer, RestrictToArenaProjectionLayer));
             }
             else
             {
                 for (var j = 0; j < raid.Length; ++j)
                 {
-                    ref var member = ref raid[i];
-                    if (member != actor)
+                    ref var member = ref raid[j];
+                    if (member != actor && ArenaProjectionLayerParticipantApplies(member, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
                     {
-                        hints.AddForbiddenZone(new SDCircle(member.Position, Radius), Activation);
+                        hints.AddForbiddenZone(new SDCircle(member.Position, Radius), Activation, arenaProjectionLayer: ArenaProjectionLayerForAI(ArenaProjectionLayer, RestrictToArenaProjectionLayer));
                     }
                 }
             }
@@ -949,6 +1066,7 @@ public class InterceptTetherStatus(BossModule module, uint aid, uint tetherID, u
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
+        using var projection = Arena.WorldProjectionLayer(ArenaProjectionLayer, RestrictToArenaProjectionLayer);
         // show tethered targets with circles
         var count = Tethers.Count;
         if (count == 0)
@@ -969,6 +1087,10 @@ public class InterceptTetherStatus(BossModule module, uint aid, uint tetherID, u
         for (var i = 0; i < count; ++i)
         {
             var side = Tethers[i];
+            if (!ArenaProjectionLayerParticipantApplies(side.Player, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+            {
+                continue;
+            }
             Arena.AddLine(side.Enemy.Position, side.Player.Position, _hasStatus[Raid.FindSlot(side.Player.InstanceID)] ? Colors.Danger : Colors.Safe);
             Arena.ZoneCircleOutline(side.Player.Position, Radius);
         }

@@ -1071,7 +1071,6 @@ public unsafe struct EventPlayN
             QuickSynthProgress = 13,
         }
 
-        [Flags]
         public enum StepFlags : uint
         {
             u1 = 0x00000002, // always set?

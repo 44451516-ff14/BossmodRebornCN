@@ -45,18 +45,18 @@ sealed class FTB2DeadStarsStates : StateMachineBuilder
 
     private void DecisiveBattle(uint id, float delay)
     {
-        ComponentCondition<DecisiveBattleAOEs>(id, delay, comp => comp.NumCasts != 0, "Raidwide")
+        ComponentCondition<DecisiveBattleAOEs>(id, delay, static comp => comp.NumCasts != 0, "Raidwide")
             .ActivateOnEnter<ArenaChange>()
             .ActivateOnEnter<DecisiveBattleAOEs>()
             .ActivateOnEnter<DecisiveBattleStatus>()
             .SetHint(StateMachine.StateHint.Raidwide)
             .DeactivateOnExit<DecisiveBattleAOEs>();
-        ComponentCondition<DecisiveBattleStatus>(id + 0x10u, 0.9f, comp => comp.Active, "Assign targets");
+        ComponentCondition<DecisiveBattleStatus>(id + 0x10u, 0.9f, static comp => comp.Active, "Assign targets");
     }
 
     private void SliceNDice(uint id, float delay)
     {
-        ComponentCondition<SliceNDice>(id, delay, comp => comp.NumCasts != 0, "Tankbusters")
+        ComponentCondition<SliceNDice>(id, delay, static comp => comp.NumCasts != 0, "Tankbusters")
             .ActivateOnEnter<SliceNDice>()
             .SetHint(StateMachine.StateHint.Tankbuster)
             .DeactivateOnExit<SliceNDice>();
@@ -64,11 +64,11 @@ sealed class FTB2DeadStarsStates : StateMachineBuilder
 
     private void ThreeBodyProblem1(uint id, float delay)
     {
-        ComponentCondition<NoisomeNuisanceIceboundBuffoonBlazingBelligerent>(id, delay, comp => comp.NumCasts != 0, "Circle AOEs")
+        ComponentCondition<NoisomeNuisanceIceboundBuffoonBlazingBelligerent>(id, delay, static comp => comp.NumCasts != 0, "Circle AOEs")
             .ActivateOnEnter<NoisomeNuisanceIceboundBuffoonBlazingBelligerent>()
             .DeactivateOnExit<NoisomeNuisanceIceboundBuffoonBlazingBelligerent>()
             .DeactivateOnExit<DecisiveBattleStatus>();
-        ComponentCondition<PrimordialChaosRaidwide>(id + 0x10u, 13.5f, comp => comp.NumCasts != 0, "Raidwide")
+        ComponentCondition<PrimordialChaosRaidwide>(id + 0x10u, 13.5f, static comp => comp.NumCasts != 0, "Raidwide")
             .ActivateOnEnter<PrimordialChaosRaidwide>()
             .SetHint(StateMachine.StateHint.Raidwide)
             .DeactivateOnExit<PrimordialChaosRaidwide>();
@@ -96,7 +96,7 @@ sealed class FTB2DeadStarsStates : StateMachineBuilder
             }
         }
 
-        ComponentCondition<NoxiousNova>(id + 0xA0u, 10f, comp => comp.NumCasts != 0, "Raidwide")
+        ComponentCondition<NoxiousNova>(id + 0xA0u, 10f, static comp => comp.NumCasts != 0, "Raidwide")
             .ActivateOnEnter<NoxiousNova>()
             .SetHint(StateMachine.StateHint.Raidwide)
             .DeactivateOnExit<NoxiousNova>();
@@ -104,13 +104,13 @@ sealed class FTB2DeadStarsStates : StateMachineBuilder
 
     private void VengefulBioIIIBlizzardIIIFireIII(uint id, float delay, bool last = false)
     {
-        ComponentCondition<VengefulBioIIIBlizzardIIIFireIII>(id, delay, comp => comp.NumCasts != 0, "Cone AOEs")
+        ComponentCondition<VengefulBioIIIBlizzardIIIFireIII>(id, delay, static comp => comp.NumCasts != 0, "Cone AOEs")
             .ActivateOnEnter<VengefulBioIIIBlizzardIIIFireIII>()
             .SetHint(StateMachine.StateHint.Raidwide)
             .DeactivateOnExit<VengefulBioIIIBlizzardIIIFireIII>();
         if (!last)
         {
-            ComponentCondition<DecisiveBattleStatus>(id + 0x10u, 4.6f, comp => comp.Active, "Assign targets")
+            ComponentCondition<DecisiveBattleStatus>(id + 0x10u, 4.6f, static comp => comp.Active, "Assign targets")
                 .ActivateOnEnter<DecisiveBattleStatus>();
         }
     }
@@ -140,29 +140,29 @@ sealed class FTB2DeadStarsStates : StateMachineBuilder
 
     private void FireStrike1(uint id, float delay)
     {
-        ComponentCondition<Firestrike1>(id, delay, comp => comp.CurrentBaits.Count == 3, "Line stacks appear")
+        ComponentCondition<Firestrike1>(id, delay, static comp => comp.CurrentBaits.Count == 3, "Line stacks appear")
             .ActivateOnEnter<Firestrike1>();
-        ComponentCondition<Firestrike1>(id + 0x10u, 5.2f, comp => comp.NumCasts == 3, "Line stacks resolve")
+        ComponentCondition<Firestrike1>(id + 0x10u, 5.2f, static comp => comp.NumCasts == 3, "Line stacks resolve")
             .SetHint(StateMachine.StateHint.Raidwide)
             .DeactivateOnExit<Firestrike1>();
     }
 
     private void FireStrike2(uint id, float delay)
     {
-        ComponentCondition<Firestrike2>(id, delay, comp => comp.CurrentBaits.Count == 3, "Line stacks appear")
+        ComponentCondition<Firestrike2>(id, delay, static comp => comp.CurrentBaits.Count == 3, "Line stacks appear")
             .ActivateOnEnter<Firestrike2>();
-        ComponentCondition<SliceNDice>(id + 0x10u, 5f, comp => comp.NumCasts != 0, "Tankbusters")
+        ComponentCondition<SliceNDice>(id + 0x10u, 5f, static comp => comp.NumCasts != 0, "Tankbusters")
             .ActivateOnEnter<SliceNDice>()
             .SetHint(StateMachine.StateHint.Tankbuster)
             .DeactivateOnExit<SliceNDice>();
-        ComponentCondition<Firestrike2>(id + 0x20u, 1.2f, comp => comp.NumCasts == 3, "Line stacks resolve")
+        ComponentCondition<Firestrike2>(id + 0x20u, 1.2f, static comp => comp.NumCasts == 3, "Line stacks resolve")
             .SetHint(StateMachine.StateHint.Raidwide)
             .DeactivateOnExit<Firestrike2>();
     }
 
     private void ThreeBodyProblem2(uint id, float delay)
     {
-        ComponentCondition<NoisomeNuisanceIceboundBuffoonBlazingBelligerent>(id, delay, comp => comp.NumCasts != 0, "Circle AOEs")
+        ComponentCondition<NoisomeNuisanceIceboundBuffoonBlazingBelligerent>(id, delay, static comp => comp.NumCasts != 0, "Circle AOEs")
             .ActivateOnEnter<NoisomeNuisanceIceboundBuffoonBlazingBelligerent>()
             .ActivateOnExit<IceboundBuffoonery>()
             .DeactivateOnExit<NoisomeNuisanceIceboundBuffoonBlazingBelligerent>()
@@ -187,16 +187,16 @@ sealed class FTB2DeadStarsStates : StateMachineBuilder
                     .DeactivateOnExit<Snowboulder>();
             }
         }
-        ComponentCondition<ChillingCollision>(id + 0x40u, 6.1f, comp => comp.NumCasts != 0, "Knockback")
+        ComponentCondition<ChillingCollision>(id + 0x40u, 6.1f, static comp => comp.NumCasts != 0, "Knockback")
             .ActivateOnEnter<ChillingCollision>()
             .SetHint(StateMachine.StateHint.Knockback)
             .DeactivateOnExit<ChillingCollision>();
-        ComponentCondition<Avalaunch>(id + 0x50u, 1.6f, comp => comp.NumFinishedStacks != 0, "Stacks resolve")
+        ComponentCondition<Avalaunch>(id + 0x50u, 1.6f, static comp => comp.NumFinishedStacks != 0, "Stacks resolve")
             .SetHint(StateMachine.StateHint.Raidwide)
             .DeactivateOnExit<IceboundBuffoonery>()
             .DeactivateOnExit<AvalaunchTether>()
             .DeactivateOnExit<Avalaunch>();
-        ActorCastStart(id + 0x60u, _module.BossNereid, (uint)AID.ToTheWinds1, 5.5f, true, "Snowball enrage start")
+        ActorCastStart(id + 0x60u, _module.BossNereid, AID.ToTheWinds1, 5.5f, true, "Snowball enrage start")
             .ActivateOnEnter<SelfDestruct>();
         ActorCastEnd(id + 0x70u, _module.BossNereid, 13f, true, "Snowball enrage end")
             .DeactivateOnExit<SelfDestruct>();
@@ -204,7 +204,7 @@ sealed class FTB2DeadStarsStates : StateMachineBuilder
 
     private void ThreeBodyProblem3(uint id, float delay)
     {
-        ComponentCondition<NoisomeNuisanceIceboundBuffoonBlazingBelligerent>(id, delay, comp => comp.NumCasts != 0, "Circle AOEs")
+        ComponentCondition<NoisomeNuisanceIceboundBuffoonBlazingBelligerent>(id, delay, static comp => comp.NumCasts != 0, "Circle AOEs")
             .ActivateOnEnter<NoisomeNuisanceIceboundBuffoonBlazingBelligerent>()
             .ActivateOnEnter<PhaseChange>()
             .DeactivateOnExit<NoisomeNuisanceIceboundBuffoonBlazingBelligerent>()
@@ -228,7 +228,7 @@ sealed class FTB2DeadStarsStates : StateMachineBuilder
             else if (i == 3)
                 cond.DeactivateOnExit<GeothermalRupture>();
         }
-        ComponentCondition<FlameThrower>(id + 0xA0u, 0.1f, comp => comp.NumCasts != 0, "Line stacks")
+        ComponentCondition<FlameThrower>(id + 0xA0u, 0.1f, static comp => comp.NumCasts != 0, "Line stacks")
             .SetHint(StateMachine.StateHint.Raidwide)
             .DeactivateOnExit<FlameThrower>();
         ElementalImpact(id + 0xB0u, 8, 5f, 4);
@@ -237,7 +237,7 @@ sealed class FTB2DeadStarsStates : StateMachineBuilder
         FireSpread(id + 0xE0u, 20, 0.5f, 5);
         ElementalImpact(id + 0xF0u, 12, 3.6f, 6);
         FireSpread(id + 0x100u, 24, 0.5f, 6);
-        CastStart(id + 0x110u, (uint)AID.ToTheWinds2, 4.8f, "Fireball enrage start")
+        CastStart(id + 0x110u, AID.ToTheWinds2, 4.8f, "Fireball enrage start")
             .ActivateOnEnter<SelfDestruct>();
         CastEnd(id + 0x120u, 7f, "Fireball enrage end")
             .DeactivateOnExit<SelfDestruct>();

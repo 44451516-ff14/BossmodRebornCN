@@ -2,14 +2,14 @@
 
 // state related to inversive chlamys mechanic (tethers)
 // note that forbidden targets are selected either from bloodrake tethers (first instance of mechanic) or from tower types (second instance of mechanic)
-class InversiveChlamys(BossModule module) : BossComponent(module)
+sealed class InversiveChlamys(BossModule module) : BossComponent(module)
 {
     private bool _assigned;
     private BitMask _tetherForbidden;
     private BitMask _tetherTargets;
     private BitMask _tetherInAOE;
 
-    private const float _aoeRange = 5;
+    private const float _aoeRange = 5f;
 
     public bool TethersActive => _tetherTargets.Any();
 
@@ -90,7 +90,7 @@ class InversiveChlamys(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var forbidden = Raid.WithSlot(true, true, true).IncludedInMask(_tetherForbidden).FirstOrDefault().Item2;
         if (forbidden != null)
@@ -109,7 +109,7 @@ class InversiveChlamys(BossModule module) : BossComponent(module)
         {
             var failing = failingPlayers[i];
             var inAOE = _tetherInAOE[i];
-            Arena.Actor(player, failing ? Colors.Danger : (inAOE ? Colors.PlayerInteresting : Colors.PlayerGeneric));
+            Arena.Actor(player, failing ? Colors.Danger : (inAOE ? Colors.PlayerInteresting : Colors.PlayerGeneric), drawWorld: failing || inAOE ? true : null);
 
             if (player.Tether.ID == (uint)TetherID.Chlamys)
             {

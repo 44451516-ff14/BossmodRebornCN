@@ -107,7 +107,7 @@ class VanishingRay(BossModule module) : Components.GenericAOEs(module)
 
 class ContinualMeddling(BossModule module) : Components.StatusDrivenForcedMarch(module, 2f, (uint)SID.ForwardMarch, (uint)SID.AboutFace, (uint)SID.LeftFace, (uint)SID.RightFace)
 {
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (Module.PrimaryActor.CastInfo != null && Module.PrimaryActor.CastInfo.IsSpell() && Module.PrimaryActor.CastInfo.Action.ID is (uint)AID.ContinualMeddlingFR or (uint)AID.ContinualMeddlingFL or (uint)AID.ContinualMeddlingBL or (uint)AID.ContinualMeddlingBR)
             hints.Add("Apply march debuffs");

@@ -99,7 +99,6 @@ sealed class ChaosBaits(BossModule module) : Components.GenericBaitAway(module)
 
 sealed class WordsOfWoe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WordsOfWoe, new AOEShapeRect(65f, 3f));
 
-[SkipLocalsInit]
 sealed class D093HrodricPoisonTongueStates : StateMachineBuilder
 {
     public D093HrodricPoisonTongueStates(BossModule module) : base(module)
@@ -131,5 +130,4 @@ sealed class D093HrodricPoisonTongueStates : StateMachineBuilder
     NameID = 6910u,
     SortOrder = 3,
     PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class D093HrodricPoisonTongue(WorldState ws, Actor primary) : BossModule(ws, primary, new(479f, 4f), new ArenaBoundsCircle(20f));

@@ -4,7 +4,7 @@ sealed class BA1OwainStates : StateMachineBuilder
 {
     public BA1OwainStates(BossModule module) : base(module)
     {
-        DeathPhase(0, SinglePhase)
+        DeathPhase(0u, SinglePhase)
             .ActivateOnEnter<Thricecull>()
             .ActivateOnEnter<AcallamNaSenorach>()
             .ActivateOnEnter<ElementalMagicks>()
@@ -28,9 +28,9 @@ sealed class BA1OwainStates : StateMachineBuilder
         Thricecull(id + 0x60000u, 11f);
         Spiritcull(id + 0x70000u, 8.3f);
         // from now on repeats until wipe or victory, this extends timeline until up around 20min since its theoretically possible to solo it as long as Owain is pulled
-        for (var i = 0; i < 12; ++i)
+        for (var i = 0u; i < 12u; ++i)
         {
-            var pid = (uint)(i * 0x10000u);
+            var pid = i * 0x10000u;
             Thricecull(id += 0x80000u + pid, 5.1f);
             AcallamNaSenorach(id += 0x90000u + pid, 6f);
             PiercingLight2(id += 0xA0000u + pid, 6.1f);
@@ -47,67 +47,67 @@ sealed class BA1OwainStates : StateMachineBuilder
 
     private void Thricecull(uint id, float delay)
     {
-        Cast(id, (uint)AID.Thricecull, delay, 5f, "Tankbuster")
+        Cast(id, AID.Thricecull, delay, 5f, "Tankbuster")
             .SetHint(StateMachine.StateHint.Tankbuster);
     }
 
     private void AcallamNaSenorach(uint id, float delay)
     {
-        Cast(id, (uint)AID.AcallamNaSenorach, delay, 5f, "Raidwide")
+        Cast(id, AID.AcallamNaSenorach, delay, 5f, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void Mythcall(uint id, float delay)
     {
-        Cast(id, (uint)AID.Mythcall, delay, 2f, "Spawn spears");
-        Cast(id + 0x10u, (uint)AID.ElementalShift1, 2.2f, 2, "Switch elements");
-        CastMulti(id + 0x20u, [(uint)AID.ElementalMagicksIceBoss, (uint)AID.ElementalMagicksFireBoss], 6.3f, 5f, "Circle AOEs");
+        Cast(id, AID.Mythcall, delay, 2f, "Spawn spears");
+        Cast(id + 0x10u, AID.ElementalShift1, 2.2f, 2, "Switch elements");
+        CastMulti(id + 0x20u, [AID.ElementalMagicksIceBoss, AID.ElementalMagicksFireBoss], 6.3f, 5f, "Circle AOEs");
     }
 
     private void ElementalShift(uint id, float delay)
     {
-        Cast(id, (uint)AID.ElementalShift1, delay, 2f, "Switch elements");
-        CastMulti(id + 0x10u, [(uint)AID.ElementalMagicksIceBoss, (uint)AID.ElementalMagicksFireBoss], 6.4f, 5f, "Circle AOEs");
+        Cast(id, AID.ElementalShift1, delay, 2f, "Switch elements");
+        CastMulti(id + 0x10u, [AID.ElementalMagicksIceBoss, AID.ElementalMagicksFireBoss], 6.4f, 5f, "Circle AOEs");
     }
 
     private void Spiritcull(uint id, float delay)
     {
-        Cast(id, (uint)AID.Spiritcull, delay, 3f, "Dorito stacks appear")
+        Cast(id, AID.Spiritcull, delay, 3f, "Dorito stacks appear")
             .ActivateOnEnter<LegendaryImbas>();
-        ComponentCondition<LegendaryImbas>(id + 0x10u, 0.1f, comp => comp.Casters.Count != 0, "Spreads appear")
+        ComponentCondition<LegendaryImbas>(id + 0x10u, 0.1f, static comp => comp.Casters.Count != 0, "Spreads appear")
             .SetHint(StateMachine.StateHint.Raidwide)
             .DeactivateOnExit<LegendaryImbas>();
-        ComponentCondition<PiercingLight1>(id + 0x20u, 5, comp => comp.Spreads.Count == 0, "Spreads and dorito stacks resolve");
+        ComponentCondition<PiercingLight1>(id + 0x20u, 5f, static comp => comp.Spreads.Count == 0, "Spreads and dorito stacks resolve");
     }
 
     private void PiercingLight2(uint id, float delay)
     {
-        ComponentCondition<PiercingLight2>(id, delay, comp => comp.Spreads.Count != 0, "Spreads appear");
-        CastStart(id + 0x10u, (uint)AID.Pitfall, 1f, "Proximity AOE");
-        ComponentCondition<PiercingLight2>(id + 0x20u, 3.8f, comp => comp.Spreads.Count == 0, "Spreads resolve");
+        ComponentCondition<PiercingLight2>(id, delay, static comp => comp.Spreads.Count != 0, "Spreads appear");
+        CastStart(id + 0x10u, AID.Pitfall, 1f, "Proximity AOE");
+        ComponentCondition<PiercingLight2>(id + 0x20u, 3.8f, static comp => comp.Spreads.Count == 0, "Spreads resolve");
         CastEnd(id + 0x30u, 1f, "Proximity AOE resolves");
     }
 
     private void ElementalShiftSpiritcull(uint id, float delay)
     {
-        Cast(id, (uint)AID.ElementalShift1, delay, 2f, "Switch elements");
-        Cast(id + 0x10u, (uint)AID.Spiritcull, 6.3f, 3f, "Dorito stacks appear")
+        Cast(id, AID.ElementalShift1, delay, 2f, "Switch elements");
+        Cast(id + 0x10u, AID.Spiritcull, 6.3f, 3f, "Dorito stacks appear")
             .ActivateOnEnter<LegendaryImbas>();
-        ComponentCondition<LegendaryImbas>(id + 0x20u, 1.1f, comp => comp.Casters.Count != 0, "Spreads appear")
+        ComponentCondition<LegendaryImbas>(id + 0x20u, 1.1f, static comp => comp.Casters.Count != 0, "Spreads appear")
             .SetHint(StateMachine.StateHint.Raidwide)
             .DeactivateOnExit<LegendaryImbas>();
-        CastStartMulti(id + 0x30u, [(uint)AID.ElementalMagicksIceBoss, (uint)AID.ElementalMagicksFireBoss], 2, "Circle AOEs start");
-        ComponentCondition<PiercingLight1>(id + 0x40u, 3f, comp => comp.Spreads.Count == 0, "Spreads resolve");
-        ComponentCondition<ElementalMagicks>(id + 0x50u, 2f, comp => comp.AOEs.Count == 0, "Circles resolve");
+        CastStartMulti(id + 0x30u, [AID.ElementalMagicksIceBoss, AID.ElementalMagicksFireBoss], 2, "Circle AOEs start");
+        ComponentCondition<PiercingLight1>(id + 0x40u, 3f, static comp => comp.Spreads.Count == 0, "Spreads resolve");
+        ComponentCondition<ElementalMagicks>(id + 0x50u, 2f, static comp => comp.AOEs.Count == 0, "Circles resolve");
     }
 
     private void IvoryPalmElementalMagicks(uint id, float delay)
     {
-        ComponentCondition<IvoryPalm>(id, delay, comp => comp.Tethers.Count != 0, "Hands spawn");
-        Cast(id + 0x10u, (uint)AID.ElementalShift1, 6.4f, 2f, "Switch elements");
-        CastMulti(id + 0x20u, [(uint)AID.ElementalMagicksIceBoss, (uint)AID.ElementalMagicksFireBoss], 6.3f, 5f, "Circle AOEs");
-        Cast(id + 0x30u, (uint)AID.Thricecull, 6f, 5f, "Tankbuster")
+        ComponentCondition<IvoryPalm>(id, delay, static comp => comp.Tethers.Count != 0, "Hands spawn");
+        Cast(id + 0x10u, AID.ElementalShift1, 6.4f, 2f, "Switch elements");
+        CastMulti(id + 0x20u, [AID.ElementalMagicksIceBoss, AID.ElementalMagicksFireBoss], 6.3f, 5f, "Circle AOEs");
+        Cast(id + 0x30u, AID.Thricecull, 6f, 5f, "Tankbuster")
             .SetHint(StateMachine.StateHint.Tankbuster);
-        ComponentCondition<IvoryPalmExplosion>(id + 0x40u, 5f, comp => comp.Casters.Count == 0, "Hands soft enrage"); // quite some timing variation here since hands could be killed at any time
+        ComponentCondition<IvoryPalmExplosion>(id + 0x40u, 5f, static comp => comp.Casters.Count == 0, "Hands soft enrage"); // quite some timing variation here since hands could be killed at any time
     }
 }

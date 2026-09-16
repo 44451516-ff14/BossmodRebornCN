@@ -97,15 +97,44 @@ sealed class GoldorThunderIII(BossModule module) : Components.RaidwideCastDelay(
 sealed class GoldorThunderIII2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GoldorThunderIII2, 6f);
 sealed class GoldorBlizzardIII(BossModule module) : Components.CastInterruptHint(module, (uint)AID.GoldorBlizzardIIIVisual);
 
-sealed class Hints2(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
+    private bool isHeavy;
+    private bool isElectrocuted;
+
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
+    {
+        switch (status.ID)
+        {
+            case (uint)SID.Heavy:
+                isHeavy = true;
+                break;
+            case (uint)SID.Electrocution:
+                isElectrocuted = true;
+                break;
+        }
+    }
+
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
+    {
+        switch (status.ID)
+        {
+            case (uint)SID.Heavy:
+                isHeavy = false;
+                break;
+            case (uint)SID.Electrocution:
+                isElectrocuted = false;
+                break;
+        }
+    }
+
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (actor.FindStatus((uint)SID.Electrocution) != null)
+        if (isElectrocuted)
         {
             hints.Add($"Cleanse Electrocution!");
         }
-        if (actor.FindStatus((uint)SID.Heavy) != null)
+        if (isHeavy)
         {
             hints.Add("Use Loom to dodge AOEs!");
         }
@@ -128,19 +157,6 @@ sealed class Hints2(BossModule module) : BossComponent(module)
     }
 }
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"For this fight The Ram's Voice, Ultravibration, Diamondback,\nExuviation, Flying Sardine, Loom, a physical dmg ability and a healing\nability (preferably Pom Cure with healer mimicry) are mandatory.");
-    }
-
-    public override void AddHints(int slot, Actor actor, TextHints hints)
-    {
-        hints.Add("Requirements for achievement: Don't destroy the crystal in act 2,\nuse no sprint, use all 6 magic elements, take no optional damage.", false);
-    }
-}
-
 sealed class Stage32Act1States : StateMachineBuilder
 {
     public Stage32Act1States(BossModule module) : base(module)
@@ -158,23 +174,25 @@ sealed class Stage32Act1States : StateMachineBuilder
             .ActivateOnEnter<GoldorThunderIII>()
             .ActivateOnEnter<GoldorThunderIII2>()
             .ActivateOnEnter<GoldorBlizzardIII>()
-            .ActivateOnEnter<Hints2>()
-            .DeactivateOnEnter<Hints>();
+            .ActivateOnEnter<Hints>();
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 948u, NameID = 12471u, SortOrder = 1)]
-public sealed class Stage32Act1 : BossModule
+public sealed class Stage32Act1(WorldState ws, Actor primary) : BossModule(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
 {
-    public Stage32Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
-    {
-        ActivateComponent<Hints>();
-    }
-
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
         Arena.Actors(Enemies((uint)OID.BallOfFire), Colors.Object);
         Arena.Actors(Enemies((uint)OID.GlitteringSlime), Colors.Object);
     }
+
+    private readonly string[] _prePullHints =
+    [
+        $"For this fight The Ram's Voice, Ultravibration, Diamondback, Exuviation, Flying Sardine, Loom, a physical dmg ability and a healing ability (preferably Pom Cure with healer mimicry) are mandatory.",
+        "Requirements for achievement: Don't destroy the crystal in act 2, use no sprint, use all 6 magic elements, take no optional damage. This means using only physical damage abilities in act 2."
+    ];
+
+    public override string[] PrePullHints => _prePullHints;
 }

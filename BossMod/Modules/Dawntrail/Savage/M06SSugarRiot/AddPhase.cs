@@ -134,7 +134,7 @@ class WaterIIIVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(modu
 
 class ManxomeWindersnatch(BossModule module) : Components.SingleTargetInstant(module, (uint)AID.ManxomeWindersnatch, 5f)
 {
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (Targets.Count != 0)
         {

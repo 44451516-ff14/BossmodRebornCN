@@ -31,15 +31,36 @@ sealed class TheDragonsVoice(BossModule module) : Components.SimpleAOEs(module, 
 
 sealed class Hints(BossModule module) : BossComponent(module)
 {
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"In this act {Module.PrimaryActor.Name} will reflect all magic attacks.\nHe will also spawn adds that need to be dealed with swiftly\nsince they will spam raidwides. The adds are immune against magic\nand fire attacks.");
-    }
-}
+    private bool repellingSprayActive;
+    private bool isDoomed;
 
-sealed class Hints2(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
+    {
+        switch (status.ID)
+        {
+            case (uint)SID.RepellingSpray:
+                repellingSprayActive = true;
+                break;
+            case (uint)SID.Doom:
+                isDoomed = true;
+                break;
+        }
+    }
+
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
+    {
+        switch (status.ID)
+        {
+            case (uint)SID.RepellingSpray:
+                repellingSprayActive = false;
+                break;
+            case (uint)SID.Doom:
+                isDoomed = false;
+                break;
+        }
+    }
+
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var angons = Module.Enemies((uint)OID.BlazingAngon);
         var count = angons.Count;
@@ -55,7 +76,7 @@ sealed class Hints2(BossModule module) : BossComponent(module)
                 }
             }
         }
-        if (Module.PrimaryActor.FindStatus((uint)SID.RepellingSpray) != null)
+        if (repellingSprayActive)
         {
             hints.Add($"{Module.PrimaryActor.Name} will reflect all magic damage!");
         }
@@ -63,7 +84,7 @@ sealed class Hints2(BossModule module) : BossComponent(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (actor.FindStatus((uint)SID.Doom) != null)
+        if (isDoomed)
         {
             hints.Add("You were doomed! Cleanse it with Exuviation or finish the act fast.");
         }
@@ -79,17 +100,21 @@ sealed class Stage25Act2States : StateMachineBuilder
             .ActivateOnEnter<ApocalypticRoar>()
             .ActivateOnEnter<TheRamsVoice>()
             .ActivateOnEnter<TheDragonsVoice>()
-            .ActivateOnEnter<Hints2>()
-            .DeactivateOnEnter<Hints>();
+            .ActivateOnEnter<Hints>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 635, NameID = 8129, SortOrder = 2)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 635u, NameID = 8129u, SortOrder = 2)]
 public sealed class Stage25Act2 : BossModule
 {
     public Stage25Act2(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {
-        ActivateComponent<Hints>();
+        _prePullHints =
+        [
+            $"In this act {PrimaryActor.Name} will reflect all magic attacks.",
+            "He will also spawn adds that need to be dealed with swiftly, since they will spam raidwides.",
+            "The adds are immune against magic and fire attacks."
+        ];
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -112,4 +137,8 @@ public sealed class Stage25Act2 : BossModule
         Arena.Actor(PrimaryActor);
         Arena.Actors(Enemies((uint)OID.BlazingAngon), Colors.Object);
     }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

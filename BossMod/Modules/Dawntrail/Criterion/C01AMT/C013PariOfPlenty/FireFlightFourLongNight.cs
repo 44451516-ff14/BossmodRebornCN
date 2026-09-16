@@ -21,7 +21,7 @@ class WitchHunt(BossModule module) : Components.GenericBaitAway(module, (uint)AI
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (Order.Count > 0)
         {

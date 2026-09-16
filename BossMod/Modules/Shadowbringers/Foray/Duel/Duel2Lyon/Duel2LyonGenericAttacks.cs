@@ -2,10 +2,8 @@ namespace BossMod.Shadowbringers.Foray.Duel.Duel2Lyon;
 
 sealed class Enaero(BossModule module) : Components.Dispel(module, (uint)SID.Enaero, (uint)AID.RagingWinds1);
 
-sealed class HeartOfNature(BossModule module) : Components.ConcentricAOEs(module, _shapes)
+sealed class HeartOfNature(BossModule module) : Components.ConcentricAOEs(module, [new AOEShapeCircle(10f), new AOEShapeDonut(10f, 20f), new AOEShapeDonut(20f, 30f)])
 {
-    private static readonly AOEShape[] _shapes = [new AOEShapeCircle(10f), new AOEShapeDonut(10f, 20f), new AOEShapeDonut(20f, 30f)];
-
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.NaturesPulse1)
@@ -33,24 +31,27 @@ sealed class TasteOfBloodHint(BossModule module) : Components.CastHint(module, (
 
 sealed class RavenousGale(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCircle circle = new(1.5f);
+    private readonly AOEShapeCircle circle = new(1.5f);
     private readonly List<AOEInstance> _aoes = [];
     private bool casting;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        var count = _aoes.Count + (casting ? 1 : 0);
-        if (count == 0)
+        var count = _aoes.Count;
+        var countAdj = _aoes.Count + (casting ? 1 : 0);
+        if (countAdj == 0)
             return [];
 
-        var aoes = new AOEInstance[count];
+        var aoes = new AOEInstance[countAdj];
         var index = 0;
 
         if (casting)
-            aoes[index++] = new AOEInstance(circle, actor.Position, default);
+            aoes[index++] = new(circle, actor.Position);
 
-        for (var i = 0; i < _aoes.Count; ++i)
+        for (var i = 0; i < count; ++i)
+        {
             aoes[index++] = _aoes[i];
+        }
 
         return aoes;
     }
@@ -79,9 +80,8 @@ sealed class RavenousGale(BossModule module) : Components.GenericAOEs(module)
             casting = false;
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
-        base.AddGlobalHints(hints);
         if (casting)
             hints.Add("Move a little to avoid voidzone spawning under you");
     }

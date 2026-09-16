@@ -53,7 +53,7 @@ sealed class EscelonsFall(BossModule module) : Components.GenericBaitAway(module
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var count = order.Count;
         if (count > 0)

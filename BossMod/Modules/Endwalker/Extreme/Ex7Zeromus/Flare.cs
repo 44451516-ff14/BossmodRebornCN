@@ -1,12 +1,12 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex7Zeromus;
 
-class FlareTowers(BossModule module) : Components.CastTowers(module, (uint)AID.FlareAOE, 5f, 4, 4);
+sealed class FlareTowers(BossModule module) : Components.CastTowers(module, (uint)AID.FlareAOE, 5f, 4, 4);
 
-class FlareScald(BossModule module) : Components.GenericAOEs(module)
+sealed class FlareScald(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
 
-    private static readonly AOEShapeCircle _shape = new(5);
+    private readonly AOEShapeCircle _shape = new(5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -25,7 +25,7 @@ class FlareScald(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class ProminenceSpine(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ProminenceSpine, new AOEShapeRect(60f, 5f));
-class SparklingBrandingFlare(BossModule module) : Components.CastStackSpread(module, (uint)AID.BrandingFlareAOE, (uint)AID.SparkingFlareAOE, 4f, 4f);
+sealed class ProminenceSpine(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ProminenceSpine, new AOEShapeRect(60f, 5f));
+sealed class SparklingBrandingFlare(BossModule module) : Components.CastStackSpread(module, (uint)AID.BrandingFlareAOE, (uint)AID.SparkingFlareAOE, 4f, 4f);
 
-class Nox(BossModule module) : Components.StandardChasingAOEs(module, 10f, (uint)AID.NoxAOEFirst, (uint)AID.NoxAOERest, 5.5f, 1.6d, 5, icon: (uint)IconID.Nox);
+sealed class Nox(BossModule module) : Components.StandardChasingAOEs(module, 10f, (uint)AID.NoxAOEFirst, (uint)AID.NoxAOERest, 5.5f, 1.6d, 5, icon: (uint)IconID.Nox);

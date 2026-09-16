@@ -1,6 +1,6 @@
 ﻿namespace BossMod.RealmReborn.Extreme.Ex3Titan;
 
-class Geocrush(BossModule module, float radius) : Components.CastCounter(module, (uint)AID.Geocrush)
+abstract class Geocrush(BossModule module, float radius) : Components.CastCounter(module, (uint)AID.Geocrush)
 {
     private readonly float _radius = radius;
     private const float _ringWidth = 2f;
@@ -26,12 +26,12 @@ class Geocrush(BossModule module, float radius) : Components.CastCounter(module,
     }
 }
 
-class Geocrush1(BossModule module) : Geocrush(module, Radius)
+sealed class Geocrush1(BossModule module) : Geocrush(module, Radius)
 {
     public const float Radius = 15f;
 }
 
-class Geocrush2(BossModule module) : Geocrush(module, Radius)
+sealed class Geocrush2(BossModule module) : Geocrush(module, Radius)
 {
     public const float Radius = 12f;
 }

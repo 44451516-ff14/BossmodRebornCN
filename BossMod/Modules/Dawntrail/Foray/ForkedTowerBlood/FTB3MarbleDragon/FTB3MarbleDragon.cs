@@ -7,7 +7,6 @@ sealed class WickedWater(BossModule module) : Components.RaidwideCastDelay(modul
 sealed class ImitationIcicle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ImitationIcicle, 8f);
 sealed class DreadDeluge(BossModule module) : Components.SingleTargetCast(module, (uint)AID.DreadDeluge);
 
-[SkipLocalsInit]
 sealed class FrigidTwister(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<Actor> voidzones = module.Enemies((uint)OID.Icewind);

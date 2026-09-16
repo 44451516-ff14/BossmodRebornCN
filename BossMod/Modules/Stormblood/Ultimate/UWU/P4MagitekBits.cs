@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UWU;
 
-class P4MagitekBits(BossModule module) : BossComponent(module)
+sealed class P4MagitekBits(BossModule module) : BossComponent(module)
 {
     private readonly List<Actor> _bits = module.Enemies((uint)OID.MagitekBit);
 

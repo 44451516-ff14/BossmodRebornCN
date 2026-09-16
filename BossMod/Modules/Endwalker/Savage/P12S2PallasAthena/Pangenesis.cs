@@ -3,7 +3,7 @@
 // note: this assumes standard strategy, not sure whether alternatives are possible...
 // TODO: assign sides...
 // TODO: show biochemical factor tethers - not sure how exactly they work...
-class Pangenesis(BossModule module) : Components.GenericTowers(module)
+sealed class Pangenesis(BossModule module) : Components.GenericTowers(module)
 {
     public enum Color { None, Light, Dark }
 
@@ -122,7 +122,7 @@ class Pangenesis(BossModule module) : Components.GenericTowers(module)
     }
 }
 
-class FactorIn(BossModule module) : Components.GenericBaitAway(module, (uint)AID.FactorIn, centerAtTarget: true)
+sealed class FactorIn(BossModule module) : Components.GenericBaitAway(module, (uint)AID.FactorIn, centerAtTarget: true)
 {
     private readonly List<(Actor source, Actor target)> _slimes = [];
 

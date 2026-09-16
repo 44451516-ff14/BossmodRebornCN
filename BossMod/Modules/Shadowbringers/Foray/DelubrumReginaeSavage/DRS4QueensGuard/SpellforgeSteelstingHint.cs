@@ -6,7 +6,7 @@ sealed class SpellforgeSteelstingHint(BossModule module) : BossComponent(module)
     private string _hint = "";
     public bool Active => _hint.Length > 0;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (Active)
             hints.Add(_hint);

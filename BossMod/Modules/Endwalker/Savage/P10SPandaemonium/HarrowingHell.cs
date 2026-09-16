@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P10SPandaemonium;
 
-class HarrowingHell(BossModule module) : BossComponent(module)
+sealed class HarrowingHell(BossModule module) : BossComponent(module)
 {
     public int NumCasts;
     private BitMask _closestTargets;

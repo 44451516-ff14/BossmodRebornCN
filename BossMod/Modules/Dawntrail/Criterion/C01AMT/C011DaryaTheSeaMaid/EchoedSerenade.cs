@@ -55,7 +55,7 @@ class EchoedSerenade(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (orderVFX.Count == 0)
         {

@@ -1,6 +1,5 @@
 namespace BossMod.Heavensward.Alliance.A24Ozma;
 
-[SkipLocalsInit]
 sealed class ArenaChanges(BossModule module) : BossComponent(module)
 {
     private readonly uint[] arenaStatus = new uint[PartyState.MaxAllianceSize]; // 0 default arena, 1 split arena, 2 ozmashade arena

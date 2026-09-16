@@ -2,7 +2,6 @@
 
 // a bunch of utilities for approximating curves with line segments
 // we need them, since clipping and rendering works with polygons
-[SkipLocalsInit]
 public static class CurveApprox
 {
     public const float ScreenError = 0.05f;

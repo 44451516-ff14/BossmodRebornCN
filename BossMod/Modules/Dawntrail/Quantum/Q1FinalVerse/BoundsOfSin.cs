@@ -1,6 +1,5 @@
 namespace BossMod.Dawntrail.Quantum.Q1FinalVerse;
 
-[SkipLocalsInit]
 sealed class BoundsOfSinSmallAOE : Components.SimpleAOEs
 {
     public BoundsOfSinSmallAOE(BossModule module) : base(module, (uint)AID.BoundsOfSin, 3f)
@@ -9,10 +8,8 @@ sealed class BoundsOfSinSmallAOE : Components.SimpleAOEs
     }
 }
 
-[SkipLocalsInit]
 sealed class BoundsOfSinPull(BossModule module) : Components.CastCounter(module, (uint)AID.BoundsOfSinPull);
 
-[SkipLocalsInit]
 sealed class BoundsOfSinEnd(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance[] _aoe = [];

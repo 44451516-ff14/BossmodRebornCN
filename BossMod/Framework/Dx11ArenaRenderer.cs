@@ -368,6 +368,29 @@ public static unsafe partial class Dx11ArenaRenderer
             return new(center, projectionHeight, min, max, aRel, bRel, new Vector4(cRel.X, cRel.Y, 0f, 0f), default, color, WorldProjectedShapeKind.Triangle, outlineWidth, waveOriginXZ: aXZ);
         }
 
+        // Dedicated actor marker primitive. PosRot is kept intact until this point so its real world Y
+        // becomes the terrain-projection origin; W supplies facing while X/Z supply the footprint center.
+        // This lets actor markers use a much smaller receiver/bounds height than generic arena-projected
+        // triangles without losing grounded actors on floors whose authored reference Y differs locally.
+        public static WorldProjectedShapeInstance ActorTriangle(Vector4 posRot, float scale, uint fillColor, uint outlineColor, float projectionHeight, float outlineWidth)
+        {
+            scale = Math.Max(0f, scale);
+            var (sin, cos) = MathF.SinCos(posRot.W);
+            var directionXZ = new Vector2(sin, cos);
+            var orthoR = new Vector2(-cos, sin);
+            var centerXZ = new Vector2(posRot.X, posRot.Z);
+            var aXZ = centerXZ + directionXZ * (scale * 0.7f);
+            var backXZ = centerXZ - directionXZ * (scale * 0.35f);
+            var sideXZ = orthoR * (scale * 0.433f);
+            var bXZ = backXZ + sideXZ;
+            var cXZ = backXZ - sideXZ;
+            var min = Vector2.Min(aXZ, Vector2.Min(bXZ, cXZ));
+            var max = Vector2.Max(aXZ, Vector2.Max(bXZ, cXZ));
+            var height = Math.Max(0f, projectionHeight);
+            return new(new Vector3(posRot.X, posRot.Y, posRot.Z), height, min, max, aXZ - centerXZ, bXZ - centerXZ,
+                new Vector4(cXZ.X - centerXZ.X, cXZ.Y - centerXZ.Y, 0f, 0f), new Vector4(height, 0f, 0f, 0f), fillColor, WorldProjectedShapeKind.Triangle, outlineWidth, outlineColor, fillWithOutline: true, suppressZoneWave: true);
+        }
+
         // One projected triangle instance containing both fill and outline. This is primarily used by
         // actor markers so scene-depth reconstruction, character classification and arena clipping are evaluated once
         public static WorldProjectedShapeInstance TriangleFilledOutlined(Vector3 a, Vector3 b, Vector3 c, uint fillColor, uint outlineColor, float projectionHeight, float outlineWidth, float boundsProjectionHeight = 0f)
@@ -390,10 +413,10 @@ public static unsafe partial class Dx11ArenaRenderer
         public static WorldProjectedShapeInstance Sdf(Vector3 referenceOrigin, Vector2 boundsMinXZ, Vector2 boundsMaxXZ, uint color, float projectionHeight, float outlineWidth = 0f)
             => new(referenceOrigin, projectionHeight, boundsMinXZ, boundsMaxXZ, default, default, default, default, color, WorldProjectedShapeKind.Sdf, outlineWidth, waveOriginXZ: referenceOrigin.XZ());
 
-        private WorldProjectedShapeInstance(in WorldProjectedShapeInstance source, Vector4 params1, uint packed)
+        private WorldProjectedShapeInstance(in WorldProjectedShapeInstance source, Vector4 params1, uint packed, Vector3 origin, float projectionHeight)
         {
-            Origin = source.Origin;
-            ProjectionHeight = source.ProjectionHeight;
+            Origin = origin;
+            ProjectionHeight = projectionHeight;
             BoundsMinXZ = source.BoundsMinXZ;
             BoundsMaxXZ = source.BoundsMaxXZ;
             DirectionXZ = source.DirectionXZ;
@@ -407,12 +430,26 @@ public static unsafe partial class Dx11ArenaRenderer
             WaveOriginXZ = source.WaveOriginXZ;
         }
 
+        // Reuse a terrain footprint on another physical floor without changing its X/Z geometry,
+        // padding or style. Eye3D has an authoritative height and does not use this operation.
+        public WorldProjectedShapeInstance WithProjectionLayer(float y, float projectionHeight, float holeFillRadius)
+        {
+            var height = Math.Max(0f, projectionHeight);
+            var params1 = Params1;
+            if ((Packed & 0xFFu) == (uint)WorldProjectedShapeKind.Triangle)
+            {
+                params1.X = height; // the triangle's conservative vertical bound follows this floor too
+            }
+            params1.Y = Math.Clamp(holeFillRadius, 0f, 2f);
+            return new(this, params1, Packed, new Vector3(Origin.X, y, Origin.Z), height);
+        }
+
         // Params1.y carries the optional world-space closing radius without growing the instance or input layout. ProjectionHeight == 0 selects the authored reference plane.
         public WorldProjectedShapeInstance WithHoleFillRadius(float holeFillRadius)
         {
             var params1 = Params1;
             params1.Y = Math.Clamp(holeFillRadius, 0f, 2f);
-            return new(this, params1, Packed);
+            return new(this, params1, Packed, Origin, ProjectionHeight);
         }
     }
 
@@ -428,6 +465,13 @@ public static unsafe partial class Dx11ArenaRenderer
     private struct ZoneWaveConstants
     {
         public Vector4 Params; // x = elapsed seconds; remaining lanes reserved for future tuning
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct WorldOverlayConstants
+    {
+        public Vector4 RiskColor; // straight-alpha color, with fade/intensity included in alpha
+        public Vector4 RiskParams; // xy = framebuffer size, z = pulse phase, w reserved
     }
 
     private struct WorldProjectedSdfBinding
@@ -589,6 +633,50 @@ public static unsafe partial class Dx11ArenaRenderer
         public int Height;
         public int ByteSize;
         public long LastUse;
+        // Frame in which this resource was first published. Progressive refinement only starts after
+        // the polygon survives into a later frame, so one-frame dynamic AOEs/bounds do not flood the worker.
+        public int CreatedFrame = -1;
+    }
+
+    // CPU-side SDF payload produced by the background worker. It intentionally contains no D3D
+    // objects so expensive polygon sampling can run independently from the immediate-context thread.
+    private sealed class SdfCpuData
+    {
+        public required ushort[] Packed;
+        public int TotalSampleCount;
+        public int Width;
+        public int Height;
+        public int MipLevels;
+        public float MinX;
+        public float MinZ;
+        public float SpanX;
+        public float SpanZ;
+
+        public void ReturnPacked()
+        {
+            var packed = Packed;
+            Packed = null!;
+            if (packed != null)
+            {
+                ArrayPool<ushort>.Shared.Return(packed, clearArray: false);
+            }
+        }
+    }
+
+    private sealed class CustomSdfBuildRequest(RelSimplifiedComplexPolygon polygon, int longResolution, int generation, bool arenaCache)
+    {
+        public readonly RelSimplifiedComplexPolygon Polygon = polygon;
+        public readonly int LongResolution = longResolution;
+        public readonly int Generation = generation;
+        // Both arena and custom SDFs share one CPU worker so a changing arena cannot compete with
+        // changing mechanics for an entire second ThreadPool core. GPU publication remains cache-specific.
+        public readonly bool ArenaCache = arenaCache;
+    }
+
+    private sealed class CompletedCustomSdfBuild(CustomSdfBuildRequest request, SdfCpuData data)
+    {
+        public readonly CustomSdfBuildRequest Request = request;
+        public readonly SdfCpuData Data = data;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -768,6 +856,8 @@ public static unsafe partial class Dx11ArenaRenderer
         // composited swapchain. A separate marker packet resolves that texture once per frame.
         public bool WorldOverlayTarget;
         public bool IsWorldOverlayPresent;
+        public Vector4 ScreenRiskColor;
+        public float ScreenRiskPhase;
         // Deferred clipping-edge replay is correctness-sensitive: it must land after and obscure
         // the arena border. Give these packets a fresh dynamic-buffer backing allocation instead of sharing the same-frame NO_OVERWRITE ring with the border packet
         public bool IsDeferredOverlay;
@@ -795,9 +885,31 @@ public static unsafe partial class Dx11ArenaRenderer
     private const int MaxCachedCustomSdfs = 64;
     private const float TargetSdfPixelsPerTexel = 0.5f;
     private const int MinSdfLongResolution = 64;
+    // A new custom polygon gets this tiny exact-distance preview synchronously. A square 32px SDF
+    // evaluates only 1365 samples including its complete mip chain, versus ~1.4M at 1024px.
+    // Refinement is deferred until the same polygon survives into a later frame.
+    private const int CustomSdfPreviewLongResolution = 128;
+    // Arena/stencil bounds use the same tiny first-frame exact map. Unlike an async-only miss this
+    // guarantees clipping/background primitives always have a valid SDF, even if the bounds object
+    // is rebuilt every frame. Persistent bounds refine in the background.
+    private const int ArenaSdfPreviewLongResolution = 128;
     private const int MaxSdfResolution = 1024;
     private const int SdfResolutionAlignment = 16;
     private static readonly Dictionary<RelSimplifiedComplexPolygon, ArenaSdfResource> CustomSdfCache = [with(ReferenceEqualityComparer.Instance)];
+
+    // Custom SDF sampling is CPU-heavy and can be safely generated off-thread because polygons are
+    // immutable by renderer convention. A single background worker avoids turning a burst of new
+    // mechanics into competing ThreadPool jobs. Texture/SRV creation remains on the render thread.
+    private static readonly Lock _customSdfBuildLock = new();
+    private static readonly Queue<CustomSdfBuildRequest> _customSdfBuildQueue = [];
+    private static readonly Queue<CompletedCustomSdfBuild> _completedCustomSdfBuildQueue = [];
+    private static readonly Queue<CompletedCustomSdfBuild> _completedArenaSdfBuildQueue = [];
+    private static readonly HashSet<RelSimplifiedComplexPolygon> _pendingCustomSdfBuilds = [with(ReferenceEqualityComparer.Instance)];
+    private static readonly HashSet<RelSimplifiedComplexPolygon> _pendingArenaSdfBuilds = [with(ReferenceEqualityComparer.Instance)];
+    private const int MaxPendingCustomSdfBuilds = 64;
+    private static bool _customSdfWorkerRunning;
+    private static int _customSdfBuildGeneration;
+
     // Byte totals only change on create/upgrade/evict. Keep them incrementally instead of scanning
     // every cache entry on every SDF lookup in the steady-state render path
     private static long _arenaSdfCacheBytes;
@@ -835,6 +947,7 @@ public static unsafe partial class Dx11ArenaRenderer
     private static ID3D11InputLayout* _worldProjectedShapeInputLayout;
     private static ID3D11VertexShader* _worldOverlayVertexShader;
     private static ID3D11PixelShader* _worldOverlayPixelShader;
+    private static ID3D11Buffer* _worldOverlayConstantBuffer;
     private static ID3D11Buffer* _worldProjectedSdfConstantBuffer;
     private static ID3D11Buffer* _worldLineConstantBuffer;
     private static ID3D11Buffer* _worldLineTransformBuffer;
@@ -849,10 +962,23 @@ public static unsafe partial class Dx11ArenaRenderer
     private static ID3D11RenderTargetView* _worldOverlayOutputRenderTarget;
     private static ID3D11ShaderResourceView* _worldOverlayOutputView;
     private static WorldOverlayNode? _worldOverlayNode;
-    private static int _worldOverlayWidth;
-    private static int _worldOverlayHeight;
+    // Backing textures are capacity-sized rather than exact framebuffer-sized. Keeping the largest
+    // recent allocation avoids feeding FFXIV/D3D11 a new pair of full-screen textures on every resize.
+    private static int _worldOverlayCapacityWidth;
+    private static int _worldOverlayCapacityHeight;
     private static int _worldOverlayBaseFrame = -1;
     private static bool _worldOverlayLastSucceeded;
+
+    // Full-screen overlay targets are expensive and native Texture destruction can be delayed. During
+    // an interactive window resize, wait until the requested framebuffer size has remained unchanged
+    // for several submitted frames before allocating another pair of full-screen targets. While the
+    // size is unstable, world packets use their existing non-overlay fallback path.
+    private const int WorldOverlayResizeStableFrames = 6;
+    private const int WorldOverlayCapacityAlignment = 256;
+    private static int _worldOverlayPendingWidth;
+    private static int _worldOverlayPendingHeight;
+    private static int _worldOverlayPendingStableFrames;
+    private static int _worldOverlayPendingLastSubmitFrame = -1;
 
     // Stable world-render settings. Scene depth hides line/curve pixels behind world geometry. Native
     // UI ordering is handled structurally by WorldOverlayNode's background layer, never inferred from
@@ -902,6 +1028,15 @@ public static unsafe partial class Dx11ArenaRenderer
     private static ID3D11Buffer* _customSdfConstantBuffer;
     private static ID3D11Buffer* _zoneWaveConstantBuffer;
     private static readonly long ZoneWaveEpoch = Stopwatch.GetTimestamp();
+
+    // Retryable resource creation can fail every frame while the device is under pressure. Log the first
+    // failure immediately, then at most once every five seconds until the resource recovers.
+    private static readonly long D3D11RetryFailureLogIntervalTicks = 5L * Stopwatch.Frequency;
+    private static long _lastQuadIndexBufferFailureLogTimestamp;
+    private static long _lastStencilTargetFailureLogTimestamp;
+    private static long _lastUploadVertexBufferFailureLogTimestamp;
+    private static long _lastWorldOverlayFailureLogTimestamp;
+    private static long _lastSceneDepthViewFailureLogTimestamp;
     // Shared immutable 0,1,2 / 0,2,3 quad indices. Stroke/world-line/analytic/outline/text VS paths only need four unique corners
     private static ID3D11Buffer* _quadIndexBuffer;
     private static int _stencilWidth;
@@ -1059,6 +1194,10 @@ public static unsafe partial class Dx11ArenaRenderer
             ID3D11DeviceContext* context = null;
             _device->GetImmediateContext(&context);
             _context = context;
+            if (_context == null)
+            {
+                Service.Logger.Error("DX11 renderer: ID3D11Device.GetImmediateContext returned null during initialization");
+            }
 
             if (_context != null && CreateShadersAndLayouts() && CreateStencilStates() && CreateArenaSdfPipelineResources() && CreateArenaFontResources())
             {
@@ -1069,7 +1208,9 @@ public static unsafe partial class Dx11ArenaRenderer
             }
         }
 
-        // Initialization failed. Keep the gate closed and release whatever was created.
+        // Initialization failed. Keep the gate closed and release whatever was created. The failing
+        // D3D creation helper logs its HRESULT/device-removed reason before control reaches here.
+        Service.Logger.Error("DX11 renderer initialization failed; renderer remains disabled for this generation");
         Shutdown();
     }
 
@@ -1085,6 +1226,7 @@ public static unsafe partial class Dx11ArenaRenderer
             _arenaActive = false;
             BuildPath.Clear();
             ResetBuildRun(returnArrays: true);
+            InvalidateAsyncCustomSdfBuilds();
 
             lock (PendingPackets)
             {
@@ -1112,6 +1254,7 @@ public static unsafe partial class Dx11ArenaRenderer
             Release(ref _worldCurveInputLayout);
             Release(ref _worldProjectedArrowInputLayout);
             Release(ref _worldProjectedShapeInputLayout);
+            Release(ref _worldOverlayConstantBuffer);
             Release(ref _worldProjectedSdfConstantBuffer);
             Release(ref _worldLineConstantBuffer);
             Release(ref _worldLineTransformBuffer);
@@ -1120,6 +1263,7 @@ public static unsafe partial class Dx11ArenaRenderer
             Release(ref _sceneInfoView);
             _sceneInfoViewIdentity = 0;
             ReleaseWorldOverlayResources();
+            ResetWorldOverlayResizeDebounce();
             Release(ref _analyticInputLayout);
             Release(ref _textInputLayout);
             Release(ref _worldTextInputLayout);
@@ -1223,6 +1367,11 @@ public static unsafe partial class Dx11ArenaRenderer
             _zoneWaveUploadFrame = -1;
             _stencilWidth = 0;
             _stencilHeight = 0;
+            _lastQuadIndexBufferFailureLogTimestamp = 0;
+            _lastStencilTargetFailureLogTimestamp = 0;
+            _lastUploadVertexBufferFailureLogTimestamp = 0;
+            _lastWorldOverlayFailureLogTimestamp = 0;
+            _lastSceneDepthViewFailureLogTimestamp = 0;
             _arenaStencilKey = 0L;
             _arenaStencilMaskQueued = false;
             _renderedStencilKey = 0L;
@@ -1245,6 +1394,8 @@ public static unsafe partial class Dx11ArenaRenderer
         ReleaseDeferredOutlineOverlays();
         BuildPath.Clear();
         ResetBuildRun(returnArrays: true);
+        // Safe publication point: no active arena build retains an ArenaSdfResource directly here.
+        DrainCompletedArenaSdfBuilds();
 
         _buildDrawList = drawList;
         _arenaActive = true;
@@ -1296,9 +1447,13 @@ public static unsafe partial class Dx11ArenaRenderer
             return false;
         }
 
-        _arenaShape = arenaShape;
+        // If Flush produced a packet it retained the old arena SRV; if the run was empty there is no
+        // packet that can consume the build reference. Either way, drop the direct build reference
+        // before publishing completed arena refinements.
         _buildArenaSdf = null;
         _buildOutlineSdfConstants = default;
+        DrainCompletedArenaSdfBuilds();
+        _arenaShape = arenaShape;
         _arenaStencilKey = NextArenaStencilKey();
         _arenaStencilMaskQueued = false;
         return true;
@@ -1325,6 +1480,10 @@ public static unsafe partial class Dx11ArenaRenderer
             return false;
         }
         EnsureBuildRunStarted();
+        if (_buildArenaSdf == null)
+        {
+            DrainCompletedArenaSdfBuilds();
+        }
         return GetOrCreateArenaSdfResource(arenaShape) != null;
     }
 
@@ -1346,6 +1505,7 @@ public static unsafe partial class Dx11ArenaRenderer
         ReleaseDeferredOutlineOverlays();
         BuildPath.Clear();
         ResetBuildRun(returnArrays: true);
+        DrainCompletedArenaSdfBuilds();
 
         _buildDrawList = drawList;
         _arenaActive = true;
@@ -1745,7 +1905,7 @@ public static unsafe partial class Dx11ArenaRenderer
 
             var miter = sum * (1f / MathF.Sqrt(sumLenSq));
             var denom = Vector2.Dot(miter, nextNormal);
-            if (MathF.Abs(denom) < 0.2f)
+            if (Math.Abs(denom) < 0.2f)
             {
                 denom = MathF.CopySign(0.2f, denom == 0f ? 1f : denom);
             }
@@ -2184,7 +2344,7 @@ public static unsafe partial class Dx11ArenaRenderer
         }
 
         EnsureBuildRunStarted();
-        var pixelScale = MathF.Max(_buildPixelScale, 1e-5f);
+        var pixelScale = Math.Max(_buildPixelScale, 1e-5f);
         var radius = (halfWidth * halfWidth + halfHeight * halfHeight) / (2f * halfHeight);
         var offset = radius - halfHeight;
         var aaPadScreen = 1.5f / pixelScale;
@@ -2591,7 +2751,7 @@ public static unsafe partial class Dx11ArenaRenderer
         var orbitcenterX = toOrbitCenter.X;
         var orbitcenterZ = toOrbitCenter.Z;
         var orbitRadiusSq = orbitcenterX * orbitcenterX + orbitcenterZ * orbitcenterZ;
-        if (!(orbitRadiusSq > 1e-12f) || MathF.Abs(angularLengthRadians) < 1e-6f)
+        if (!(orbitRadiusSq > 1e-12f) || Math.Abs(angularLengthRadians) < 1e-6f)
         {
             AppendCircleOutline(startOffset, radius, color, lineThickness, shadowColor, shadowThickness);
             return;
@@ -2869,46 +3029,35 @@ public static unsafe partial class Dx11ArenaRenderer
 
     private static ArenaSdfResource? GetOrCreateWorldProjectedSdfResource(RelSimplifiedComplexPolygon polygon, bool arenaCache)
     {
-        var cache = arenaCache ? ArenaSdfCache : CustomSdfCache;
-        if (cache.TryGetValue(polygon, out var cached))
+        if (arenaCache)
+        {
+            // World projection have at least an 8 px/world-unit target, but reach it progressively instead of synchronously rebuilding the clip
+            return GetOrCreateArenaSdfResource(polygon, Math.Max(_buildSdfResolutionPixelScale, 8f));
+        }
+
+        if (CustomSdfCache.TryGetValue(polygon, out var cached))
         {
             cached.LastUse = ++_arenaSdfUseCounter;
+            var frame = ImGui.GetFrameCount();
+            var desired = ComputeSdfLongResolution(Math.Max(cached.SpanX, cached.SpanZ), Math.Max(_buildSdfResolutionPixelScale, 8f));
+            if (frame != cached.CreatedFrame && Math.Max(cached.Width, cached.Height) < desired)
+            {
+                QueueCustomSdfBuild(polygon, NextCustomSdfLongResolution(cached, desired));
+            }
             return cached;
         }
 
-        // The 2D radar normally creates this resource. Projection-only mode needs to create it itself on the first cache miss
-        var savedScale = _buildSdfResolutionPixelScale;
-        _buildSdfResolutionPixelScale = Math.Max(savedScale, 8f);
-
-        ArenaSdfResource? resource;
-        try
-        {
-            resource = BuildAdaptiveSdfResource(polygon);
-        }
-        finally
-        {
-            _buildSdfResolutionPixelScale = savedScale;
-        }
-
+        // Projection-only custom polygons get the same immediate coarse preview as 2D polygons,
+        // so a fresh animated AOE never disappears while waiting for its background refinement.
+        var resource = BuildSdfPreview(polygon, ImGui.GetFrameCount(), CustomSdfPreviewLongResolution);
         if (resource == null)
         {
             return null;
         }
-
-        cache.Add(polygon, resource);
+        CustomSdfCache.Add(polygon, resource);
         resource.LastUse = ++_arenaSdfUseCounter;
-
-        if (arenaCache)
-        {
-            _arenaSdfCacheBytes += resource.ByteSize;
-            TrimSdfCache(ArenaSdfCache, resource, ref _arenaSdfCacheBytes, ArenaSdfCacheBudgetBytes, MaxCachedArenaSdfs);
-        }
-        else
-        {
-            _customSdfCacheBytes += resource.ByteSize;
-            TrimSdfCache(CustomSdfCache, resource, ref _customSdfCacheBytes, CustomSdfCacheBudgetBytes, MaxCachedCustomSdfs);
-        }
-
+        _customSdfCacheBytes += resource.ByteSize;
+        TrimSdfCache(CustomSdfCache, resource, ref _customSdfCacheBytes, CustomSdfCacheBudgetBytes, MaxCachedCustomSdfs);
         return resource;
     }
 
@@ -2936,11 +3085,252 @@ public static unsafe partial class Dx11ArenaRenderer
         return index;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void QueueCustomSdfBuild(RelSimplifiedComplexPolygon polygon, int longResolution)
+        => QueueProgressiveSdfBuild(polygon, longResolution, arenaCache: false);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void QueueArenaSdfBuild(RelSimplifiedComplexPolygon polygon, int longResolution)
+        => QueueProgressiveSdfBuild(polygon, longResolution, arenaCache: true);
+
+    private static void QueueProgressiveSdfBuild(RelSimplifiedComplexPolygon polygon, int longResolution, bool arenaCache)
+    {
+        if (!_isInitialized || _shutDown)
+        {
+            return;
+        }
+
+        longResolution = Math.Clamp(AlignSdfResolution(longResolution), SdfResolutionAlignment, MaxSdfResolution);
+        var cache = arenaCache ? ArenaSdfCache : CustomSdfCache;
+        if (cache.TryGetValue(polygon, out var existing) && Math.Max(existing.Width, existing.Height) >= longResolution)
+        {
+            return;
+        }
+
+        // RelSimplifiedComplexPolygon lazily owns its exact boundary index. Force that one-time
+        // publication on the renderer thread; background jobs only perform read-only distance queries.
+        polygon.VerifyPolygonIndexExistance();
+
+        lock (_customSdfBuildLock)
+        {
+            var pending = arenaCache ? _pendingArenaSdfBuilds : _pendingCustomSdfBuilds;
+            if (pending.Contains(polygon) || _pendingCustomSdfBuilds.Count + _pendingArenaSdfBuilds.Count >= MaxPendingCustomSdfBuilds)
+            {
+                return;
+            }
+
+            var request = new CustomSdfBuildRequest(polygon, longResolution, _customSdfBuildGeneration, arenaCache);
+            pending.Add(polygon);
+            _customSdfBuildQueue.Enqueue(request);
+
+            if (_customSdfWorkerRunning)
+            {
+                return;
+            }
+
+            _customSdfWorkerRunning = true;
+            if (!ThreadPool.QueueUserWorkItem(static _ => RunCustomSdfWorker()))
+            {
+                _customSdfWorkerRunning = false;
+                _customSdfBuildQueue.Dequeue();
+                pending.Remove(polygon);
+            }
+        }
+    }
+
+    private static void RunCustomSdfWorker()
+    {
+        while (true)
+        {
+            CustomSdfBuildRequest request;
+            lock (_customSdfBuildLock)
+            {
+                if (_customSdfBuildQueue.Count == 0)
+                {
+                    _customSdfWorkerRunning = false;
+                    return;
+                }
+                request = _customSdfBuildQueue.Dequeue();
+            }
+
+            var data = BuildAdaptiveSdfCpu(request.Polygon, request.LongResolution);
+
+            lock (_customSdfBuildLock)
+            {
+                if (data != null && request.Generation == _customSdfBuildGeneration)
+                {
+                    var completed = new CompletedCustomSdfBuild(request, data);
+                    if (request.ArenaCache)
+                    {
+                        _completedArenaSdfBuildQueue.Enqueue(completed);
+                    }
+                    else
+                    {
+                        _completedCustomSdfBuildQueue.Enqueue(completed);
+                    }
+                }
+                else
+                {
+                    data?.ReturnPacked();
+                    // InvalidateAsyncCustomSdfBuilds already clears old-generation membership. Do not
+                    // remove a same-polygon request that may have been queued by a newer generation.
+                    if (request.Generation == _customSdfBuildGeneration)
+                    {
+                        (request.ArenaCache ? _pendingArenaSdfBuilds : _pendingCustomSdfBuilds).Remove(request.Polygon);
+                    }
+                }
+            }
+        }
+    }
+
+    // Custom SDFs are packet-bound immediately (with AddRef), so completed custom refinements can be
+    // published throughout build submission without invalidating an in-progress resource reference.
+    private static void DrainCompletedCustomSdfBuilds()
+    {
+        while (true)
+        {
+            CompletedCustomSdfBuild completed;
+            lock (_customSdfBuildLock)
+            {
+                if (_completedCustomSdfBuildQueue.Count == 0)
+                {
+                    return;
+                }
+                completed = _completedCustomSdfBuildQueue.Dequeue();
+            }
+            PublishCompletedSdfBuild(completed, arenaCache: false);
+        }
+    }
+
+    // Arena SDFs are held directly in _buildArenaSdf for the lifetime of an arena/stencil build.
+    // Drain this queue only at safe boundaries where _buildArenaSdf is null, before the next arena
+    // generation takes ownership. This avoids releasing/replacing an SRV underneath an active stencil.
+    private static void DrainCompletedArenaSdfBuilds()
+    {
+        Debug.Assert(_buildArenaSdf == null);
+        while (true)
+        {
+            CompletedCustomSdfBuild completed;
+            lock (_customSdfBuildLock)
+            {
+                if (_completedArenaSdfBuildQueue.Count == 0)
+                {
+                    return;
+                }
+                completed = _completedArenaSdfBuildQueue.Dequeue();
+            }
+            PublishCompletedSdfBuild(completed, arenaCache: true);
+        }
+    }
+
+    private static void PublishCompletedSdfBuild(CompletedCustomSdfBuild completed, bool arenaCache)
+    {
+        var request = completed.Request;
+        var data = completed.Data;
+        try
+        {
+            if (!_isInitialized || _shutDown || request.Generation != _customSdfBuildGeneration)
+            {
+                return;
+            }
+
+            var replacement = UploadAdaptiveSdfResource(data);
+            if (replacement == null)
+            {
+                return;
+            }
+
+            replacement.LastUse = ++_arenaSdfUseCounter;
+            var cache = arenaCache ? ArenaSdfCache : CustomSdfCache;
+            if (cache.TryGetValue(request.Polygon, out var existing))
+            {
+                if (Math.Max(replacement.Width, replacement.Height) <= Math.Max(existing.Width, existing.Height))
+                {
+                    replacement.View->Release();
+                    return;
+                }
+
+                replacement.CreatedFrame = existing.CreatedFrame;
+                cache[request.Polygon] = replacement;
+                if (arenaCache)
+                {
+                    _arenaSdfCacheBytes += replacement.ByteSize - existing.ByteSize;
+                }
+                else
+                {
+                    _customSdfCacheBytes += replacement.ByteSize - existing.ByteSize;
+                }
+                if (existing.View != null)
+                {
+                    existing.View->Release();
+                }
+            }
+            else
+            {
+                cache.Add(request.Polygon, replacement);
+                if (arenaCache)
+                {
+                    _arenaSdfCacheBytes += replacement.ByteSize;
+                }
+                else
+                {
+                    _customSdfCacheBytes += replacement.ByteSize;
+                }
+            }
+
+            if (arenaCache)
+            {
+                TrimSdfCache(ArenaSdfCache, replacement, ref _arenaSdfCacheBytes, ArenaSdfCacheBudgetBytes, MaxCachedArenaSdfs);
+            }
+            else
+            {
+                TrimSdfCache(CustomSdfCache, replacement, ref _customSdfCacheBytes, CustomSdfCacheBudgetBytes, MaxCachedCustomSdfs);
+            }
+        }
+        finally
+        {
+            data.ReturnPacked();
+            lock (_customSdfBuildLock)
+            {
+                if (request.Generation == _customSdfBuildGeneration)
+                {
+                    (arenaCache ? _pendingArenaSdfBuilds : _pendingCustomSdfBuilds).Remove(request.Polygon);
+                }
+            }
+        }
+    }
+
+    private static void InvalidateAsyncCustomSdfBuilds()
+    {
+        lock (_customSdfBuildLock)
+        {
+            ++_customSdfBuildGeneration;
+
+            _customSdfBuildQueue.Clear();
+            while (_completedCustomSdfBuildQueue.Count != 0)
+            {
+                _completedCustomSdfBuildQueue.Dequeue().Data.ReturnPacked();
+            }
+            while (_completedArenaSdfBuildQueue.Count != 0)
+            {
+                _completedArenaSdfBuildQueue.Dequeue().Data.ReturnPacked();
+            }
+            _pendingCustomSdfBuilds.Clear();
+            _pendingArenaSdfBuilds.Clear();
+            // Do not force _customSdfWorkerRunning false: an in-flight old-generation job may still be
+            // sampling. It will discard its result, then service any new-generation work queued later.
+        }
+    }
+
     private static ArenaSdfResource? GetOrCreateCustomSdf(RelSimplifiedComplexPolygon polygon)
     {
+        var frame = ImGui.GetFrameCount();
         if (!CustomSdfCache.TryGetValue(polygon, out var resource))
         {
-            resource = BuildAdaptiveSdfResource(polygon);
+            // Always generate a small exact SDF immediately. This keeps genuinely dynamic custom AOEs
+            // visible even when callers replace the polygon object every frame. The preview is deliberately
+            // much smaller than the normal 64px floor so its synchronous cost stays bounded.
+            resource = BuildSdfPreview(polygon, frame, CustomSdfPreviewLongResolution);
             if (resource == null)
             {
                 return null;
@@ -2952,32 +3342,48 @@ public static unsafe partial class Dx11ArenaRenderer
             return resource;
         }
 
-        if (NeedsSdfResolutionUpgrade(resource))
+        // Do not refine a polygon merely because both its 2D and world-projected paths touched it in
+        // the same frame. Only polygons that survive into a later frame earn background work. This is
+        // important for animated/custom AOEs that allocate a fresh polygon every update.
+        var desired = ComputeSdfLongResolution(Math.Max(resource.SpanX, resource.SpanZ));
+        if (frame != resource.CreatedFrame && Math.Max(resource.Width, resource.Height) < desired)
         {
-            // Cache entries only grow when the same immutable polygon is later viewed at a higher
-            // framebuffer scale. Never downgrade on zoom-out; that avoids texture rebuild churn.
-            var replacement = BuildAdaptiveSdfResource(polygon);
-            if (replacement != null && Math.Max(replacement.Width, replacement.Height) > Math.Max(resource.Width, resource.Height))
-            {
-                CustomSdfCache[polygon] = replacement;
-                _customSdfCacheBytes += replacement.ByteSize - resource.ByteSize;
-                if (resource.View != null)
-                {
-                    resource.View->Release();
-                }
-                resource = replacement;
-                resource.LastUse = ++_arenaSdfUseCounter;
-                TrimSdfCache(CustomSdfCache, resource, ref _customSdfCacheBytes, CustomSdfCacheBudgetBytes, MaxCachedCustomSdfs);
-                return resource;
-            }
-            if (replacement != null && replacement.View != null)
-            {
-                replacement.View->Release();
-            }
+            QueueCustomSdfBuild(polygon, NextCustomSdfLongResolution(resource, desired));
         }
 
         resource.LastUse = ++_arenaSdfUseCounter;
         return resource;
+    }
+
+    private static ArenaSdfResource? BuildSdfPreview(RelSimplifiedComplexPolygon polygon, int frame, int longResolution)
+    {
+        // Prime lazy polygon indexing on the renderer thread before sampling. This is also done by the
+        // async queue, but preview-only one-frame polygons never need to enter that queue at all.
+        polygon.VerifyPolygonIndexExistance();
+        var data = BuildAdaptiveSdfCpu(polygon, longResolution);
+        if (data == null)
+        {
+            return null;
+        }
+
+        try
+        {
+            var resource = UploadAdaptiveSdfResource(data);
+            resource?.CreatedFrame = frame;
+            return resource;
+        }
+        finally
+        {
+            data.ReturnPacked();
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int NextCustomSdfLongResolution(ArenaSdfResource resource, int desired)
+    {
+        var current = Math.Max(resource.Width, resource.Height);
+        var next = Math.Max(MinSdfLongResolution, current * 2);
+        return Math.Min(desired, Math.Min(MaxSdfResolution, AlignSdfResolution(next)));
     }
 
     private static bool EnsureArenaSdfForBuild()
@@ -3005,10 +3411,17 @@ public static unsafe partial class Dx11ArenaRenderer
     }
 
     private static ArenaSdfResource? GetOrCreateArenaSdfResource(RelSimplifiedComplexPolygon polygon)
+        => GetOrCreateArenaSdfResource(polygon, _buildSdfResolutionPixelScale);
+
+    private static ArenaSdfResource? GetOrCreateArenaSdfResource(RelSimplifiedComplexPolygon polygon, float resolutionPixelScale)
     {
+        var frame = ImGui.GetFrameCount();
         if (!ArenaSdfCache.TryGetValue(polygon, out var resource))
         {
-            resource = BuildAdaptiveSdfResource(polygon);
+            // Arena clipping cannot tolerate an async-only cache miss: stencil/background paths expect
+            // a valid resource immediately. Publish a tiny exact map synchronously, then refine only if
+            // the same immutable bounds polygon survives into a later frame.
+            resource = BuildSdfPreview(polygon, frame, ArenaSdfPreviewLongResolution);
             if (resource == null)
             {
                 return null;
@@ -3017,35 +3430,16 @@ public static unsafe partial class Dx11ArenaRenderer
             _arenaSdfCacheBytes += resource.ByteSize;
             resource.LastUse = ++_arenaSdfUseCounter;
             TrimSdfCache(ArenaSdfCache, resource, ref _arenaSdfCacheBytes, ArenaSdfCacheBudgetBytes, MaxCachedArenaSdfs);
+            return resource;
         }
-        else if (NeedsSdfResolutionUpgrade(resource))
+
+        var desired = ComputeSdfLongResolution(Math.Max(resource.SpanX, resource.SpanZ), resolutionPixelScale);
+        if (frame != resource.CreatedFrame && Math.Max(resource.Width, resource.Height) < desired)
         {
-            var replacement = BuildAdaptiveSdfResource(polygon);
-            if (replacement != null && Math.Max(replacement.Width, replacement.Height) > Math.Max(resource.Width, resource.Height))
-            {
-                ArenaSdfCache[polygon] = replacement;
-                _arenaSdfCacheBytes += replacement.ByteSize - resource.ByteSize;
-                if (resource.View != null)
-                {
-                    resource.View->Release();
-                }
-                resource = replacement;
-                resource.LastUse = ++_arenaSdfUseCounter;
-                TrimSdfCache(ArenaSdfCache, resource, ref _arenaSdfCacheBytes, ArenaSdfCacheBudgetBytes, MaxCachedArenaSdfs);
-            }
-            else
-            {
-                if (replacement != null && replacement.View != null)
-                {
-                    replacement.View->Release();
-                }
-                resource.LastUse = ++_arenaSdfUseCounter;
-            }
+            QueueArenaSdfBuild(polygon, NextCustomSdfLongResolution(resource, desired));
         }
-        else
-        {
-            resource.LastUse = ++_arenaSdfUseCounter;
-        }
+
+        resource.LastUse = ++_arenaSdfUseCounter;
         return resource;
     }
 
@@ -3055,12 +3449,16 @@ public static unsafe partial class Dx11ArenaRenderer
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int ComputeSdfLongResolution(float maxSpan)
+        => ComputeSdfLongResolution(maxSpan, _buildSdfResolutionPixelScale);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int ComputeSdfLongResolution(float maxSpan, float resolutionPixelScale)
     {
         // The SDF stores world-space distance and is bilinearly sampled. Keep texels at roughly
         // half a framebuffer pixel or finer, while retaining a small floor for zoomed
-        // out arenas and a hard cap for memory/build cost. The extra density matters most at
-        // polygon corners, where bilinear interpolation otherwise bends the SDF zero contour.
-        var screenPixels = maxSpan * Math.Max(_buildSdfResolutionPixelScale, 1e-5f);
+        // out arenas and a hard cap for memory/build cost. The explicit scale overload is used by
+        // background jobs so they never read mutable per-frame renderer state.
+        var screenPixels = maxSpan * Math.Max(resolutionPixelScale, 1e-5f);
         var requested = (int)MathF.Ceiling(screenPixels / TargetSdfPixelsPerTexel);
         requested = Math.Clamp(requested, MinSdfLongResolution, MaxSdfResolution);
         return Math.Min(MaxSdfResolution, AlignSdfResolution(requested));
@@ -3107,9 +3505,35 @@ public static unsafe partial class Dx11ArenaRenderer
 
     private static ArenaSdfResource? BuildAdaptiveSdfResource(RelSimplifiedComplexPolygon polygon)
     {
+        var index = polygon.VerifyPolygonIndexExistance();
+        index.GetBounds(out Vector2 boundsMin, out var boundsMax);
+        var rawSpanX = Math.Max(boundsMax.X - boundsMin.X, 1e-3f);
+        var rawSpanZ = Math.Max(boundsMax.Y - boundsMin.Y, 1e-3f);
+        var maxRawSpan = Math.Max(rawSpanX, rawSpanZ);
+        var padding = Math.Max(0.5f, maxRawSpan * 0.125f);
+        var longResolution = ComputeSdfLongResolution(Math.Max(rawSpanX + 2f * padding, rawSpanZ + 2f * padding));
+        var data = BuildAdaptiveSdfCpu(polygon, longResolution);
+        if (data == null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return UploadAdaptiveSdfResource(data);
+        }
+        finally
+        {
+            data.ReturnPacked();
+        }
+    }
+
+    private static SdfCpuData? BuildAdaptiveSdfCpu(RelSimplifiedComplexPolygon polygon, int longResolution)
+    {
         // The exact boundary index is required below to build every SDF mip, and it already owns the
         // polygon's raw local AABB. Reusing it avoids a separate full contour scan and gives all SDF
-        // and projected-quad paths one consistent bounds source
+        // and projected-quad paths one consistent bounds source. QueueCustomSdfBuild primes lazy index
+        // creation on the render thread before this method is used by the worker.
         var index = polygon.VerifyPolygonIndexExistance();
         index.GetBounds(out Vector2 boundsMin, out var boundsMax);
 
@@ -3132,7 +3556,9 @@ public static unsafe partial class Dx11ArenaRenderer
         var spanX = maxX - minX;
         var spanZ = maxZ - minZ;
         var maxSpan = Math.Max(spanX, spanZ);
-        var longResolution = ComputeSdfLongResolution(maxSpan);
+        // Background jobs and the synchronous preview pass an explicit long-axis resolution so this
+        // method never reads mutable per-frame scale state. Preview is allowed below the normal 64px floor.
+        longResolution = Math.Clamp(AlignSdfResolution(longResolution), SdfResolutionAlignment, MaxSdfResolution);
         // Padding guarantees even a degenerate/thin polygon has a useful short dimension
         var invMax = 1f / maxSpan;
         var width = Math.Clamp(AlignSdfResolution((int)MathF.Ceiling(longResolution * spanX * invMax)), SdfResolutionAlignment, MaxSdfResolution);
@@ -3174,70 +3600,99 @@ public static unsafe partial class Dx11ArenaRenderer
                 mipHeight = Math.Max(1, mipHeight >> 1);
             }
 
-            D3D11_TEXTURE2D_DESC desc = default;
-            desc.Width = (uint)width;
-            desc.Height = (uint)height;
-            desc.MipLevels = (uint)mipLevels;
-            desc.ArraySize = 1u;
-            desc.Format = (DXGI_FORMAT)54; // DXGI_FORMAT_R16_FLOAT
-            desc.SampleDesc.Count = 1u;
-            desc.Usage = 0; // DEFAULT
-            desc.BindFlags = 0x8u; // SHADER_RESOURCE
-
-            ID3D11Texture2D* texture = null;
-            fixed (ushort* source = packed)
+            return new SdfCpuData
             {
-                var init = stackalloc D3D11_SUBRESOURCE_DATA[mipLevels];
-                var texelOffset = 0;
-                mipWidth = width;
-                mipHeight = height;
-                for (var mip = 0; mip < mipLevels; ++mip)
-                {
-                    var mipSampleCount = mipWidth * mipHeight;
-                    init[mip] = default;
-                    init[mip].pSysMem = source + texelOffset;
-                    init[mip].SysMemPitch = (uint)(mipWidth * sizeof(ushort));
-                    init[mip].SysMemSlicePitch = (uint)(mipSampleCount * sizeof(ushort));
-                    texelOffset += mipSampleCount;
-                    mipWidth = Math.Max(1, mipWidth >> 1);
-                    mipHeight = Math.Max(1, mipHeight >> 1);
-                }
-                _device->CreateTexture2D(&desc, init, &texture);
-            }
-
-            if (texture == null)
-            {
-                return null;
-            }
-
-            ID3D11ShaderResourceView* view = null;
-            _device->CreateShaderResourceView((ID3D11Resource*)texture, null, &view);
-            texture->Release();
-            if (view == null)
-            {
-                return null;
-            }
-
-            return new ArenaSdfResource
-            {
-                View = view,
+                Packed = packed,
+                TotalSampleCount = totalSampleCount,
+                Width = width,
+                Height = height,
+                MipLevels = mipLevels,
                 MinX = minX,
                 MinZ = minZ,
                 SpanX = spanX,
                 SpanZ = spanZ,
-                InvSpanX = 1f / spanX,
-                InvSpanZ = 1f / spanZ,
-                Width = width,
-                Height = height,
-                ByteSize = totalSampleCount * sizeof(ushort),
-                LastUse = 0L,
             };
         }
         finally
         {
-            ArrayPool<ushort>.Shared.Return(packed, clearArray: false);
             ArrayPool<float>.Shared.Return(samples, clearArray: false);
         }
+    }
+
+    private static ArenaSdfResource? UploadAdaptiveSdfResource(SdfCpuData data)
+    {
+        var device = _device;
+        if (device == null)
+        {
+            return null;
+        }
+
+        var width = data.Width;
+        var height = data.Height;
+        var mipLevels = data.MipLevels;
+        var packed = data.Packed;
+
+        D3D11_TEXTURE2D_DESC desc = default;
+        desc.Width = (uint)width;
+        desc.Height = (uint)height;
+        desc.MipLevels = (uint)mipLevels;
+        desc.ArraySize = 1u;
+        desc.Format = (DXGI_FORMAT)54; // DXGI_FORMAT_R16_FLOAT
+        desc.SampleDesc.Count = 1u;
+        desc.Usage = 0; // DEFAULT
+        desc.BindFlags = 0x8u; // SHADER_RESOURCE
+
+        ID3D11Texture2D* texture = null;
+        fixed (ushort* source = packed)
+        {
+            var init = stackalloc D3D11_SUBRESOURCE_DATA[mipLevels];
+            var texelOffset = 0;
+            var mipWidth = width;
+            var mipHeight = height;
+            for (var mip = 0; mip < mipLevels; ++mip)
+            {
+                var mipSampleCount = mipWidth * mipHeight;
+                init[mip] = default;
+                init[mip].pSysMem = source + texelOffset;
+                init[mip].SysMemPitch = (uint)(mipWidth * sizeof(ushort));
+                init[mip].SysMemSlicePitch = (uint)(mipSampleCount * sizeof(ushort));
+                texelOffset += mipSampleCount;
+                mipWidth = Math.Max(1, mipWidth >> 1);
+                mipHeight = Math.Max(1, mipHeight >> 1);
+            }
+            device->CreateTexture2D(&desc, init, &texture);
+        }
+
+        if (texture == null)
+        {
+            return null;
+        }
+
+        ID3D11ShaderResourceView* view = null;
+        device->CreateShaderResourceView((ID3D11Resource*)texture, null, &view);
+        texture->Release();
+        if (view == null)
+        {
+            return null;
+        }
+
+        var spanX = data.SpanX;
+        var spanZ = data.SpanZ;
+        return new ArenaSdfResource
+        {
+            View = view,
+            MinX = data.MinX,
+            MinZ = data.MinZ,
+            SpanX = spanX,
+            SpanZ = spanZ,
+            InvSpanX = 1f / spanX,
+            InvSpanZ = 1f / spanZ,
+            Width = width,
+            Height = height,
+            ByteSize = data.TotalSampleCount * sizeof(ushort),
+            LastUse = 0L,
+            CreatedFrame = ImGui.GetFrameCount(),
+        };
     }
 
     private static OutlineSdfConstants BuildOutlineSdfConstants(ArenaSdfResource sdf)
@@ -3329,6 +3784,27 @@ public static unsafe partial class Dx11ArenaRenderer
     private static bool SameWorldProjectedSdfConstants(in WorldProjectedSdfConstants a, in WorldProjectedSdfConstants b)
         => a.ShapeSdfMap == b.ShapeSdfMap && a.ArenaSdfMap == b.ArenaSdfMap && a.Flags == b.Flags;
 
+    private static string FormatHResult(HRESULT hr) => $"0x{(uint)(int)hr:X8}";
+
+    private static void LogD3D11Failure(string operation, HRESULT hr, string? details = null)
+    {
+        var removedReason = _device != null ? _device->GetDeviceRemovedReason() : default;
+        var suffix = string.IsNullOrEmpty(details) ? string.Empty : $", {details}";
+        Service.Log($"DX11 renderer: {operation} failed: HRESULT={FormatHResult(hr)}, deviceRemovedReason={FormatHResult(removedReason)}{suffix}");
+    }
+
+    private static void LogD3D11FailureThrottled(ref long lastTimestamp, string operation, HRESULT hr, string? details = null)
+    {
+        var now = Stopwatch.GetTimestamp();
+        if (lastTimestamp != 0 && now - lastTimestamp < D3D11RetryFailureLogIntervalTicks)
+        {
+            return;
+        }
+
+        lastTimestamp = now;
+        LogD3D11Failure(operation, hr, details);
+    }
+
     private static void UploadZoneWaveConstants(int submitFrame)
     {
         // All packets submitted by one ImGui frame should share a phase. Besides avoiding tiny visual
@@ -3363,75 +3839,72 @@ public static unsafe partial class Dx11ArenaRenderer
         samplerDesc.MaxLOD = float.MaxValue;
 
         ID3D11SamplerState* sampler = null;
-        _device->CreateSamplerState(&samplerDesc, &sampler);
-
+        var samplerHr = _device->CreateSamplerState(&samplerDesc, &sampler);
+        if (samplerHr < 0 || sampler == null)
+        {
+            LogD3D11Failure("CreateSamplerState(arena SDF sampler)", samplerHr);
+            return false;
+        }
         _arenaSdfSampler = sampler;
 
+        if (!CreateDynamicConstantBuffer((uint)sizeof(OutlineSdfConstants), "outline SDF constants", out _outlineSdfConstantBuffer) ||
+            !CreateDynamicConstantBuffer((uint)sizeof(OutlineSdfConstants), "custom SDF constants", out _customSdfConstantBuffer) ||
+            !CreateDynamicConstantBuffer((uint)sizeof(ZoneWaveConstants), "zone-wave constants", out _zoneWaveConstantBuffer) ||
+            !CreateDynamicConstantBuffer((uint)sizeof(WorldOverlayConstants), "world-overlay constants", out _worldOverlayConstantBuffer) ||
+            !CreateDynamicConstantBuffer((uint)sizeof(WorldProjectedSdfConstants), "world-projected SDF constants", out _worldProjectedSdfConstantBuffer) ||
+            !CreateDynamicConstantBuffer((uint)sizeof(WorldLineConstants), "world-line constants", out _worldLineConstantBuffer) ||
+            !CreateDynamicConstantBuffer((uint)(MaxWorldLineTransforms * sizeof(WorldLineTransform)), "world-line transforms", out _worldLineTransformBuffer))
+        {
+            return false;
+        }
+
+        // The quad index buffer is the only startup resource we deliberately allow to be transiently
+        // unavailable. Actor triangles use non-indexed draws, so publishing the renderer lets those
+        // remain visible while RenderBatchCallback retries this allocation on subsequent frames.
+        _ = EnsureQuadIndexBuffer();
+        return true;
+    }
+
+    private static bool CreateDynamicConstantBuffer(uint byteWidth, string name, out ID3D11Buffer* buffer)
+    {
+        buffer = null;
         D3D11_BUFFER_DESC desc = default;
-        desc.ByteWidth = (uint)sizeof(OutlineSdfConstants);
-        desc.Usage = (D3D11_USAGE)2; // DYNAMIC
-        desc.BindFlags = 0x4u; // CONSTANT_BUFFER
-        desc.CPUAccessFlags = 0x10000u; // WRITE
-        ID3D11Buffer* buffer = null;
-        _device->CreateBuffer(&desc, null, &buffer);
+        desc.ByteWidth = byteWidth;
+        desc.Usage = (D3D11_USAGE)2; // D3D11_USAGE_DYNAMIC
+        desc.BindFlags = 0x4u; // D3D11_BIND_CONSTANT_BUFFER
+        desc.CPUAccessFlags = 0x10000u; // D3D11_CPU_ACCESS_WRITE
 
-        _outlineSdfConstantBuffer = buffer;
+        ID3D11Buffer* created = null;
+        var hr = _device->CreateBuffer(&desc, null, &created);
+        if (hr < 0 || created == null)
+        {
+            LogD3D11Failure($"CreateBuffer({name})", hr, $"bytes={byteWidth}");
+            return false;
+        }
 
-        ID3D11Buffer* customBuffer = null;
-        _device->CreateBuffer(&desc, null, &customBuffer);
+        buffer = created;
+        return true;
+    }
 
-        _customSdfConstantBuffer = customBuffer;
-
-        D3D11_BUFFER_DESC zoneWaveDesc = default;
-        zoneWaveDesc.ByteWidth = (uint)sizeof(ZoneWaveConstants);
-        zoneWaveDesc.Usage = (D3D11_USAGE)2;
-        zoneWaveDesc.BindFlags = 0x4u;
-        zoneWaveDesc.CPUAccessFlags = 0x10000u;
-        ID3D11Buffer* zoneWaveBuffer = null;
-        _device->CreateBuffer(&zoneWaveDesc, null, &zoneWaveBuffer);
-        _zoneWaveConstantBuffer = zoneWaveBuffer;
-
-        D3D11_BUFFER_DESC projectedSdfDesc = default;
-        projectedSdfDesc.ByteWidth = (uint)sizeof(WorldProjectedSdfConstants);
-        projectedSdfDesc.Usage = (D3D11_USAGE)2;
-        projectedSdfDesc.BindFlags = 0x4u;
-        projectedSdfDesc.CPUAccessFlags = 0x10000u;
-        ID3D11Buffer* projectedSdfBuffer = null;
-        _device->CreateBuffer(&projectedSdfDesc, null, &projectedSdfBuffer);
-        _worldProjectedSdfConstantBuffer = projectedSdfBuffer;
-
-        D3D11_BUFFER_DESC worldLineDesc = default;
-        worldLineDesc.ByteWidth = (uint)sizeof(WorldLineConstants);
-        worldLineDesc.Usage = (D3D11_USAGE)2;
-        worldLineDesc.BindFlags = 0x4u;
-        worldLineDesc.CPUAccessFlags = 0x10000u;
-        ID3D11Buffer* worldLineBuffer = null;
-        _device->CreateBuffer(&worldLineDesc, null, &worldLineBuffer);
-
-        _worldLineConstantBuffer = worldLineBuffer;
-
-        D3D11_BUFFER_DESC worldTransformDesc = default;
-        worldTransformDesc.ByteWidth = (uint)(MaxWorldLineTransforms * sizeof(WorldLineTransform));
-        worldTransformDesc.Usage = (D3D11_USAGE)2;
-        worldTransformDesc.BindFlags = 0x4u;
-        worldTransformDesc.CPUAccessFlags = 0x10000u;
-        ID3D11Buffer* worldTransformBuffer = null;
-        _device->CreateBuffer(&worldTransformDesc, null, &worldTransformBuffer);
-
-        _worldLineTransformBuffer = worldTransformBuffer;
+    private static bool EnsureQuadIndexBuffer()
+    {
+        if (_quadIndexBuffer != null)
+        {
+            return true;
+        }
+        if (_device == null)
+        {
+            return false;
+        }
 
         // One shared index buffer serves both ordinary single quads and procedural WorldCurve runs.
-        // Each generated curve line owns four unique VS vertex ids but six triangle-list indices:
-        // 0,1,2,0,2,3; 4,5,6,4,6,7; ...
-        // Existing quad draws use the first six indices unchanged. WorldCurve draws consume a longer
-        // prefix, allowing the post-transform cache to reuse two vertices per generated line
+        // Build it with immutable initial data in the CreateBuffer call so a transient creation failure
+        // never leaves a null resource passed to UpdateSubresource.
         var quadIndexCount = MaxIndexedWorldCurveLines * 6;
-        D3D11_BUFFER_DESC quadIndexDesc = default;
-        quadIndexDesc.ByteWidth = (uint)(quadIndexCount * sizeof(uint));
-        quadIndexDesc.Usage = 0; // D3D11_USAGE_DEFAULT
-        quadIndexDesc.BindFlags = 0x2u; // D3D11_BIND_INDEX_BUFFER
-        ID3D11Buffer* quadIndexBuffer = null;
-        _device->CreateBuffer(&quadIndexDesc, null, &quadIndexBuffer);
+        D3D11_BUFFER_DESC desc = default;
+        desc.ByteWidth = (uint)(quadIndexCount * sizeof(uint));
+        desc.Usage = 0; // D3D11_USAGE_DEFAULT
+        desc.BindFlags = 0x2u; // D3D11_BIND_INDEX_BUFFER
 
         var quadIndices = ArrayPool<uint>.Shared.Rent(quadIndexCount);
         try
@@ -3449,14 +3922,28 @@ public static unsafe partial class Dx11ArenaRenderer
             }
 
             fixed (uint* indices = quadIndices)
-                _context->UpdateSubresource((ID3D11Resource*)quadIndexBuffer, 0u, null, indices, 0u, 0u);
+            {
+                D3D11_SUBRESOURCE_DATA initialData = default;
+                initialData.pSysMem = indices;
+
+                ID3D11Buffer* created = null;
+                var hr = _device->CreateBuffer(&desc, &initialData, &created);
+                if (hr < 0 || created == null)
+                {
+                    LogD3D11FailureThrottled(ref _lastQuadIndexBufferFailureLogTimestamp,
+                        "CreateBuffer(shared quad index buffer)", hr, $"bytes={desc.ByteWidth}, indices={quadIndexCount}");
+                    return false;
+                }
+
+                _lastQuadIndexBufferFailureLogTimestamp = 0;
+                _quadIndexBuffer = created;
+                return true;
+            }
         }
         finally
         {
             ArrayPool<uint>.Shared.Return(quadIndices);
         }
-        _quadIndexBuffer = quadIndexBuffer;
-        return true;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -4060,7 +4547,7 @@ public static unsafe partial class Dx11ArenaRenderer
     // Queued after all Camera/world callbacks, including on frames with no world primitives. The
     // marker clears stale content and resolves the accumulated premultiplied render target into the
     // straight-alpha texture consumed by FFXIV's native background overlay node.
-    public static void QueueWorldOverlayPresent(ImDrawListPtr drawList, Vector2 viewportSize)
+    public static void QueueWorldOverlayPresent(ImDrawListPtr drawList, Vector2 viewportSize, Vector4 screenRiskColor = default, float screenRiskPhase = 0f)
     {
         if (!_isInitialized)
         {
@@ -4073,6 +4560,8 @@ public static unsafe partial class Dx11ArenaRenderer
         var scaleY = scale.Y > 0f ? scale.Y : 1f;
         var packet = RentBatchPacket();
         packet.IsWorldOverlayPresent = true;
+        packet.ScreenRiskColor = screenRiskColor;
+        packet.ScreenRiskPhase = screenRiskPhase;
         packet.FramebufferWidth = Math.Max(1, (int)MathF.Round(viewportSize.X * scaleX));
         packet.FramebufferHeight = Math.Max(1, (int)MathF.Round(viewportSize.Y * scaleY));
 
@@ -4354,7 +4843,7 @@ public static unsafe partial class Dx11ArenaRenderer
         var viewportPosY = _buildViewportPos.Y;
         _buildNdcOffset = new(-1f - viewportPosX * _buildNdcScale.X, 1f - viewportPosY * _buildNdcScale.Y);
         _buildCenterNdc = new(_buildCenterX * _buildNdcScale.X + _buildNdcOffset.X, _buildCenterY * _buildNdcScale.Y + _buildNdcOffset.Y);
-        _buildExtentNdcScale = new(MathF.Abs(_buildNdcScale.X), MathF.Abs(_buildNdcScale.Y));
+        _buildExtentNdcScale = new(Math.Abs(_buildNdcScale.X), Math.Abs(_buildNdcScale.Y));
         _buildLocalToNdc = new(_buildScaledCos * _buildNdcScale.X, -_buildScaledSin * _buildNdcScale.X, _buildScaledSin * _buildNdcScale.Y, _buildScaledCos * _buildNdcScale.Y);
 
         _buildClipOffset = _buildViewportPos;
@@ -4408,7 +4897,11 @@ public static unsafe partial class Dx11ArenaRenderer
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void EnsureBuildRunStarted() => EnsureArenaPrepared();
+    private static void EnsureBuildRunStarted()
+    {
+        EnsureArenaPrepared();
+        DrainCompletedCustomSdfBuilds();
+    }
 
     private static OutlineInstance BuildSdfFillInstance(ArenaSdfResource sdf, uint color)
     {
@@ -5206,7 +5699,7 @@ public static unsafe partial class Dx11ArenaRenderer
             }
             if (packet.IsWorldOverlayPresent)
             {
-                PresentWorldOverlay(packet.FramebufferWidth, packet.FramebufferHeight, packet.SubmitFrame);
+                PresentWorldOverlay(packet.FramebufferWidth, packet.FramebufferHeight, packet.SubmitFrame, packet.ScreenRiskColor, packet.ScreenRiskPhase);
                 return;
             }
             if (packet.Segments == null || packet.SegmentCount == 0)
@@ -5232,8 +5725,10 @@ public static unsafe partial class Dx11ArenaRenderer
             // If the native layer cannot allocate during startup/device pressure, keep world
             // primitives visible as an ordinary background draw for this frame. They remain free of
             // the particle-corrupted alpha mask even in this degraded path.
-            if (packet.WorldOverlayTarget && !EnsureWorldOverlayResources(packet.FramebufferWidth, packet.FramebufferHeight))
+            if (packet.WorldOverlayTarget && !EnsureWorldOverlayResources(packet.FramebufferWidth, packet.FramebufferHeight, packet.SubmitFrame))
+            {
                 packet.WorldOverlayTarget = false;
+            }
 
             var uploadBytes = packet.UploadBytes;
             if (uploadBytes != 0 && !EnsureUploadVertexBuffer(uploadBytes))
@@ -5271,6 +5766,13 @@ public static unsafe partial class Dx11ArenaRenderer
                 packet.StrokeInstanceCount != 0 || packet.WorldLineCount != 0 || packet.WorldCurveCount != 0 || packet.WorldProjectedArrowCount != 0 || packet.WorldProjectedShapeCount != 0 || packet.NeedsStencil;
             if (usesIndexedQuad)
             {
+                // A transient startup allocation failure must not permanently disable every indexed
+                // primitive until plugin reload. Retry lazily on each frame that actually needs it.
+                if (!EnsureQuadIndexBuffer())
+                {
+                    return;
+                }
+
                 _context->IAGetIndexBuffer(&oldIndexBuffer, &oldIndexFormat, &oldIndexOffset);
                 _context->IASetIndexBuffer(_quadIndexBuffer, (DXGI_FORMAT)42 /* R32_UINT */, 0u);
                 indexStateCaptured = true;
@@ -6456,8 +6958,16 @@ public static unsafe partial class Dx11ArenaRenderer
 
         ID3D11Buffer* created = null;
         var hr = _device->CreateBuffer(&desc, null, &created);
+        if (hr < 0 || created == null)
+        {
+            LogD3D11FailureThrottled(ref _lastUploadVertexBufferFailureLogTimestamp,
+                "CreateBuffer(dynamic upload vertex buffer)", hr, $"bytes={byteWidth}");
+            return false;
+        }
+
+        _lastUploadVertexBufferFailureLogTimestamp = 0;
         buffer = created;
-        return hr >= 0 && created != null;
+        return true;
     }
 
     private static bool EnsureStencilTarget(int width, int height)
@@ -6466,12 +6976,13 @@ public static unsafe partial class Dx11ArenaRenderer
         {
             return true;
         }
+        if (_device == null || width <= 0 || height <= 0)
+        {
+            return false;
+        }
 
-        Release(ref _stencilView);
-        _stencilWidth = 0;
-        _stencilHeight = 0;
-        _renderedStencilKey = 0L;
-
+        // Create the replacement first. If allocation fails under transient device/VRAM pressure,
+        // leave the previous target intact rather than publishing a null DSV or dereferencing a null texture.
         D3D11_TEXTURE2D_DESC desc = default;
         desc.Width = (uint)width;
         desc.Height = (uint)height;
@@ -6484,15 +6995,30 @@ public static unsafe partial class Dx11ArenaRenderer
         desc.BindFlags = 0x40u; // D3D11_BIND_DEPTH_STENCIL
 
         ID3D11Texture2D* texture = null;
-        _device->CreateTexture2D(&desc, null, &texture);
+        var hr = _device->CreateTexture2D(&desc, null, &texture);
+        if (hr < 0 || texture == null)
+        {
+            LogD3D11FailureThrottled(ref _lastStencilTargetFailureLogTimestamp,
+                "CreateTexture2D(arena stencil target)", hr, $"size={width}x{height}, format=D24_UNORM_S8_UINT");
+            return false;
+        }
 
         ID3D11DepthStencilView* view = null;
-        _device->CreateDepthStencilView((ID3D11Resource*)texture, null, &view);
-        texture->Release(); // view owns its own resource reference
+        hr = _device->CreateDepthStencilView((ID3D11Resource*)texture, null, &view);
+        texture->Release(); // the view takes its own resource reference on success
+        if (hr < 0 || view == null)
+        {
+            LogD3D11FailureThrottled(ref _lastStencilTargetFailureLogTimestamp,
+                "CreateDepthStencilView(arena stencil target)", hr, $"size={width}x{height}");
+            return false;
+        }
 
+        _lastStencilTargetFailureLogTimestamp = 0;
+        Release(ref _stencilView);
         _stencilView = view;
         _stencilWidth = width;
         _stencilHeight = height;
+        _renderedStencilKey = 0L;
         return true;
     }
 
@@ -6737,17 +7263,28 @@ public static unsafe partial class Dx11ArenaRenderer
         textureDesc.BindFlags = 0x8u; // D3D11_BIND_SHADER_RESOURCE
 
         ID3D11Texture2D* texture = null;
+        HRESULT hr;
         fixed (byte* pixels = rgbaTopDown)
         {
             D3D11_SUBRESOURCE_DATA initialData = default;
             initialData.pSysMem = pixels;
             initialData.SysMemPitch = (uint)(width * 4);
-            _device->CreateTexture2D(&textureDesc, &initialData, &texture);
+            hr = _device->CreateTexture2D(&textureDesc, &initialData, &texture);
+        }
+        if (hr < 0 || texture == null)
+        {
+            LogD3D11Failure("CreateTexture2D(arena font atlas)", hr, $"size={width}x{height}, bytes={rgbaByteCount}");
+            return false;
         }
 
         ID3D11ShaderResourceView* view = null;
-        _device->CreateShaderResourceView((ID3D11Resource*)texture, null, &view);
+        hr = _device->CreateShaderResourceView((ID3D11Resource*)texture, null, &view);
         texture->Release();
+        if (hr < 0 || view == null)
+        {
+            LogD3D11Failure("CreateShaderResourceView(arena font atlas)", hr, $"size={width}x{height}");
+            return false;
+        }
 
         _arenaFontAtlasView = view;
         _arenaTextGlyphs = textGlyphs;
@@ -6918,13 +7455,19 @@ public static unsafe partial class Dx11ArenaRenderer
         var len = bytecode.Length;
         if (len == 0)
         {
+            Service.Log($"DX11 renderer: embedded vertex shader resource is missing or empty: {fileName}");
             return false;
         }
 
         fixed (byte* pBytecode = bytecode)
         {
             ID3D11VertexShader* created = null;
-            _device->CreateVertexShader(pBytecode, (nuint)len, null, &created);
+            var hr = _device->CreateVertexShader(pBytecode, (nuint)len, null, &created);
+            if (hr < 0 || created == null)
+            {
+                LogD3D11Failure($"CreateVertexShader({fileName})", hr, $"bytecodeBytes={len}");
+                return false;
+            }
             shader = created;
             return true;
         }
@@ -6935,8 +7478,9 @@ public static unsafe partial class Dx11ArenaRenderer
         shader = null;
         var bytecode = LoadShaderBytecode(fileName);
         var len = bytecode?.Length ?? 0;
-        if (bytecode != null && len == 0)
+        if (bytecode == null || len == 0)
         {
+            Service.Log($"DX11 renderer: embedded pixel shader resource is missing or empty: {fileName}");
             return false;
         }
 
@@ -6944,6 +7488,11 @@ public static unsafe partial class Dx11ArenaRenderer
         {
             ID3D11PixelShader* created = null;
             var hr = _device->CreatePixelShader(pBytecode, (nuint)len, null, &created);
+            if (hr < 0 || created == null)
+            {
+                LogD3D11Failure($"CreatePixelShader({fileName})", hr, $"bytecodeBytes={len}");
+                return false;
+            }
             shader = created;
             return true;
         }
@@ -6994,7 +7543,11 @@ public static unsafe partial class Dx11ArenaRenderer
             };
 
             ID3D11InputLayout* created = null;
-            _device->CreateInputLayout(elements, 3u, pBytecode, (nuint)vsBytecode.Length, &created);
+            var hr = _device->CreateInputLayout(elements, 3u, pBytecode, (nuint)vsBytecode.Length, &created);
+            if (hr < 0 || created == null)
+            {
+                LogD3D11Failure("CreateInputLayout(mesh)", hr, $"bytecodeBytes={vsBytecode.Length}");
+            }
             layout = created;
         }
     }
@@ -7023,7 +7576,11 @@ public static unsafe partial class Dx11ArenaRenderer
             elements[8] = InstanceElement((sbyte*)pTexcoord, 3u, (DXGI_FORMAT)42, 56u);  // R32_UINT flags
 
             ID3D11InputLayout* created = null;
-            _device->CreateInputLayout(elements, 9u, pBytecode, (nuint)vsBytecode.Length, &created);
+            var hr = _device->CreateInputLayout(elements, 9u, pBytecode, (nuint)vsBytecode.Length, &created);
+            if (hr < 0 || created == null)
+            {
+                LogD3D11Failure("CreateInputLayout(stroke)", hr, $"bytecodeBytes={vsBytecode.Length}");
+            }
             layout = created;
         }
 
@@ -7061,6 +7618,10 @@ public static unsafe partial class Dx11ArenaRenderer
 
             ID3D11InputLayout* created = null;
             var hr = _device->CreateInputLayout(elements, 5u, pBytecode, (nuint)vsBytecode.Length, &created);
+            if (hr < 0 || created == null)
+            {
+                LogD3D11Failure("CreateInputLayout(world line)", hr, $"bytecodeBytes={vsBytecode.Length}");
+            }
             layout = created;
         }
 
@@ -7099,7 +7660,11 @@ public static unsafe partial class Dx11ArenaRenderer
             elements[6] = InstanceElement((sbyte*)pTexcoord, 4u, (DXGI_FORMAT)42, 44u); // uint kind/segments
 
             ID3D11InputLayout* created = null;
-            _device->CreateInputLayout(elements, 7u, pBytecode, (nuint)vsBytecode.Length, &created);
+            var hr = _device->CreateInputLayout(elements, 7u, pBytecode, (nuint)vsBytecode.Length, &created);
+            if (hr < 0 || created == null)
+            {
+                LogD3D11Failure("CreateInputLayout(world curve)", hr, $"bytecodeBytes={vsBytecode.Length}");
+            }
             layout = created;
         }
 
@@ -7137,7 +7702,11 @@ public static unsafe partial class Dx11ArenaRenderer
             elements[5] = InstanceElement((sbyte*)pColor, 0u, (DXGI_FORMAT)28, 40u);    // RGBA8
 
             ID3D11InputLayout* created = null;
-            _device->CreateInputLayout(elements, 6u, pBytecode, (nuint)vsBytecode.Length, &created);
+            var hr = _device->CreateInputLayout(elements, 6u, pBytecode, (nuint)vsBytecode.Length, &created);
+            if (hr < 0 || created == null)
+            {
+                LogD3D11Failure("CreateInputLayout(world projected arrow)", hr, $"bytecodeBytes={vsBytecode.Length}");
+            }
             layout = created;
         }
 
@@ -7180,7 +7749,11 @@ public static unsafe partial class Dx11ArenaRenderer
             elements[10] = InstanceElement((sbyte*)pTexcoord, 7u, (DXGI_FORMAT)16, 96u); // float2 wave origin XZ
 
             ID3D11InputLayout* created = null;
-            _device->CreateInputLayout(elements, 11u, pBytecode, (nuint)vsBytecode.Length, &created);
+            var hr = _device->CreateInputLayout(elements, 11u, pBytecode, (nuint)vsBytecode.Length, &created);
+            if (hr < 0 || created == null)
+            {
+                LogD3D11Failure("CreateInputLayout(world projected shape)", hr, $"bytecodeBytes={vsBytecode.Length}");
+            }
             layout = created;
         }
 
@@ -7260,7 +7833,11 @@ public static unsafe partial class Dx11ArenaRenderer
             };
 
             ID3D11InputLayout* created = null;
-            _device->CreateInputLayout(elements, 5u, pBytecode, (nuint)vsBytecode.Length, &created);
+            var hr = _device->CreateInputLayout(elements, 5u, pBytecode, (nuint)vsBytecode.Length, &created);
+            if (hr < 0 || created == null)
+            {
+                LogD3D11Failure("CreateInputLayout(text)", hr, $"bytecodeBytes={vsBytecode.Length}");
+            }
             layout = created;
         }
     }
@@ -7286,7 +7863,11 @@ public static unsafe partial class Dx11ArenaRenderer
             elements[5] = InstanceElement((sbyte*)pTexcoord, 2u, (DXGI_FORMAT)41, 56u); // outline px
 
             ID3D11InputLayout* created = null;
-            _device->CreateInputLayout(elements, 6u, pBytecode, (nuint)vsBytecode.Length, &created);
+            var hr = _device->CreateInputLayout(elements, 6u, pBytecode, (nuint)vsBytecode.Length, &created);
+            if (hr < 0 || created == null)
+            {
+                LogD3D11Failure("CreateInputLayout(world text)", hr, $"bytecodeBytes={vsBytecode.Length}");
+            }
             layout = created;
         }
 
@@ -7322,7 +7903,11 @@ public static unsafe partial class Dx11ArenaRenderer
             elements[5] = InstanceElement((sbyte*)pColor, 0u, (DXGI_FORMAT)28, 48u);     // color RGBA8
 
             ID3D11InputLayout* created = null;
-            _device->CreateInputLayout(elements, 6u, pBytecode, (nuint)vsBytecode.Length, &created);
+            var hr = _device->CreateInputLayout(elements, 6u, pBytecode, (nuint)vsBytecode.Length, &created);
+            if (hr < 0 || created == null)
+            {
+                LogD3D11Failure("CreateInputLayout(analytic)", hr, $"bytecodeBytes={vsBytecode.Length}");
+            }
             layout = created;
         }
 
@@ -7359,7 +7944,11 @@ public static unsafe partial class Dx11ArenaRenderer
             e[7] = Inst((sbyte*)pCol, 0u, (DXGI_FORMAT)28, 64u, 0u);
             e[8] = Inst((sbyte*)pCol, 1u, (DXGI_FORMAT)28, 68u, 0u);
             ID3D11InputLayout* created = null;
-            _device->CreateInputLayout(e, 9u, pBytecode, (nuint)vsBytecode.Length, &created);
+            var hr = _device->CreateInputLayout(e, 9u, pBytecode, (nuint)vsBytecode.Length, &created);
+            if (hr < 0 || created == null)
+            {
+                LogD3D11Failure("CreateInputLayout(outline shape)", hr, $"bytecodeBytes={vsBytecode.Length}");
+            }
             layout = created;
         }
     }
@@ -7367,28 +7956,48 @@ public static unsafe partial class Dx11ArenaRenderer
     private static D3D11_INPUT_ELEMENT_DESC Inst(sbyte* semantic, uint index, DXGI_FORMAT format, uint offset, uint slot)
         => new() { SemanticName = semantic, SemanticIndex = index, Format = format, InputSlot = slot, AlignedByteOffset = offset, InputSlotClass = (D3D11_INPUT_CLASSIFICATION)1, InstanceDataStepRate = 1 };
 
-    private static bool EnsureWorldOverlayResources(int width, int height)
+    private static bool EnsureWorldOverlayResources(int width, int height, int submitFrame)
     {
         var node = _worldOverlayNode;
         if (node == null || !node.IsAttached || width <= 0 || height <= 0)
         {
             return false;
         }
-        if (_worldOverlayBaseTexture != null && _worldOverlayBaseRenderTarget != null && _worldOverlayBaseView != null &&
-            _worldOverlayOutputTexture != null && _worldOverlayOutputRenderTarget != null && _worldOverlayOutputView != null &&
-            _worldOverlayWidth == width && _worldOverlayHeight == height)
+
+        var haveResources = _worldOverlayBaseTexture != null && _worldOverlayBaseRenderTarget != null && _worldOverlayBaseView != null &&
+            _worldOverlayOutputTexture != null && _worldOverlayOutputRenderTarget != null && _worldOverlayOutputView != null;
+
+        // The backing textures are allowed to be larger than the current framebuffer. AtkUldPart's
+        // Width/Height select the visible top-left portion of the texture, so a smaller window can use
+        // the existing allocation without stretching the old framebuffer or reallocating anything.
+        if (haveResources && width <= _worldOverlayCapacityWidth && height <= _worldOverlayCapacityHeight)
         {
+            node.SetDisplaySize(width, height);
+            ResetWorldOverlayResizeDebounce();
             return true;
         }
 
-        if (!CreateWorldOverlayTexture(width, height, out var baseTexture, out var baseRenderTarget, out var baseView))
+        // Growth is the only reason to replace an existing allocation. Keep the old GPU resources
+        // alive while the requested size is still changing so shrinking back within capacity is free.
+        // Hide the native image during this short fallback period to avoid displaying stale content.
+        if (!WorldOverlaySizeSettled(width, height, submitFrame))
         {
-            node.ReleaseTexture();
-            ReleaseWorldOverlayResources();
+            if (haveResources)
+            {
+                node.SetDisplaySize(0, 0);
+            }
             return false;
         }
 
-        var outputWrapper = node.CreateTexture(width, height);
+        var allocationWidth = GrowWorldOverlayCapacity(width, _worldOverlayCapacityWidth);
+        var allocationHeight = GrowWorldOverlayCapacity(height, _worldOverlayCapacityHeight);
+
+        if (!CreateWorldOverlayTexture(allocationWidth, allocationHeight, out var baseTexture, out var baseRenderTarget, out var baseView))
+        {
+            return false;
+        }
+
+        var outputWrapper = node.CreateTexture(allocationWidth, allocationHeight);
         var outputTexture = outputWrapper != null ? (ID3D11Texture2D*)outputWrapper->D3D11Texture2D : null;
         var outputView = outputWrapper != null ? (ID3D11ShaderResourceView*)outputWrapper->D3D11ShaderResourceView : null;
         if (outputWrapper == null || outputTexture == null || outputView == null)
@@ -7400,30 +8009,33 @@ public static unsafe partial class Dx11ArenaRenderer
             {
                 outputWrapper->DecRef();
             }
-            node.ReleaseTexture();
-            ReleaseWorldOverlayResources();
             return false;
         }
 
-        // Hold renderer-side references independently from the native Texture wrapper owned by the node
-        // This makes resize and plugin teardown safe regardless of which owner releases first.
+        // Hold renderer-side references independently from the native Texture wrapper owned by the node.
         outputTexture->AddRef();
         outputView->AddRef();
         ID3D11RenderTargetView* outputRenderTarget = null;
-        if (_device->CreateRenderTargetView((ID3D11Resource*)outputTexture, null, &outputRenderTarget) < 0 || outputRenderTarget == null)
+        var outputRtvHr = _device->CreateRenderTargetView((ID3D11Resource*)outputTexture, null, &outputRenderTarget);
+        if (outputRtvHr < 0 || outputRenderTarget == null)
         {
+            LogD3D11FailureThrottled(ref _lastWorldOverlayFailureLogTimestamp,
+                "CreateRenderTargetView(world overlay output)", outputRtvHr, $"allocation={allocationWidth}x{allocationHeight}, display={width}x{height}");
             outputView->Release();
             outputTexture->Release();
             outputWrapper->DecRef();
             Release(ref baseView);
             Release(ref baseRenderTarget);
             Release(ref baseTexture);
-            node.ReleaseTexture();
-            ReleaseWorldOverlayResources();
             return false;
         }
 
+        // SetTexture consumes outputWrapper and releases the node's previous wrapper. The display size
+        // remains the real framebuffer size even though the new texture may include capacity headroom.
         node.SetTexture(outputWrapper, width, height);
+
+        // Only after the replacement is complete do we release the renderer-side references to the
+        // previous allocation. This keeps failure paths non-destructive and makes resize recovery cheap.
         ReleaseWorldOverlayResources();
         _worldOverlayBaseTexture = baseTexture;
         _worldOverlayBaseRenderTarget = baseRenderTarget;
@@ -7431,10 +8043,56 @@ public static unsafe partial class Dx11ArenaRenderer
         _worldOverlayOutputTexture = outputTexture;
         _worldOverlayOutputRenderTarget = outputRenderTarget;
         _worldOverlayOutputView = outputView;
-        _worldOverlayWidth = width;
-        _worldOverlayHeight = height;
+        _worldOverlayCapacityWidth = allocationWidth;
+        _worldOverlayCapacityHeight = allocationHeight;
         _worldOverlayBaseFrame = -1;
         return true;
+    }
+
+    private static int GrowWorldOverlayCapacity(int requested, int current)
+    {
+        // Align upward instead of allocating the exact window size. A small amount of headroom prevents
+        // a one-pixel or small incremental resize from immediately creating another texture generation.
+        var target = Math.Max(requested, current);
+        var alignment = WorldOverlayCapacityAlignment;
+        return (target + alignment - 1) / alignment * alignment;
+    }
+
+    private static bool WorldOverlaySizeSettled(int width, int height, int submitFrame)
+    {
+        if (_worldOverlayPendingWidth != width || _worldOverlayPendingHeight != height)
+        {
+            _worldOverlayPendingWidth = width;
+            _worldOverlayPendingHeight = height;
+            _worldOverlayPendingStableFrames = 1;
+            _worldOverlayPendingLastSubmitFrame = submitFrame;
+            return WorldOverlayResizeStableFrames <= 1;
+        }
+
+        if (_worldOverlayPendingLastSubmitFrame != submitFrame)
+        {
+            _worldOverlayPendingLastSubmitFrame = submitFrame;
+            if (_worldOverlayPendingStableFrames < WorldOverlayResizeStableFrames)
+            {
+                ++_worldOverlayPendingStableFrames;
+            }
+        }
+
+        if (_worldOverlayPendingStableFrames < WorldOverlayResizeStableFrames)
+        {
+            return false;
+        }
+
+        ResetWorldOverlayResizeDebounce();
+        return true;
+    }
+
+    private static void ResetWorldOverlayResizeDebounce()
+    {
+        _worldOverlayPendingWidth = 0;
+        _worldOverlayPendingHeight = 0;
+        _worldOverlayPendingStableFrames = 0;
+        _worldOverlayPendingLastSubmitFrame = -1;
     }
 
     private static bool CreateWorldOverlayTexture(int width, int height, out ID3D11Texture2D* texture, out ID3D11RenderTargetView* renderTarget, out ID3D11ShaderResourceView* view)
@@ -7454,43 +8112,67 @@ public static unsafe partial class Dx11ArenaRenderer
         desc.BindFlags = 0x28u; // D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET
 
         ID3D11Texture2D* createdTexture = null;
-        if (_device->CreateTexture2D(&desc, null, &createdTexture) < 0 || createdTexture == null)
+        var textureHr = _device->CreateTexture2D(&desc, null, &createdTexture);
+        if (textureHr < 0 || createdTexture == null)
         {
+            LogD3D11FailureThrottled(ref _lastWorldOverlayFailureLogTimestamp,
+                "CreateTexture2D(world overlay base)", textureHr, $"size={width}x{height}, format=B8G8R8A8_UNORM");
             return false;
         }
 
         ID3D11RenderTargetView* createdRenderTarget = null;
-        if (_device->CreateRenderTargetView((ID3D11Resource*)createdTexture, null, &createdRenderTarget) < 0 || createdRenderTarget == null)
+        var rtvHr = _device->CreateRenderTargetView((ID3D11Resource*)createdTexture, null, &createdRenderTarget);
+        if (rtvHr < 0 || createdRenderTarget == null)
         {
+            LogD3D11FailureThrottled(ref _lastWorldOverlayFailureLogTimestamp,
+                "CreateRenderTargetView(world overlay base)", rtvHr, $"size={width}x{height}");
             createdTexture->Release();
             return false;
         }
 
         ID3D11ShaderResourceView* createdView = null;
-        if (_device->CreateShaderResourceView((ID3D11Resource*)createdTexture, null, &createdView) < 0 || createdView == null)
+        var srvHr = _device->CreateShaderResourceView((ID3D11Resource*)createdTexture, null, &createdView);
+        if (srvHr < 0 || createdView == null)
         {
+            LogD3D11FailureThrottled(ref _lastWorldOverlayFailureLogTimestamp,
+                "CreateShaderResourceView(world overlay base)", srvHr, $"size={width}x{height}");
             createdRenderTarget->Release();
             createdTexture->Release();
             return false;
         }
 
+        _lastWorldOverlayFailureLogTimestamp = 0;
         texture = createdTexture;
         renderTarget = createdRenderTarget;
         view = createdView;
         return true;
     }
 
-    private static void PresentWorldOverlay(int width, int height, int submitFrame)
+    private static void PresentWorldOverlay(int width, int height, int submitFrame, Vector4 screenRiskColor, float screenRiskPhase)
     {
         _worldOverlayLastSucceeded = false;
-        if (!EnsureWorldOverlayResources(width, height))
+        if (!EnsureWorldOverlayResources(width, height, submitFrame))
         {
             return;
         }
 
+        // Snapshot per-packet state, including a zero alpha when disabled. The same resolve pass
+        // also draws a screen warning on frames with no projected world primitives.
+        D3D11_MAPPED_SUBRESOURCE mapped = default;
+        if (_worldOverlayConstantBuffer == null || _context->Map((ID3D11Resource*)_worldOverlayConstantBuffer, 0u, (D3D11_MAP)4, 0u, &mapped) < 0)
+        {
+            return;
+        }
+        *(WorldOverlayConstants*)mapped.pData = new WorldOverlayConstants
+        {
+            RiskColor = screenRiskColor,
+            RiskParams = new Vector4(width, height, screenRiskPhase, 0f),
+        };
+        _context->Unmap((ID3D11Resource*)_worldOverlayConstantBuffer, 0u);
+
         if (_worldOverlayBaseFrame != submitFrame)
         {
-            float* transparent = stackalloc float[4];
+            var transparent = stackalloc float[4];
             transparent[0] = transparent[1] = transparent[2] = transparent[3] = 0f;
             _context->ClearRenderTargetView(_worldOverlayBaseRenderTarget, transparent);
             _worldOverlayBaseFrame = submitFrame;
@@ -7503,7 +8185,8 @@ public static unsafe partial class Dx11ArenaRenderer
         ID3D11VertexShader* oldVertexShader = null;
         ID3D11PixelShader* oldPixelShader = null;
         ID3D11ShaderResourceView* oldInputView = null;
-        float* oldBlendFactor = stackalloc float[4];
+        ID3D11Buffer* oldPixelConstants = null;
+        var oldBlendFactor = stackalloc float[4];
         uint oldSampleMask = 0;
         uint oldStencilRef = 0;
 
@@ -7513,6 +8196,7 @@ public static unsafe partial class Dx11ArenaRenderer
         _context->VSGetShader(&oldVertexShader, null, null);
         _context->PSGetShader(&oldPixelShader, null, null);
         _context->PSGetShaderResources(0u, 1u, &oldInputView);
+        _context->PSGetConstantBuffers(0u, 1u, &oldPixelConstants);
 
         try
         {
@@ -7525,6 +8209,8 @@ public static unsafe partial class Dx11ArenaRenderer
             _context->RSSetScissorRects(1u, &scissor);
             _context->VSSetShader(_worldOverlayVertexShader, null, 0u);
             _context->PSSetShader(_worldOverlayPixelShader, null, 0u);
+            var constants = _worldOverlayConstantBuffer;
+            _context->PSSetConstantBuffers(0u, 1u, &constants);
             var baseView = _worldOverlayBaseView;
             _context->PSSetShaderResources(0u, 1u, &baseView);
             _context->Draw(3u, 0u);
@@ -7546,6 +8232,12 @@ public static unsafe partial class Dx11ArenaRenderer
             _context->VSSetShader(oldVertexShader, null, 0u);
             _context->PSSetShader(oldPixelShader, null, 0u);
             _context->PSSetShaderResources(0u, 1u, &oldInputView);
+            _context->PSSetConstantBuffers(0u, 1u, &oldPixelConstants);
+
+            if (oldPixelConstants != null)
+            {
+                oldPixelConstants->Release();
+            }
 
             if (oldInputView != null)
             {
@@ -7586,8 +8278,8 @@ public static unsafe partial class Dx11ArenaRenderer
         Release(ref _worldOverlayBaseView);
         Release(ref _worldOverlayBaseRenderTarget);
         Release(ref _worldOverlayBaseTexture);
-        _worldOverlayWidth = 0;
-        _worldOverlayHeight = 0;
+        _worldOverlayCapacityWidth = 0;
+        _worldOverlayCapacityHeight = 0;
         _worldOverlayBaseFrame = -1;
         _worldOverlayLastSucceeded = false;
     }
@@ -7642,10 +8334,13 @@ public static unsafe partial class Dx11ArenaRenderer
             var hr = _device->CreateShaderResourceView((ID3D11Resource*)texture, &nativeDesc, &newView);
             if (hr < 0 || newView == null)
             {
+                LogD3D11FailureThrottled(ref _lastSceneDepthViewFailureLogTimestamp,
+                    "CreateShaderResourceView(scene depth)", hr, $"format={(uint)srvFormat}, textureIdentity=0x{identity:X}");
                 ReleaseSceneDepthResource();
                 return false;
             }
 
+            _lastSceneDepthViewFailureLogTimestamp = 0;
             Release(ref _sceneDepthView);
             _sceneDepthView = newView;
             _sceneDepthTextureIdentity = identity;
@@ -7762,7 +8457,12 @@ public static unsafe partial class Dx11ArenaRenderer
         desc.BackFace = face;
 
         ID3D11DepthStencilState* created = null;
-        _device->CreateDepthStencilState(&desc, &created);
+        var hr = _device->CreateDepthStencilState(&desc, &created);
+        if (hr < 0 || created == null)
+        {
+            LogD3D11Failure($"CreateDepthStencilState(arena stencil {(write ? "write" : "test")})", hr);
+            return false;
+        }
         state = created;
         return true;
     }
@@ -7777,7 +8477,12 @@ public static unsafe partial class Dx11ArenaRenderer
         desc.StencilEnable = BOOL.FALSE;
 
         ID3D11DepthStencilState* created = null;
-        _device->CreateDepthStencilState(&desc, &created);
+        var hr = _device->CreateDepthStencilState(&desc, &created);
+        if (hr < 0 || created == null)
+        {
+            LogD3D11Failure("CreateDepthStencilState(stencil disabled)", hr);
+            return false;
+        }
         state = created;
         return true;
     }
@@ -8000,6 +8705,8 @@ public static unsafe partial class Dx11ArenaRenderer
         packet.SubmitFrame = -1;
         packet.WorldOverlayTarget = false;
         packet.IsWorldOverlayPresent = false;
+        packet.ScreenRiskColor = default;
+        packet.ScreenRiskPhase = 0f;
         packet.IsDeferredOverlay = false;
         BatchPacketPool.Push(packet);
     }

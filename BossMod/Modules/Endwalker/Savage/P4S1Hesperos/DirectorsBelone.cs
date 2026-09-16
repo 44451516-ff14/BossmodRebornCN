@@ -2,7 +2,7 @@
 
 // state related to director's belone (debuffs) mechanic
 // note that forbidden targets are selected either from bloodrake tethers (first instance of mechanic) or from tower types (second instance of mechanic)
-class DirectorsBelone(BossModule module) : BossComponent(module)
+sealed class DirectorsBelone(BossModule module) : BossComponent(module)
 {
     private bool _assigned;
     private BitMask _debuffForbidden;
@@ -77,7 +77,7 @@ class DirectorsBelone(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var forbidden = Raid.WithSlot(true, true, true).IncludedInMask(_debuffForbidden).FirstOrDefault().Item2;
         if (forbidden != null)
@@ -94,18 +94,19 @@ class DirectorsBelone(BossModule module) : BossComponent(module)
         var failingPlayers = _debuffForbidden & _debuffTargets;
         foreach ((var i, var player) in Raid.WithSlot(false, true, true))
         {
-            Arena.Actor(player, failingPlayers[i] ? Colors.Danger : Colors.PlayerGeneric);
+            var isfailing = failingPlayers[i];
+            Arena.Actor(player, isfailing ? Colors.Danger : Colors.PlayerGeneric, drawWorld: isfailing ? true : null);
         }
     }
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.RoleCall:
+            case (uint)SID.RoleCall:
                 _debuffTargets.Set(Raid.FindSlot(actor.InstanceID));
                 break;
-            case SID.Miscast:
+            case (uint)SID.Miscast:
                 _debuffImmune.Set(Raid.FindSlot(actor.InstanceID));
                 break;
         }
@@ -113,12 +114,12 @@ class DirectorsBelone(BossModule module) : BossComponent(module)
 
     public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.RoleCall:
+            case (uint)SID.RoleCall:
                 _debuffTargets.Clear(Raid.FindSlot(actor.InstanceID));
                 break;
-            case SID.Miscast:
+            case (uint)SID.Miscast:
                 _debuffImmune.Clear(Raid.FindSlot(actor.InstanceID));
                 break;
         }
@@ -126,7 +127,7 @@ class DirectorsBelone(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.CursedCasting1 or AID.CursedCasting2)
+        if (spell.Action.ID is (uint)AID.CursedCasting1 or (uint)AID.CursedCasting2)
             _debuffForbidden.Reset();
     }
 }

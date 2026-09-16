@@ -3,7 +3,6 @@ namespace BossMod;
 // special distance function for precise positioning, finer than map resolution
 // it's an inverted rect of a size equal to one grid cell, with a special adjustment if starting position is in the same cell, but farther than tolerance
 
-[SkipLocalsInit]
 public sealed class SDPrecisePosition : ShapeDistance
 {
     private readonly float originX, originZ, dirX, dirZ, normalX, normalZ, cellSize;

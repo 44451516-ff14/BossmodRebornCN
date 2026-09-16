@@ -1,15 +1,15 @@
 ﻿namespace BossMod.RealmReborn.Extreme.Ex3Titan;
 
 // burst (bomb explosion) needs to be shown in particular moment (different for different patterns) so that ai can avoid them nicely
-class LandslideBurst(BossModule module) : Components.GenericAOEs(module)
+sealed class LandslideBurst(BossModule module) : Components.GenericAOEs(module)
 {
     public int MaxBombs = 9;
     private readonly List<Actor> _landslides = [];
     private readonly List<Actor> _bursts = []; // TODO: reconsider: we can start showing bombs even before cast starts...
     public int NumActiveBursts => _bursts.Count;
 
-    private static readonly AOEShapeRect _shapeLandslide = new(40.25f, 3f);
-    private static readonly AOEShapeCircle _shapeBurst = new(6.3f);
+    private readonly AOEShapeRect _shapeLandslide = new(40.25f, 3f);
+    private readonly AOEShapeCircle _shapeBurst = new(6.3f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

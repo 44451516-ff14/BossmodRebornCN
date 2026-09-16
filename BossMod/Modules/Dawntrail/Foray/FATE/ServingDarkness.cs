@@ -41,7 +41,7 @@ sealed class SweepingMenacingCharge(BossModule module) : Components.SimpleCharge
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (Module.PrimaryActor.CastInfo is var spell && spell != null && spell.Action.ID == (uint)AID.SweepingCharge)
         {

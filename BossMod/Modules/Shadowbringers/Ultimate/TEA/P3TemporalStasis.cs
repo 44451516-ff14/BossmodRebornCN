@@ -1,6 +1,5 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-[SkipLocalsInit]
 sealed class P3TemporalStasis(BossModule module) : Components.GenericBaitAway(module, (uint)AID.FlarethrowerP3)
 {
     public enum Mechanic { None, AvoidDamage, StayClose, StayFar }

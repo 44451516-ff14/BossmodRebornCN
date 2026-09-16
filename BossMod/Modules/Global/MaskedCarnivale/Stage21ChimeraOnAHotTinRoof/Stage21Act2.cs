@@ -47,34 +47,6 @@ sealed class TheDragonsVoice(BossModule module) : Components.SimpleAOEs(module, 
 sealed class Icefall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Icefall, 5f);
 sealed class VoidBlizzard(BossModule module) : Components.CastInterruptHint(module, (uint)AID.VoidBlizzard);
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add("Interrupt The Rams Keeper with Flying Sardine. You can start the\nFinal Sting combination at about 50% health left.\n(Off-guard->Bristle->Moonflute->Final Sting).\nThe boss will sometimes spawn an Arena Imp during the fight.");
-    }
-}
-
-sealed class Hints2(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        var imps = Module.Enemies((uint)OID.ArenaImp);
-        var count = imps.Count;
-        if (count != 0)
-        {
-            for (var i = 0; i < count; ++i)
-            {
-                if (!imps[i].IsDead)
-                {
-                    hints.Add("The imps are weak to fire spells and strong against ice.\nInterrupt Void Blizzard with Flying Sardine.");
-                    return;
-                }
-            }
-        }
-    }
-}
-
 sealed class Stage21Act2States : StateMachineBuilder
 {
     public Stage21Act2States(BossModule module) : base(module)
@@ -85,23 +57,26 @@ sealed class Stage21Act2States : StateMachineBuilder
             .ActivateOnEnter<TheDragonsVoice>()
             .ActivateOnEnter<TheRamsKeeper>()
             .ActivateOnEnter<TheRamsKeeperHint>()
-            .ActivateOnEnter<TheRamsVoice>()
-            .ActivateOnEnter<Hints2>()
-            .DeactivateOnEnter<Hints>();
+            .ActivateOnEnter<TheRamsVoice>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 631, NameID = 8121, SortOrder = 2)]
-public sealed class Stage21Act2 : BossModule
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 631u, NameID = 8121u, SortOrder = 2)]
+public sealed class Stage21Act2(WorldState ws, Actor primary) : BossModule(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
 {
-    public Stage21Act2(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
-    {
-        ActivateComponent<Hints>();
-    }
-
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
         Arena.Actors(Enemies((uint)OID.ArenaImp), Colors.Object);
     }
+
+    private readonly string[] _prePullHints =
+    [
+        "Interrupt The Rams Keeper with Flying Sardine.",
+        "You can start the Final Sting combination at about 50% health left. (Off-guard->Bristle->Moonflute->Final Sting).",
+        "The boss will sometimes spawn an imp during the fight.",
+        "The imps are weak to fire spells and strong against ice. Interrupt Void Blizzard with Flying Sardine."
+    ];
+
+    public override string[] PrePullHints => _prePullHints;
 }

@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Savage.P2SHippokampos;
 
 // state related to channeling [over]flow mechanics
-class ChannelingFlow(BossModule module) : BossComponent(module)
+sealed class ChannelingFlow(BossModule module) : BossComponent(module)
 {
     public int NumStunned;
     private readonly (WDir, DateTime)[] _arrows = new (WDir, DateTime)[PartyState.MaxPartySize];

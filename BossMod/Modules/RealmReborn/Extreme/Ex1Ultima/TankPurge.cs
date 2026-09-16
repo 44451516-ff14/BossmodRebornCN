@@ -1,6 +1,6 @@
 ﻿namespace BossMod.RealmReborn.Extreme.Ex1Ultima;
 
-class TankPurge(BossModule module) : Components.RaidwideCast(module, (uint)AID.TankPurge)
+sealed class TankPurge(BossModule module) : Components.RaidwideCast(module, (uint)AID.TankPurge)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

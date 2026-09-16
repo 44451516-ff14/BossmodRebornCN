@@ -62,17 +62,16 @@ public class JsonPlanConverter : JsonConverter<Plan>
         using var jdoc = JsonDocument.ParseValue(ref reader);
         var name = jdoc.RootElement.GetProperty(nameof(Plan.Name)).GetString() ?? "";
         var encName = jdoc.RootElement.GetProperty(nameof(Plan.Encounter)).GetString() ?? "";
-        var encType = Type.GetType(encName);
-        var encInfo = encType != null ? BossModuleRegistry.FindByType(encType) : null;
+        var encInfo = BossModuleRegistry.FindByTypeName(encName);
         if (encInfo == null)
         {
             Service.Log($"Error while deserializing plan {name}: failed to find encounter {encName}");
             return null;
         }
 
-        var res = new Plan(name, encType!)
+        var res = new Plan(name, encInfo.ModuleType)
         {
-            Class = Enum.Parse<Class>(jdoc.RootElement.GetProperty(nameof(Plan.Class)).GetString() ?? ""),
+            Class = GeneratedEnumMetadata.Parse<Class>(jdoc.RootElement.GetProperty(nameof(Plan.Class)).GetString() ?? ""),
             Level = jdoc.RootElement.GetProperty(nameof(Plan.Level)).GetInt32()
         };
         foreach (var jd in jdoc.RootElement.GetProperty(nameof(Plan.PhaseDurations)).EnumerateArray())
@@ -81,7 +80,7 @@ public class JsonPlanConverter : JsonConverter<Plan>
         }
         foreach (var jm in jdoc.RootElement.GetProperty(nameof(Plan.Modules)).EnumerateObject())
         {
-            var mt = Type.GetType(jm.Name);
+            var mt = RotationModuleRegistry.FindType(jm.Name);
             if (mt == null || !RotationModuleRegistry.Modules.TryGetValue(mt, out var md))
             {
                 Service.Log($"Error while deserializing plan {name} for L{res.Level} {res.Class} encounter {encName}: failed to find module {jm.Name}");
@@ -265,7 +264,7 @@ public class JsonPlanConverter : JsonConverter<Plan>
 
         if (jelem.TryGetProperty(nameof(Plan.Entry.ConditionType), out var ctype))
         {
-            entry.ConditionType = Enum.Parse<StrategyCondition>(ctype.GetString() ?? "");
+            entry.ConditionType = GeneratedEnumMetadata.Parse<StrategyCondition>(ctype.GetString() ?? "");
             entry.ConditionParam = jelem.GetProperty(nameof(Plan.Entry.ConditionParam)).GetInt32();
         }
 

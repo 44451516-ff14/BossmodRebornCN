@@ -4,7 +4,7 @@ sealed class P7GigaflaresEdge(BossModule module) : Components.GenericAOEs(module
 {
     private readonly List<AOEInstance> _aoes = [];
 
-    private static readonly AOEShapeCircle _shape = new(20f); // TODO: verify falloff
+    private readonly AOEShapeCircle _shape = new(20f); // TODO: verify falloff
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoes.Count != 0 ? CollectionsMarshal.AsSpan(_aoes)[..1] : [];
 

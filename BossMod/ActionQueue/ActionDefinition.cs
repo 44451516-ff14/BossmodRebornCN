@@ -1,9 +1,6 @@
-﻿using System.Reflection;
-
-namespace BossMod;
+﻿namespace BossMod;
 
 // allowed categories of targets for an action
-[Flags]
 public enum ActionTargets
 {
     None = 0,
@@ -57,6 +54,21 @@ public enum ActionAspect : byte
     Physical
 }
 
+// for beastmaster; these are somehow not in sheets
+public enum ActionAffinity : byte
+{
+    None = 0,
+    Rampant = 1,
+    Durant = 2,
+    Eldritch = 3,
+    Volant = 4,
+
+    Red = Rampant,
+    Blue = Durant,
+    Yellow = Eldritch,
+    Green = Volant
+}
+
 // this contains all information about player actions that we care about (for action tweaks, autorotation, etc)
 // some of the data is available in sheets, however unfortunately quite a bit is hardcoded in game functions; it often uses current player data
 // however, we need this information outside game (ie in uidev) and for different players of different classes/levels (ie for replay analysis)
@@ -94,8 +106,11 @@ public sealed record class ActionDefinition(ActionID ID)
     // the way game works is - when you use first charge, total is set to cd*max-at-cap, and elapsed is set to cd*(max-at-level - 1)
     public int MaxChargesAtCap()
     {
-        foreach (ref var o in MaxChargesOverride.AsSpan())
+        var charges = MaxChargesOverride.AsSpan();
+        var len = charges.Length;
+        for (var i = 0; i < len; ++i)
         {
+            ref var o = ref charges[i];
             if (LinkUnlocked(o.UnlockLink))
             {
                 return o.Charges;
@@ -107,8 +122,11 @@ public sealed record class ActionDefinition(ActionID ID)
 
     public int MaxChargesAtLevel(int level)
     {
-        foreach (ref var o in MaxChargesOverride.AsSpan())
+        var charges = MaxChargesOverride.AsSpan();
+        var len = charges.Length;
+        for (var i = 0; i < len; ++i)
         {
+            ref var o = ref charges[i];
             if (level >= o.Level && LinkUnlocked(o.UnlockLink))
             {
                 return o.Charges;
@@ -201,6 +219,11 @@ public sealed class ActionDefinitions
     public static readonly ActionID IDPotionInt = new(ActionType.Item, 1049237u); // hq grade 4 gemdraught of intelligence
     public static readonly ActionID IDPotionMnd = new(ActionType.Item, 1049238u); // hq grade 4 gemdraught of mind
 
+    // TODO: remove later, this is for the ucob project
+    public static readonly ActionID IDClamCake = new(ActionType.Item, 1049247u);
+    public static readonly ActionID IDFruitcake = new(ActionType.Item, 1049242u);
+    public static readonly ActionID IDPopcorn = new(ActionType.Item, 1049240u);
+
     // content specific consumables
     public static readonly ActionID IDPotionSustaining = new(ActionType.Item, 20309u);
     public static readonly ActionID IDPotionMax = new(ActionType.Item, 1013637u);
@@ -228,8 +251,7 @@ public sealed class ActionDefinitions
 
     private ActionDefinitions()
     {
-        foreach (var d in Utils.GetDerivedTypes<Defs>(Assembly.GetExecutingAssembly()))
-            ((Defs)Activator.CreateInstance(d)!).Define(this);
+        GeneratedRegistries.RegisterActionDefinitions(this);
 
         // items (TODO: more generic approach is needed...)
         RegisterItem(IDPotionStr);
@@ -247,6 +269,10 @@ public sealed class ActionDefinitions
         RegisterItem(IDPotionEureka, 1.1f);
         RegisterItem(IDPotionUltra, 1.1f);
         RegisterItem(IDPotionPilgrim, 1.1f);
+
+        RegisterItem(IDClamCake, 2.1f);
+        RegisterItem(IDFruitcake, 2.1f);
+        RegisterItem(IDPopcorn, 2.1f);
 
         RegisterItem(IDMiscItemGreens, 1.1f);
 
@@ -266,11 +292,14 @@ public sealed class ActionDefinitions
             RegisterDeepDungeon(new(ActionType.Magicite, i));
         }
 
-        foreach (var act in typeof(EurekaActionID).GetEnumValues())
+        var eurekaactions = (EurekaActionID[])typeof(EurekaActionID).GeneratedEnumValues();
+        var len = eurekaactions.Length;
+        for (var i = 0; i < len; ++i)
         {
-            if ((uint)act > 0)
+            var act = eurekaactions[i];
+            if ((uint)act > 0u)
             {
-                RegisterSpell((EurekaActionID)act);
+                RegisterSpell(act);
             }
         }
 
@@ -279,12 +308,12 @@ public sealed class ActionDefinitions
             var petAction = new ActionID(ActionType.PetAction, i);
             var def = new ActionDefinition(petAction)
             {
-                CastAnimLock = 0,
-                InstantAnimLock = 0,
+                CastAnimLock = 0f,
+                InstantAnimLock = 0f,
             };
             if (i == 3) // PetAction 3 "Place" is area-targeted
             {
-                def.Range = 30;
+                def.Range = 30f;
                 def.AllowedTargets = ActionTargets.Area;
             }
             Register(def.ID, def);
@@ -297,14 +326,16 @@ public sealed class ActionDefinitions
     // smart targeting utility: return target (if friendly) or other tank (if available) or null (otherwise)
     public static Actor? FindCoTank(WorldState ws, Actor player)
     {
-        foreach (var a in ws.Party.WithoutSlot())
+        var raid = ws.Party.WithoutSlot(false, true, true); // doubt we care about dead co tanks, alliance, or npcs
+        var len = raid.Length;
+        for (var i = 0; i < len; ++i)
         {
+            var a = raid[i];
             if (a != player && a.Role == Role.Tank)
             {
                 return a;
             }
         }
-
         return null;
     }
     public static Actor? SmartTargetCoTank(WorldState ws, Actor player, Actor? primaryTarget, AIHints hints) => SmartTargetFriendly(primaryTarget) ?? FindCoTank(ws, player);
@@ -312,10 +343,16 @@ public sealed class ActionDefinitions
     // smart targeting utility: return target (if friendly) or any esunable player (if any) or self (otherwise)
     public static Actor? FindEsunaTarget(WorldState ws)
     {
-        foreach (var p in ws.Party.WithoutSlot())
+        var raid = ws.Party.WithoutSlot(false, true, true); // doubt we care about dead co tanks, alliance, or npcs
+        var len = raid.Length;
+        for (var i = 0; i < len; ++i)
         {
-            foreach (var s in p.Statuses)
+            var p = raid[i];
+            var statuses = p.Statuses;
+            var lenS = statuses.Length;
+            for (var j = 0; j < lenS; ++j)
             {
+                ref var s = ref statuses[j];
                 if (Utils.StatusIsRemovable(s.ID))
                 {
                     return p;
@@ -332,7 +369,8 @@ public sealed class ActionDefinitions
         var cjc = _cjcSheet?.GetRowOrDefault(data.ClassJobCategory.RowId);
         if (cjc != null)
         {
-            for (var i = 1; i < _cjcSheet!.Columns.Count; ++i)
+            var count = _cjcSheet!.Columns.Count;
+            for (var i = 1; i < count; ++i)
             {
                 res[i - 1] = cjc.Value.ReadBoolColumn(i);
             }
@@ -349,7 +387,7 @@ public sealed class ActionDefinitions
 
     public uint SpellUnlockLink(Lumina.Excel.Sheets.Action data) => data.UnlockLink.RowId;
     public uint SpellUnlockLink(uint spellId) => SpellUnlockLink(ActionData(spellId));
-    public uint ActionUnlockLink(ActionID aid) => aid.Type == ActionType.Spell ? SpellUnlockLink(aid.ID) : 0;
+    public uint ActionUnlockLink(ActionID aid) => aid.Type == ActionType.Spell ? SpellUnlockLink(aid.ID) : 0u;
 
     // see ActionManager.CanUseActionOnTarget
     public ActionTargets SpellAllowedTargets(Lumina.Excel.Sheets.Action data)
@@ -569,6 +607,60 @@ public sealed class ActionDefinitions
         _definitions[aid].MaxChargesOverride.Sort(static (b, a) => a.Level.CompareTo(b.Level));
     }
     public void RegisterChargeIncreaseTrait<AID, TraitID>(AID aid, TraitID traitId) where AID : Enum where TraitID : Enum => RegisterChargeIncreaseTrait(ActionID.MakeSpell(aid), (uint)(object)traitId);
+
+    public static readonly ActionAffinity[] TrickAffinity = [
+        ActionAffinity.None,
+        ActionAffinity.Red,    // cu sith, cone
+        ActionAffinity.Red,    // squirrel, line (in both directions)
+        ActionAffinity.Red,    // lamb, line
+        ActionAffinity.Blue,   // pugil, cone
+        ActionAffinity.Red,    // opo, circle
+        ActionAffinity.Yellow, // dodo, cone
+        ActionAffinity.Yellow, // coblyn, ST
+        ActionAffinity.Red,    // diremite, ST
+        ActionAffinity.Blue,   // megacrab, circle
+        ActionAffinity.Green,  // wespe, ST (poison)
+        ActionAffinity.Green,  // vulture, cone
+        ActionAffinity.Red,    // mandragora, ST
+        ActionAffinity.Yellow, // geshunpest, circle
+        ActionAffinity.Red,    // puk, circle
+        ActionAffinity.Blue,   // crab, cone
+        ActionAffinity.Blue,   // mantis, ST
+        ActionAffinity.Yellow, // slime, ST (lifesteal)
+        ActionAffinity.Blue,   // dullahan, cone
+        ActionAffinity.Green,  // bat, ST (lifesteal)
+        ActionAffinity.Green,  // flytrap, cone (poison)
+        ActionAffinity.Blue,   // ziz, cone
+        ActionAffinity.Red,    // cactuar, line
+        ActionAffinity.Yellow, // golem, cone
+        ActionAffinity.Blue,   // apkallu, ST
+        ActionAffinity.Yellow, // turtle, circle
+        ActionAffinity.Red,    // buffalo, cone
+        ActionAffinity.Blue,   // uragnite, cone
+        ActionAffinity.Yellow, // worm, cone
+        ActionAffinity.Red,    // spriggan, cone
+        ActionAffinity.Red,    // goob, line
+        ActionAffinity.Yellow, // gigantoad, circle
+        ActionAffinity.Green,  // colibri, ST
+        ActionAffinity.Yellow, // coeurl, ST
+        ActionAffinity.Blue,   // raptor, cone
+        ActionAffinity.Red,    // drake, cone
+        ActionAffinity.Yellow, // treant, circle
+        ActionAffinity.Red,    // antling, ST
+        ActionAffinity.Red,    // chimera, cone
+        ActionAffinity.Red,    // morbol, line
+        ActionAffinity.Green,  // ghost, cone
+        ActionAffinity.Blue,   // salamander, cone
+        ActionAffinity.Blue,   // cobra, ST (poison)
+        ActionAffinity.Blue,   // hydra, ST
+        ActionAffinity.Green,  // damselfly, circle
+        ActionAffinity.Yellow, // rotting goob, ST
+        ActionAffinity.Green,  // zu, circle
+        ActionAffinity.Blue,   // ice golem, cone
+        ActionAffinity.Blue,   // karlabos, ST
+        ActionAffinity.Yellow, // rafflesia, circle
+        ActionAffinity.Yellow, // behemoth, cone
+    ];
 }
 
 public abstract class Defs

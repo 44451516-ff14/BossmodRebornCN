@@ -2,7 +2,7 @@
 
 // state related to coherence mechanic
 // TODO: i'm not 100% sure how exactly it selects target for aoe ray, I assume it is closest player except tether target?..
-class Coherence(BossModule module) : Components.CastCounter(module, (uint)AID.CoherenceRay)
+sealed class Coherence(BossModule module) : Components.CastCounter(module, (uint)AID.CoherenceRay)
 {
     private Actor? _tetherTarget;
     private Actor? _rayTarget;
@@ -75,16 +75,17 @@ class Coherence(BossModule module) : Components.CastCounter(module, (uint)AID.Co
             if (head?.Tether.Target == player.InstanceID)
             {
                 Arena.AddLine(player.Position, Module.PrimaryActor.Position, Colors.Danger);
-                Arena.Actor(player, Colors.Danger);
+                Arena.Actor(player, Colors.Danger, drawWorld: true);
                 Arena.ZoneCircleOutline(player.Position, _aoeRadius, Colors.Danger);
             }
             else if (player == _rayTarget)
             {
-                Arena.Actor(player, Colors.Danger);
+                Arena.Actor(player, Colors.Danger, drawWorld: true);
             }
             else if (player != _tetherTarget)
             {
-                Arena.Actor(player, _inRay[i] ? Colors.PlayerInteresting : Colors.PlayerGeneric);
+                var inray = _inRay[i];
+                Arena.Actor(player, inray ? Colors.PlayerInteresting : Colors.PlayerGeneric, drawWorld: inray ? true : null);
             }
         }
     }

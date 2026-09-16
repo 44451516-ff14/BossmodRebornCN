@@ -1,12 +1,9 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-[SkipLocalsInit]
 sealed class P3WormholeLimitCut(BossModule module) : LimitCut(module, 2.7d);
-[SkipLocalsInit]
 sealed class P3WormholeSacrament(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SacramentWormhole, new AOEShapeCross(100f, 8f));
 
-[SkipLocalsInit]
-sealed class P3WormholeRepentance(BossModule module) : BossComponent(module)
+sealed class P3WormholeRepentance(TEA module) : BossComponent(module)
 {
     public int NumSoaks;
     private bool _chakramsDone;
@@ -17,7 +14,7 @@ sealed class P3WormholeRepentance(BossModule module) : BossComponent(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        var alex = ((TEA)Module).AlexPrime();
+        var alex = module.AlexPrime();
         if (alex == null || NumSoaks >= 3)
             return;
 
@@ -40,7 +37,7 @@ sealed class P3WormholeRepentance(BossModule module) : BossComponent(module)
 
     public override void AddMovementHints(int slot, Actor actor, MovementHints movementHints)
     {
-        var alex = ((TEA)Module).AlexPrime();
+        var alex = module.AlexPrime();
         if (alex == null || NumSoaks >= 3)
             return;
 
@@ -58,7 +55,7 @@ sealed class P3WormholeRepentance(BossModule module) : BossComponent(module)
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        var alex = ((TEA)Module).AlexPrime();
+        var alex = module.AlexPrime();
         if (alex == null || NumSoaks >= 3)
             return;
 
@@ -137,10 +134,8 @@ sealed class P3WormholeRepentance(BossModule module) : BossComponent(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class P3WormholeIncineratingHeat(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.IncineratingHeat, 5f, 8, 8);
 
-[SkipLocalsInit]
 sealed class P3WormholeEnumeration(BossModule module) : Components.UniformStackSpread(module, 5f, default, 3, 3, raidwideOnResolve: false) // TODO: verify enumeration radius
 {
     private BitMask _targets; // we start showing stacks only after incinerating heat is resolved

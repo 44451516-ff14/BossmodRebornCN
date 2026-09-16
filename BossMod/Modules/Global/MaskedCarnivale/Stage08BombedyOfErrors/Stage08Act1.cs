@@ -50,7 +50,8 @@ sealed class Selfdetonation(BossModule module) : BossComponent(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (!Module.PrimaryActor.IsDead && actor.Position.InCircle(Module.PrimaryActor.Position, 10f))
+        var pos = actor.Position;
+        if (!Module.PrimaryActor.IsDead && pos.InCircle(Module.PrimaryActor.Position, 10f))
         {
             hints.Add(hint);
             return;
@@ -58,7 +59,7 @@ sealed class Selfdetonation(BossModule module) : BossComponent(module)
         var count = bombs.Count;
         for (var i = 0; i < count; ++i)
         {
-            if (actor.Position.InCircle(bombs[i].Position, 6f))
+            if (pos.InCircle(bombs[i].Position, 6f))
             {
                 hints.Add(hint);
                 return;
@@ -67,29 +68,11 @@ sealed class Selfdetonation(BossModule module) : BossComponent(module)
     }
 }
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add("For this stage the spell Flying Sardine to interrupt the Progenitrix in Act 2\nis highly recommended. Hit the Cherry Bomb from a safe distance\nwith anything but fire damage to set of a chain reaction to win this act.");
-    }
-}
-
-sealed class Hints2(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add("Hit the Cherry Bomb from a safe distance to win this act.");
-    }
-}
-
 sealed class Stage08Act1States : StateMachineBuilder
 {
     public Stage08Act1States(BossModule module) : base(module)
     {
         TrivialPhase()
-            .DeactivateOnEnter<Hints>()
-            .ActivateOnEnter<Hints2>()
             .Raw.Update = () => AllDeadOrDestroyed(Stage08Act1.Trash);
     }
 }
@@ -99,7 +82,6 @@ public sealed class Stage08Act1 : BossModule
 {
     public Stage08Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {
-        ActivateComponent<Hints>();
         ActivateComponent<Selfdetonation>();
     }
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.Bomb, (uint)OID.Snoll];
@@ -126,4 +108,12 @@ public sealed class Stage08Act1 : BossModule
             };
         }
     }
+
+    private readonly string[] _prePullHints =
+    [
+        "For this stage the spell Flying Sardine to interrupt the Progenitrix in act 2 is highly recommended. Hit the Cherry Bomb from a safe distance with anything but fire damage to set of a chain reaction to win this act.",
+        "Hit the Cherry Bomb from a safe distance to win this act."
+    ];
+
+    public override string[] PrePullHints => _prePullHints;
 }

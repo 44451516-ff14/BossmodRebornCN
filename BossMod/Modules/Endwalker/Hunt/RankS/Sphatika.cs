@@ -54,7 +54,7 @@ class Stance(BossModule module) : Components.GenericAOEs(module)
             return [];
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (!(Module.PrimaryActor.CastInfo?.IsSpell() ?? false))
             return;

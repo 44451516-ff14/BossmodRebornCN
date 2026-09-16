@@ -1,13 +1,13 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex1Zodiark;
 
 // state related to exoterikos, trimorphos exoterikos and triple esoteric ray mechanics
-class Exoterikos(BossModule module) : BossComponent(module)
+sealed class Exoterikos(BossModule module) : BossComponent(module)
 {
     private readonly List<(Actor, AOEShape)> _sources = [];
 
-    private static readonly AOEShapeRect _aoeSquare = new(21f, 21f);
-    private static readonly AOEShapeCone _aoeTriangle = new(47f, 30f.Degrees());
-    private static readonly AOEShapeRect _aoeRay = new(42f, 7f);
+    private readonly AOEShapeRect _aoeSquare = new(21f, 21f);
+    private readonly AOEShapeCone _aoeTriangle = new(47f, 30f.Degrees());
+    private readonly AOEShapeRect _aoeRay = new(42f, 7f);
 
     public bool Done => _sources.Count == 0;
 

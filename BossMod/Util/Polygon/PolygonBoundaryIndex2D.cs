@@ -10,7 +10,6 @@ public enum PolygonShapeRelation : byte
     Intersecting
 }
 
-[SkipLocalsInit]
 internal sealed unsafe class PolygonBoundaryIndex2D : IDisposable
 {
     // Only used to collapse trig-generated cardinal directions (e.g. cos(pi/2) != exactly 0 in float)
@@ -73,7 +72,7 @@ internal sealed unsafe class PolygonBoundaryIndex2D : IDisposable
             this.radius = radius;
             radiusSq = this.radius * this.radius;
 
-            var (sin, cos) = ((float, float))Math.SinCos(halfAngle);
+            var (sin, cos) = MathF.SinCos(halfAngle);
             cosHalfAngle = cos;
             cosHalfAngleSq = cos * cos;
             leftX = ox + (fx * cos - fz * sin) * this.radius;
@@ -130,7 +129,7 @@ internal sealed unsafe class PolygonBoundaryIndex2D : IDisposable
             innerSq = inner * inner;
             outerSq = outer * outer;
 
-            var (sin, cos) = ((float, float))Math.SinCos(halfAngle);
+            var (sin, cos) = MathF.SinCos(halfAngle);
             cosHalfAngle = cos;
             cosHalfAngleSq = cos * cos;
             var leftDirX = fx * cos - fz * sin;
@@ -1962,7 +1961,7 @@ internal sealed unsafe class PolygonBoundaryIndex2D : IDisposable
         {
             var px = minX + (x + 0.5f) * stepX;
             var distanceSq = DistanceSqToBoundaryAtKnownRow(px, pz, indexRow);
-            var distance = MathF.Sqrt(MathF.Max(0f, distanceSq));
+            var distance = MathF.Sqrt(Math.Max(0f, distanceSq));
             destination[dstRow + x] = ContainsAtKnownRow(px, pz, indexRow) ? -distance : distance;
         }
     }
@@ -3564,7 +3563,7 @@ internal sealed unsafe class PolygonBoundaryIndex2D : IDisposable
     public PolygonShapeRelation ClassifyDonutSector(in WDir center, float innerRadius, float outerRadius, Angle angleStart, Angle angleEnd)
     {
         var angularLength = angleEnd - angleStart;
-        var halfAngle = 0.5f * MathF.Abs(angularLength.Rad);
+        var halfAngle = 0.5f * Math.Abs(angularLength.Rad);
         var forward = (angleStart + angularLength * 0.5f).ToDirection();
         return ClassifyDonutSector(center, forward, innerRadius, outerRadius, new(halfAngle));
     }
@@ -6283,7 +6282,7 @@ internal sealed unsafe class PolygonBoundaryIndex2D : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Rotate(float x, float z, float angle, out float rotatedX, out float rotatedZ)
     {
-        var (sin, cos) = ((float, float))Math.SinCos(angle);
+        var (sin, cos) = MathF.SinCos(angle);
         rotatedX = x * cos - z * sin;
         rotatedZ = x * sin + z * cos;
     }

@@ -1,12 +1,12 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un2Sephirot;
 
-class P3Earthshaker(BossModule module) : Components.GenericAOEs(module, (uint)AID.EarthShakerAOE)
+sealed class P3Earthshaker(BossModule module) : Components.GenericAOEs(module, (uint)AID.EarthShakerAOE)
 {
     private BitMask _targets;
 
     public bool Active => _targets.Any() && NumCasts < 2;
 
-    private static readonly AOEShape _shape = new AOEShapeCone(60f, 15f.Degrees());
+    private readonly AOEShape _shape = new AOEShapeCone(60f, 15f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

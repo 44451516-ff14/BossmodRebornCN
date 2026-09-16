@@ -1,0 +1,160 @@
+﻿namespace BossMod.Global.CrucibleOfTheUnbroken.ThirdBoard.YmirPiece;
+
+// TODO when adding AI to this module - if we want to drag the snail around the map, we have to be like 8.0f away from it, since it has a cleave auto-attack
+//  this cleave only hits one person tho, its just so its hard to move the boss around
+
+public enum OID : uint
+{
+    YmirPiece = 0x4C93,
+    Helper = 0x233C,
+    SahaginPiece = 0x4C95, // R2.000, x1
+    YmirShell = 0x4C94, // R2.000, x1, Part type
+}
+
+public enum AID : uint
+{
+    // Sahagin
+    AutoAttackWater = 48626, // 4C95->player, no cast, single-target
+    SahaginTeleport = 48484, // SahaginPiece->location, no cast, single-target
+    WaterIIBoss = 48482, // 4C95->self, 3.0s cast, single-target
+    WaterII = 48483, // Helper->location, 3.0s cast, range 6 circle
+    TsunamiBoss = 48480, // 4C95->self, 8.0s cast, single-target
+    Tsunami = 48481, // Helper->self, 8.0s cast, range 60 width 60 rect
+    ParalyzingSpikes = 50532, // 4C95->self, 3.0s cast, single-target
+    Dreadwash = 48485, // SahaginPiece->self, 8.0s cast, range 30 circle
+
+    // Ymir
+    AutoAttackHeadSnatch = 48477, // YmirPiece->self, no cast, range 7 ?-degree cone
+    YmirTeleport = 48476, // YmirPiece->location, no cast, single-target
+    BlanketThunder = 48479, // YmirPiece->self, 5.0s cast, range 40 circle
+}
+
+public enum SID : uint
+{
+    VulnerabilityDown = 2198,
+    ParalyzingSpikes = 5434, // none->4C95, extra=0x64
+}
+
+public enum TetherID : uint
+{
+    ParalyzingSpikesTether = 6, // 4C95->YmirPiece
+}
+
+sealed class WaterII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WaterII, 6.0f);
+sealed class BlanketThunder(BossModule module) : Components.RaidwideCast(module, (uint)AID.BlanketThunder);
+sealed class Dreadwash(BossModule module) : Components.CastInterruptHint(module, (uint)AID.Dreadwash);
+
+sealed class ParalyzingSpikes(BossModule module) : Components.GenericInvincible(module, "Attacking boss with spikes debuff!")
+{
+    private readonly List<Actor> avoidBosses = [];
+
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.ParalyzingSpikes)
+        {
+            avoidBosses.Add(caster);
+        }
+    }
+
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
+    {
+        if (status.ID == (uint)SID.ParalyzingSpikes)
+        {
+            avoidBosses.Remove(actor);
+        }
+    }
+
+    protected override ReadOnlySpan<Actor> ForbiddenTargets(int slot, Actor actor) => CollectionsMarshal.AsSpan(avoidBosses);
+}
+
+sealed class VulnDown(BossModule module) : Components.GenericInvincible(module)
+{
+    private readonly List<Actor> avoidBosses = [];
+
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
+    {
+        if (status.ID == (uint)SID.VulnerabilityDown)
+        {
+            avoidBosses.Add(actor);
+        }
+    }
+
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
+    {
+        if (status.ID == (uint)SID.VulnerabilityDown)
+        {
+            avoidBosses.Remove(actor);
+        }
+    }
+
+    protected override ReadOnlySpan<Actor> ForbiddenTargets(int slot, Actor actor) => CollectionsMarshal.AsSpan(avoidBosses);
+}
+
+sealed class Tsunami(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Tsunami, 35.0f, kind: Kind.DirForward)
+{
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        var count = Casters.Count;
+        if (count == 0)
+        {
+            return;
+        }
+
+        var knockback = Casters[0];
+
+        if (!IsImmune(slot, knockback.Activation))
+        {
+            hints.AddForbiddenZone(new SDKnockbackInAABBRectFixedDirection(Arena.Center, Distance * knockback.Direction.ToDirection(), 20.0f, 20.0f),
+                knockback.Activation);
+        }
+    }
+}
+
+sealed class YmirPieceStates : StateMachineBuilder
+{
+    public YmirPieceStates(BossModule module) : base(module)
+    {
+        TrivialPhase()
+            .ActivateOnEnter<WaterII>()
+            .ActivateOnEnter<Tsunami>()
+            .ActivateOnEnter<BlanketThunder>()
+            .ActivateOnEnter<ParalyzingSpikes>()
+            .ActivateOnEnter<VulnDown>()
+            .ActivateOnEnter<Dreadwash>()
+            .Raw.Update = () => AllDeadOrDestroyed(YmirPiece.Bosses);
+    }
+}
+
+[ModuleInfo(BossModuleInfo.Maturity.Contributed, PrimaryActorOID = (uint)OID.YmirPiece, Contributors = "Equilius", GroupType = BossModuleInfo.GroupType.CrucibleOfTheUnbroken, GroupID = 1090u, NameID = 14569u, SortOrder = 2)]
+public sealed class YmirPiece(WorldState ws, Actor primary) : BossModule(ws, primary, new(120f, 0f), new ArenaBoundsSquare(20f))
+{
+    public static readonly uint[] Bosses = [(uint)OID.YmirPiece, (uint)OID.SahaginPiece];
+
+    protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        var count = hints.PotentialTargets.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var e = hints.PotentialTargets[i];
+            e.Priority = e.Actor.OID switch
+            {
+                (uint)OID.YmirShell => 3,
+                (uint)OID.YmirPiece => 2,
+                (uint)OID.SahaginPiece => e.Actor.FindStatus((uint)SID.ParalyzingSpikes) != null ? AIHints.Enemy.PriorityForbidden : 1,
+                _ => 0
+            };
+        }
+    }
+
+    protected override void DrawEnemies(int pcSlot, Actor pc)
+    {
+        Arena.Actors(this, Bosses);
+    }
+
+    private readonly string[] _prePullHints = [
+        "This fight is easy, break shell, kill the snail then kill the 2nd boss.",
+        "Interrupt the Dreadwash spell or use your pet to take the damage down."
+    ];
+
+    public override string[] PrePullHints => _prePullHints;
+}

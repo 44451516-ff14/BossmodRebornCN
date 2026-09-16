@@ -2,7 +2,6 @@
 
 // 64-bit mask; out-of-range accesses are safe and well-defined ('get' always returns 0, 'set' is no-op)
 // this is often used e.g. to store per-player flags (in such case only 8 lowest bits are used for 'normal' raids, or 24 lowest for full alliances)
-[SkipLocalsInit]
 public struct BitMask(ulong raw)
 {
     public bool this[int index]

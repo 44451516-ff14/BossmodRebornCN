@@ -13,7 +13,7 @@ public enum AID : uint
     Object130 = 14711 // Boss->self, no cast, range 30+R circle - instant kill if you do not line of sight the towers when they die
 }
 
-sealed class LowVoltage(BossModule module) : Components.CastLineOfSightAOEComplex(module, (uint)AID.LowVoltage, Layouts.Layout2CornersBlockers, riskyWithSecondsLeft: 99d);
+sealed class LowVoltage(BossModule module) : Components.CastLineOfSightAOEComplex(module, (uint)AID.LowVoltage, Layouts.Layout2CornersBlockers, riskyWithSecondsLeft: 3d);
 
 sealed class SlimeExplosion(BossModule module) : Components.GenericStackSpread(module)
 {
@@ -58,14 +58,6 @@ sealed class SlimeExplosion(BossModule module) : Components.GenericStackSpread(m
     }
 }
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add("Pull or push the Lava Slimes to the towers and then hit the slimes\nfrom a distance to set off the explosions. The towers create a damage\npulse every 12s and a deadly explosion when they die. Take cover.");
-    }
-}
-
 sealed class Stage07Act3States : StateMachineBuilder
 {
     public Stage07Act3States(BossModule module) : base(module)
@@ -76,12 +68,11 @@ sealed class Stage07Act3States : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 617, NameID = 8095, SortOrder = 3)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 617u, NameID = 8095u, SortOrder = 3)]
 public sealed class Stage07Act3 : BossModule
 {
     public Stage07Act3(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.Layout2Corners)
     {
-        ActivateComponent<Hints>();
         ActivateComponent<SlimeExplosion>();
     }
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.Slime];
@@ -93,4 +84,11 @@ public sealed class Stage07Act3 : BossModule
         Arena.Actors(Enemies((uint)OID.Boss));
         Arena.Actors(Enemies((uint)OID.Slime));
     }
+
+    private readonly string[] _prePullHints =
+    [
+        "Pull or push the Lava Slimes to the towers and then hit the slimes from a distance to set off the explosions. The towers create a damage pulse every 12s and a deadly explosion when they die. Take cover."
+    ];
+
+    public override string[] PrePullHints => _prePullHints;
 }

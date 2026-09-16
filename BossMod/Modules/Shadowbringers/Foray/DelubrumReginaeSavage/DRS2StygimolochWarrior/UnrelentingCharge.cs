@@ -8,7 +8,7 @@ sealed class UnrelentingCharge(BossModule module) : Components.GenericKnockback(
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
         if (_source != null)
-            return new Knockback[1] { new(_source.Position, 10, _activation) };
+            return new Knockback[1] { new(_source.Position, 10f, _activation) };
         return [];
     }
 
@@ -17,7 +17,7 @@ sealed class UnrelentingCharge(BossModule module) : Components.GenericKnockback(
         if (spell.Action.ID == (uint)AID.UnrelentingCharge)
         {
             _source = caster;
-            _activation = Module.CastFinishAt(spell, 0.3f);
+            _activation = Module.CastFinishAt(spell, 0.3d);
         }
     }
 

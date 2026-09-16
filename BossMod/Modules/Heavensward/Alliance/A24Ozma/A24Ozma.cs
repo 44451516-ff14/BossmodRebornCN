@@ -25,7 +25,6 @@ class AccelerationBomb(BossModule module) : Components.StayMove(module)
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "The Combat Reborn Team", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 168u, NameID = 4896u)]
-[SkipLocalsInit]
 public sealed class A24Ozma : BossModule
 {
     public A24Ozma(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

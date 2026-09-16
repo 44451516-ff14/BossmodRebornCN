@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Savage.P1SErichthonios;
 
 // state related to aether explosion mechanics, done as part of aetherflails, aetherchain and shackles of time abilities
-class AetherExplosion(BossModule module) : BossComponent(module)
+sealed class AetherExplosion(BossModule module) : BossComponent(module)
 {
     private enum Cell { None, Red, Blue }
 
@@ -47,14 +47,14 @@ class AetherExplosion(BossModule module) : BossComponent(module)
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         if (_memberWithSOT != pc)
-            Arena.Actor(_memberWithSOT, Colors.Other2);
+            Arena.Actor(_memberWithSOT, Colors.Other2, drawWorld: true);
     }
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.AetherExplosion:
+            case (uint)SID.AetherExplosion:
                 // we rely on parameter of an invisible status on boss to detect red/blue
                 _explodingCells = status.Extra switch
                 {
@@ -71,7 +71,7 @@ class AetherExplosion(BossModule module) : BossComponent(module)
                 }
                 break;
 
-            case SID.ShacklesOfTime:
+            case (uint)SID.ShacklesOfTime:
                 if (_memberWithSOT != null)
                     ReportError("Unexpected ShacklesOfTime: another is already active!");
                 _memberWithSOT = actor;
@@ -82,9 +82,9 @@ class AetherExplosion(BossModule module) : BossComponent(module)
 
     public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.ShacklesOfTime:
+            case (uint)SID.ShacklesOfTime:
                 if (_memberWithSOT == actor)
                     _memberWithSOT = null;
                 _explodingCells = Cell.None;
@@ -94,8 +94,8 @@ class AetherExplosion(BossModule module) : BossComponent(module)
 
     private static Cell CellFromOffset(WDir offsetFromCenter)
     {
-        var phi = Angle.FromDirection(offsetFromCenter) + 180.Degrees();
-        var coneIndex = (int)(4 * phi.Rad / MathF.PI); // phi / (pi/4); range [0, 8]
+        var phi = Angle.FromDirection(offsetFromCenter) + 180f.Degrees();
+        var coneIndex = (int)(4f * phi.Rad / MathF.PI); // phi / (pi/4); range [0, 8]
         var oddCone = (coneIndex & 1) != 0;
         var outerCone = offsetFromCenter.LengthSq() > P1S.InnerCircleRadius * P1S.InnerCircleRadius;
         return (oddCone == outerCone) ? Cell.Blue : Cell.Red; // outer odd = inner even = blue

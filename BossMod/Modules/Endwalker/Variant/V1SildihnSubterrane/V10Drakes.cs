@@ -18,7 +18,7 @@ public enum AID : uint
 
 sealed class BurningCyclone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BurningCyclone, new AOEShapeCone(8f, 60f.Degrees()))
 {
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         hints.Add("Order: Fater -> mother -> brother -> sister -> drakeling");
     }

@@ -24,8 +24,8 @@ sealed class Upwell(BossModule module) : Components.GenericAOEs(module)
 
     private readonly List<LineSequence> _lines = [];
 
-    private static readonly AOEShapeRect _shapeWide = new(30f, 5f, 30f);
-    private static readonly AOEShapeRect _shapeNarrow = new(30f, 2.5f, 30f);
+    private readonly AOEShapeRect _shapeWide = new(30f, 5f, 30f);
+    private readonly AOEShapeRect _shapeNarrow = new(30f, 2.5f, 30f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

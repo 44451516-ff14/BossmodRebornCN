@@ -90,13 +90,17 @@ public sealed class PCT(RotationModuleManager manager, Actor player) : Castxan<A
     public int Palette; // 0-100
     public int Paint; // 0-5
 
-    public bool PomClawMuse => CanvasFlags.HasFlag(CanvasFlags.Pom) || CanvasFlags.HasFlag(CanvasFlags.Claw);
-    public bool WingFangMuse => CanvasFlags.HasFlag(CanvasFlags.Wing) || CanvasFlags.HasFlag(CanvasFlags.Maw);
-    public bool Portrait => CreatureFlags.HasFlag(CreatureFlags.MooglePortait) || CreatureFlags.HasFlag(CreatureFlags.MadeenPortrait);
+    public bool PomClawMuse => (CanvasFlags & (CanvasFlags.Pom | CanvasFlags.Claw)) != 0;
+
+    public bool WingFangMuse => (CanvasFlags & (CanvasFlags.Wing | CanvasFlags.Maw)) != 0;
+
+    public bool Portrait => (CreatureFlags & (CreatureFlags.MooglePortait | CreatureFlags.MadeenPortrait)) != 0;
 
     public bool CreaturePainted => PomClawMuse || WingFangMuse;
-    public bool WeaponPainted => CanvasFlags.HasFlag(CanvasFlags.Weapon);
-    public bool LandscapePainted => CanvasFlags.HasFlag(CanvasFlags.Landscape);
+
+    public bool WeaponPainted => (CanvasFlags & CanvasFlags.Weapon) != 0;
+
+    public bool LandscapePainted => (CanvasFlags & CanvasFlags.Landscape) != 0;
     public bool Monochrome;
     public CreatureFlags CreatureFlags;
     public CanvasFlags CanvasFlags;
@@ -143,14 +147,22 @@ public sealed class PCT(RotationModuleManager manager, Actor player) : Castxan<A
     {
         get
         {
-            if (CanvasFlags.HasFlag(CanvasFlags.Pom))
+            if ((CanvasFlags & CanvasFlags.Pom) != 0)
+            {
                 return AID.PomMuse;
-            if (CanvasFlags.HasFlag(CanvasFlags.Wing))
+            }
+            if ((CanvasFlags & CanvasFlags.Wing) != 0)
+            {
                 return AID.WingedMuse;
-            if (CanvasFlags.HasFlag(CanvasFlags.Claw))
+            }
+            if ((CanvasFlags & CanvasFlags.Claw) != 0)
+            {
                 return AID.ClawedMuse;
-            if (CanvasFlags.HasFlag(CanvasFlags.Maw))
+            }
+            if ((CanvasFlags & CanvasFlags.Maw) != 0)
+            {
                 return AID.FangedMuse;
+            }
             return AID.None;
         }
     }
@@ -159,10 +171,14 @@ public sealed class PCT(RotationModuleManager manager, Actor player) : Castxan<A
     {
         get
         {
-            if (CreatureFlags.HasFlag(CreatureFlags.MooglePortait))
+            if ((CreatureFlags & CreatureFlags.MooglePortait) != 0)
+            {
                 return AID.MogOfTheAges;
-            if (CreatureFlags.HasFlag(CreatureFlags.MadeenPortrait))
+            }
+            if ((CreatureFlags & CreatureFlags.MadeenPortrait) != 0)
+            {
                 return AID.RetributionOfTheMadeen;
+            }
             return AID.None;
         }
     }
@@ -330,7 +346,7 @@ public sealed class PCT(RotationModuleManager manager, Actor player) : Castxan<A
 
         return !CreaturePainted
             && BestPortrait == AID.None
-            && (CreatureFlags.HasFlag(CreatureFlags.Pom) || CreatureFlags.HasFlag(CreatureFlags.Claw))
+            && ((CreatureFlags & CreatureFlags.Pom) != 0 || (CreatureFlags & CreatureFlags.Claw) != 0)
             && CanWeave(AID.LivingMuse, 0, extraFixedDelay: 4)
             && CanWeave(AID.MogOfTheAges, 5);
     }
@@ -383,7 +399,7 @@ public sealed class PCT(RotationModuleManager manager, Actor player) : Castxan<A
         // use to weave in opener
         if (ShouldSubtract(strategy, 1))
             prio = GCDPriority.Standard;
-        if (CombatTimer < 10 && !CreatureFlags.HasFlag(CreatureFlags.Pom) && CanvasFlags.HasFlag(CanvasFlags.Pom) && CanWeave(AID.LivingMuse, 1))
+        if (CombatTimer < 10 && (CreatureFlags & CreatureFlags.Pom) == 0 && (CanvasFlags & CanvasFlags.Pom) != 0 && CanWeave(AID.LivingMuse, 1))
             prio = GCDPriority.Standard;
 
         // use comet to prevent overcap or during buffs

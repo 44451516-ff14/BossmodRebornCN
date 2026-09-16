@@ -1,6 +1,5 @@
 namespace BossMod.Dawntrail.Quantum.Q1FinalVerse;
 
-[SkipLocalsInit]
 sealed class Q1FinalVerseStates : StateMachineBuilder
 {
     private readonly Q1FinalVerse _module;

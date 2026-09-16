@@ -2,15 +2,15 @@
 
 // wicked wheel is used in phase 1 (depending on 'woken' status, it can be used with followup wicked tornado - this can happen with low dps late in the phase) - it is triggered by cast start
 // it is also used during phase 4 as part of some mechanics (ultimate predation, ???) - in such case we typically want to show it earlier (based on PATE)
-class WickedWheel(BossModule module) : Components.GenericAOEs(module)
+abstract class WickedWheelBase(BossModule module) : Components.GenericAOEs(module)
 {
     public DateTime AwakenedResolve;
     public List<(Actor source, AOEShape shape, DateTime activation)> Sources = [];
 
-    public static readonly AOEShapeCircle ShapeWheel = new(8.7f);
-    public static readonly AOEShapeDonut ShapeTornado = new(7f, 20f);
-    public static readonly AOEShapeCircle ShapeSister = new(8.36f);
-    public static readonly AOEShapeCircle ShapeCombined = new(20f); // wheel+tornado, used when players are expected to outrange both - e.g. during ultimate predation
+    public readonly AOEShapeCircle ShapeWheel = new(8.7f);
+    public readonly AOEShapeDonut ShapeTornado = new(7f, 20f);
+    public readonly AOEShapeCircle ShapeSister = new(8.36f);
+    public readonly AOEShapeCircle ShapeCombined = new(20f); // wheel+tornado, used when players are expected to outrange both - e.g. during ultimate predation
 
     public bool Active => Sources.Count > 0;
 
@@ -70,9 +70,10 @@ class WickedWheel(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class P1WickedWheel(BossModule module) : WickedWheel(module);
+sealed class WickedWheel(BossModule module) : WickedWheelBase(module);
+sealed class P1WickedWheel(BossModule module) : WickedWheelBase(module);
 
-class P4WickedWheel(BossModule module) : WickedWheel(module)
+sealed class P4WickedWheel(BossModule module) : WickedWheelBase(module)
 {
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {

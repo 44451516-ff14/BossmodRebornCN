@@ -381,7 +381,7 @@ public abstract unsafe class PacketDecoder
                             ? Service.LuminaRow<Lumina.Excel.Sheets.CraftAction>((uint)cp->OpAdvanceStep.LastActionId)?.Name
                             : Service.LuminaRow<Lumina.Excel.Sheets.Action>((uint)cp->OpAdvanceStep.LastActionId)?.Name;
                         craftingNode.AddChild($"Step #{cp->OpAdvanceStep.StepIndex}, condition={cp->OpAdvanceStep.Condition} ({cp->OpAdvanceStep.ConditionParam}), delta-cp={cp->OpAdvanceStep.DeltaCP}");
-                        craftingNode.AddChild($"Action: {cp->OpAdvanceStep.LastActionId} '{actionName}' ({(cp->OpAdvanceStep.Flags.HasFlag(EventPlayN.PayloadCrafting.StepFlags.LastActionSucceeded) ? "succeeded" : "failed")})");
+                        craftingNode.AddChild($"Action: {cp->OpAdvanceStep.LastActionId} '{actionName}' ({((cp->OpAdvanceStep.Flags & EventPlayN.PayloadCrafting.StepFlags.LastActionSucceeded) != 0 ? "succeeded" : "failed")})");
                         craftingNode.AddChild($"Progress: {cp->OpAdvanceStep.CurProgress} (delta={cp->OpAdvanceStep.DeltaProgress})");
                         craftingNode.AddChild($"Quality: {cp->OpAdvanceStep.CurQuality} (delta={cp->OpAdvanceStep.DeltaQuality}, hq={cp->OpAdvanceStep.HQChance}, u38={cp->OpAdvanceStep.u38})");
                         craftingNode.AddChild($"Durability: {cp->OpAdvanceStep.CurDurability} (delta={cp->OpAdvanceStep.DeltaDurability})");

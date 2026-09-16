@@ -169,9 +169,45 @@ sealed class GoldorBlizzardIII(BossModule module) : Components.CastInterruptHint
 
 sealed class Hints(BossModule module) : BossComponent(module)
 {
-    public override void AddGlobalHints(GlobalHints hints)
+    private bool isHeavy;
+    private bool isElectrocuted;
+    private bool isShielded;
+
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        if (Module.PrimaryActor.FindStatus((uint)SID.MagicResistance) != null)
+        switch (status.ID)
+        {
+            case (uint)SID.Heavy:
+                isHeavy = true;
+                break;
+            case (uint)SID.Electrocution:
+                isElectrocuted = true;
+                break;
+            case (uint)SID.MagicResistance:
+                isShielded = true;
+                break;
+        }
+    }
+
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
+    {
+        switch (status.ID)
+        {
+            case (uint)SID.Heavy:
+                isHeavy = false;
+                break;
+            case (uint)SID.Electrocution:
+                isElectrocuted = false;
+                break;
+            case (uint)SID.MagicResistance:
+                isShielded = false;
+                break;
+        }
+    }
+
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
+    {
+        if (isShielded)
         {
             hints.Add($"{Module.PrimaryActor.Name} is immune to magic damage! (Destroy crystal to remove buff)");
         }
@@ -179,11 +215,11 @@ sealed class Hints(BossModule module) : BossComponent(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (actor.FindStatus((uint)SID.Electrocution) != null)
+        if (isElectrocuted)
         {
             hints.Add($"Cleanse Electrocution!");
         }
-        if (actor.FindStatus((uint)SID.Heavy) != null)
+        if (isHeavy)
         {
             hints.Add("Use Loom to dodge AOEs!");
         }

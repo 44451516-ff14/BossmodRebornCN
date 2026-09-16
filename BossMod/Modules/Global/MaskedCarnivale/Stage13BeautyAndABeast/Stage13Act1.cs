@@ -14,32 +14,19 @@ public enum AID : uint
 
 sealed class Mow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mow, new AOEShapeCone(7.4f, 60f.Degrees()));
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add("The first act is trivial, almost anything will work.\nFor act 2 having Flying Sardine is recommended.");
-    }
-}
-
 sealed class Stage13Act1States : StateMachineBuilder
 {
     public Stage13Act1States(BossModule module) : base(module)
     {
         TrivialPhase()
-            .DeactivateOnEnter<Hints>()
             .ActivateOnEnter<Mow>()
             .Raw.Update = () => AllDeadOrDestroyed(Stage13Act1.Trash);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 623, NameID = 8104, SortOrder = 1)]
-public sealed class Stage13Act1 : BossModule
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 623u, NameID = 8104u, SortOrder = 1)]
+public sealed class Stage13Act1(WorldState ws, Actor primary) : BossModule(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
 {
-    public Stage13Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
-    {
-        ActivateComponent<Hints>();
-    }
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.Vodoriga];
 
     protected override bool CheckPull() => IsAnyActorInCombat(Trash);
@@ -49,4 +36,11 @@ public sealed class Stage13Act1 : BossModule
         Arena.Actor(PrimaryActor);
         Arena.Actors(Enemies((uint)OID.Vodoriga));
     }
+
+    private readonly string[] _prePullHints =
+    [
+        "The first act is trivial, almost anything will work. For act 2 having Flying Sardine is recommended."
+    ];
+
+    public override string[] PrePullHints => _prePullHints;
 }

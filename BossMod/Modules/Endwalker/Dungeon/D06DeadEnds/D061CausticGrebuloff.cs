@@ -220,7 +220,7 @@ sealed class WaveOfNausea(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (AOEs.Count != 0 && _exa.Lines.Count != 0)
         {

@@ -84,7 +84,6 @@ sealed class Burst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.
     }
 }
 
-[SkipLocalsInit]
 sealed class InconstantGardenerStates : StateMachineBuilder
 {
     public InconstantGardenerStates(BossModule module) : base(module)
@@ -114,5 +113,4 @@ sealed class InconstantGardenerStates : StateMachineBuilder
     NameID = 2079u,
     SortOrder = 8,
     PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class InconstantGardener(WorldState ws, Actor primary) : OpenWorldFate(ws, primary);

@@ -113,6 +113,7 @@ sealed class P7PhaseChange(BossModule module) : BossComponent(module)
         }
     }
 }
+
 sealed class P6Enrage(BossModule module) : BossComponent(module)
 {
     public bool Enrage;

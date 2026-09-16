@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex7Zeromus;
 
 // TODO: find out starting/ending radius, growth speed, etc
-class BlackHole(BossModule module) : BossComponent(module)
+sealed class BlackHole(BossModule module) : BossComponent(module)
 {
     public Actor? Baiter;
     public Actor? Voidzone;
@@ -45,7 +45,7 @@ class BlackHole(BossModule module) : BossComponent(module)
 
     public override void OnActorCreated(Actor actor)
     {
-        if ((OID)actor.OID == OID.BlackHole)
+        if (actor.OID == (uint)OID.BlackHole)
         {
             Baiter = null;
             Voidzone = actor;
@@ -59,10 +59,10 @@ class BlackHole(BossModule module) : BossComponent(module)
             switch (state)
             {
                 // 00010002 - appear
-                case 0x00100008:
+                case 0x00100008u:
                     _growthStart = WorldState.CurrentTime;
                     break;
-                case 0x00040020:
+                case 0x00040020u:
                     Voidzone = null;
                     break;
             }
@@ -76,14 +76,14 @@ class BlackHole(BossModule module) : BossComponent(module)
     }
 }
 
-class FracturedEventide(BossModule module) : Components.GenericAOEs(module)
+sealed class FracturedEventide(BossModule module) : Components.GenericAOEs(module)
 {
     private Actor? _source;
     private Angle _startingRotation;
     private Angle _increment;
     private DateTime _startingActivation;
 
-    private static readonly AOEShapeRect _shape = new(60f, 4f);
+    private readonly AOEShapeRect _shape = new(60f, 4f);
     private const int _maxCasts = 21;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

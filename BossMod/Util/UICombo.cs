@@ -1,81 +1,87 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
-using System.Reflection;
 
 namespace BossMod;
 
-[SkipLocalsInit]
 public static class UICombo
 {
-    public static string EnumString(Enum v)
+    public static string EnumString<T>(T value) where T : struct, Enum => GeneratedEnumMetadata.DisplayName(value);
+    public static string EnumString(Type type, Enum value) => GeneratedEnumMetadata.DisplayName(type, value);
+
+    public static bool Enum<T>(string label, ref T value, Func<T, string>? print = null, Func<T, bool>? filter = null) where T : struct, Enum
     {
-        var name = v.ToString();
-        return v.GetType().GetField(name)?.GetCustomAttribute<PropertyDisplayAttribute>()?.Label ?? name;
+        var values = GeneratedEnumMetadata.Values<T>();
+        var current = GeneratedEnumMetadata.IndexOf(value);
+        if (current < 0)
+        {
+            current = 0;
+        }
+
+        print ??= static item => EnumString(item);
+        filter ??= static _ => true;
+        if (!EnumIndexCore(label, values.Length, ref current, index => print(values[index]), index => filter(values[index])))
+        {
+            return false;
+        }
+        value = values[current];
+        return true;
     }
 
-    public static bool Enum<T>(string label, ref T v, Func<T, string>? print = null, Func<T, bool>? filter = null) where T : Enum
+    public static bool Enum(string label, Type type, ref Enum value, Func<Enum, string>? print = null, Func<Enum, bool>? filter = null)
     {
-        var et = v.GetType();
-        var rawValues = System.Enum.GetValues(et);
-        var values = new T[rawValues.Length];
-        for (var i = 0; i < rawValues.Length; i++)
+        var values = GeneratedEnumMetadata.Values(type);
+        var current = GeneratedEnumMetadata.IndexOf(type, value);
+        if (current < 0)
         {
-            values[i] = (T)rawValues.GetValue(i)!;
+            current = 0;
         }
 
-        var idxCur = Array.IndexOf(values, v);
-
-        if (idxCur < 0)
+        print ??= item => EnumString(type, item);
+        filter ??= static _ => true;
+        if (!EnumIndexCore(label, values.Length, ref current, index => print((Enum)values.GetValue(index)!), index => filter((Enum)values.GetValue(index)!)))
         {
-            idxCur = 0;
+            return false;
         }
-
-        print ??= p => EnumString(p);
-        filter ??= _ => true;
-
-        var res = false;
-        if (EnumIndex(label, v.GetType(), ref idxCur, idx => print(values[idx]), idx => filter(values[idx])))
-        {
-            v = values[idxCur];
-            res = true;
-        }
-        return res;
+        value = (Enum)values.GetValue(current)!;
+        return true;
     }
 
-    public static bool EnumIndex(string label, Type type, ref int v, Func<int, string>? print = null, Func<int, bool>? filter = null)
+    public static bool EnumIndex(string label, Type type, ref int value, Func<int, string>? print = null, Func<int, bool>? filter = null)
     {
-        var values = System.Enum.GetValues(type);
-        print ??= p => EnumString((Enum)values.GetValue(p)!);
-        filter ??= _ => true;
-        var res = false;
-        var width = 300 * ImGuiHelpers.GlobalScale;
+        var values = GeneratedEnumMetadata.Values(type);
+        print ??= index => EnumString(type, (Enum)values.GetValue(index)!);
+        filter ??= static _ => true;
+        return EnumIndexCore(label, values.Length, ref value, print, filter);
+    }
+
+    private static bool EnumIndexCore(string label, int count, ref int value, Func<int, string> print, Func<int, bool> filter)
+    {
+        var result = false;
+        var width = 300f * ImGuiHelpers.GlobalScale;
         ImGui.SetNextItemWidth(width);
 
-        var labelCur = print(v);
-        var showLabelPopup = ImGui.CalcTextSize(labelCur).X > width;
-
-        // draw combo without label so we can check if only the button itself is hovered
-        if (ImGui.BeginCombo($"###{label}", print(v)))
+        var currentLabel = print(value);
+        var showLabelPopup = ImGui.CalcTextSize(currentLabel).X > width;
+        if (ImGui.BeginCombo($"###{label}", currentLabel))
         {
             showLabelPopup = false;
-            for (var i = 0; i < values.Length; i++)
+            for (var i = 0; i < count; ++i)
             {
                 if (!filter(i))
                 {
                     continue;
                 }
-
-                if (ImGui.Selectable(print(i), i == v))
+                if (ImGui.Selectable(print(i), i == value))
                 {
-                    v = i;
-                    res = true;
+                    value = i;
+                    result = true;
                 }
             }
             ImGui.EndCombo();
         }
         if (showLabelPopup && ImGui.IsItemHovered())
         {
-            ImGui.SetTooltip(labelCur);
+            ImGui.SetTooltip(currentLabel);
         }
 
         if (!label.StartsWith('#'))
@@ -83,60 +89,59 @@ public static class UICombo
             ImGui.SameLine();
             ImGui.TextWrapped(label);
         }
-        return res;
+        return result;
     }
 
-    public static bool Radio(Type type, ref int v, bool oneLine, Func<int, string>? print = null)
+    public static bool Radio(Type type, ref int value, bool oneLine, Func<int, string>? print = null)
     {
-        var values = System.Enum.GetValues(type);
-        print ??= p => EnumString((Enum)values.GetValue(p)!);
-        var orig = v;
-        var res = false;
-
-        for (var i = 0; i < values.Length; i++)
+        var values = GeneratedEnumMetadata.Values(type);
+        print ??= index => EnumString(type, (Enum)values.GetValue(index)!);
+        var original = value;
+        var result = false;
+        var len = values.Length;
+        for (var i = 0; i < len; ++i)
         {
-            if (ImGui.RadioButton(print(i), i == v))
+            if (ImGui.RadioButton(print(i), i == value))
             {
-                v = i;
-                res = i != orig;
+                value = i;
+                result = i != original;
             }
-            if (oneLine && i + 1 < values.Length)
+            if (oneLine && i + 1 < len)
             {
                 ImGui.SameLine();
             }
         }
-
-        return res;
+        return result;
     }
 
-    public static bool Int(string label, string[] values, ref int v)
+    public static bool Int(string label, string[] values, ref int value)
     {
-        var res = false;
-        ImGui.SetNextItemWidth(200);
-        if (ImGui.BeginCombo(label, v < values.Length ? values[v] : v.ToString()))
+        var result = false;
+        ImGui.SetNextItemWidth(200f);
+        var len = values.Length;
+        if (ImGui.BeginCombo(label, value < len ? values[value] : value.ToString()))
         {
-            for (var i = 0; i < values.Length; ++i)
+            for (var i = 0; i < len; ++i)
             {
-                if (ImGui.Selectable(values[i], v == i))
+                if (ImGui.Selectable(values[i], value == i))
                 {
-                    v = i;
-                    res = true;
+                    value = i;
+                    result = true;
                 }
             }
             ImGui.EndCombo();
         }
-        return res;
+        return result;
     }
 
-    public static bool Bool(string label, string[] values, ref bool v)
+    public static bool Bool(string label, string[] values, ref bool value)
     {
-        var val = v ? 1 : 0;
-        if (!Int(label, values, ref val))
+        var raw = value ? 1 : 0;
+        if (!Int(label, values, ref raw))
         {
             return false;
         }
-
-        v = val != 0;
+        value = raw != 0;
         return true;
     }
 }

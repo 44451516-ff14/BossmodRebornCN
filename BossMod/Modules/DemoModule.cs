@@ -2,7 +2,7 @@
 
 public sealed class DemoModule : BossModule
 {
-    private sealed class DemoComponent(BossModule module) : BossComponent(module)
+    internal sealed class DemoComponent(BossModule module) : BossComponent(module)
     {
         public override void AddHints(int slot, Actor actor, TextHints hints)
         {
@@ -15,7 +15,7 @@ public sealed class DemoModule : BossModule
             movementHints.Add(actor.Position, actor.Position + new WDir(10f, 10f), Colors.Danger);
         }
 
-        public override void AddGlobalHints(GlobalHints hints)
+        public override void AddGlobalHints(Actor actor, GlobalHints hints)
         {
             hints.Add("Global");
         }
@@ -27,7 +27,7 @@ public sealed class DemoModule : BossModule
 
         public override void DrawArenaForeground(int pcSlot, Actor pc)
         {
-            Arena.Actor(Arena.Center, default, Colors.PC);
+            Arena.Actor(Arena.Center, default, Colors.PC, drawWorld: MiniArena.Config.ShowActorTrianglesIn3DWorld);
         }
     }
 

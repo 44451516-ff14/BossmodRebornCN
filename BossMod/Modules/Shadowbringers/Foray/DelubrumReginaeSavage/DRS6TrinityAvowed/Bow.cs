@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRS6TrinityAvowed;
 
 // aoe starts at cast and ends with envcontrol; it's not considered 'risky' when paired with quick march
-class FlamesOfBozja(BossModule module, bool risky) : Components.GenericAOEs(module, (uint)AID.FlamesOfBozjaAOE)
+abstract class FlamesOfBozja(BossModule module, bool risky) : Components.GenericAOEs(module, (uint)AID.FlamesOfBozjaAOE)
 {
     public AOEInstance[] AOE = [];
     private readonly AOEShapeRect rect = new(45f, 25f);
@@ -28,7 +28,7 @@ class FlamesOfBozja(BossModule module, bool risky) : Components.GenericAOEs(modu
     }
 }
 
-class ShimmeringShot(BossModule module, double spawnToActivation) : TemperatureAOE(module)
+abstract class ShimmeringShot(BossModule module, double spawnToActivation) : TemperatureAOE(module)
 {
     public enum Pattern { Unknown, EWNormal, EWInverted, WENormal, WEInverted }
 

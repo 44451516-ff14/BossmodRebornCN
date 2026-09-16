@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P4S2Hesperos;
 
-class P4S2States : StateMachineBuilder
+sealed class P4S2States : StateMachineBuilder
 {
     public P4S2States(BossModule module) : base(module)
     {
@@ -10,52 +10,52 @@ class P4S2States : StateMachineBuilder
     private void SinglePhase(uint id)
     {
         SearingStream(id, 10.1f);
-        AkanthaiAct1(id + 0x010000, 10.2f);
-        FarNearSight(id + 0x020000, 1);
+        AkanthaiAct1(id + 0x010000u, 10.2f);
+        FarNearSight(id + 0x020000u, 1f);
 
-        AkanthaiAct2(id + 0x100000, 7.1f);
+        AkanthaiAct2(id + 0x100000u, 7.1f);
 
-        AkanthaiAct3(id + 0x200000, 8.2f);
-        FarNearSight(id + 0x210000, 4.1f);
-        HeartStake(id + 0x220000, 9.2f);
+        AkanthaiAct3(id + 0x200000u, 8.2f);
+        FarNearSight(id + 0x210000u, 4.1f);
+        HeartStake(id + 0x220000u, 9.2f);
 
-        AkanthaiAct4(id + 0x300000, 4.2f);
-        SearingStream(id + 0x310000, 9.3f);
+        AkanthaiAct4(id + 0x300000u, 4.2f);
+        SearingStream(id + 0x310000u, 9.3f);
 
-        AkanthaiAct5(id + 0x400000, 4.2f);
-        SearingStream(id + 0x410000, 7.2f);
-        DemigodDouble(id + 0x420000, 4.2f);
+        AkanthaiAct5(id + 0x400000u, 4.2f);
+        SearingStream(id + 0x410000u, 7.2f);
+        DemigodDouble(id + 0x420000u, 4.2f);
 
-        AkanthaiAct6(id + 0x500000, 8.2f);
-        Cast(id + 0x510000, (uint)AID.Enrage, 4.8f, 10, "Enrage");
+        AkanthaiAct6(id + 0x500000u, 8.2f);
+        Cast(id + 0x510000u, AID.Enrage, 4.8f, 10f, "Enrage");
     }
 
     private State SearingStream(uint id, float delay)
     {
-        return Cast(id, (uint)AID.SearingStream, delay, 5, "AOE")
+        return Cast(id, AID.SearingStream, delay, 5f, "AOE")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private State UltimateImpulse(uint id, float delay)
     {
-        return Cast(id, (uint)AID.UltimateImpulse, delay, 7, "AOE")
+        return Cast(id, AID.UltimateImpulse, delay, 7f, "AOE")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private State FarNearSight(uint id, float delay)
     {
-        CastStartMulti(id, [(uint)AID.Nearsight, (uint)AID.Farsight], delay)
+        CastStartMulti(id, [AID.Nearsight, AID.Farsight], delay)
             .SetHint(StateMachine.StateHint.PositioningStart);
-        CastEnd(id + 1, 5)
+        CastEnd(id + 1u, 5f)
             .ActivateOnEnter<NearFarSight>();
-        return ComponentCondition<NearFarSight>(id + 2, 1.1f, comp => comp.CurState == NearFarSight.State.Done, "Far/nearsight")
+        return ComponentCondition<NearFarSight>(id + 2u, 1.1f, static comp => comp.CurState == NearFarSight.State.Done, "Far/nearsight")
             .DeactivateOnExit<NearFarSight>()
             .SetHint(StateMachine.StateHint.Tankbuster | StateMachine.StateHint.PositioningEnd);
     }
 
     private void DemigodDouble(uint id, float delay)
     {
-        Cast(id, (uint)AID.DemigodDouble, delay, 5, "Shared Tankbuster")
+        Cast(id, AID.DemigodDouble, delay, 5f, "Shared Tankbuster")
             .ActivateOnEnter<DemigodDouble>()
             .DeactivateOnExit<DemigodDouble>()
             .SetHint(StateMachine.StateHint.Tankbuster);
@@ -63,10 +63,10 @@ class P4S2States : StateMachineBuilder
 
     private void HeartStake(uint id, float delay)
     {
-        Cast(id, (uint)AID.HeartStake, delay, 5, "Tankbuster")
+        Cast(id, AID.HeartStake, delay, 5f, "Tankbuster")
             .ActivateOnEnter<HeartStake>()
             .SetHint(StateMachine.StateHint.Tankbuster);
-        ComponentCondition<HeartStake>(id + 2, 3.1f, comp => comp.NumCasts > 0, "Tankbuster")
+        ComponentCondition<HeartStake>(id + 2u, 3.1f, static comp => comp.NumCasts > 0, "Tankbuster")
             .DeactivateOnExit<HeartStake>()
             .SetHint(StateMachine.StateHint.Tankbuster);
     }
@@ -79,10 +79,10 @@ class P4S2States : StateMachineBuilder
         // 3.0s: first aoes (helpers cast end)
         // 5.5s: boss visual instant cast + helpers start cast
         // 6.1s: second aoes (helpers cast end)
-        Cast(id, (uint)AID.HellsSting, delay, 2.4f)
+        Cast(id, AID.HellsSting, delay, 2.4f)
             .ActivateOnEnter<HellsSting>();
-        ComponentCondition<HellsSting>(id + 0x10, 0.6f, comp => comp.NumCasts > 0, "Cone");
-        ComponentCondition<HellsSting>(id + 0x20, 3.1f, comp => comp.NumCasts > 8, "Cone")
+        ComponentCondition<HellsSting>(id + 0x10u, 0.6f, static comp => comp.NumCasts > 0, "Cone");
+        ComponentCondition<HellsSting>(id + 0x20u, 3.1f, static comp => comp.NumCasts > 8, "Cone")
             .DeactivateOnExit<HellsSting>();
     }
 
@@ -91,8 +91,8 @@ class P4S2States : StateMachineBuilder
         // 'act 1' is 4 aoes (N/S/E/W) and 8 towers; explosion order is 2 opposite aoes -> all towers -> remaining aoes
         // 'intro' cast is pure flavour, it is cast together with 'visual' casts by towers and aoes
         // aoes are at (82/118, 100) and (100, 82/118), towers are at (95.05/104.95, 95.05/104.95) and (88.69/111.31, 88.69/111.31)
-        Cast(id, (uint)AID.AkanthaiAct1, delay, 5, "Act1");
-        SearingStream(id + 0x1000, 4.2f);
+        Cast(id, AID.AkanthaiAct1, delay, 5f, "Act1");
+        SearingStream(id + 0x1000u, 4.2f);
 
         // timeline:
         // -0.1s: first 2 aoes tethered
@@ -107,12 +107,12 @@ class P4S2States : StateMachineBuilder
         // 16.0s: last 2 aoes start cast 27149
         // 17.0s: last 2 aoes finish cast ==> component is reset
         // 18.0s: boss starts casting far/nearsight
-        Cast(id + 0x2000, (uint)AID.WreathOfThorns1, 6.2f, 8, "Wreath1")
+        Cast(id + 0x2000u, AID.WreathOfThorns1, 6.2f, 8f, "Wreath1")
             .ActivateOnEnter<WreathOfThorns1>()
             .SetHint(StateMachine.StateHint.PositioningStart);
-        ComponentCondition<WreathOfThorns1>(id + 0x3000, 3, comp => comp.CurState != WreathOfThorns1.State.FirstAOEs, "AOE 1");
-        ComponentCondition<WreathOfThorns1>(id + 0x4000, 3, comp => comp.CurState != WreathOfThorns1.State.Towers, "Towers");
-        ComponentCondition<WreathOfThorns1>(id + 0x5000, 3, comp => comp.CurState != WreathOfThorns1.State.LastAOEs, "AOE 2")
+        ComponentCondition<WreathOfThorns1>(id + 0x3000u, 3f, static comp => comp.CurState != WreathOfThorns1.State.FirstAOEs, "AOE 1");
+        ComponentCondition<WreathOfThorns1>(id + 0x4000u, 3f, static comp => comp.CurState != WreathOfThorns1.State.Towers, "Towers");
+        ComponentCondition<WreathOfThorns1>(id + 0x5000u, 3f, static comp => comp.CurState != WreathOfThorns1.State.LastAOEs, "AOE 2")
             .DeactivateOnExit<WreathOfThorns1>()
             .SetHint(StateMachine.StateHint.PositioningEnd);
     }
@@ -122,8 +122,8 @@ class P4S2States : StateMachineBuilder
         // 'act 2' is 4 aoes and 4 towers + player pairwise tethers
         // 'intro' cast is pure flavour, it is cast together with 'visual' casts by towers and aoes
         // towers are at (96,82), (118,96), (104,118) and (82,104); aoes are at (104,82), (118,104), (96,118) and (82,96)
-        Cast(id, (uint)AID.AkanthaiAct2, delay, 5, "Act2");
-        DemigodDouble(id + 0x1000, 4.2f);
+        Cast(id, AID.AkanthaiAct2, delay, 5f, "Act2");
+        DemigodDouble(id + 0x1000u, 4.2f);
 
         // timeline:
         // -0.1s: two towers and two aoes tethered
@@ -141,13 +141,13 @@ class P4S2States : StateMachineBuilder
         // 26.4s: boss starts casting aoe
         // 27.8s: wind pair expires if not broken
         // 33.4s: boss finishes casting aoe
-        Cast(id + 0x2000, (uint)AID.WreathOfThorns2, 4.2f, 6, "Wreath2")
+        Cast(id + 0x2000u, AID.WreathOfThorns2, 4.2f, 6f, "Wreath2")
             .ActivateOnEnter<WreathOfThorns2>()
             .SetHint(StateMachine.StateHint.PositioningStart);
-        Cast(id + 0x3000, (uint)AID.DarkDesign, 3.2f, 5, "DarkDesign");
-        ComponentCondition<WreathOfThorns2>(id + 0x4000, 4.9f, comp => comp.CurState != WreathOfThorns2.State.FirstSet, "Resolve 1");
-        ComponentCondition<WreathOfThorns2>(id + 0x5000, 7, comp => comp.CurState != WreathOfThorns2.State.SecondSet, "Resolve 2");
-        UltimateImpulse(id + 0x6000, 0.3f)
+        Cast(id + 0x3000u, AID.DarkDesign, 3.2f, 5, "DarkDesign");
+        ComponentCondition<WreathOfThorns2>(id + 0x4000u, 4.9f, static comp => comp.CurState != WreathOfThorns2.State.FirstSet, "Resolve 1");
+        ComponentCondition<WreathOfThorns2>(id + 0x5000u, 7, static comp => comp.CurState != WreathOfThorns2.State.SecondSet, "Resolve 2");
+        UltimateImpulse(id + 0x6000u, 0.3f)
             .DeactivateOnExit<WreathOfThorns2>()
             .SetHint(StateMachine.StateHint.PositioningEnd);
     }
@@ -157,7 +157,7 @@ class P4S2States : StateMachineBuilder
         // 'act 3' is two sets of 4 towers + jumps and knockback from center
         // 'intro' cast is pure flavour, it is cast together with 'visual' casts by towers and knockback
         // towers are at (82.61/117.39, 104.66/95.34) and (87.27/112.73, 87.27/112.73)
-        Cast(id, (uint)AID.AkanthaiAct3, delay, 5, "Act3");
+        Cast(id, AID.AkanthaiAct3, delay, 5f, "Act3");
 
         // timeline:
         // -0.1s: four towers (E/W) tethered
@@ -177,17 +177,17 @@ class P4S2States : StateMachineBuilder
         // 26.4s: second jump ==> component should switch to second cone mode
         // 27.0s: second towers finish cast
         // 30.4s: second cones
-        Cast(id + 0x1000, (uint)AID.WreathOfThorns3, 4.2f, 8, "Wreath3")
+        Cast(id + 0x1000u, AID.WreathOfThorns3, 4.2f, 8f, "Wreath3")
             .ActivateOnEnter<WreathOfThorns3>()
             .SetHint(StateMachine.StateHint.PositioningStart);
-        Cast(id + 0x2000, (uint)AID.KothornosKock, 3.2f, 4.9f, "Jump1");
-        ComponentCondition<WreathOfThorns3>(id + 0x2100, 4.3f, comp => comp.NumCones > 0, "Cones1");
-        ComponentCondition<WreathOfThorns3>(id + 0x2200, 0.8f, comp => comp.CurState != WreathOfThorns3.State.RangedTowers, "Towers1");
-        ComponentCondition<WreathOfThorns3>(id + 0x3000, 2, comp => comp.CurState != WreathOfThorns3.State.Knockback, "Knockback")
+        Cast(id + 0x2000u, AID.KothornosKock, 3.2f, 4.9f, "Jump1");
+        ComponentCondition<WreathOfThorns3>(id + 0x2100u, 4.3f, static comp => comp.NumCones > 0, "Cones1");
+        ComponentCondition<WreathOfThorns3>(id + 0x2200u, 0.8f, static comp => comp.CurState != WreathOfThorns3.State.RangedTowers, "Towers1");
+        ComponentCondition<WreathOfThorns3>(id + 0x3000u, 2f, static comp => comp.CurState != WreathOfThorns3.State.Knockback, "Knockback")
             .SetHint(StateMachine.StateHint.Knockback);
-        ComponentCondition<WreathOfThorns3>(id + 0x4000, 3.3f, comp => comp.NumJumps > 1, "Jump2");
-        ComponentCondition<WreathOfThorns3>(id + 0x4100, 0.7f, comp => comp.CurState != WreathOfThorns3.State.MeleeTowers, "Towers2");
-        ComponentCondition<WreathOfThorns3>(id + 0x4200, 3.4f, comp => comp.NumCones > 1, "Cones2")
+        ComponentCondition<WreathOfThorns3>(id + 0x4000u, 3.3f, static comp => comp.NumJumps > 1, "Jump2");
+        ComponentCondition<WreathOfThorns3>(id + 0x4100u, 0.7f, static comp => comp.CurState != WreathOfThorns3.State.MeleeTowers, "Towers2");
+        ComponentCondition<WreathOfThorns3>(id + 0x4200u, 3.4f, static comp => comp.NumCones > 1, "Cones2")
             .DeactivateOnExit<WreathOfThorns3>()
             .SetHint(StateMachine.StateHint.PositioningEnd);
     }
@@ -197,8 +197,8 @@ class P4S2States : StateMachineBuilder
         // 'act 4' is 4 towers + 4 aoes, tethered to players
         // 'intro' cast is pure flavour, it is cast together with 'visual' casts by towers and aoes
         // towers are at (82/118, 100) and (100, 82/118), aoes are at (87.27/112.73, 87.27/112.73)
-        Cast(id, (uint)AID.AkanthaiAct4, delay, 5, "Act4");
-        SearingStream(id + 0x1000, 4.2f);
+        Cast(id, AID.AkanthaiAct4, delay, 5f, "Act4");
+        SearingStream(id + 0x1000u, 4.2f);
 
         // timeline:
         //  0.0s: wreath cast ends
@@ -208,12 +208,12 @@ class P4S2States : StateMachineBuilder
         //  8.2s: searing stream cast end
         // .....: blow up tethers
         // 36.4s: ultimate impulse cast start
-        Cast(id + 0x2000, (uint)AID.WreathOfThorns4, 4.2f, 5, "Wreath4")
+        Cast(id + 0x2000u, AID.WreathOfThorns4, 4.2f, 5f, "Wreath4")
             .ActivateOnEnter<WreathOfThorns4>();
-        SearingStream(id + 0x3000, 3.2f)
+        SearingStream(id + 0x3000u, 3.2f)
             .SetHint(StateMachine.StateHint.PositioningStart)
-            .ExecOnExit<WreathOfThorns4>(comp => comp.ReadyToBreak = true);
-        UltimateImpulse(id + 0x4000, 28.2f)
+            .ExecOnExit<WreathOfThorns4>(static comp => comp.ReadyToBreak = true);
+        UltimateImpulse(id + 0x4000u, 28.2f)
             .DeactivateOnExit<WreathOfThorns4>()
             .SetHint(StateMachine.StateHint.PositioningEnd);
     }
@@ -223,7 +223,7 @@ class P4S2States : StateMachineBuilder
         // 'act 5' ('finale') is 8 staggered towers that should be soaked in correct order
         // 'intro' cast is pure flavour, it is cast together with 'visual' casts by towers
         // towers are at (88/112, 100), (100, 88/112), (91.5/108.5, 91.5/108.5)
-        Cast(id, (uint)AID.AkanthaiFinale, delay, 5, "Act5");
+        Cast(id, AID.AkanthaiFinale, delay, 5f, "Act5");
 
         // timeline:
         //  0.0s: wreath cast ends
@@ -248,11 +248,11 @@ class P4S2States : StateMachineBuilder
         // ... towers are staggered by ~1.3s
         // 38.8s: near/farsight cast start
         // 39.1s: last tower finishes cast
-        Cast(id + 0x1000, (uint)AID.WreathOfThorns5, 4.2f, 5, "Wreath5")
+        Cast(id + 0x1000u, AID.WreathOfThorns5, 4.2f, 5f, "Wreath5")
             .ActivateOnEnter<WreathOfThorns5>();
-        Cast(id + 0x2000, (uint)AID.FleetingImpulse, 3.2f, 4.9f, "Impulse");
-        Cast(id + 0x3000, (uint)AID.WreathOfThorns6, 13.6f, 6, "Wreath6");
-        FarNearSight(id + 0x4000, 11.2f)
+        Cast(id + 0x2000u, AID.FleetingImpulse, 3.2f, 4.9f, "Impulse");
+        Cast(id + 0x3000u, AID.WreathOfThorns6, 13.6f, 6f, "Wreath6");
+        FarNearSight(id + 0x4000u, 11.2f)
             .DeactivateOnExit<WreathOfThorns5>();
     }
 
@@ -274,16 +274,16 @@ class P4S2States : StateMachineBuilder
         // 80.2s: hell sting 4 sequence start
         // 86.3s: hell sting 4 sequence end
         // 95.4s: aoe start
-        Cast(id, (uint)AID.AkanthaiCurtainCall, delay, 5, "Act6")
+        Cast(id, AID.AkanthaiCurtainCall, delay, 5f, "Act6")
             .OnExit(Module.ActivateComponent<CurtainCall>);
-        HellSting(id + 0x1000, 10.2f);
-        HellSting(id + 0x2000, 14.2f);
-        UltimateImpulse(id + 0x3000, 9.2f)
+        HellSting(id + 0x1000u, 10.2f);
+        HellSting(id + 0x2000u, 14.2f);
+        UltimateImpulse(id + 0x3000u, 9.2f)
             .DeactivateOnExit<CurtainCall>()
             .OnExit(Module.ActivateComponent<CurtainCall>);
-        HellSting(id + 0x4000, 7.2f);
-        HellSting(id + 0x5000, 14.2f);
-        UltimateImpulse(id + 0x6000, 9.2f)
+        HellSting(id + 0x4000u, 7.2f);
+        HellSting(id + 0x5000u, 14.2f);
+        UltimateImpulse(id + 0x6000u, 9.2f)
             .DeactivateOnExit<CurtainCall>();
     }
 }

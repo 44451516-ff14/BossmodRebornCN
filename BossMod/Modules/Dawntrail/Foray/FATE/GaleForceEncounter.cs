@@ -63,7 +63,6 @@ sealed class FocusedTremor(BossModule module) : Components.ConcentricAOEs(module
     }
 }
 
-[SkipLocalsInit]
 sealed class GaleForceEncounterStates : StateMachineBuilder
 {
     public GaleForceEncounterStates(BossModule module) : base(module)
@@ -91,7 +90,6 @@ sealed class GaleForceEncounterStates : StateMachineBuilder
     NameID = 2082u,
     SortOrder = 11,
     PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class GaleForceEncounter : OpenWorldFate
 {
     public GaleForceEncounter(WorldState ws, Actor primary) : base(ws, primary)

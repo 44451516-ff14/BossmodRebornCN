@@ -9,7 +9,6 @@
 
 namespace Clipper2Lib;
 
-[SkipLocalsInit]
 public sealed class OutPt2(Point64 pt)
 {
     public OutPt2? next;
@@ -20,7 +19,6 @@ public sealed class OutPt2(Point64 pt)
     public List<OutPt2?>? edge;
 }
 
-[SkipLocalsInit]
 public class RectClip64
 {
     protected enum Location
@@ -28,8 +26,8 @@ public class RectClip64
         left, top, right, bottom, inside
     }
 
-    protected readonly Rect64 rect_;
-    protected readonly Point64 mp_;
+    protected Rect64 rect_;
+    protected Point64 mp_;
     protected readonly Path64 rectPath_;
     protected Rect64 pathBounds_;
     protected List<OutPt2?> results_;
@@ -71,6 +69,23 @@ public class RectClip64
     {
         return rect_.left == rect.left && rect_.top == rect.top &&
           rect_.right == rect.right && rect_.bottom == rect.bottom;
+    }
+
+    // Convenience calls rent an idle worker. Keep its point/edge pools when the
+    // clipping rectangle moves or resizes, instead of allocating a new worker.
+    internal void SetBounds(Rect64 rect)
+    {
+        if (HasBounds(rect))
+        {
+            return;
+        }
+        rect_ = rect;
+        mp_ = rect.MidPoint();
+        var corners = CollectionsMarshal.AsSpan(rectPath_);
+        corners[0] = new Point64(rect.left, rect.top);
+        corners[1] = new Point64(rect.right, rect.top);
+        corners[2] = new Point64(rect.right, rect.bottom);
+        corners[3] = new Point64(rect.left, rect.bottom);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1230,7 +1245,6 @@ public class RectClip64
     }
 } // RectClip class
 
-[SkipLocalsInit]
 public sealed class RectClipLines64 : RectClip64
 {
     internal RectClipLines64(Rect64 rect) : base(rect) { }

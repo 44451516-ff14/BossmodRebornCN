@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P8S2;
 
-class LimitlessDesolation : Components.UniformStackSpread
+sealed class LimitlessDesolation : Components.UniformStackSpread
 {
     public int NumAOEs;
     public int NumTowers;
@@ -100,11 +100,11 @@ class LimitlessDesolation : Components.UniformStackSpread
                     _towerAssignments[assignedSlot] = -1;
                 }
                 break;
-            case 0x00200010: // become soaked
-            case 0x00400001: // become unsoaked
+            case 0x00200010u: // become soaked
+            case 0x00400001u: // become unsoaked
                 break;
         }
     }
 }
 
-class LimitlessDesolationTyrantsFlare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TyrantsFlareLimitless, 8f);
+sealed class LimitlessDesolationTyrantsFlare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TyrantsFlareLimitless, 8f);

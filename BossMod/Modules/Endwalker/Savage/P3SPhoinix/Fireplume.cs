@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Endwalker.Savage.P3SPhoinix;
 
 // state related to 'single' and 'multi' fireplumes (normal or parts of gloryplume)
-class Fireplume(BossModule module) : Components.GenericAOEs(module)
+sealed class Fireplume(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCircle circleBig = new(15f);
-    private static readonly AOEShapeCircle circleSmall = new(10f);
+    private readonly AOEShapeCircle circleBig = new(15f);
+    private readonly AOEShapeCircle circleSmall = new(10f);
     private readonly List<AOEInstance> _aoes = [with(10)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

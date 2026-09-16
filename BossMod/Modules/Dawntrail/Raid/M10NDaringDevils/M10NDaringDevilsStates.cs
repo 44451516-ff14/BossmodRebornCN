@@ -1,6 +1,5 @@
-namespace BossMod.DawnTrail.Raid.M10NDaringDevils;
+namespace BossMod.Dawntrail.Raid.M10NDaringDevils;
 
-[SkipLocalsInit]
 sealed class M10NDaringDevilsStates : StateMachineBuilder
 {
     private readonly M10NDaringDevils _module;
@@ -25,7 +24,6 @@ sealed class M10NDaringDevilsStates : StateMachineBuilder
             .ActivateOnEnter<HotAerialTowers>()
             .ActivateOnEnter<HotAerialFirePuddles>()
 
-
             .ActivateOnEnter<DeepVarialCone>()
             .ActivateOnEnter<SickestTakeOffLine>()
             .ActivateOnEnter<SickSwellKB>()
@@ -37,7 +35,6 @@ sealed class M10NDaringDevilsStates : StateMachineBuilder
 
             .ActivateOnEnter<InsaneAirSnaps>()
             .ActivateOnEnter<BlastingSnapPersistent>()
-
 
             .Raw.Update = () => Module.PrimaryActor.IsDeadOrDestroyed && (_module.DeepBlue?.IsDeadOrDestroyed ?? true);
     }

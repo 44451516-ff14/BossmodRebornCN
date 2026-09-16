@@ -14,40 +14,18 @@ public enum AID : uint
     SanguineBite = 14361, // Boss->self, no cast, range 3+R width 2 rect
 }
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add("Trivial act. Enemies here are weak to lightning and fire.\nIn Act 2 the Ram's Voice and Ultravibration combo can be useful.\nFlying Sardine for interrupts can be beneficial.");
-    }
-}
-
-sealed class Hints2(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add("Bats are weak to lightning.\nThe wolf is weak to fire.");
-    }
-}
-
 sealed class Stage04Act1States : StateMachineBuilder
 {
     public Stage04Act1States(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<Hints2>()
-            .DeactivateOnEnter<Hints>()
             .Raw.Update = () => AllDeadOrDestroyed(Stage04Act1.Trash);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 614, NameID = 8086, SortOrder = 1)]
-public sealed class Stage04Act1 : BossModule
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 614u, NameID = 8086u, SortOrder = 1)]
+public sealed class Stage04Act1(WorldState ws, Actor primary) : BossModule(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
 {
-    public Stage04Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
-    {
-        ActivateComponent<Hints>();
-    }
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.Bat];
 
     protected override bool CheckPull() => IsAnyActorInCombat(Trash);
@@ -57,4 +35,12 @@ public sealed class Stage04Act1 : BossModule
         Arena.Actor(PrimaryActor);
         Arena.Actors(Enemies((uint)OID.Bat));
     }
+
+    private readonly string[] _prePullHints =
+    [
+        "Trivial act. Enemies here are weak to lightning and fire. In Act 2 the Ram's Voice and Ultravibration combo can be useful. Flying Sardine for interrupts can be beneficial.",
+        "Bats are weak to lightning. The wolf is weak to fire."
+    ];
+
+    public override string[] PrePullHints => _prePullHints;
 }

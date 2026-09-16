@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Endwalker.Savage.P9SKokytos;
 
-class DualspellFire(BossModule module) : Components.GenericStackSpread(module)
+sealed class DualspellFire(BossModule module) : Components.GenericStackSpread(module)
 {
     private bool _active;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_active)
             hints.Add("Pairs");
@@ -33,11 +33,11 @@ class DualspellFire(BossModule module) : Components.GenericStackSpread(module)
     }
 }
 
-class DualspellLightning(BossModule module) : Components.GenericBaitAway(module)
+sealed class DualspellLightning(BossModule module) : Components.GenericBaitAway(module)
 {
     private bool _active;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_active)
             hints.Add("Spread");
@@ -66,7 +66,7 @@ class DualspellLightning(BossModule module) : Components.GenericBaitAway(module)
     }
 }
 
-class DualspellIce(BossModule module) : Components.GenericAOEs(module)
+sealed class DualspellIce(BossModule module) : Components.GenericAOEs(module)
 {
     public enum Mechanic { None, In, Out };
 
@@ -75,7 +75,7 @@ class DualspellIce(BossModule module) : Components.GenericAOEs(module)
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_curMechanic != Mechanic.None)
         {

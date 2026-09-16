@@ -8,23 +8,23 @@
 // E/W positions: symmetrical = move to center for second explosion, then return; asymmetrical = move to S for second explosion, then return
 // normal corners: symmetrical = move to S for second explosion, then return; asymmetrical = move to center for second explosion, then return
 // designated corner: symmetrical = same as normal corner; asymmetrical = move to N or S for second explosion, move to N for last explosion
-class Intemperance(BossModule module) : BossComponent(module)
+sealed class Intemperance(BossModule module) : BossComponent(module)
 {
     public enum State { Unknown, TopToBottom, BottomToTop }
     public enum Pattern { Unknown, Symmetrical, Asymmetrical }
     public enum Cube { None, R, B, P }
 
-    public int NumExplosions { get; private set; }
+    public int NumExplosions;
     private State _curState = State.Unknown;
     private Pattern _pattern = Pattern.Unknown;
     private bool _patternModified;
     private readonly Cube[] _cubes = new Cube[24]; // [3*i+j] corresponds to cell i [NW N NE E SE S SW W], cube j [bottom center top]
     private int[]? _playerAssignment; // cell index assigned to player, null if not assigned yet
 
-    private static readonly AOEShapeRect _delimiterAOE = new(20, 1, 20);
-    private static readonly (WPos, Angle)[] _delimiterCenters = [(new(93, 100), 0.Degrees()), (new(107, 100), 0.Degrees()), (new(100, 93), 90.Degrees()), (new(100, 107), 90.Degrees())];
+    private readonly AOEShapeRect _delimiterAOE = new(20f, 1f, 20f);
+    private readonly (WPos, Angle)[] _delimiterCenters = [(new(93f, 100f), default), (new(107f, 100f), default), (new(100f, 93f), 90f.Degrees()), (new(100f, 107f), 90f.Degrees())];
 
-    private static readonly Cube[] _patternSymm = [
+    private readonly Cube[] _patternSymm = [
         Cube.R, Cube.P, Cube.R,
         Cube.B, Cube.R, Cube.B,
         Cube.R, Cube.P, Cube.R,
@@ -34,7 +34,7 @@ class Intemperance(BossModule module) : BossComponent(module)
         Cube.R, Cube.P, Cube.R,
         Cube.R, Cube.P, Cube.B,
     ];
-    private static readonly Cube[] _patternAsymm = [
+    private readonly Cube[] _patternAsymm = [
         Cube.B, Cube.P, Cube.R,
         Cube.R, Cube.R, Cube.B,
         Cube.B, Cube.P, Cube.R,
@@ -44,7 +44,7 @@ class Intemperance(BossModule module) : BossComponent(module)
         Cube.B, Cube.P, Cube.R,
         Cube.R, Cube.P, Cube.R,
     ];
-    private static readonly WDir[] _offsets = [new(-1, -1), new(0, -1), new(1, -1), new(1, 0), new(1, 1), new(0, 1), new(-1, 1), new(-1, 0), new(0, 0)];
+    private readonly WDir[] _offsets = [new(-1f, -1f), new(0f, -1f), new(1f, -1f), new(1f, 0f), new(1f, 1f), new(0f, 1f), new(-1f, 1f), new(-1f, 0f), new(0f, 0f)];
 
     public override void Update()
     {
@@ -86,7 +86,7 @@ class Intemperance(BossModule module) : BossComponent(module)
                 movementHints.Add(from, to, color);
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         hints.Add($"Order: {_curState}, pattern: {_pattern}.");
     }
@@ -108,10 +108,10 @@ class Intemperance(BossModule module) : BossComponent(module)
     {
         if (caster != Module.PrimaryActor)
             return;
-        var state = (AID)spell.Action.ID switch
+        var state = spell.Action.ID switch
         {
-            AID.IntemperateTormentUp => State.BottomToTop,
-            AID.IntemperateTormentDown => State.TopToBottom,
+            (uint)AID.IntemperateTormentUp => State.BottomToTop,
+            (uint)AID.IntemperateTormentDown => State.TopToBottom,
             _ => State.Unknown
         };
         if (state != State.Unknown)
@@ -120,9 +120,9 @@ class Intemperance(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.PainfulFlux) // this is convenient to rely on, since exactly 1 cast happens right after every explosion
+        if (spell.Action.ID == (uint)AID.PainfulFlux) // this is convenient to rely on, since exactly 1 cast happens right after every explosion
         {
-            if (NumExplosions++ == 0 && _pattern != Pattern.Unknown && _curState != State.Unknown)
+            if (++NumExplosions == 0 && _pattern != Pattern.Unknown && _curState != State.Unknown)
             {
                 // on first explosion, assign players to cubes
                 _playerAssignment = new int[PartyState.MaxPartySize];
@@ -157,9 +157,9 @@ class Intemperance(BossModule module) : BossComponent(module)
         {
             var cube = state switch
             {
-                0x00020001 => Cube.R,
-                0x00800040 => Cube.B,
-                0x20001000 => Cube.P,
+                0x00020001u => Cube.R,
+                0x00800040u => Cube.B,
+                0x20001000u => Cube.P,
                 _ => Cube.None
             };
             if (cube != Cube.None)
@@ -193,7 +193,7 @@ class Intemperance(BossModule module) : BossComponent(module)
 
     private WPos PosCenter(int pos)
     {
-        return Arena.Center + 14 * _offsets[pos];
+        return Arena.Center + 14f * _offsets[pos];
     }
 
     private int Position2(int pos1)

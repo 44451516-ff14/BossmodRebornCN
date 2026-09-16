@@ -1,9 +1,9 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex2Hydaelyn;
 
 // component for infralateral arc mechanic (role stacks)
-class InfralateralArc(BossModule module) : Components.CastCounter(module, (uint)AID.InfralateralArcAOE)
+sealed class InfralateralArc(BossModule module) : Components.CastCounter(module, (uint)AID.InfralateralArcAOE)
 {
-    private static readonly Angle _coneHalfAngle = 45.Degrees();
+    private readonly Angle _coneHalfAngle = 45f.Degrees();
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -18,7 +18,14 @@ class InfralateralArc(BossModule module) : Components.CastCounter(module, (uint)
         var pcRole = EffectiveRole(pc);
         var pcDir = Angle.FromDirection(pc.Position - Module.PrimaryActor.Position);
         foreach (var actor in Raid.WithoutSlot(false, true, true).Where(a => EffectiveRole(a) != pcRole))
-            Arena.Actor(actor, actor.Position.InCone(Module.PrimaryActor.Position, pcDir, _coneHalfAngle) ? Colors.Danger : Colors.PlayerGeneric);
+        {
+            if (EffectiveRole(actor) == pcRole)
+            {
+                continue;
+            }
+            var isincone = actor.Position.InCone(Module.PrimaryActor.Position, pcDir, _coneHalfAngle);
+            Arena.Actor(actor, isincone ? Colors.Danger : Colors.PlayerGeneric, drawWorld: isincone ? true : null);
+        }
     }
 
     private static Role EffectiveRole(Actor a) => a.Role == Role.Ranged ? Role.Melee : a.Role;

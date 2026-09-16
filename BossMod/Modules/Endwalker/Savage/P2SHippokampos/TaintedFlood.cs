@@ -1,11 +1,11 @@
 ﻿namespace BossMod.Endwalker.Savage.P2SHippokampos;
 
 // note: if activated together with ChannelingFlow, it does not target next flow arrows
-class TaintedFlood : Components.CastCounter
+sealed class TaintedFlood : Components.CastCounter
 {
     private BitMask _ignoredTargets;
 
-    private const float _radius = 6;
+    private const float _radius = 6f;
 
     public TaintedFlood(BossModule module) : base(module, (uint)AID.TaintedFloodAOE)
     {
@@ -42,17 +42,27 @@ class TaintedFlood : Components.CastCounter
 
         if (_ignoredTargets[pcSlot])
         {
-            foreach ((_, var actor) in Raid.WithSlot(false, true, true).ExcludedFromMask(_ignoredTargets))
+            foreach ((var slot, var actor) in Raid.WithSlot(false, true, true))
             {
-                Arena.Actor(actor, Colors.Danger);
+                if (_ignoredTargets[slot])
+                {
+                    continue;
+                }
+                Arena.Actor(actor, Colors.Danger, drawWorld: true);
                 Arena.ZoneCircleOutline(actor.Position, _radius, Colors.Danger);
             }
         }
         else
         {
             Arena.ZoneCircleOutline(pc.Position, _radius, Colors.Danger);
-            foreach (var player in Raid.WithoutSlot(false, true, true).Exclude(pc))
-                Arena.Actor(player, player.Position.InCircle(pc.Position, _radius) ? Colors.PlayerInteresting : Colors.PlayerGeneric);
+            foreach (var player in Raid.WithoutSlot(false, true, true))
+            {
+                if (player == pc)
+                {
+                    continue;
+                }
+                Arena.Actor(player, player.Position.InCircle(pc.Position, _radius) ? Colors.PlayerInteresting : Colors.PlayerGeneric, drawWorld: player.Position.InCircle(pc.Position, _radius) ? true : null);
+            }
         }
     }
 }

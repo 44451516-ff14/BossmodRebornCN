@@ -13,7 +13,7 @@ sealed class SearingWind(BossModule module) : Components.Voidzone(module, 3f, Ge
 
 sealed class Backdraft(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Backdraft, 16f, true)
 {
-    private static readonly Angle a45 = 45f.Degrees(), a90 = 90f.Degrees(), a225 = 22.5f.Degrees();
+    private readonly Angle a45 = 45f.Degrees(), a90 = 90f.Degrees(), a225 = 22.5f.Degrees();
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -30,7 +30,7 @@ sealed class Backdraft(BossModule module) : Components.SimpleKnockbacks(module, 
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.BozjaDuel, GroupID = 735, NameID = 12)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.BozjaDuel, GroupID = 735u, NameID = 12u)]
 public sealed class Duel3Sartauvoir(WorldState ws, Actor primary) : BossModule(ws, primary, new(-15f, 145f), new ArenaBoundsSquare(18f))
 {
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InSquare(Arena.Center, 20f);

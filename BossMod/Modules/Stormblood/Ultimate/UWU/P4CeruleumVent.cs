@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UWU;
 
-class P4CeruleumVent(BossModule module) : Components.GenericAOEs(module, (uint)AID.CeruleumVent)
+sealed class P4CeruleumVent(BossModule module) : Components.GenericAOEs(module, (uint)AID.CeruleumVent)
 {
     private Actor? _source;
     private DateTime _activation;

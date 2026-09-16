@@ -1,12 +1,12 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C03AAI.C033Statice;
 
-class TrickReload(BossModule module) : BossComponent(module)
+sealed class TrickReload(BossModule module) : BossComponent(module)
 {
     public bool FirstStack;
     public int SafeSlice;
     public int NumLoads;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (SafeSlice > 0)
             hints.Add($"Order: {(FirstStack ? "stack" : "spread")} -> {SafeSlice} -> {(FirstStack ? "spread" : "stack")}");
@@ -32,7 +32,7 @@ class TrickReload(BossModule module) : BossComponent(module)
     }
 }
 
-class Trapshooting(BossModule module) : Components.UniformStackSpread(module, 6f, 6, 4)
+sealed class Trapshooting(BossModule module) : Components.UniformStackSpread(module, 6f, 6, 4)
 {
     public int NumResolves;
     private readonly TrickReload? _reload = module.FindComponent<TrickReload>();
@@ -80,5 +80,5 @@ class Trapshooting(BossModule module) : Components.UniformStackSpread(module, 6f
 }
 
 abstract class TriggerHappy(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(40f, 30f.Degrees()));
-class NTriggerHappy(BossModule module) : TriggerHappy(module, (uint)AID.NTriggerHappyAOE);
-class STriggerHappy(BossModule module) : TriggerHappy(module, (uint)AID.STriggerHappyAOE);
+sealed class NTriggerHappy(BossModule module) : TriggerHappy(module, (uint)AID.NTriggerHappyAOE);
+sealed class STriggerHappy(BossModule module) : TriggerHappy(module, (uint)AID.STriggerHappyAOE);

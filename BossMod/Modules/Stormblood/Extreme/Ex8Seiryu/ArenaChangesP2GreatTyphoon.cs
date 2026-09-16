@@ -2,44 +2,23 @@ namespace BossMod.Stormblood.Extreme.Ex8Seiryu;
 
 sealed class ArenaChanges(BossModule module) : BossComponent(module)
 {
-    public override void DrawArenaBackground(int pcSlot, Actor pc)
-    {
-        if (!pc.Position.InCircle(Arena.Center, 20f))
-        {
-            Arena.Bounds = Trial.T09Seiryu.Seiryu.Phase2WaterBounds;
-        }
-        else
-        {
-            Arena.Bounds = Trial.T09Seiryu.Seiryu.Phase2Bounds;
-        }
-    }
-
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (Arena.Bounds.Radius > 20f)
+        if (!actor.Position.InCircle(Arena.Center, 20f))
         {
             hints.AddForbiddenZone(new SDInvertedCircle(Arena.Center, 19f), DateTime.MaxValue);
         }
     }
 }
 
-sealed class GreatTyphoonCone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GreatTyphoonCone, new AOEShapeDonutSector(20f, 45f, 15f.Degrees()))
-{
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        if (Arena.Bounds.Radius > 20f)
-            return base.ActiveAOEs(slot, actor);
-        else
-            return [];
-    }
-}
+sealed class GreatTyphoonCone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GreatTyphoonCone, new AOEShapeDonutSector(20f, 45f, 15f.Degrees()), arenaProjectionLayer: 0, restrictToArenaProjectionLayer: true);
 
 sealed class GreatTyphoonDonut(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance[] _aoe = [];
-    private static readonly AOEShapeDonut donut1 = new(20f, 28f), donut2 = new(26f, 34f), donut3 = new(32f, 40f);
+    private readonly AOEShapeDonut donut1 = new(20f, 28f), donut2 = new(26f, 34f), donut3 = new(32f, 40f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Arena.Bounds.Radius > 20f ? _aoe : [];
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -52,7 +31,8 @@ sealed class GreatTyphoonDonut(BossModule module) : Components.GenericAOEs(modul
         };
         if (shape != null)
         {
-            _aoe = [new(shape, spell.LocXZ, default, Module.CastFinishAt(spell), actorID: caster.InstanceID)];
+            var pos = spell.LocXZ;
+            _aoe = [new(shape, pos, default, Module.CastFinishAt(spell), actorID: caster.InstanceID, arenaProjectionLayer: 0, shapeDistance: shape.Distance(pos, default), restrictToArenaProjectionLayer: true)];
         }
     }
 

@@ -34,36 +34,49 @@ sealed class Exhaust(BossModule module) : Components.SimpleAOEs(module, (uint)AI
 
 sealed class GroundToGroundBallistic(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.GroundToGroundBallistic, 10f)
 {
-    private static readonly Angle a180 = 180f.Degrees(), a18 = 18f.Degrees();
+    private readonly WPos center = new(-175f, 43f);
+    private readonly StableCannon _aoes = module.FindComponent<StableCannon>()!;
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (Casters.Count != 0)
+        if (Casters.Count == 0)
         {
-            var forbidden = new ShapeDistance[2];
-            forbidden[0] = new SDInvertedCone(D132MagitekFortress.DefaultCenter, 20f, a180, a18);
-            forbidden[1] = new SDInvertedCone(D132MagitekFortress.DefaultCenter, 20f, default, a18);
-            hints.AddForbiddenZone(new SDIntersection(forbidden), Casters.Ref(0).Activation);
+            return;
+        }
+        ref readonly var c = ref Casters.Ref(0);
+        var act = c.Activation;
+        if (!IsImmune(slot, act))
+        {
+            var aoes = CollectionsMarshal.AsSpan(_aoes.AOEs);
+            var len = aoes.Length;
+            var rects = new (WPos origin, WDir rotation)[len];
+            for (var i = 0; i < len; ++i)
+            {
+                ref var aoe = ref aoes[i];
+                rects[i] = (aoe.Origin, aoe.Rotation.ToDirection());
+            }
+
+            hints.AddForbiddenZone(new SDKnockbackInAABBSquareAwayFromOriginPlusAOERects(center, c.Origin, 10f, 14.5f, rects, 60f, 5f, len), act);
         }
     }
 }
 
 sealed class StableCannon(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeRect rect = new(60f, 5f);
-    private readonly List<AOEInstance> _aoes = [with(2)];
+    private readonly AOEShapeRect rect = new(60f, 5f);
+    public readonly List<AOEInstance> AOEs = [with(2)];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);
 
     public override void OnMapEffect(byte index, uint state)
     {
         if (state == 0x00200010u && index is >= 0x08 and <= 0x0A)
         {
-            _aoes.Add(new(rect, new WPos(-185f + 10f * (index - 0x08), 28.3f).Quantized(), Angle.AnglesCardinals[1], WorldState.FutureTime(12.1d)));
+            AOEs.Add(new(rect, new WPos(-185f + 10f * (index - 0x08), 28.3f).Quantized(), Angle.AnglesCardinals[1], WorldState.FutureTime(12.1d)));
         }
         else if (index == 0x0D && state == 0x00020001u)
         {
-            _aoes.Clear();
+            AOEs.Clear();
         }
     }
 
@@ -71,7 +84,7 @@ sealed class StableCannon(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.StableCannon)
         {
-            _aoes.Clear();
+            AOEs.Clear();
         }
     }
 }
@@ -79,7 +92,7 @@ sealed class StableCannon(BossModule module) : Components.GenericAOEs(module)
 sealed class MagitekMissile(BossModule module) : Components.GenericAOEs(module)
 {
     private const float Radius = 1f, Length = 10f;
-    private static readonly AOEShapeCapsule capsule = new(Radius, Length);
+    private readonly AOEShapeCapsule capsule = new(Radius, Length);
     private readonly List<Actor> _missiles = [with(15)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -144,17 +157,10 @@ sealed class MagitekMissile(BossModule module) : Components.GenericAOEs(module)
 
 sealed class CorePlatform(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCircle circle = new(2, true);
+    private readonly AOEShapeCircle circle = new(2, true);
     private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        if (Arena.Bounds.Radius == 14.5f)
-        {
-            return _aoe;
-        }
-        return [];
-    }
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnMapEffect(byte index, uint state)
     {
@@ -162,7 +168,8 @@ sealed class CorePlatform(BossModule module) : Components.GenericAOEs(module)
         {
             if (state == 0x00020001u)
             {
-                _aoe = [new(circle, new(-175f, 30f), default, DateTime.MaxValue, Colors.SafeFromAOE)];
+                var pos = new WPos(-175f, 30f);
+                _aoe = [new(circle, pos, default, DateTime.MaxValue, Colors.SafeFromAOE, shapeDistance: circle.InvertedDistance(pos, default), arenaProjectionLayer: 0, restrictToArenaProjectionLayer: true)];
             }
             else if (state == 0x00080004u)
             {
@@ -171,30 +178,9 @@ sealed class CorePlatform(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void DrawArenaBackground(int pcSlot, Actor pc)
-    {
-        base.DrawArenaBackground(pcSlot, pc);
-        var r = Arena.Bounds.Radius;
-        var inCoreBounds = pc.Position.InSquare(D132MagitekFortress.CoreCenter, 7f);
-        if (r == 14.5f && inCoreBounds)
-        {
-            SetArena(new ArenaBoundsSquare(7f), D132MagitekFortress.CoreCenter);
-        }
-        else if (r == 7f && !inCoreBounds)
-        {
-            SetArena(new ArenaBoundsSquare(14.5f), D132MagitekFortress.DefaultCenter);
-        }
-
-        void SetArena(ArenaBounds bounds, WPos center)
-        {
-            Arena.Bounds = bounds;
-            Arena.Center = center;
-        }
-    }
-
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (_aoe.Length != 0 && Arena.Bounds.Radius == 14.5f)
+        if (_aoe.Length != 0 && Module.ActorMatchesArenaProjectionLayer(actor, 0, true))
         {
             ref var a = ref _aoe[0];
             if (!a.Check(actor.Position))
@@ -222,10 +208,24 @@ sealed class D132MagitekFortressStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 777u, NameID = 10067u)]
-public sealed class D132MagitekFortress(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultCenter, new ArenaBoundsSquare(14.5f))
+public sealed class D132MagitekFortress : BossModule
 {
-    public static readonly WPos DefaultCenter = new(-175f, 43f), CoreCenter = new(-175f, 8.5f);
-    private static readonly uint[] trash = [(uint)OID.TelotekPredator, (uint)OID.TemperedImperial, (uint)OID.TelotekSkyArmor, (uint)OID.MarkIITelotekColossus, (uint)OID.MagitekCore];
+    public D132MagitekFortress(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private D132MagitekFortress(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var bottom = new Square(new(-175f, 43f), 14.5f);
+        var top = new Square(new(-175f, 8.5f), 7f);
+        var combinedCenter = new WPos(-175f, 29.5f);
+        var polybottom = new RelSimplifiedComplexPolygon(bottom.Contour(combinedCenter));
+        var polytop = new RelSimplifiedComplexPolygon(top.Contour(combinedCenter));
+        var arena = new ArenaBoundsCustom([bottom, top], WorldProjectionLayers: [new(polybottom, -25f, borderY: -25f), new(polytop, -18f, borderY: -18f)]);
+        return (arena.Center, arena);
+    }
+
+    private readonly uint[] trash = [(uint)OID.TelotekPredator, (uint)OID.TemperedImperial, (uint)OID.TelotekSkyArmor, (uint)OID.MarkIITelotekColossus, (uint)OID.MagitekCore];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
@@ -247,4 +247,6 @@ public sealed class D132MagitekFortress(WorldState ws, Actor primary) : BossModu
         }
         return false;
     }
+
+    public override bool ShouldPrioritizeAllEnemies => true;
 }

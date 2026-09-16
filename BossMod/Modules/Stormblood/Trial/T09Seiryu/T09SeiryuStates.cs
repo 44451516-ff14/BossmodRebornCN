@@ -22,6 +22,7 @@ sealed class T09SeiryuStates : StateMachineBuilder
             .ActivateOnEnter<YamaKagura>()
             .ActivateOnEnter<ForbiddenArts>()
             .ActivateOnEnter<SerpentAscending>()
+            .ActivateOnEnter<GreatTyphoonDonut>()
             .ActivateOnEnter<ForceOfNature1>()
             .ActivateOnEnter<ForceOfNature2>();
     }

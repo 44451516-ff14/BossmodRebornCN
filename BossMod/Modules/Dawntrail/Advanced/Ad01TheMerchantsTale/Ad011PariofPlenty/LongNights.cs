@@ -1,4 +1,4 @@
-﻿namespace BossMod.Modules.Dawntrail.Advanced.Ad01TheMerchantsTale.Ad011PariofPlenty;
+﻿namespace BossMod.Dawntrail.Advanced.Ad01TheMerchantsTale.Ad011PariofPlenty;
 
 sealed class LeftRightFireflight(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.LeftFireflightFourLongNights, (uint)AID.RightFireflightFourLongNights], new AOEShapeRect(40f, 2f)); //simple aoe for first cast
 

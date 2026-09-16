@@ -3,7 +3,7 @@
 // TODO: consider showing something before clones jump?
 sealed class BalefulFirestorm(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeRect _shape = new(50f, 10f);
+    private readonly AOEShapeRect _shape = new(50f, 10f);
     public readonly List<AOEInstance> AOEs = [];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

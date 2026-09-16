@@ -1,5 +1,3 @@
-using System.Reflection;
-
 namespace BossMod.Autorotation;
 
 public enum RotationModuleQuality
@@ -136,63 +134,9 @@ public sealed record class RotationModuleDefinition(string DisplayName, string D
         return last;
     }
 
-    public RotationModuleDefinition WithStrategies<S>()
+    public RotationModuleDefinition WithStrategies<S>() where S : struct
     {
-        foreach (var field in typeof(S).GetFields())
-        {
-            if (field.FieldType.Name == typeof(Track<>).Name)
-            {
-                var inner = field.FieldType.GetGenericArguments()[0];
-
-                if (inner.IsEnum)
-                {
-                    var trackInfo = field.GetCustomAttribute<TrackAttribute>() ?? new();
-                    var renderer = trackInfo.Renderer ?? inner.GetCustomAttribute<RendererAttribute>()?.Type ?? typeof(TrackRenderer);
-
-                    var trackCfg = new StrategyConfigTrack(inner, trackInfo.InternalName ?? field.Name, trackInfo.DisplayName ?? field.Name, trackInfo.UiPriority, renderer);
-
-                    trackCfg.AssociatedActions.AddRange(trackInfo.ActionIDs);
-
-                    foreach (var variantName in inner.GetEnumNames())
-                    {
-                        var variantField = inner.GetField(variantName)!;
-                        var fieldSettings = variantField.GetCustomAttribute<OptionAttribute>() ?? new OptionAttribute();
-
-                        trackCfg.Options.Add(new(variantField.Name, fieldSettings.DisplayName ?? "")
-                        {
-                            Cooldown = NonDefault(fieldSettings.Cooldown, trackInfo.Cooldown, 0),
-                            Effect = NonDefault(fieldSettings.Effect, trackInfo.Effect, 0),
-                            SupportedTargets = NonDefault(fieldSettings.Targets, trackInfo.Targets, ActionTargets.None),
-                            MinLevel = NonDefault(fieldSettings.MinLevel, trackInfo.MinLevel, 1),
-                            MaxLevel = NonDefault(fieldSettings.MaxLevel, trackInfo.MaxLevel, int.MaxValue),
-                            DefaultPriority = NonDefault(fieldSettings.DefaultPriority, trackInfo.DefaultPriority, ActionQueue.Priority.Medium),
-                            Context = NonDefault(fieldSettings.Context, StrategyContext.All),
-                            Color = fieldSettings.Color
-                        });
-                    }
-
-                    Configs.Add(trackCfg);
-                    continue;
-                }
-
-                if (inner == typeof(float))
-                {
-                    var attr = field.GetCustomAttribute<NumberAttribute>() ?? new();
-                    Configs.Add(new StrategyConfigFloat(field.Name, attr.DisplayName, attr.MinValue, attr.MaxValue, attr.UiPriority, attr.Renderer ?? typeof(FloatRenderer), attr.Slider, attr.Speed));
-                    continue;
-                }
-
-                if (inner == typeof(long))
-                {
-                    var attr = field.GetCustomAttribute<NumberAttribute>() ?? new();
-                    Configs.Add(new StrategyConfigInt(field.Name, attr.DisplayName, (long)attr.MinValue, (long)attr.MaxValue, attr.UiPriority, attr.Renderer ?? typeof(IntRenderer), attr.Slider, attr.Speed));
-                    continue;
-                }
-            }
-
-            throw new ArgumentException($"not sure what to do with field {field.Name} of type {field.FieldType}");
-        }
-
+        GeneratedStrategies.AddStrategies<S>(this);
         return this;
     }
 }
@@ -225,10 +169,16 @@ public abstract class RotationModule(RotationModuleManager manager, Actor player
 
     public AID BestActionUnlocked<AID>(params AID[] aids) where AID : struct, Enum
     {
-        foreach (var aid in aids)
+        var aids_ = aids;
+        var len = aids.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            var aid = aids_[i];
             if (ActionUnlocked(aid))
+            {
                 return aid;
-
+            }
+        }
         return default;
     }
 

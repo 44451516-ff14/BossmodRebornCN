@@ -27,7 +27,6 @@ public enum AID : uint
 sealed class OffensiveRambling(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OffensiveRambling, 5f);
 sealed class TouchySubject(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TouchySubject, new AOEShapeRect(25f, 3f));
 
-[SkipLocalsInit]
 sealed class DaylightPotteryStates : StateMachineBuilder
 {
     public DaylightPotteryStates(BossModule module) : base(module)
@@ -55,6 +54,5 @@ sealed class DaylightPotteryStates : StateMachineBuilder
     NameID = 2072u,
     SortOrder = 1,
     PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class DaylightPottery(WorldState ws, Actor primary) : OpenWorldFate(ws, primary);
 // no singular actor we can use to trigger arena draw

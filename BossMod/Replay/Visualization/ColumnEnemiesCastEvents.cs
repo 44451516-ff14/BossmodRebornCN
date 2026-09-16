@@ -42,11 +42,11 @@ public sealed class ColumnEnemiesCastEvents : Timeline.ColumnGroup
         }
 
         var needRebuild = false;
-        foreach (var na in tree.Nodes(_filters, kv => new($"{kv.Key} ({_moduleInfo?.ActionIDType?.GetEnumName(kv.Key.ID)})")))
+        foreach (var na in tree.Nodes(_filters, kv => new($"{kv.Key} ({_moduleInfo?.ActionIDType?.GeneratedEnumName(kv.Key.ID)})")))
         {
             foreach (ref var v in na.Value.AsSpan())
             {
-                needRebuild |= DrawConfigColumns(ref v.cols, $"{ReplayUtils.ParticipantString(v.source, v.source.WorldExistence.FirstOrDefault().Start)} ({_moduleInfo?.ObjectIDType?.GetEnumName(v.source.OID)})");
+                needRebuild |= DrawConfigColumns(ref v.cols, $"{ReplayUtils.ParticipantString(v.source, v.source.WorldExistence.FirstOrDefault().Start)} ({_moduleInfo?.ObjectIDType?.GeneratedEnumName(v.source.OID)})");
             }
         }
 
@@ -90,7 +90,7 @@ public sealed class ColumnEnemiesCastEvents : Timeline.ColumnGroup
                 continue;
             }
 
-            var name = $"{a.ID} ({_moduleInfo?.ActionIDType?.GetEnumName(a.ID.ID)}) {ReplayUtils.ParticipantString(a.Source, a.Timestamp)} -> {ReplayUtils.ParticipantString(a.MainTarget, a.Timestamp)} #{a.GlobalSequence}";
+            var name = $"{a.ID} ({_moduleInfo?.ActionIDType?.GeneratedEnumName(a.ID.ID)}) {ReplayUtils.ParticipantString(a.Source, a.Timestamp)} -> {ReplayUtils.ParticipantString(a.MainTarget, a.Timestamp)} #{a.GlobalSequence}";
             var color = EventColor(a);
             foreach (var c in cols.SetBits())
             {

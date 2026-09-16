@@ -1,6 +1,6 @@
 namespace BossMod.Stormblood.Extreme.Ex8Seiryu;
 
-sealed class RedRush(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeRect(82.6f, 2.5f), (uint)TetherID.RedRush, (uint)AID.RedRush, activationDelay: 6d)
+sealed class RedRush(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeRect(82.6f, 2.5f), (uint)TetherID.RedRush, (uint)AID.RedRush, activationDelay: 6d, restrictToArenaProjectionLayer: null)
 {
     private readonly BlueBolt _stack = module.FindComponent<BlueBolt>()!;
 
@@ -14,7 +14,7 @@ sealed class RedRush(BossModule module) : Components.BaitAwayTethers(module, new
     }
 }
 
-sealed class BlueBolt(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.BlueBoltMarker, (uint)AID.BlueBolt, 5.9d, 83f, 2.5f)
+sealed class BlueBolt(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.BlueBoltMarker, (uint)AID.BlueBolt, 5.9d, 83f, 2.5f, restrictToArenaProjectionLayer: null)
 {
     public override void Update()
     {
@@ -25,7 +25,7 @@ sealed class BlueBolt(BossModule module) : Components.LineStack(module, aidMarke
     }
 }
 
-sealed class BlueBoltStretch(BossModule module) : Components.StretchTetherSingle(module, (uint)TetherID.BlueBolt, 25f, activationDelay: 5.9d);
+sealed class BlueBoltStretch(BossModule module) : Components.StretchTetherSingle(module, (uint)TetherID.BlueBolt, 25f, activationDelay: 5.9d, restrictToArenaProjectionLayer: null);
 
 sealed class RedRushKnockback(BossModule module) : Components.GenericKnockback(module)
 {
@@ -37,7 +37,7 @@ sealed class RedRushKnockback(BossModule module) : Components.GenericKnockback(m
     {
         if (source.OID == (uint)OID.AkaNoShiki && Raid.FindSlot(tether.Target) is var slot)
         {
-            _kbs[slot] = [new(source.Position.Quantized(), 18f, WorldState.FutureTime(6d))];
+            _kbs[slot] = [new(source.Position.Quantized(), 18f, WorldState.FutureTime(6d), restrictToArenaProjectionLayer: null)];
         }
     }
 
@@ -56,7 +56,7 @@ sealed class RedRushKnockback(BossModule module) : Components.GenericKnockback(m
     }
 }
 
-sealed class Kanabo(BossModule module) : Components.TankbusterTether(module, (uint)AID.Kanabo, (uint)TetherID.Kanabo, new AOEShapeCone(45f, 30f.Degrees()), 6.2d)
+sealed class Kanabo(BossModule module) : Components.TankbusterTether(module, (uint)AID.Kanabo, (uint)TetherID.Kanabo, new AOEShapeCone(44f, 30f.Degrees()), 6.2d, restrictToArenaProjectionLayer: null)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -68,8 +68,8 @@ sealed class Kanabo(BossModule module) : Components.TankbusterTether(module, (ui
     }
 }
 
-sealed class YamaKagura(BossModule module) : Components.SimpleAOEs(module, (uint)AID.YamaKagura, new AOEShapeRect(60f, 3f));
-sealed class HundredTonzeSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HundredTonzeSwing, 16f);
+sealed class YamaKagura(BossModule module) : Components.SimpleAOEs(module, (uint)AID.YamaKagura, new AOEShapeRect(62.7f, 3f));
+sealed class HundredTonzeSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HundredTonzeSwing, 16f, restrictToArenaProjectionLayer: null);
 sealed class Stoneskin(BossModule module) : Components.CastInterruptHint(module, (uint)AID.Stoneskin, true, showNameInHint: true);
 sealed class Adds(BossModule module) : Components.AddsMulti(module, [(uint)OID.NumaNoShiki, (uint)OID.DoroNoShiki])
 {

@@ -12,7 +12,7 @@ sealed class EntrapmentAttract(BossModule module) : Components.GenericKnockback(
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Entrapment)
-            _activation = Module.CastFinishAt(spell, 0.8f);
+            _activation = Module.CastFinishAt(spell, 0.8d);
     }
 }
 
@@ -78,7 +78,7 @@ class Entrapment : Components.CastCounter
         UpdatePotentiallyUnsafe();
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         hints.Add($"Matching patterns: {(_possiblePatterns.Any() ? string.Join(", ", _possiblePatterns.SetBits()) : "none")}");
     }

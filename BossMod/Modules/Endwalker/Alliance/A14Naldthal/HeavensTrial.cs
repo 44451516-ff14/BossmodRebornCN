@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Endwalker.Alliance.A14Naldthal;
 
-class HeavensTrialCone(BossModule module) : Components.GenericBaitAway(module)
+sealed class HeavensTrialCone(BossModule module) : Components.GenericBaitAway(module)
 {
-    private static readonly AOEShapeCone _shape = new(60f, 15f.Degrees());
+    private readonly AOEShapeCone _shape = new(60f, 15f.Degrees());
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
@@ -21,4 +21,4 @@ class HeavensTrialCone(BossModule module) : Components.GenericBaitAway(module)
     }
 }
 
-class HeavensTrialStack(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.HeavensTrialAOE, 6f, 8, 8);
+sealed class HeavensTrialStack(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.HeavensTrialAOE, 6f, 8, 8);

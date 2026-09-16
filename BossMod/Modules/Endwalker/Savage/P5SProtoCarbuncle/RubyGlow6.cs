@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P5SProtoCarbuncle;
 
-class RubyGlow6(BossModule module) : RubyGlowRecolor(module, 9)
+sealed class RubyGlow6(BossModule module) : RubyGlowRecolor(module, 9)
 {
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

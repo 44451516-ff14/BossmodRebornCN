@@ -2,7 +2,7 @@
 
 // TODO: positioning hints for unmarked players
 // TODO: or is it a spread?.. one thing i like about bait-away better here is that it better distinguishes bait vs avoid
-class LevinstrikeSummoningIcemeld(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
+sealed class LevinstrikeSummoningIcemeld(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
     private readonly List<Actor> _pendingBaiters = []; // we only want to show max 1 baiter at a time
 
@@ -36,7 +36,7 @@ class LevinstrikeSummoningIcemeld(BossModule module) : Components.GenericBaitAwa
 
 // TODO: positioning hints for next baiter
 // TODO: or is it a spread?.. one thing i like about bait-away better here is that it better distinguishes bait vs avoid
-class LevinstrikeSummoningFiremeld(BossModule module) : Components.GenericBaitAway(module, (uint)AID.Firemeld, centerAtTarget: true)
+sealed class LevinstrikeSummoningFiremeld(BossModule module) : Components.GenericBaitAway(module, (uint)AID.Firemeld, centerAtTarget: true)
 {
     private readonly Actor?[] _baitOrder = [null, null, null, null];
 
@@ -78,7 +78,7 @@ class LevinstrikeSummoningFiremeld(BossModule module) : Components.GenericBaitAw
 }
 
 // both explosions and towers
-class LevinstrikeSummoningShock(BossModule module) : Components.GenericAOEs(module)
+sealed class LevinstrikeSummoningShock(BossModule module) : Components.GenericAOEs(module)
 {
     public int NumTowers; // NumCasts counts explosions
     private readonly WPos[] _explodeOrder = [default, default, default, default];

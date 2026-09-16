@@ -17,7 +17,6 @@ public enum IconID : uint
     MagneticMarker = 315 // player->self
 }
 
-[SkipLocalsInit]
 sealed class ForbiddenGolem(BossModule module) : Components.GenericInvincible(module)
 {
     private bool _rocksCharged;
@@ -40,10 +39,8 @@ sealed class ForbiddenGolem(BossModule module) : Components.GenericInvincible(mo
     }
 }
 
-[SkipLocalsInit]
 sealed class MagneticRock(BossModule module) : Components.BaitAwayIcon(module, 5f, (uint)IconID.MagneticMarker, (uint)AID.MagneticRock, centerAtTarget: true);
 
-[SkipLocalsInit]
 sealed class RockHints(BossModule module) : BossComponent(module)
 {
     private readonly List<Actor> rocks = module.Enemies((uint)OID.Rock);
@@ -137,7 +134,6 @@ sealed class RockHints(BossModule module) : BossComponent(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class V07StonePuppetStates : StateMachineBuilder
 {
     public V07StonePuppetStates(BossModule module) : base(module)
@@ -165,7 +161,6 @@ GroupID = 1066u,
 NameID = 14353u,
 SortOrder = 7,
 PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class V07StonePuppet : BossModule
 {
     public V07StonePuppet(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

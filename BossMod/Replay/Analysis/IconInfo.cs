@@ -42,7 +42,7 @@ sealed class IconInfo : CommonEnumInfo
     {
         UITree.NodeProperties map(KeyValuePair<uint, IconData> kv)
         {
-            var name = _iidType?.GetEnumName(kv.Key);
+            var name = _iidType?.GeneratedEnumName(kv.Key);
             return new($"{kv.Key} ({name})", false, name == null ? Colors.TextColor2 : Colors.TextColor1);
         }
         foreach (var (iid, data) in tree.Nodes(_data, map))
@@ -70,7 +70,7 @@ sealed class IconInfo : CommonEnumInfo
         if (ImGui.MenuItem("为 Boss 模块生成缺失的枚举值"))
         {
             var sb = new StringBuilder();
-            foreach (var (iid, data) in _data.Where(kv => _iidType?.GetEnumName(kv.Key) == null))
+            foreach (var (iid, data) in _data.Where(kv => _iidType?.GeneratedEnumName(kv.Key) == null))
             {
                 sb.AppendLine(EnumMemberString(iid, data));
             }
@@ -83,7 +83,7 @@ sealed class IconInfo : CommonEnumInfo
     {
         string generateIconName() => Service.LuminaRow<Lockon>(iid)?.IconName.ToString() ?? iid.ToString();
 
-        var name = _iidType?.GetEnumName(iid) ?? $"_Gen_Icon_{generateIconName()}";
+        var name = _iidType?.GeneratedEnumName(iid) ?? $"_Gen_Icon_{generateIconName()}";
         return $"{name} = {iid}, // {OIDListString(data.SourceOIDs)}->{(data.TargetOIDs.Count == 0 ? "???" : data.SeenTargetNonSelf ? OIDListString(data.TargetOIDs) : "self")}";
     }
 }

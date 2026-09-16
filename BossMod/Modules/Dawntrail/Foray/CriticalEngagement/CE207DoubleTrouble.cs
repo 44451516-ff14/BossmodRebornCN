@@ -57,18 +57,12 @@ public enum AID : uint
     RedIconTeleport = 47066, // 4BBC->location, no cast, single-target
 }
 
-[SkipLocalsInit]
 sealed class AuraBurst(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.AuraBurstVisual, (uint)AID.AuraBurst, 0.8d);
-[SkipLocalsInit]
 sealed class Graft(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Graft, (uint)AID.MaliciousWeave, (uint)AID.MaliciousWeave1], 6f);
-[SkipLocalsInit]
 sealed class DashingCut(BossModule module) : Components.SimpleChargeAOEGroups(module, [(uint)AID.DashingCut1, (uint)AID.DashingCut2], 5f);
-[SkipLocalsInit]
 sealed class HairShearsCross(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HairShearsCross, new AOEShapeCross(60f, 2f));
-[SkipLocalsInit]
 sealed class HairShearsCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HairShearsCircle, 10f);
 
-[SkipLocalsInit]
 sealed class DualCut(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(2)];
@@ -121,7 +115,6 @@ sealed class DualCut(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class CE207DoubleTroubleStates : StateMachineBuilder
 {
     public CE207DoubleTroubleStates(BossModule module) : base(module)
@@ -137,24 +130,7 @@ sealed class CE207DoubleTroubleStates : StateMachineBuilder
 }
 
 //TODO: Add AI Hint to move closer to the middle of the cleaves to make dodging easier- can be marked as verified after implemented
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
-    StatesType = typeof(CE207DoubleTroubleStates),
-    ConfigType = null, // replace null with typeof(ConjuredCalofisteriConfig) if applicable
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID),
-    StatusIDType = typeof(SID),
-    TetherIDType = null, // replace null with typeof(TetherID) if applicable
-    IconIDType = null, // replace null with typeof(IconID) if applicable
-    PrimaryActorOID = (uint)OID.ConjuredCalofisteri,
-    Contributors = "Equilius",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.Foray,
-    GroupType = BossModuleInfo.GroupType.CriticalEngagement,
-    GroupID = 1093u,
-    NameID = 50u,
-    SortOrder = 2,
-    PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.ConjuredCalofisteri, Contributors = "Equilius", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 1093u, NameID = 50u)]
 public sealed class CE207DoubleTrouble : BossModule
 {
     public CE207DoubleTrouble(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

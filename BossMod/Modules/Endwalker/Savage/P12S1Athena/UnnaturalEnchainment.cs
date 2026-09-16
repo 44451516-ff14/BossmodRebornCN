@@ -5,7 +5,7 @@ sealed class UnnaturalEnchainment(BossModule module) : Components.GenericAOEs(mo
 {
     private readonly List<AOEInstance> _aoes = [];
 
-    private static readonly AOEShapeRect _shape = new(5f, 10f, 5f);
+    private readonly AOEShapeRect _shape = new(5f, 10f, 5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

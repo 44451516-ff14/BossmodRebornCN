@@ -1,6 +1,6 @@
 namespace BossMod.Endwalker.Trial.T02Hydaelyn;
 
-class Echoes(BossModule module) : Components.UniformStackSpread(module, 6f, 0, 8, 8)
+sealed class Echoes(BossModule module) : Components.UniformStackSpread(module, 6f, 0f, 8, 8)
 {
     public int NumCasts;
 
@@ -20,6 +20,8 @@ class Echoes(BossModule module) : Components.UniformStackSpread(module, 6f, 0, 8
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.Echoes)
-            AddStack(actor, WorldState.FutureTime(5));
+        {
+            AddStack(actor, WorldState.FutureTime(5d));
+        }
     }
 }

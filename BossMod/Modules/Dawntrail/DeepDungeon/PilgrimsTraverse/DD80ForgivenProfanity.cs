@@ -1,4 +1,4 @@
-namespace BossMod.Endwalker.DeepDungeon.PilgrimsTraverse.DD80ForgivenProfanity;
+namespace BossMod.Dawntrail.DeepDungeon.PilgrimsTraverse.DD80ForgivenProfanity;
 
 public enum OID : uint
 {
@@ -32,15 +32,11 @@ public enum SID : uint
     ShadowOfDeath = 4518 // none->player, extra=0x0
 }
 
-[SkipLocalsInit]
 sealed class BarefistedDeath(BossModule module) : Components.CastHint(module, (uint)AID.ProwlingDeath, "Watch your incoming debuff!");
 
-[SkipLocalsInit]
 sealed class RoaringRing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RoaringRing, new AOEShapeDonut(8f, 40f));
-[SkipLocalsInit]
 sealed class PerilousLair(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PerilousLair, 12f);
 
-[SkipLocalsInit]
 sealed class StalkingStaticShock(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(9)];
@@ -93,7 +89,6 @@ sealed class StalkingStaticShock(BossModule module) : Components.GenericAOEs(mod
     }
 }
 
-[SkipLocalsInit]
 sealed class ProfaneWaulShadowOfDeath(BossModule module) : Components.GenericAOEs(module)
 {
     public AOEInstance[] _aoe = [], _aoeInv = [];
@@ -155,7 +150,6 @@ sealed class ProfaneWaulShadowOfDeath(BossModule module) : Components.GenericAOE
     }
 }
 
-[SkipLocalsInit]
 sealed class NowhereToRun(BossModule module) : BossComponent(module)
 {
     private BitMask debuffed;
@@ -201,7 +195,6 @@ sealed class NowhereToRun(BossModule module) : BossComponent(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class DD80ForgivenProfanityStates : StateMachineBuilder
 {
     public DD80ForgivenProfanityStates(BossModule module) : base(module)
@@ -215,24 +208,7 @@ sealed class DD80ForgivenProfanityStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
-StatesType = typeof(DD80ForgivenProfanityStates),
-ConfigType = null,
-ObjectIDType = typeof(OID),
-ActionIDType = typeof(AID),
-StatusIDType = typeof(SID),
-TetherIDType = null,
-IconIDType = null,
-PrimaryActorOID = (uint)OID.ForgivenProfanity,
-Contributors = "The Combat Reborn Team (Malediktus)",
-Expansion = BossModuleInfo.Expansion.Dawntrail,
-Category = BossModuleInfo.Category.DeepDungeon,
-GroupType = BossModuleInfo.GroupType.CFC,
-GroupID = 1039u,
-NameID = 13968u,
-SortOrder = 1,
-PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.ForgivenProfanity, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1039u, NameID = 13968u)]
 public sealed class DD80ForgivenProfanity(WorldState ws, Actor primary) : BossModule(ws, primary, arenaCenter, new ArenaBoundsCustom([new Polygon(arenaCenter, 19.5f, 40)]))
 {
     private static readonly WPos arenaCenter = new(-600f, -300f);

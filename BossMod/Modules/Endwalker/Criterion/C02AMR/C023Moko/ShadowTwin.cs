@@ -25,8 +25,8 @@ sealed class AccursedEdge : Components.GenericBaitAway
     private Mechanic _curMechanic;
     private readonly Clearout? _clearout;
 
-    private static readonly AOEShapeCircle _shape = new(6f);
-    private static readonly WDir[] _safespotDirections = [new(1f, default), new(-1f, default), new(default, 1f), new(default, -1f)];
+    private readonly AOEShapeCircle _shape = new(6f);
+    private readonly WDir[] _safespotDirections = [new(1f, default), new(-1f, default), new(default, 1f), new(default, -1f)];
 
     public AccursedEdge(BossModule module) : base(module, centerAtTarget: true)
     {
@@ -48,7 +48,7 @@ sealed class AccursedEdge : Components.GenericBaitAway
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_curMechanic != Mechanic.None)
             hints.Add($"Untethered bait: {_curMechanic}");

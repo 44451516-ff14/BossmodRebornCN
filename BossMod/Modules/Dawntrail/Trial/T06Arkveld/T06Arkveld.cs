@@ -84,25 +84,8 @@ sealed class ResonanceTowerLarge(BossModule module)
 }
 
 // Crystal detonations (spawned from cracked crystals).
-sealed class CrackedCrystalSmall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WyvernsRadiance10, new AOEShapeCircle(6f));
-sealed class CrackedCrystalLarge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WyvernsRadiance11, new AOEShapeCircle(12f));
+sealed class CrackedCrystalSmall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WyvernsRadiance10, 6f);
+sealed class CrackedCrystalLarge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WyvernsRadiance11, 12f);
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
-StatesType = typeof(GuardianArkveldStates),
-ConfigType = null, // replace null with typeof(GuardianArkveldConfig) if applicable
-ObjectIDType = typeof(OID),
-ActionIDType = typeof(AID), // replace null with typeof(AID) if applicable
-StatusIDType = typeof(SID), // replace null with typeof(SID) if applicable
-TetherIDType = null, // replace null with typeof(TetherID) if applicable
-IconIDType = typeof(IconID), // replace null with typeof(IconID) if applicable
-PrimaryActorOID = (uint)OID.GuardianArkveld,
-Contributors = "JoeSparkx",
-Expansion = BossModuleInfo.Expansion.Dawntrail,
-Category = BossModuleInfo.Category.Trial,
-GroupType = BossModuleInfo.GroupType.CFC,
-GroupID = 1043u,
-NameID = 14237u,
-SortOrder = 1,
-PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.WIP, PrimaryActorOID = (uint)OID.GuardianArkveld, Contributors = "JoeSparkx", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1043u, NameID = 14237u)]
 public sealed class GuardianArkveld(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsCircle(20f));

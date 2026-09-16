@@ -1,6 +1,5 @@
 namespace BossMod.Shadowbringers.Alliance.A32HanselGretel;
 
-[SkipLocalsInit]
 sealed class RiotOfMagicSeedOfMagicAlpha(BossModule module) : Components.CastStackSpread(module, (uint)AID.RiotOfMagic, (uint)AID.SeedOfMagicAlpha, 5f, 5f, 18, 18, true)
 {
     private BitMask forbidden;

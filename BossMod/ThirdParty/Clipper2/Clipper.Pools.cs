@@ -2,7 +2,6 @@ namespace Clipper2Lib;
 
 // Clipper's sweep builds several short-lived object graphs for every operation
 // Keeping their storage on the owning engine avoids repeatedly allocating and collecting the same high-water-mark set of nodes
-[SkipLocalsInit]
 internal abstract class ClipperObjectPool<T> where T : class
 {
     private const int DefaultCapacity = 8;
@@ -66,7 +65,6 @@ internal abstract class ClipperObjectPool<T> where T : class
     public virtual void Clear() => _size = 0;
 }
 
-[SkipLocalsInit]
 internal sealed class VertexPoolList : ClipperObjectPool<Vertex>
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -91,7 +89,6 @@ internal sealed class VertexPoolList : ClipperObjectPool<Vertex>
     }
 }
 
-[SkipLocalsInit]
 internal sealed class OutPtPoolList : ClipperObjectPool<OutPt>
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -118,7 +115,6 @@ internal sealed class OutPtPoolList : ClipperObjectPool<OutPt>
     }
 }
 
-[SkipLocalsInit]
 internal sealed class OutRecPoolList : ClipperObjectPool<OutRec>
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -160,7 +156,6 @@ internal sealed class OutRecPoolList : ClipperObjectPool<OutRec>
     }
 }
 
-[SkipLocalsInit]
 internal sealed class HorzSegmentPoolList : ClipperObjectPool<HorzSegment>
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -186,7 +181,6 @@ internal sealed class HorzSegmentPoolList : ClipperObjectPool<HorzSegment>
     public void Sort(IComparer<HorzSegment?> comparer) => Array.Sort(_items, 0, _size, comparer);
 }
 
-[SkipLocalsInit]
 internal sealed class HorzJoinPoolList : ClipperObjectPool<HorzJoin>
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -209,7 +203,6 @@ internal sealed class HorzJoinPoolList : ClipperObjectPool<HorzJoin>
     }
 }
 
-[SkipLocalsInit]
 internal sealed class OutPt2PoolList : ClipperObjectPool<OutPt2>
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

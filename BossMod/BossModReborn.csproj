@@ -80,6 +80,13 @@
         </EmbeddedResource>
     </ItemGroup>
 
+
+    <ItemGroup>
+        <ProjectReference Include="..\BossMod.SourceGen\BossMod.SourceGen.csproj"
+                          OutputItemType="Analyzer"
+                          ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
     <ItemGroup>
         <Reference Include="Dalamud.Common"/>
         <Reference Include="TerraFX.Interop.Windows"/>

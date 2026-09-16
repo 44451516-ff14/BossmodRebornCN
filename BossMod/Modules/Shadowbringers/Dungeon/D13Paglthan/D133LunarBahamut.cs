@@ -74,13 +74,13 @@ sealed class AkhMorn(BossModule module) : Components.UniformStackSpread(module, 
 
 sealed class KanRhaiBait(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
-    public static readonly AOEShapeCross Cross = new(15f, 3f);
+    private readonly AOEShapeCross cross = new(15f, 3f);
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.KanRhai)
         {
-            CurrentBaits.Add(new(Module.PrimaryActor, actor, Cross, WorldState.FutureTime(5.6d), customRotation: Angle.AnglesCardinals[1]));
+            CurrentBaits.Add(new(Module.PrimaryActor, actor, cross, WorldState.FutureTime(5.6d), customRotation: Angle.AnglesCardinals[1]));
         }
     }
 
@@ -103,7 +103,8 @@ sealed class KanRhaiBait(BossModule module) : Components.GenericBaitAway(module,
 
 sealed class KanRhaiAOE(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = [with(2)];
+    private readonly List<AOEInstance> _aoes = [with(4)];
+    private readonly AOEShapeRect rect = new(30f, 3f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -112,8 +113,7 @@ sealed class KanRhaiAOE(BossModule module) : Components.GenericAOEs(module)
         if (spell.Action.ID == (uint)AID.KanRhai)
         {
             ++NumCasts;
-            var count = _aoes.Count;
-            if (count != 0 && NumCasts == count * 20)
+            if (NumCasts == _aoes.Count * 10)
             {
                 _aoes.Clear();
                 NumCasts = 0;
@@ -121,7 +121,13 @@ sealed class KanRhaiAOE(BossModule module) : Components.GenericAOEs(module)
         }
         else if (spell.Action.ID == (uint)AID.KanRhaiVisual2)
         {
-            _aoes.Add(new(KanRhaiBait.Cross, caster.Position.Quantized(), Angle.AnglesCardinals[1]));
+            var pos = caster.Position;
+            var angle1 = Angle.AnglesCardinals[1];
+            var pos1 = (pos - 15f * angle1.ToDirection()).Quantized();
+            var angle2 = Angle.AnglesCardinals[3];
+            var pos2 = (pos - 15f * angle2.ToDirection()).Quantized();
+            _aoes.Add(new(rect, pos1, angle1, shapeDistance: rect.Distance(pos1, angle1)));
+            _aoes.Add(new(rect, pos2, angle2, shapeDistance: rect.Distance(pos2, angle2)));
         }
     }
 }
@@ -147,8 +153,16 @@ sealed class D133LunarBahamutStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 777, NameID = 10077)]
-public sealed class D133LunarBahamut(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 777u, NameID = 10077u)]
+public sealed class D133LunarBahamut : BossModule
 {
-    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(796.65f, -97.55f), 19.5f * CosPI.Pi40th, 40)], [new Rectangle(new(775.84613f, -97.50571f), 9.5f, 1.775f, -89.5f.Degrees())]);
+    public D133LunarBahamut(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private D133LunarBahamut(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(796.65f, -97.55f), 19.5f * CosPI.Pi40th, 40)], [new Rectangle(new(775.84613f, -97.50571f), 9.5f, 1.775f, -89.5f.Degrees())]);
+        return (arena.Center, arena);
+    }
 }

@@ -1,16 +1,20 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C03AAI.C032Lala;
 
-class SymmetricSurge(BossModule module) : Components.UniformStackSpread(module, 6, 0)
+sealed class SymmetricSurge(BossModule module) : Components.UniformStackSpread(module, 6f, 0)
 {
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        if ((SID)status.ID == SID.SurgeVector)
+        if (status.ID == (uint)SID.SurgeVector)
+        {
             AddStack(actor, status.ExpireAt);
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.NSymmetricSurgeAOE or AID.SSymmetricSurgeAOE)
+        if (spell.Action.ID is (uint)AID.NSymmetricSurgeAOE or (uint)AID.SSymmetricSurgeAOE)
+        {
             Stacks.Clear();
+        }
     }
 }

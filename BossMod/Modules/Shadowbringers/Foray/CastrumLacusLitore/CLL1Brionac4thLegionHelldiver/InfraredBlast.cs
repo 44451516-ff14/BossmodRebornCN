@@ -1,14 +1,11 @@
-using static BossMod.Shadowbringers.Foray.CastrumLacusLitore.CLL1Brionac4thLegionHelldiver.CLL1Brionac4thLegionHelldiver;
-
 namespace BossMod.Shadowbringers.Foray.CastrumLacusLitore.CLL1Brionac4thLegionHelldiver;
 
-sealed class InfraredBlast(BossModule module) : Components.InterceptTether(module, (uint)AID.InfraredBlast, (uint)TetherID.InfraredBlast)
+sealed class InfraredBlast(CLL1Brionac4thLegionHelldiver module) : Components.InterceptTether(module, (uint)AID.InfraredBlast, (uint)TetherID.InfraredBlast)
 {
-    private readonly DetermineArena _arena = module.FindComponent<DetermineArena>()!;
     private DateTime _activation;
     private readonly List<Actor> players = [];
     private BitMask fire;
-    private readonly Actor tunnelmachine = module.Enemies((uint)OID.TunnelArmor)[0];
+    private Actor? tunnelmachine;
 
     public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
@@ -19,7 +16,7 @@ sealed class InfraredBlast(BossModule module) : Components.InterceptTether(modul
             {
                 foreach (var a in WorldState.Actors.Actors.Values)
                 {
-                    if (a.OID == default && ArenaBottom.Contains(a.Position - ArenaCenterBottom))
+                    if (a.OID == 0u && Module.ActorMatchesArenaProjectionLayer(a, 0, true))
                     {
                         players.Add(a);
                     }
@@ -44,10 +41,11 @@ sealed class InfraredBlast(BossModule module) : Components.InterceptTether(modul
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        if (!Active || _arena.IsBrionacArena)
+        if (!Active || !Module.ActorMatchesArenaProjectionLayer(pc, 0, true))
         {
             return;
         }
+
         var count = _tethers.Count;
         for (var i = 0; i < count; ++i)
         {
@@ -58,22 +56,24 @@ sealed class InfraredBlast(BossModule module) : Components.InterceptTether(modul
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (!Active || _arena.IsBrionacArena)
+        if (!Active || !Module.ActorMatchesArenaProjectionLayer(actor, 0, true))
         {
             return;
         }
+
         if (!_tetheredPlayers[slot])
         {
             var count = _tethers.Count;
             var untakenTethers = false;
             for (var i = 0; i < count; ++i)
             {
-                if (_tethers[i].Player.OID != default)
+                if (_tethers[i].Player.OID != 0u)
                 {
                     untakenTethers = true;
                     break;
                 }
             }
+
             if (untakenTethers && !fire[slot])
             {
                 hints.Add(hint);
@@ -91,11 +91,13 @@ sealed class InfraredBlast(BossModule module) : Components.InterceptTether(modul
         {
             return null;
         }
+
         var target = WorldState.Actors.Find(tether.Target);
         if (target == null)
         {
             return null;
         }
+
         var (player, enemy) = players.Contains(source) ? (source, target) : (target, source);
         var playerSlot = Raid.FindSlot(player.InstanceID);
         return (playerSlot, player, enemy);
@@ -119,24 +121,28 @@ sealed class InfraredBlast(BossModule module) : Components.InterceptTether(modul
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (Active && !_arena.IsBrionacArena)
+        if (!Active || !Module.ActorMatchesArenaProjectionLayer(actor, 0, true))
         {
-            var count = _tethers.Count;
-            var forbidden = new List<ShapeDistance>(2);
-            var target = tunnelmachine;
-            for (var i = 0; i < count; ++i)
+            return;
+        }
+
+        var count = _tethers.Count;
+        var forbidden = new List<ShapeDistance>(2);
+        var target = tunnelmachine ??= module.TunnelArmor;
+
+        for (var i = 0; i < count; ++i)
+        {
+            var t = _tethers[i];
+            if (t.Player.OID != 0u || t.Player == actor)
             {
-                var t = _tethers[i];
-                if (t.Player.OID != default || t.Player == actor)
-                {
-                    var source = t.Enemy;
-                    forbidden.Add(new SDInvertedRect(target.Position + (target.HitboxRadius + 0.1f) * target.DirectionTo(source), source.Position, 0.5f));
-                }
+                var source = t.Enemy;
+                forbidden.Add(new SDInvertedRect(target!.Position + (target.HitboxRadius + 0.1f) * target.DirectionTo(source), source.Position, 0.5f));
             }
-            if (forbidden.Count != 0)
-            {
-                hints.AddForbiddenZone(new SDIntersection([.. forbidden]), _activation);
-            }
+        }
+
+        if (forbidden.Count != 0)
+        {
+            hints.AddForbiddenZone(new SDIntersection([.. forbidden]), _activation);
         }
     }
 }

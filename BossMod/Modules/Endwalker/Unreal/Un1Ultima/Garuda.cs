@@ -1,15 +1,15 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un1Ultima;
 
-class Garuda(BossModule module) : BossComponent(module)
+sealed class Garuda(BossModule module) : BossComponent(module)
 {
     private bool _vulcanBurstImminent;
     private Actor? _mistralSong;
     private Actor? _eots;
     private Actor? _geocrush;
 
-    private static readonly AOEShapeCone _aoeMistralSong = new(20, 75.Degrees());
-    private static readonly AOEShapeDonut _aoeEOTS = new(13, 25); // TODO: check inner range
-    private static readonly AOEShapeCircle _aoeGeocrush = new(18); // TODO: check falloff
+    private readonly AOEShapeCone _aoeMistralSong = new(20f, 75f.Degrees());
+    private readonly AOEShapeDonut _aoeEOTS = new(13f, 25f); // TODO: check inner range
+    private readonly AOEShapeCircle _aoeGeocrush = new(18f); // TODO: check falloff
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -46,16 +46,16 @@ class Garuda(BossModule module) : BossComponent(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.MistralSong:
+            case (uint)AID.MistralSong:
                 _mistralSong = caster;
                 _vulcanBurstImminent = true;
                 break;
-            case AID.EyeOfTheStorm:
+            case (uint)AID.EyeOfTheStorm:
                 _eots = caster;
                 break;
-            case AID.Geocrush:
+            case (uint)AID.Geocrush:
                 _geocrush = caster;
                 break;
         }
@@ -63,16 +63,16 @@ class Garuda(BossModule module) : BossComponent(module)
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.MistralSong:
+            case (uint)AID.MistralSong:
                 _mistralSong = null;
                 _vulcanBurstImminent = false;
                 break;
-            case AID.EyeOfTheStorm:
+            case (uint)AID.EyeOfTheStorm:
                 _eots = null;
                 break;
-            case AID.Geocrush:
+            case (uint)AID.Geocrush:
                 _geocrush = null;
                 break;
         }
@@ -80,7 +80,7 @@ class Garuda(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.VulcanBurst)
+        if (spell.Action.ID == (uint)AID.VulcanBurst)
             _vulcanBurstImminent = false;
     }
 }

@@ -9,7 +9,7 @@ abstract class P6Wyrmsbreath(BossModule module, bool allowIntersect) : Component
     private readonly Actor?[] _tetheredTo = new Actor?[PartyState.MaxPartySize];
     private BitMask _tooClose;
 
-    private static readonly AOEShapeCone _shape = new(100f, 10f.Degrees()); // TODO: verify angle
+    private readonly AOEShapeCone _shape = new(100f, 10f.Degrees()); // TODO: verify angle
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -33,7 +33,7 @@ abstract class P6Wyrmsbreath(BossModule module, bool allowIntersect) : Component
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (Glows.Any())
             hints.Add(Glows.Raw == 3ul ? "Tankbuster: shared" : "Tankbuster: solo");
@@ -148,7 +148,7 @@ sealed class P6WyrmsbreathCone(BossModule module) : Components.GenericAOEs(modul
 {
     private readonly P6Wyrmsbreath? _main = module.FindComponent<P6Wyrmsbreath>();
 
-    private static readonly AOEShapeCone _shape = new(50f, 15f.Degrees()); // TODO: verify angle
+    private readonly AOEShapeCone _shape = new(50f, 15f.Degrees()); // TODO: verify angle
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

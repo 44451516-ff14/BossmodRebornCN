@@ -174,12 +174,13 @@ public sealed class ManualActionQueueTweak(WorldState ws, AIHints hints)
         targetPos = default;
 
         // ground targeted actions that must target specific objects
-        if (def.ID.ID == (uint)BLM.AID.BetweenTheLines)
+        var id = def.ID.ID;
+        if (id == (uint)BLM.AID.BetweenTheLines)
         {
             Actor? playerLL = null;
             foreach (var act in ws.Actors)
             {
-                if (act.OwnerID == player.InstanceID && act.OID == 0x179)
+                if (act.OwnerID == player.InstanceID && act.OID == 0x179u)
                 {
                     playerLL = act;
                     break;
@@ -195,7 +196,7 @@ public sealed class ManualActionQueueTweak(WorldState ws, AIHints hints)
             return true;
         }
 
-        if (def.ID.ID == (uint)RPR.AID.Regress)
+        if (id == (uint)RPR.AID.Regress)
         {
             Actor? playerGate = null;
             foreach (var act in ws.Actors)
@@ -218,18 +219,19 @@ public sealed class ManualActionQueueTweak(WorldState ws, AIHints hints)
 
         // Step Forth is area targeted so it's basically BTL but for a fixed distance, which is why we need angleOverride here
         // it's fine to have an incorrect Y, game will attempt to move us in a straight line toward the destination, respecting walls/ledges/gravity
-        if (def.ID.ID == (uint)PhantomID.StepForth)
+        if (id == (uint)PhantomID.StepForth)
         {
-            var displacement = (angleOverride ?? player.Rotation).ToDirection() * 10;
+            var displacement = (angleOverride ?? player.Rotation).ToDirection() * 10f;
 
             targetPos = (player.Position + displacement).ToVec3(player.PosRot.Y);
             return true;
         }
 
-        if (def.AllowedTargets.HasFlag(ActionTargets.Area))
+        var allowedTargets = def.AllowedTargets;
+        if ((allowedTargets & ActionTargets.Area) != 0)
         {
             // GT actions with range 0 must be cast on player - there are only a few of these (BLM leylines, PCT leylines, PCT PVP limit break)
-            if (def.Range == 0)
+            if (def.Range == 0f)
             {
                 targetPos = player.PosRot.XYZ();
                 return true;
@@ -243,7 +245,7 @@ public sealed class ManualActionQueueTweak(WorldState ws, AIHints hints)
                 targetPos = gtPos.Value;
                 return true;
             }
-            else if (gtTarget is not 0 and not 0xE0000000)
+            else if (gtTarget is not 0ul and not 0xE0000000ul)
             {
                 var t = ws.Actors.Find(gtTarget);
                 if (t != null)
@@ -260,7 +262,7 @@ public sealed class ManualActionQueueTweak(WorldState ws, AIHints hints)
             }
         }
 
-        if (def.AllowedTargets == ActionTargets.Self)
+        if (allowedTargets == ActionTargets.Self)
         {
             // the action can only target player, don't bother with other logic...
             target = player;
@@ -281,15 +283,15 @@ public sealed class ManualActionQueueTweak(WorldState ws, AIHints hints)
 
         // fallback: if requested, use native "target nearest" function to try to find a valid hostile target
         // this conditional ensures we don't get a false positive for holmgang (can target self or hostile) or phantom oracle invuln (can target ally, but not self)
-        if (target == null && def.AllowedTargets.HasFlag(ActionTargets.Hostile) && !def.AllowedTargets.HasFlag(ActionTargets.Self))
+        if (target == null && (allowedTargets & ActionTargets.Hostile) != 0 && (allowedTargets & ActionTargets.Self) == 0)
         {
             target = ws.Actors.Find(targetNearest());
             return true;
         }
 
         // smart-targeting fallback: cast on self if target is not valid
-        var targetInvalid = target == null || !def.AllowedTargets.HasFlag(ActionTargets.Hostile) && !target.IsAlly;
-        if (targetInvalid && def.AllowedTargets.HasFlag(ActionTargets.Self))
+        var targetInvalid = target == null || (allowedTargets & ActionTargets.Hostile) == 0 && !target.IsAlly;
+        if (targetInvalid && (allowedTargets & ActionTargets.Self) != 0)
         {
             target = player;
         }

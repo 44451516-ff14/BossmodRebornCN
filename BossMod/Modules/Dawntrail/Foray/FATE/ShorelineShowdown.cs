@@ -284,7 +284,6 @@ sealed class Duobreath(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class RegnantChimeraStates : StateMachineBuilder
 {
     public RegnantChimeraStates(BossModule module) : base(module)
@@ -317,7 +316,6 @@ sealed class RegnantChimeraStates : StateMachineBuilder
     NameID = 2076u,
     SortOrder = 5,
     PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class RegnantChimera : OpenWorldFate
 {
     public RegnantChimera(WorldState ws, Actor primary) : base(ws, primary)

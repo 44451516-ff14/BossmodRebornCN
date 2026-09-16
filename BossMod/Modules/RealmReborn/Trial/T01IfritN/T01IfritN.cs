@@ -24,7 +24,7 @@ class Hints(BossModule module) : BossComponent(module)
 {
     private DateTime _nailSpawn;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var nail = Module.Enemies((uint)OID.InfernalNail).FirstOrDefault();
         if (_nailSpawn == default && nail != null && nail.IsTargetable)

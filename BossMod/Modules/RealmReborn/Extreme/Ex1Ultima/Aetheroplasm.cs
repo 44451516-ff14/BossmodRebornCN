@@ -4,12 +4,12 @@
 // so currently I do the following hack:
 // - assume any created orb will eventually explode; whenever explosion counter matches kiter count, reset both
 // - any existing orb that hasn't exploded yet is assumed to target kiter with smallest angular distance
-class Aetheroplasm(BossModule module) : BossComponent(module)
+sealed class Aetheroplasm(BossModule module) : BossComponent(module)
 {
     private BitMask _kiters;
     private readonly HashSet<ulong> _explodedOrbs = [];
 
-    private const float _explosionRadius = 6;
+    private const float _explosionRadius = 6f;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -46,12 +46,12 @@ class Aetheroplasm(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.OrbFixate:
+            case (uint)AID.OrbFixate:
                 _kiters.Set(Raid.FindSlot(spell.MainTargetID));
                 break;
-            case AID.AetheroplasmFixated:
+            case (uint)AID.AetheroplasmFixated:
                 _explodedOrbs.Add(caster.InstanceID);
                 if (_explodedOrbs.Count == _kiters.NumSetBits())
                 {

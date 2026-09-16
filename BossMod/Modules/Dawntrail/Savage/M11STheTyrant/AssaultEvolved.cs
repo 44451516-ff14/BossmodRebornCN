@@ -212,7 +212,7 @@ sealed class AssaultWeaponTimeline(BossModule module) : BossComponent(module)
 
         for (var i = 0; i < _discovered.Count; ++i)
         {
-            var diff = MathF.Abs((_discovered[i].Actor.Rotation - bossRot).Normalized().Rad);
+            var diff = Math.Abs((_discovered[i].Actor.Rotation - bossRot).Normalized().Rad);
             if (diff < bestDiff)
             {
                 bestDiff = diff;

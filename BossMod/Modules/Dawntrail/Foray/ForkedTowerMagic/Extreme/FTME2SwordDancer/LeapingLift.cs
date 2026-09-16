@@ -1,6 +1,5 @@
 ﻿namespace BossMod.Dawntrail.Foray.ForkedTowerMagic.Extreme.FTME2SwordDancer;
 
-[SkipLocalsInit]
 sealed class Steelsbreath(BossModule module) : Components.GenericKnockback(module)
 {
     private readonly Steelsforge _steelsforge = module.FindComponent<Steelsforge>()!;
@@ -130,7 +129,6 @@ sealed class Steelsbreath(BossModule module) : Components.GenericKnockback(modul
     }
 }
 
-[SkipLocalsInit]
 sealed class Steelsforge(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];

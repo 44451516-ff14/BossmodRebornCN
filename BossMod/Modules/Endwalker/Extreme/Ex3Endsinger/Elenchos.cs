@@ -1,12 +1,12 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex3Endsigner;
 
-class Elenchos(BossModule module) : BossComponent(module)
+sealed class Elenchos(BossModule module) : BossComponent(module)
 {
     private Actor? _center;
     private readonly List<Actor> _sides = [];
 
-    private static readonly AOEShapeRect _aoeCenter = new(40, 7);
-    private static readonly AOEShapeRect _aoeSides = new(40, 6.5f, 40);
+    private readonly AOEShapeRect _aoeCenter = new(40f, 7f);
+    private readonly AOEShapeRect _aoeSides = new(40f, 6.5f, 40f);
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -23,12 +23,12 @@ class Elenchos(BossModule module) : BossComponent(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.ElenchosCenter:
+            case (uint)AID.ElenchosCenter:
                 _center = caster;
                 break;
-            case AID.ElenchosSidesAOE:
+            case (uint)AID.ElenchosSidesAOE:
                 _sides.Add(caster);
                 break;
         }
@@ -36,12 +36,12 @@ class Elenchos(BossModule module) : BossComponent(module)
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.ElenchosCenter:
+            case (uint)AID.ElenchosCenter:
                 _center = null;
                 break;
-            case AID.ElenchosSidesAOE:
+            case (uint)AID.ElenchosSidesAOE:
                 _sides.Remove(caster);
                 break;
         }

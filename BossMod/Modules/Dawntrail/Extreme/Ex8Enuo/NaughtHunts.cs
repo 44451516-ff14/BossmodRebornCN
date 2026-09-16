@@ -1,4 +1,4 @@
-﻿namespace BossMod.Modules.Dawntrail.Extreme.Ex8Enuo;
+﻿namespace BossMod.Dawntrail.Extreme.Ex8Enuo;
 
 // May want some additional signaling to the secondary target?  But this seems to work.
 

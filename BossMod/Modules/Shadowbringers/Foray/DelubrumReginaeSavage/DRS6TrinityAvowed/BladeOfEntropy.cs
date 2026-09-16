@@ -5,7 +5,7 @@ sealed class BladeOfEntropy(BossModule module) : TemperatureAOE(module)
 {
     private readonly List<(Actor caster, WDir dir, int temperature)> _casters = [];
 
-    private static readonly AOEShapeRect _shapeCell = new(5, 5, 5);
+    private readonly AOEShapeRect _shapeCell = new(5f, 5f, 5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

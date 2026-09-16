@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UCOB;
 
 // TODO: generalize to tankswap
-class P1DeathSentence(BossModule module) : BossComponent(module)
+sealed class P1DeathSentence(BossModule module) : BossComponent(module)
 {
     private Actor? _caster;
     private ulong _targetId;
@@ -12,9 +12,13 @@ class P1DeathSentence(BossModule module) : BossComponent(module)
             return;
 
         if (actor.InstanceID == _targetId)
+        {
             hints.Add("Pass aggro!");
+        }
         else if (actor.Role == Role.Tank)
+        {
             hints.Add("Taunt!");
+        }
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)

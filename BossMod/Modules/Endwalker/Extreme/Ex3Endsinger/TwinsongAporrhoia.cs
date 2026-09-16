@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex3Endsigner;
 
-class TwinsongAporrhoia(BossModule module) : BossComponent(module)
+sealed class TwinsongAporrhoia(BossModule module) : BossComponent(module)
 {
     private enum HeadID { Center, Danger1, Danger2, Safe1, Safe2, Count }
 
@@ -9,9 +9,9 @@ class TwinsongAporrhoia(BossModule module) : BossComponent(module)
     private Angle _centerStartingRotation;
     private readonly (Actor? Actor, int Rings)[] _heads = new (Actor?, int)[(int)HeadID.Count];
 
-    private static readonly AOEShapeCone _aoeCenter = new(20, 90.Degrees());
-    private static readonly AOEShapeCircle _aoeDanger = new(15);
-    private static readonly AOEShapeDonut _aoeSafe = new(5, 15);
+    private readonly AOEShapeCone _aoeCenter = new(20f, 90f.Degrees());
+    private readonly AOEShapeCircle _aoeDanger = new(15f);
+    private readonly AOEShapeDonut _aoeSafe = new(5f, 15f);
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -23,7 +23,7 @@ class TwinsongAporrhoia(BossModule module) : BossComponent(module)
         var center = _heads[(int)HeadID.Center];
         if (center.Actor != null)
         {
-            var rot = _centerStartingRotation - (_castsDone - center.Rings) * 90.Degrees();
+            var rot = _centerStartingRotation - (_castsDone - center.Rings) * 90f.Degrees();
             inAOE = _aoeCenter.Check(actor.Position, center.Actor.Position, rot);
         }
 
@@ -50,7 +50,7 @@ class TwinsongAporrhoia(BossModule module) : BossComponent(module)
         var center = _heads[(int)HeadID.Center];
         if (center.Actor != null)
         {
-            var rot = _centerStartingRotation - (_castsDone - center.Rings) * 90.Degrees();
+            var rot = _centerStartingRotation - (_castsDone - center.Rings) * 90f.Degrees();
             _aoeCenter.Draw(Arena, center.Actor.Position, rot);
         }
 
@@ -68,7 +68,7 @@ class TwinsongAporrhoia(BossModule module) : BossComponent(module)
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        if ((SID)status.ID == SID.RewindTwinsong)
+        if (status.ID == (uint)SID.RewindTwinsong)
         {
             var rings = status.Extra switch
             {
@@ -97,22 +97,22 @@ class TwinsongAporrhoia(BossModule module) : BossComponent(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.DiairesisTwinsong:
+            case (uint)AID.DiairesisTwinsong:
                 if (_heads[(int)HeadID.Center].Actor == null)
                 {
                     _heads[(int)HeadID.Center] = (caster, 0);
                     _centerStartingRotation = caster.Rotation;
                 }
                 break;
-            case AID.NecroticFluid:
+            case (uint)AID.NecroticFluid:
                 if (_heads[(int)HeadID.Danger1].Actor == null)
                     _heads[(int)HeadID.Danger1] = (caster, 0);
                 else if (_heads[(int)HeadID.Danger2].Actor == null)
                     _heads[(int)HeadID.Danger2] = (caster, 0);
                 break;
-            case AID.WaveOfNausea:
+            case (uint)AID.WaveOfNausea:
                 if (_heads[(int)HeadID.Safe1].Actor == null)
                     _heads[(int)HeadID.Safe1] = (caster, 0);
                 else if (_heads[(int)HeadID.Safe2].Actor == null)
@@ -123,12 +123,12 @@ class TwinsongAporrhoia(BossModule module) : BossComponent(module)
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.AporrhoiaUnforgotten:
+            case (uint)AID.AporrhoiaUnforgotten:
                 ++_castsDone;
                 break;
-            case AID.FatalismDiairesis:
+            case (uint)AID.FatalismDiairesis:
                 _ringsAssigned = false;
                 break;
         }

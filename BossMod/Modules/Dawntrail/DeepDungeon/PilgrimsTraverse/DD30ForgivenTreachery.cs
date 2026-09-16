@@ -1,4 +1,4 @@
-namespace BossMod.Endwalker.DeepDungeon.PilgrimsTraverse.DD30ForgivenTreachery;
+namespace BossMod.Dawntrail.DeepDungeon.PilgrimsTraverse.DD30ForgivenTreachery;
 
 public enum OID : uint
 {
@@ -44,7 +44,6 @@ public enum IconID : uint
     DivineFavor = 197 // player->self
 }
 
-[SkipLocalsInit]
 sealed class BrutalHalo(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(5)];
@@ -78,7 +77,6 @@ sealed class BrutalHalo(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class BoundsOfIndulgence(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<Actor> voidzones = [];
@@ -161,10 +159,8 @@ sealed class BoundsOfIndulgence(BossModule module) : Components.GenericAOEs(modu
     }
 }
 
-[SkipLocalsInit]
 sealed class DivineFavor(BossModule module) : Components.StandardChasingAOEs(module, 4f, (uint)AID.DivineFavorFirst, (uint)AID.DivineFavorRest, 3.5f, 0.6d, 8, true, (uint)IconID.DivineFavor);
 
-[SkipLocalsInit]
 sealed class GripOfSalvationsReach(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(2)];
@@ -215,7 +211,6 @@ sealed class GripOfSalvationsReach(BossModule module) : Components.GenericAOEs(m
     }
 }
 
-[SkipLocalsInit]
 sealed class DD30ForgivenTreacheryStates : StateMachineBuilder
 {
     public DD30ForgivenTreacheryStates(BossModule module) : base(module)
@@ -228,24 +223,7 @@ sealed class DD30ForgivenTreacheryStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
-StatesType = typeof(DD30ForgivenTreacheryStates),
-ConfigType = null,
-ObjectIDType = typeof(OID),
-ActionIDType = typeof(AID),
-StatusIDType = null,
-TetherIDType = null,
-IconIDType = typeof(IconID),
-PrimaryActorOID = (uint)OID.ForgivenTreachery,
-Contributors = "The Combat Reborn Team (Malediktus)",
-Expansion = BossModuleInfo.Expansion.Dawntrail,
-Category = BossModuleInfo.Category.DeepDungeon,
-GroupType = BossModuleInfo.GroupType.CFC,
-GroupID = 1034u,
-NameID = 13863u,
-SortOrder = 1,
-PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.ForgivenTreachery, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1034u, NameID = 13863u)]
 public sealed class DD30ForgivenTreachery : BossModule
 {
     public DD30ForgivenTreachery(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

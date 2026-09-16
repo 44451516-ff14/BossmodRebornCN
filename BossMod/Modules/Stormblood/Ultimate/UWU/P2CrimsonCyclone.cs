@@ -5,14 +5,14 @@
 // p2 second cast is two charges along both cardinals
 // p2 third cast is four staggered charges, with different patterns depending on whether awakening happened (TODO: we can predict that very early)
 // p4 predation is a single awakened charge along intercardinal
-class CrimsonCyclone(BossModule module, float predictionDelay) : Components.GenericAOEs(module, (uint)AID.CrimsonCyclone)
+abstract class CrimsonCyclone(BossModule module, float predictionDelay) : Components.GenericAOEs(module, (uint)AID.CrimsonCyclone)
 {
     private readonly float _predictionDelay = predictionDelay;
     private readonly List<(AOEShape shape, WPos pos, Angle rot, DateTime activation)> _predicted = []; // note: there could be 1/2/4 predicted normal charges and 0 or 2 'cross' charges
     private readonly List<Actor> _casters = [];
 
-    private static readonly AOEShapeRect _shapeMain = new(49, 9, 5);
-    private static readonly AOEShapeRect _shapeCross = new(44.5f, 5, 0.5f);
+    private readonly AOEShapeRect _shapeMain = new(49, 9, 5);
+    private readonly AOEShapeRect _shapeCross = new(44.5f, 5, 0.5f);
 
     public bool CastsPredicted => _predicted.Count > 0;
 
@@ -84,5 +84,5 @@ class CrimsonCyclone(BossModule module, float predictionDelay) : Components.Gene
     }
 }
 
-class P2CrimsonCyclone(BossModule module) : CrimsonCyclone(module, 5.2f);
-class P4CrimsonCyclone(BossModule module) : CrimsonCyclone(module, 8.1f);
+sealed class P2CrimsonCyclone(BossModule module) : CrimsonCyclone(module, 5.2f);
+sealed class P4CrimsonCyclone(BossModule module) : CrimsonCyclone(module, 8.1f);

@@ -18,12 +18,11 @@ using System.Runtime.Intrinsics.X86;
 namespace Clipper2Lib;
 // PRE-COMPILER CONDITIONAL ...
 // USINGZ: For user defined Z-coordinates. See Clipper.SetZ
-[SkipLocalsInit]
 public static class Clipper
 {
     private const double DoublePI = Math.Tau;
     private const double HalfPI = 0.5d * Math.PI;
-    private const int ArrayPoolThreshold = 128;
+    private const int ArrayPoolThreshold = 256;
     // One-entry thread-local caches eliminate setup churn in convenience APIs. Rent removes
     // the entry first, so callbacks and other reentrant calls still receive independent state.
     [ThreadStatic] private static Clipper64? _cachedClipper64;
@@ -145,7 +144,12 @@ public static class Clipper
     {
         var result = _cachedRectClip;
         _cachedRectClip = null;
-        return result != null && result.HasBounds(rect) ? result : new RectClip64(rect);
+        if (result == null)
+        {
+            return new RectClip64(rect);
+        }
+        result.SetBounds(rect);
+        return result;
     }
 
     private static void ReturnRectClip(RectClip64 clipper)
@@ -159,7 +163,12 @@ public static class Clipper
     {
         var result = _cachedRectClipLines;
         _cachedRectClipLines = null;
-        return result != null && result.HasBounds(rect) ? result : new RectClipLines64(rect);
+        if (result == null)
+        {
+            return new RectClipLines64(rect);
+        }
+        result.SetBounds(rect);
+        return result;
     }
 
     private static void ReturnRectClipLines(RectClipLines64 clipper)
@@ -1413,11 +1422,11 @@ public static class Clipper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void AddPolyNodeToPaths(PolyPath64 polyPath, Paths64 paths)
     {
-        var count = polyPath.Polygon!.Count;
-        if (count > 0)
+        if (polyPath.Polygon is { Count: > 0 } polygon)
         {
-            paths.Add(polyPath.Polygon);
+            paths.Add(polygon);
         }
+        var count = polyPath.Count;
         for (var i = 0; i < count; ++i)
         {
             AddPolyNodeToPaths((PolyPath64)polyPath._childs[i], paths);
@@ -1439,11 +1448,11 @@ public static class Clipper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void AddPolyNodeToPathsD(PolyPathD polyPath, PathsD paths)
     {
-        var count = polyPath.Polygon!.Count;
-        if (count > 0)
+        if (polyPath.Polygon is { Count: > 0 } polygon)
         {
-            paths.Add(polyPath.Polygon);
+            paths.Add(polygon);
         }
+        var count = polyPath.Count;
         for (var i = 0; i < count; ++i)
         {
             AddPolyNodeToPathsD((PolyPathD)polyPath._childs[i], paths);
@@ -1672,7 +1681,7 @@ public static class Clipper
 
     private static void RDP(ReadOnlySpan<PointD> path, int begin, int end, double epsSqrd, Span<bool> flags)
     {
-        var stackLength = checked(path.Length * 2);
+        var stackLength = path.Length * 2;
         if (path.Length <= ArrayPoolThreshold)
         {
             Span<int> stack = stackalloc int[stackLength];
@@ -1777,6 +1786,7 @@ public static class Clipper
         InitializeCircularLinks(previous, nextAlive);
         var points = CollectionsMarshal.AsSpan(path);
         var curr = 0;
+        var resultCount = len;
         if (isClosedPath)
         {
             dsq[0] = PerpendicDistFromLineSqrd(points[0], points[high], points[1]);
@@ -1832,6 +1842,7 @@ public static class Clipper
             previous[next] = prev;
             nextAlive[curr] = -1;
             previous[curr] = -1;
+            --resultCount;
             curr = next;
             next = nextAlive[next];
             if (isClosedPath || curr != high && curr != 0)
@@ -1844,14 +1855,6 @@ public static class Clipper
             }
         }
 
-        var resultCount = 0;
-        for (var i = 0; i < len; ++i)
-        {
-            if (nextAlive[i] >= 0)
-            {
-                ++resultCount;
-            }
-        }
         var result = AllocatePath64(resultCount);
         var destination = CollectionsMarshal.AsSpan(result);
         for (int i = 0, write = 0; i < len; ++i)
@@ -1919,6 +1922,7 @@ public static class Clipper
         InitializeCircularLinks(previous, nextAlive);
         var points = CollectionsMarshal.AsSpan(path);
         var curr = 0;
+        var resultCount = len;
         if (isClosedPath)
         {
             dsq[0] = PerpendicDistFromLineSqrd(points[0], points[high], points[1]);
@@ -1974,6 +1978,7 @@ public static class Clipper
             previous[next] = prev;
             nextAlive[curr] = -1;
             previous[curr] = -1;
+            --resultCount;
             curr = next;
             next = nextAlive[next];
             if (isClosedPath || curr != high && curr != 0)
@@ -1986,14 +1991,6 @@ public static class Clipper
             }
         }
 
-        var resultCount = 0;
-        for (var i = 0; i < len; ++i)
-        {
-            if (nextAlive[i] >= 0)
-            {
-                ++resultCount;
-            }
-        }
         var result = AllocatePathD(resultCount);
         var destination = CollectionsMarshal.AsSpan(result);
         for (int i = 0, write = 0; i < len; ++i)
@@ -2015,7 +2012,7 @@ public static class Clipper
         }
 
         var epsSqr = Sqr(epsilon);
-        var linkCount = checked(len * 2);
+        var linkCount = len * 2;
         if (len <= ArrayPoolThreshold)
         {
             Span<double> dsq = stackalloc double[len];
@@ -2132,15 +2129,37 @@ public static class Clipper
         InternalClipper.CheckPrecision(precision);
         var scale = Math.Pow(10, precision);
         var p = new Point64(pt, scale);
-        var path = ScalePath64(polygon, scale);
-        return InternalClipper.PointInPolygon(p, path);
+        var count = polygon.Count;
+        Point64[]? rented = null;
+        var scaled = count <= ArrayPoolThreshold ? stackalloc Point64[count] : (rented = ArrayPool<Point64>.Shared.Rent(count)).AsSpan(0, count);
+        try
+        {
+            ScalePoints64(CollectionsMarshal.AsSpan(polygon), scaled, scale);
+            return InternalClipper.PointInPolygon(p, scaled);
+        }
+        finally
+        {
+            if (rented != null)
+            {
+                ArrayPool<Point64>.Shared.Return(rented);
+            }
+        }
     }
 
     public static Path64 Ellipse(Point64 center, double radiusX, double radiusY = 0d, int steps = 0)
     {
+        Path64 result = [];
+        Ellipse(center, radiusX, radiusY, steps, result);
+        return result;
+    }
+
+    // Internal callers can retain a scratch buffer; public results remain independent.
+    internal static void Ellipse(Point64 center, double radiusX, double radiusY, int steps, Path64 result)
+    {
+        result.Clear();
         if (radiusX <= 0d)
         {
-            return [];
+            return;
         }
         if (radiusY <= 0d)
         {
@@ -2152,7 +2171,8 @@ public static class Clipper
         }
         var (si, co) = Math.SinCos(DoublePI / steps);
         double dx = co, dy = si;
-        var result = AllocatePath64(steps);
+        result.EnsureCapacity(steps);
+        CollectionsMarshal.SetCount(result, steps);
         var points = CollectionsMarshal.AsSpan(result);
         var centerX = center.X;
         var centerY = center.Y;
@@ -2164,7 +2184,6 @@ public static class Clipper
             dy = dy * co + dx * si;
             dx = x;
         }
-        return result;
     }
 
     public static PathD Ellipse(PointD center, double radiusX, double radiusY = 0d, int steps = 0)

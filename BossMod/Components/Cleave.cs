@@ -3,9 +3,8 @@
 // generic component for cleaving autoattacks; shows shape outline and warns when anyone other than main target is inside
 // enemy OID == 0 means 'primary actor'
 
-[SkipLocalsInit]
 public class Cleave(BossModule module, uint aid, AOEShape shape, uint[]? enemyOID = null, bool activeForUntargetable = false, bool originAtTarget = false, bool activeWhileCasting = true,
-    int? arenaProjectionLayer = null, bool restrictToArenaProjectionLayer = false) : CastCounter(module, aid)
+    int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false) : CastCounter(module, aid)
 {
     public readonly AOEShape Shape = shape;
     public readonly bool ActiveForUntargetable = activeForUntargetable;
@@ -14,7 +13,7 @@ public class Cleave(BossModule module, uint aid, AOEShape shape, uint[]? enemyOI
     public DateTime NextExpected;
     public readonly uint[] EnemyOID = enemyOID ?? [module.PrimaryActor.OID];
     public int? ArenaProjectionLayer = arenaProjectionLayer;
-    public bool RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
+    public bool? RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -60,7 +59,7 @@ public class Cleave(BossModule module, uint aid, AOEShape shape, uint[]? enemyOI
             var e = origins[i];
             if (actor != e.target)
             {
-                hints.AddForbiddenZone(Shape, e.origin.Position.Quantized(), e.angle, NextExpected, arenaProjectionLayer: ArenaProjectionLayer);
+                hints.AddForbiddenZone(Shape, e.origin.Position.Quantized(), e.angle, NextExpected, arenaProjectionLayer: ArenaProjectionLayerForAI(ArenaProjectionLayer, RestrictToArenaProjectionLayer));
             }
             else
             {
@@ -88,13 +87,13 @@ public class Cleave(BossModule module, uint aid, AOEShape shape, uint[]? enemyOI
             switch (Shape)
             {
                 case AOEShapeCircle circle:
-                    hints.AddForbiddenZone(circle, a.Position.Quantized(), arenaProjectionLayer: ArenaProjectionLayer);
+                    hints.AddForbiddenZone(circle, a.Position.Quantized(), arenaProjectionLayer: ArenaProjectionLayerForAI(ArenaProjectionLayer, RestrictToArenaProjectionLayer));
                     break;
                 case AOEShapeCone cone:
-                    hints.AddForbiddenZone(new SDCone(source.Position.Quantized(), 100f, source.AngleTo(a), cone.HalfAngle), arenaProjectionLayer: ArenaProjectionLayer);
+                    hints.AddForbiddenZone(new SDCone(source.Position.Quantized(), 100f, source.AngleTo(a), cone.HalfAngle), arenaProjectionLayer: ArenaProjectionLayerForAI(ArenaProjectionLayer, RestrictToArenaProjectionLayer));
                     break;
                 case AOEShapeRect rect:
-                    hints.AddForbiddenZone(new SDCone(source.Position.Quantized(), 100f, source.AngleTo(a), Angle.Asin(rect.HalfWidth / (a.Position - source.Position).Length())), arenaProjectionLayer: ArenaProjectionLayer);
+                    hints.AddForbiddenZone(new SDCone(source.Position.Quantized(), 100f, source.AngleTo(a), Angle.Asin(rect.HalfWidth / (a.Position - source.Position).Length())), arenaProjectionLayer: ArenaProjectionLayerForAI(ArenaProjectionLayer, RestrictToArenaProjectionLayer));
                     break;
             }
         }

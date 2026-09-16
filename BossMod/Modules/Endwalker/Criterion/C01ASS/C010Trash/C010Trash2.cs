@@ -79,28 +79,41 @@ abstract class C010DullahanStates : StateMachineBuilder
 sealed class C010NTrash2States(BossModule module) : C010DullahanStates(module, false);
 sealed class C010STrash2States(BossModule module) : C010DullahanStates(module, true);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.NDullahan, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 878, NameID = 11506, SortOrder = 3)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.NDullahan, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 878u, NameID = 11506u, SortOrder = 3)]
 public sealed class C010NTrash2(WorldState ws, Actor primary) : Trash2Arena(ws, primary, false);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.SDullahan, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 879, NameID = 11506, SortOrder = 3)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.SDullahan, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 879u, NameID = 11506u, SortOrder = 3)]
 public sealed class C010STrash2(WorldState ws, Actor primary) : Trash2Arena(ws, primary, true);
 
-public abstract class Trash2Arena(WorldState ws, Actor primary, bool savage) : BossModule(ws, primary, arena.Center, arena)
+public abstract class Trash2Arena : BossModule
 {
-    private static readonly ArenaBoundsCustom arena = new([new Rectangle(new(-34.937f, -198.475f), 33.89f, 21.428f), new Rectangle(new(-35f, -219.2f), 5.261f, 1.122f)], [new Rectangle(new(-35.5f, -207f), 3f, 4.19f),
-    new Rectangle(new(-35.5f, -189.9f), 3f, 4.19f), new Rectangle(new(-17.51f, -198.5f), 4.98f, 13f), new Rectangle(new(-52.5f, -198.5f), 4.98f, 13f),
-    new Square(new(-69.3f, -185.3f), 1.5f), new Square(new(-69.3f, -211.801f), 1.5f), new Square(new(-52.5f, -220.201f), 1.5f), new Square(new(-17.4f, -220.201f), 1.5f),
-    new Square(new(-0.8f, -211.777f), 1.5f), new Square(new(-0.791f, -185.378f), 1.5f), new Square(new(-17.5f, -176.801f), 1.5f), new Square(new(-35f, -176.801f), 1.5f),
-    new Square(new(-52.4f, -176.801f), 1.5f), new Square(new(-43.2f, -220.2f), 1.942f), new Square(new(-27.1f, -220.2f), 1.942f), new Rectangle(new(-39.981f, -221.1f), 1.526f, 2.172f),
-    new Rectangle(new(-30.02f, -221.1f), 1.526f, 2.172f)]);
+    public Trash2Arena(WorldState ws, Actor primary, bool savage) : this(ws, primary, BuildArena(), savage) { }
+
+    private Trash2Arena(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a, bool savage) : base(ws, primary, a.center, a.arena, savage)
+    {
+        _savage = savage;
+    }
+
+    private readonly bool _savage;
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Rectangle(new(-34.937f, -198.475f), 33.89f, 21.428f), new Rectangle(new(-35f, -219.2f), 5.261f, 1.122f)], [new Rectangle(new(-35.5f, -207f), 3f, 4.19f),
+            new Rectangle(new(-35.5f, -189.9f), 3f, 4.19f), new Rectangle(new(-17.51f, -198.5f), 4.98f, 13f), new Rectangle(new(-52.5f, -198.5f), 4.98f, 13f),
+            new Square(new(-69.3f, -185.3f), 1.5f), new Square(new(-69.3f, -211.801f), 1.5f), new Square(new(-52.5f, -220.201f), 1.5f), new Square(new(-17.4f, -220.201f), 1.5f),
+            new Square(new(-0.8f, -211.777f), 1.5f), new Square(new(-0.791f, -185.378f), 1.5f), new Square(new(-17.5f, -176.801f), 1.5f), new Square(new(-35f, -176.801f), 1.5f),
+            new Square(new(-52.4f, -176.801f), 1.5f), new Square(new(-43.2f, -220.2f), 1.942f), new Square(new(-27.1f, -220.2f), 1.942f), new Rectangle(new(-39.981f, -221.1f), 1.526f, 2.172f),
+            new Rectangle(new(-30.02f, -221.1f), 1.526f, 2.172f)]);
+        return (arena.Center, arena);
+    }
 
     public static readonly uint[] TrashNormal = [(uint)OID.NDullahan, (uint)OID.NArmor];
     public static readonly uint[] TrashSavage = [(uint)OID.NArmor, (uint)OID.SArmor];
 
-    protected override bool CheckPull() => IsAnyActorInCombat(savage ? TrashSavage : TrashNormal);
+    protected override bool CheckPull() => IsAnyActorInCombat(_savage ? TrashSavage : TrashNormal);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(this, savage ? TrashSavage : TrashNormal);
+        Arena.Actors(this, _savage ? TrashSavage : TrashNormal);
     }
 }

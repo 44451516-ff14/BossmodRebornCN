@@ -43,32 +43,32 @@ public enum AID : uint
     BlizzardII = 33461, // Helper->player, 5.0s cast, range 5 circle
 }
 
-class SparkingCurrent(BossModule module) : Components.GenericBaitAway(module)
+sealed class SparkingCurrent(BossModule module) : Components.GenericBaitAway(module)
 {
-    private static readonly AOEShapeRect rect = new(20f, 3f);
+    private readonly AOEShapeRect rect = new(20f, 3f);
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action.ID == (uint)AID.SparkingCurrentMarker)
+        if (spell.Action.ID is var id && id == (uint)AID.SparkingCurrentMarker)
+        {
             CurrentBaits.Add(new(caster, WorldState.Actors.Find(spell.MainTargetID)!, rect, WorldState.FutureTime(5d)));
-        else if (spell.Action.ID == (uint)AID.SparkingCurrent)
+        }
+        else if (id == (uint)AID.SparkingCurrent)
+        {
             CurrentBaits.Clear();
+        }
     }
 }
 
-class ThunderII(BossModule module) : Components.CastTowers(module, (uint)AID.ThunderII, 5f);
-class FireII(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.FireII, 5f, 4, 4);
-class BlizzardII(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.BlizzardII, 5f);
-class IceGrid(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IceGrid, new AOEShapeRect(40f, 2f), 10);
-class Triflame(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Triflame, new AOEShapeCone(60f, 30f.Degrees()), 3);
-class ElementalOverload1(BossModule module) : Components.RaidwideCast(module, (uint)AID.ElementalOverload1);
-class ElementalOverload2(BossModule module) : Components.RaidwideCast(module, (uint)AID.ElementalOverload2);
-class ElementalOverload3(BossModule module) : Components.RaidwideCast(module, (uint)AID.ElementalOverload3);
-class ElementalOverload4(BossModule module) : Components.RaidwideCast(module, (uint)AID.ElementalOverload4);
-class ElementalOverload5(BossModule module) : Components.RaidwideCast(module, (uint)AID.ElementalOverload5);
-class ElementalOverload6(BossModule module) : Components.RaidwideCast(module, (uint)AID.ElementalOverload6);
+sealed class ThunderII(BossModule module) : Components.CastTowers(module, (uint)AID.ThunderII, 5f);
+sealed class FireII(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.FireII, 5f, 4, 4);
+sealed class BlizzardII(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.BlizzardII, 5f);
+sealed class IceGrid(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IceGrid, new AOEShapeRect(40f, 2f), 10);
+sealed class Triflame(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Triflame, new AOEShapeCone(60f, 30f.Degrees()), 3);
+sealed class ElementalOverload(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.ElementalOverload1, (uint)AID.ElementalOverload2, (uint)AID.ElementalOverload3,
+    (uint)AID.ElementalOverload4, (uint)AID.ElementalOverload5, (uint)AID.ElementalOverload6]);
 
-class D052SubjectNumberXXIVStates : StateMachineBuilder
+sealed class D052SubjectNumberXXIVStates : StateMachineBuilder
 {
     public D052SubjectNumberXXIVStates(BossModule module) : base(module)
     {
@@ -77,19 +77,22 @@ class D052SubjectNumberXXIVStates : StateMachineBuilder
             .ActivateOnEnter<ThunderII>()
             .ActivateOnEnter<IceGrid>()
             .ActivateOnEnter<Triflame>()
-            .ActivateOnEnter<ElementalOverload1>()
-            .ActivateOnEnter<ElementalOverload2>()
-            .ActivateOnEnter<ElementalOverload3>()
-            .ActivateOnEnter<ElementalOverload4>()
-            .ActivateOnEnter<ElementalOverload5>()
-            .ActivateOnEnter<ElementalOverload6>()
+            .ActivateOnEnter<ElementalOverload>()
             .ActivateOnEnter<FireII>()
             .ActivateOnEnter<BlizzardII>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 242, NameID = 12392)]
-public class D052SubjectNumberXXIV(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 242u, NameID = 12392u)]
+public sealed class D052SubjectNumberXXIV : BossModule
 {
-    private static readonly ArenaBoundsCustom arena = new([new Circle(new(10.5f, 186.5f), 19.55f)], [new Rectangle(new(11, 207), 20, 1.5f), new Rectangle(new(30, 187), 1.1f, 20f)]);
+    public D052SubjectNumberXXIV(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private D052SubjectNumberXXIV(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Circle(new(10.5f, 186.5f), 19.55f)], [new Rectangle(new(11f, 207f), 20f, 1.5f), new Rectangle(new(30f, 187f), 1.1f, 20f)]);
+        return (arena.Center, arena);
+    }
 }

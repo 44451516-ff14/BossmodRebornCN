@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Savage.P7SAgdistis;
 
 // TODO: improve!
-class ForbiddenFruit5(BossModule module) : ForbiddenFruitCommon(module, (uint)AID.Burst)
+sealed class ForbiddenFruit5(BossModule module) : ForbiddenFruitCommon(module, (uint)AID.Burst)
 {
     private readonly List<Actor> _towers = module.Enemies((uint)OID.Tower);
 
@@ -14,6 +14,6 @@ class ForbiddenFruit5(BossModule module) : ForbiddenFruitCommon(module, (uint)AI
             Arena.AddLine(tetherSource.Position, pc.Position, TetherColor(tetherSource));
 
         for (var i = 0; i < _towers.Count; ++i)
-            Arena.ZoneCircleOutline(_towers[i].Position, _towerRadius, tetherSource == null ? Colors.Safe : 0);
+            Arena.ZoneCircleOutline(_towers[i].Position, _towerRadius, tetherSource == null ? Colors.Safe : default);
     }
 }

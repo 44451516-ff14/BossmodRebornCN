@@ -1,9 +1,9 @@
 namespace BossMod.Endwalker.Trial.T02Hydaelyn;
 
-class Lightwave(BossModule module) : Components.GenericAOEs(module)
+sealed class Lightwave(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<Actor> waves = [with(4)];
-    private static readonly AOEShapeRect rect = new(16f, 8f, 12f);
+    private readonly AOEShapeRect rect = new(16f, 8f, 12f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -22,6 +22,8 @@ class Lightwave(BossModule module) : Components.GenericAOEs(module)
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.RayOfLight && !waves.Contains(caster))
+        {
             waves.Add(caster);
+        }
     }
 }

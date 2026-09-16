@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P5SProtoCarbuncle;
 
-class VenomousMass(BossModule module) : Components.CastCounter(module, (uint)AID.VenomousMassAOE)
+sealed class VenomousMass(BossModule module) : Components.CastCounter(module, (uint)AID.VenomousMassAOE)
 {
     private Actor? _target;
 
@@ -20,7 +20,7 @@ class VenomousMass(BossModule module) : Components.CastCounter(module, (uint)AID
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.VenomousMass)
+        if (spell.Action.ID == (uint)AID.VenomousMass)
             _target = WorldState.Actors.Find(caster.TargetID);
     }
 }

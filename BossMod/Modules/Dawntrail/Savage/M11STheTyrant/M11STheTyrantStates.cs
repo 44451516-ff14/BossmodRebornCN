@@ -10,14 +10,14 @@ sealed class M11STheTyrantStates : StateMachineBuilder
 
     private void SinglePhase(uint id)
     {
-        CrownOfArcadia(id, 5.18f, 5.01f, 1);
-        Flatliner(id + 0x10, 460f, 6f);
-        SplitArena(id + 0x20, 300f);
-        SimpleState(id + 0x30, 1000f, "Final Phase");
+        CrownOfArcadia(id, 5.2f, 5.0f, 1);
+        Flatliner(id + 0x10u, 460f, 6f);
+        SplitArena(id + 0x20u, 300f);
+        SimpleState(id + 0x30u, 1000f, "Final Phase");
     }
     private void CrownOfArcadia(uint id, float delay, float cast, int seq)
     {
-        Cast(id, (uint)AID.CrownOfArcadia, 0, 5f, "Crown of Arcadia")
+        Cast(id, AID.CrownOfArcadia, 0f, 5f, "Crown of Arcadia")
             .SetHint(StateMachine.StateHint.Raidwide)
             .ActivateOnEnter<CrownOfArcadia>()
             .ActivateOnExit<RawSteelTrophyAxe>()

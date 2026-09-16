@@ -1,11 +1,10 @@
-﻿using BossMod.Autorotation.xan;
+﻿using BossMod.Autorotation;
 using BossMod.Pathfinding;
 using Dalamud.Bindings.ImGui;
 using System.Diagnostics;
 
 namespace BossMod;
 
-[SkipLocalsInit]
 public sealed class AIHintsVisualizer(AIHints hints, WorldState ws, Actor player, float preferredDistance, float cushionSize)
 {
     private readonly MapVisualizer?[] _zoneVisualizers = new MapVisualizer?[hints.ForbiddenZones.Count];

@@ -81,7 +81,7 @@ sealed class ParticipantInfo : CommonEnumInfo
     {
         UITree.NodeProperties map(KeyValuePair<uint, ParticipantData> kv)
         {
-            var name = _oidType?.GetEnumName(kv.Key);
+            var name = _oidType?.GeneratedEnumName(kv.Key);
             var typeName = kv.Value.Types.Count switch
             {
                 0 => "???",
@@ -90,7 +90,7 @@ sealed class ParticipantInfo : CommonEnumInfo
             };
             // for global, highlight by targetable; for encounter, highlight by being defined in enum
             var highlight = _oidType != null ? name == null : !kv.Value.SeenTargetable;
-            return new($"{kv.Key:X} ({_oidType?.GetEnumName(kv.Key)}) '{kv.Value.Names.FirstOrDefault().name}' ({typeName})", false, highlight ? Colors.TextColor2 : Colors.TextColor1);
+            return new($"{kv.Key:X} ({_oidType?.GeneratedEnumName(kv.Key)}) '{kv.Value.Names.FirstOrDefault().name}' ({typeName})", false, highlight ? Colors.TextColor2 : Colors.TextColor1);
         }
         foreach (var (oid, data) in tree.Nodes(_data, map, kv => DrawSubContextMenu(kv.Key, kv.Value)))
         {
@@ -126,7 +126,7 @@ sealed class ParticipantInfo : CommonEnumInfo
         if (ImGui.MenuItem("为 Boss 模块生成缺失的枚举值"))
         {
             var sb = new StringBuilder();
-            foreach (var (name, val) in Utils.DedupKeys(_data.Where(kv => _oidType?.GetEnumName(kv.Key) == null).Select(d => EnumMemberString(d.Key, d.Value))))
+            foreach (var (name, val) in Utils.DedupKeys(_data.Where(kv => _oidType?.GeneratedEnumName(kv.Key) == null).Select(d => EnumMemberString(d.Key, d.Value))))
             {
                 sb.AppendLine($"{name} = {val}");
             }
@@ -175,7 +175,7 @@ sealed class ParticipantInfo : CommonEnumInfo
 
     private (string Name, string Value) EnumMemberString(uint oid, ParticipantData data, string? forcedName = null)
     {
-        var enumName = forcedName ?? _oidType?.GetEnumName(oid) ?? ("_Gen_" + GuessName(oid, data));
+        var enumName = forcedName ?? _oidType?.GeneratedEnumName(oid) ?? ("_Gen_" + GuessName(oid, data));
         var spawnStr = data.SpawnedPreFight.Count switch
         {
             0 => "?",
@@ -220,7 +220,6 @@ sealed class ParticipantInfo : CommonEnumInfo
         sb.AppendLine($"    Helper = 0x233C,");
         sb.AppendLine("}");
         sb.AppendLine();
-        sb.AppendLine("[SkipLocalsInit]");
         sb.AppendLine($"sealed class {name}States : StateMachineBuilder");
         sb.AppendLine("{");
         sb.AppendLine($"    public {name}States(BossModule module) : base(module)");
@@ -247,24 +246,9 @@ sealed class ParticipantInfo : CommonEnumInfo
         }
         sb.AppendLine("}");
         sb.AppendLine();
-        sb.AppendLine("[ModuleInfo(BossModuleInfo.Maturity.WIP,");
-        sb.AppendLine($"StatesType = typeof({name}States),");
-        sb.AppendLine($"ConfigType = null, // replace null with typeof({name}Config) if applicable");
-        sb.AppendLine("ObjectIDType = typeof(OID),");
-        sb.AppendLine("ActionIDType = null, // replace null with typeof(AID) if applicable");
-        sb.AppendLine("StatusIDType = null, // replace null with typeof(SID) if applicable");
-        sb.AppendLine("TetherIDType = null, // replace null with typeof(TetherID) if applicable");
-        sb.AppendLine("IconIDType = null, // replace null with typeof(IconID) if applicable");
-        sb.AppendLine($"PrimaryActorOID = (uint)OID.{name},");
-        sb.AppendLine("Contributors = \"\",");
-        sb.AppendLine("Expansion = BossModuleInfo.Expansion.Placeholder,");
-        sb.AppendLine("Category = BossModuleInfo.Category.Placeholder,");
-        sb.AppendLine("GroupType = BossModuleInfo.GroupType.CFC,");
-        sb.AppendLine($"GroupID = {(data.Zones.Count != 0 ? data.Zones[0].cfcId : default)}u,");
-        sb.AppendLine($"NameID = {(data.Names.Count != 0 ? data.Names[0].id : default)}u,");
-        sb.AppendLine("SortOrder = 1,");
-        sb.AppendLine("PlanLevel = 0)]");
-        sb.AppendLine("[SkipLocalsInit]");
+        sb.AppendLine($"[ModuleInfo(BossModuleInfo.Maturity.WIP, PrimaryActorOID = (uint)OID.{name}, Contributors = \"\",");
+        sb.AppendLine("Category = BossModuleInfo.Category.Placeholder, GroupType = BossModuleInfo.GroupType.CFC,");
+        sb.AppendLine($"GroupID = {(data.Zones.Count != 0 ? data.Zones[0].cfcId : default)}u, NameID = {(data.Names.Count != 0 ? data.Names[0].id : default)}u, SortOrder = 1)]");
         sb.AppendLine($"public sealed class {name}(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsCircle(20f));");
         return sb;
     }

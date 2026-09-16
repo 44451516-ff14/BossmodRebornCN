@@ -19,7 +19,7 @@ public enum AID : uint
 sealed class BadBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BadBreath, new AOEShapeCone(17.775f, 60f.Degrees()));
 sealed class VineProbe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VineProbe, new AOEShapeRect(11.775f, 4f));
 sealed class OffalBreath(BossModule module) : Components.CastInterruptHint(module, (uint)AID.OffalBreath);
-sealed class OffalBreathVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.OffalBreath, GetVoidzones, 1.6f)
+sealed class OffalBreathVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.OffalBreath, GetVoidzones, 1.6d)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -64,7 +64,7 @@ sealed class Reflect(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (casting)
         {
@@ -77,20 +77,11 @@ sealed class Reflect(BossModule module) : BossComponent(module)
     }
 }
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add("At the start of the fight Rebekkah will cast Reflect. This will reflect all\nmagic damage back to you. Useful skills: Sharpened Knife,\nFlying Sardine, Ink Jet (Act 2), Exuviation (Act 2), potentially a Final Sting\ncombo. (Off-guard->Bristle->Moonflute->Final Sting)");
-    }
-}
-
 sealed class Stage19Act1States : StateMachineBuilder
 {
     public Stage19Act1States(BossModule module) : base(module)
     {
         TrivialPhase()
-            .DeactivateOnEnter<Hints>()
             .ActivateOnEnter<Reflect>()
             .ActivateOnEnter<BadBreath>()
             .ActivateOnEnter<VineProbe>()
@@ -99,11 +90,14 @@ sealed class Stage19Act1States : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 629, NameID = 8117, SortOrder = 1)]
-public sealed class Stage19Act1 : BossModule
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 629u, NameID = 8117u, SortOrder = 1)]
+public sealed class Stage19Act1(WorldState ws, Actor primary) : BossModule(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
 {
-    public Stage19Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
-    {
-        ActivateComponent<Hints>();
-    }
+    private readonly string[] _prePullHints =
+    [
+        "At the start of the fight Rebekkah will cast Reflect. This will reflect all magic damage back to you.",
+        "Useful skills: Sharpened Knife, Flying Sardine, Ink Jet (Act 2), Exuviation (Act 2), potentially a Final Sting combo. (Off-guard->Bristle->Moonflute->Final Sting)"
+    ];
+
+    public override string[] PrePullHints => _prePullHints;
 }

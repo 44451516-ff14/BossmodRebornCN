@@ -24,7 +24,7 @@ sealed class Explosion(BossModule module) : Components.SimpleAOEGroups(module, [
 sealed class FireAndFury(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.FireAndFuryFront, (uint)AID.FireAndFuryBack], new AOEShapeCone(60f, 45.Degrees()));
 sealed class GreatWallOfFire(BossModule module) : Components.BaitAwayCast(module, (uint)AID.GreatWallOfFire, new AOEShapeRect(60f, 3f), false, true, true);
 sealed class GreatWallOfFireExplosion(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.GreatWallOfFire1, (uint)AID.GreatWallOfFire2, (uint)AID.GreatWallOfFireExplosion], new AOEShapeRect(60f, 3f));
-sealed class FearsomeFireball(BossModule module) : Components.LineStack(module, (uint)IconID.FearsomeFireballIcon, (uint)AID.FearsomeFireball1, 5d, 60f, 4f, 4, 6, 1, true);
+sealed class FearsomeFireball(BossModule module) : Components.LineStack(module, (uint)IconID.FearsomeFireballIcon, (uint)AID.FearsomeFireball1, 5d, 60f, 4f, 4, 6, 1, true, null);
 sealed class OneAndOnly(BossModule module) : Components.RaidwideCast(module, (uint)AID.OneAndOnly, "Raidwide");
 sealed class Shockwave(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Shockwave, new AOEShapeCircle(1f)); //Just want to track casts; we actually use this AID in TripleTyrannhilation
 sealed class Flatliner(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Flatliner, new AOEShapeRect(30f, 5f, 30f));
@@ -170,7 +170,7 @@ sealed class MaelstromBaitSafeSpots(BossModule module) : BossComponent(module)
             WPos spot = default;
 
             // WEST
-            if (MathF.Abs(dx) > MathF.Abs(dy) && dx < 0f)
+            if (Math.Abs(dx) > Math.Abs(dy) && dx < 0f)
             {
                 if (role == PartyRolesConfig.Assignment.H1)
                     spot = Offset(pos, (-135f).Degrees());
@@ -178,7 +178,7 @@ sealed class MaelstromBaitSafeSpots(BossModule module) : BossComponent(module)
                     spot = Offset(pos, (-45f).Degrees());
             }
             // EAST
-            else if (MathF.Abs(dx) > MathF.Abs(dy) && dx > 0f)
+            else if (Math.Abs(dx) > Math.Abs(dy) && dx > 0f)
             {
                 if (role == PartyRolesConfig.Assignment.R2)
                     spot = Offset(pos, 135f.Degrees());

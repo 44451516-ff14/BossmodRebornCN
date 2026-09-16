@@ -1,18 +1,18 @@
 ﻿namespace BossMod.Endwalker.Savage.P8S1Hephaistos;
 
-class ManifoldFlames : Components.UniformStackSpread
+sealed class ManifoldFlames : Components.UniformStackSpread
 {
-    public ManifoldFlames(BossModule module) : base(module, 0, 6)
+    public ManifoldFlames(BossModule module) : base(module, 0f, 6f)
     {
         AddSpreads(Raid.WithoutSlot(true, true, true));
     }
 }
 
-class NestOfFlamevipersCommon(BossModule module) : Components.CastCounter(module, (uint)AID.NestOfFlamevipersAOE)
+abstract class NestOfFlamevipersCommon(BossModule module) : Components.CastCounter(module, (uint)AID.NestOfFlamevipersAOE)
 {
     protected BitMask BaitingPlayers;
 
-    private static readonly AOEShapeRect _shape = new(60, 2.5f);
+    private readonly AOEShapeRect _shape = new(60f, 2.5f);
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -28,7 +28,7 @@ class NestOfFlamevipersCommon(BossModule module) : Components.CastCounter(module
 }
 
 // variant that happens right after manifold flames and baits to 4 closest players
-class NestOfFlamevipersBaited(BossModule module) : NestOfFlamevipersCommon(module)
+sealed class NestOfFlamevipersBaited(BossModule module) : NestOfFlamevipersCommon(module)
 {
     private BitMask _forbiddenPlayers;
     public bool Active => NumCasts == 0 && _forbiddenPlayers.Any();
@@ -51,19 +51,19 @@ class NestOfFlamevipersBaited(BossModule module) : NestOfFlamevipersCommon(modul
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         base.OnEventCast(caster, spell);
-        if ((AID)spell.Action.ID == AID.HemitheosFlare)
+        if (spell.Action.ID == (uint)AID.HemitheosFlare)
             _forbiddenPlayers.Set(Raid.FindSlot(spell.MainTargetID));
     }
 }
 
 // variant that happens when cast is started and baits to everyone
-class NestOfFlamevipersEveryone(BossModule module) : NestOfFlamevipersCommon(module)
+sealed class NestOfFlamevipersEveryone(BossModule module) : NestOfFlamevipersCommon(module)
 {
     public bool Active => NumCasts == 0 && BaitingPlayers.Any();
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.NestOfFlamevipers)
+        if (spell.Action.ID == (uint)AID.NestOfFlamevipers)
             BaitingPlayers = Raid.WithSlot(false, true, true).Mask();
     }
 }

@@ -3,8 +3,8 @@
 sealed class RedHiddenMines(BossModule module) : Components.GenericAOEs(module)
 {
     private List<AOEInstance> _mines = [];
-    private static readonly AOEShapeCircle _shapeTrigger = new(3.6f);
-    private static readonly AOEShapeCircle _shapeExplosion = new(8f);
+    private readonly AOEShapeCircle _shapeTrigger = new(3.6f);
+    private readonly AOEShapeCircle _shapeExplosion = new(8f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_mines);
 

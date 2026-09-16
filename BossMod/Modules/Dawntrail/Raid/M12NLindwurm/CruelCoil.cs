@@ -1,7 +1,6 @@
 ﻿
 namespace BossMod.Dawntrail.Raid.M12NLindwurm;
 
-[SkipLocalsInit]
 sealed class CruelCoil(BossModule module) : Components.GenericAOEs(module, warningText: "Run out of snek!")
 {
     // 1st time does skinsplitter x4 then cruel coil

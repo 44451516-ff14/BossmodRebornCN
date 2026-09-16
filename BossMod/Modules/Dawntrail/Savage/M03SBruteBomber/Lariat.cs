@@ -16,8 +16,8 @@ sealed class BlazingLariat(BossModule module) : Components.CastCounter(module, d
 
     private AOEShape ActiveShape => _stack ? _shapePairs : _shapeSpread;
 
-    private static readonly AOEShapeCone _shapeSpread = new(40f, 22.5f.Degrees());
-    private static readonly AOEShapeCone _shapePairs = new(40f, 10f.Degrees());
+    private readonly AOEShapeCone _shapeSpread = new(40f, 22.5f.Degrees());
+    private readonly AOEShapeCone _shapePairs = new(40f, 10f.Degrees());
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {

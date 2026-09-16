@@ -80,8 +80,9 @@ abstract class PayThePiper : Components.GenericForcedMarch
         var move0 = state.PendingMoves[0];
         var dir = move0.dir.ToDirection();
         var forbidden = new ShapeDistance[2];
-        forbidden[0] = new SDInvertedCircle(Ex7Suzaku.ArenaCenter - _offset * dir, 19f);
-        forbidden[1] = new SDRect(Ex7Suzaku.ArenaCenter, -dir, 20f, default, 4.5f);
+        var center = Arena.Center;
+        forbidden[0] = new SDInvertedCircle(center - _offset * dir, 19f);
+        forbidden[1] = new SDRect(center, -dir, 20f, default, 4.5f);
         hints.AddForbiddenZone(new SDUnion(forbidden), move0.activation);
     }
 }

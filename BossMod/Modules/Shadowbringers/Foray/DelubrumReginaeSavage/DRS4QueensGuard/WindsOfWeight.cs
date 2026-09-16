@@ -6,7 +6,7 @@ sealed class WindsOfWeight(BossModule module) : Components.GenericAOEs(module)
     private readonly List<Actor> _purple = [];
     private BitMask _invertedPlayers;
 
-    private static readonly AOEShapeCircle _shape = new(20);
+    private readonly AOEShapeCircle _shape = new(20f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

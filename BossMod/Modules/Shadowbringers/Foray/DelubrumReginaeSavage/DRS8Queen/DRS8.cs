@@ -18,7 +18,7 @@ sealed class OptimalPlayShield(BossModule module) : Components.SimpleAOEs(module
 sealed class OptimalPlayCone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OptimalPlayCone, new AOEShapeCone(60f, 135f.Degrees()));
 sealed class PawnOff(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PawnOffReal, 20f);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 761, NameID = 9863, PlanLevel = 80)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 761u, NameID = 9863u, PlanLevel = 80)]
 public sealed class DRS8Queen(WorldState ws, Actor primary) : Queen(ws, primary)
 {
     private Actor? _warrior;

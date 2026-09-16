@@ -1,6 +1,5 @@
 ﻿namespace BossMod;
 
-[SkipLocalsInit]
 public sealed class ZoneModuleManager : IDisposable
 {
     public readonly WorldState WorldState;

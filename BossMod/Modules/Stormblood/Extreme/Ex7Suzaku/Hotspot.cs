@@ -2,7 +2,7 @@ namespace BossMod.Stormblood.Extreme.Ex7Suzaku;
 
 sealed class Hotspot(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCone cone = new(21f, 45f.Degrees());
+    private readonly AOEShapeCone cone = new(21f, 45f.Degrees());
     public readonly List<AOEInstance> AOEs = [with(16)];
     private readonly PayThePiper _kb = module.FindComponent<PayThePiper>()!;
     private static readonly uint[] _songs = [(uint)OID.SongOfDurance, (uint)OID.SongOfOblivion, (uint)OID.SongOfSorrow, (uint)OID.SongOfFire];
@@ -63,13 +63,14 @@ sealed class Hotspot(BossModule module) : Components.GenericAOEs(module)
     {
         var songs = Module.Enemies(_songs);
         var count = songs.Count;
-        var pos = Ex7Suzaku.ArenaCenter.Quantized();
+        var center = Arena.Center;
+        var pos = center.Quantized();
 
         for (var i = 0; i < count; ++i)
         {
             var song = songs[i];
-            var relativeAngle = Angle.FromDirection(song.Position - Ex7Suzaku.ArenaCenter);
-            var index = ((int)MathF.Round((startrot - relativeAngle).Deg / 12f) + 30) % 30;
+            var relativeAngle = Angle.FromDirection(song.Position - center);
+            var index = ((int)MathF.Round((startrot - relativeAngle).Deg / 12f) + 30f) % 30;
             var rot = song.OID switch
             {
                 (uint)OID.SongOfDurance => Angle.AnglesIntercardinals[3],
@@ -81,7 +82,7 @@ sealed class Hotspot(BossModule module) : Components.GenericAOEs(module)
 
             AOEs.Add(new(cone, pos, rot, WorldState.FutureTime(delay + index * 1.25d)));
         }
-        AOEs.Sort((x, y) => x.Activation.CompareTo(y.Activation));
+        SortHelpers.SortAOEByActivation(AOEs);
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -91,6 +92,6 @@ sealed class Hotspot(BossModule module) : Components.GenericAOEs(module)
         if (count == 0 || count == 16 && NumCasts >= 15 || count == 8 && NumCasts >= 7 || _kb != null && _kb.State.Count != 0)
             return;
         // force ai to stay close to the borders of the 4 panels since there is usually just 1.2s between hits
-        hints.AddForbiddenZone(new SDInvertedCross(Ex7Suzaku.ArenaCenter, default, 20f, 1f), DateTime.MaxValue);
+        hints.AddForbiddenZone(new SDInvertedCross(Arena.Center, default, 20f, 1f), DateTime.MaxValue);
     }
 }

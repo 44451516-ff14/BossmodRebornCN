@@ -1,14 +1,12 @@
 ﻿namespace BossMod;
 
 // event subscription is a simple disposable class that unsubscribes on dispose
-[SkipLocalsInit]
 public sealed class EventSubscription(Action unsubscribe) : IDisposable
 {
     public void Dispose() => unsubscribe();
 }
 
 // event subscription list is a simple way to use a single member to track multiple event subscriptions
-[SkipLocalsInit]
 public sealed class EventSubscriptions : IDisposable
 {
     private Action? _dispose;
@@ -29,7 +27,6 @@ public sealed class EventSubscriptions : IDisposable
 // unlike standard event, there is nothing that prevents firing an event from outside owning class (if that is desired, consider making event private and exposing Subscribe wrapper)
 // there is a convenience ExecuteAndSubscribe function, useful when you need to execute the callback for initial state
 // feel free to add variants with more arguments when needed
-[SkipLocalsInit]
 public sealed class Event
 {
     private Action? _ev;
@@ -48,7 +45,6 @@ public sealed class Event
     public bool HaveSubscribers() => _ev != null;
 }
 
-[SkipLocalsInit]
 public sealed class Event<T1>
 {
     private Action<T1>? _ev;
@@ -67,7 +63,6 @@ public sealed class Event<T1>
     public bool HaveSubscribers() => _ev != null;
 }
 
-[SkipLocalsInit]
 public sealed class Event<T1, T2>
 {
     private Action<T1, T2>? _ev;
@@ -86,7 +81,6 @@ public sealed class Event<T1, T2>
     public bool HaveSubscribers() => _ev != null;
 }
 
-[SkipLocalsInit]
 public sealed class Event<T1, T2, T3>
 {
     private Action<T1, T2, T3>? _ev;

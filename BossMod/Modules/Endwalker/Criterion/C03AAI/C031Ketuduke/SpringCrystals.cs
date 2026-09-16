@@ -5,7 +5,7 @@ abstract class SpringCrystalsRect(BossModule module, bool moveCasters, bool risk
     public List<WPos> SafeZoneCenters = InitialSafeZoneCenters(module.Center);
     private readonly List<AOEInstance> _aoes = [];
 
-    private static readonly AOEShapeRect _shape = new(38f, 5f, 38f);
+    private readonly AOEShapeRect _shape = new(38f, 5f, 38f);
 
     private static List<WPos> InitialSafeZoneCenters(WPos origin)
     {
@@ -48,10 +48,10 @@ abstract class SpringCrystalsRect(BossModule module, bool moveCasters, bool risk
         }
     }
 }
-class SpringCrystalsRectMove(BossModule module) : SpringCrystalsRect(module, true, false, 40.3d);
-class SpringCrystalsRectStay(BossModule module) : SpringCrystalsRect(module, false, true, 24.2d);
+sealed class SpringCrystalsRectMove(BossModule module) : SpringCrystalsRect(module, true, false, 40.3d);
+sealed class SpringCrystalsRectStay(BossModule module) : SpringCrystalsRect(module, false, true, 24.2d);
 
-class SpringCrystalsSphere(BossModule module) : Components.GenericAOEs(module)
+sealed class SpringCrystalsSphere(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
     private bool _active;

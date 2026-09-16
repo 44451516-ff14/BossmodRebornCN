@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Endwalker.Savage.P11SThemis;
 
-class DarkCurrent(BossModule module) : Components.GenericAOEs(module)
+sealed class DarkCurrent(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
 
-    private static readonly AOEShapeCircle _shape = new(8);
+    private readonly AOEShapeCircle _shape = new(8);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -56,4 +56,4 @@ class DarkCurrent(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class BlindingLight(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.BlindingLightAOE, 6f);
+sealed class BlindingLight(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.BlindingLightAOE, 6f);

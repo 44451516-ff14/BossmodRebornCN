@@ -26,7 +26,7 @@ sealed class P5Sigma(BossModule module) : BossComponent(module)
             hints.Add($"Order: {ps.Order}", false);
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (ActiveGlitch != Glitch.Unknown)
             hints.Add($"Glitch: {ActiveGlitch}");
@@ -363,6 +363,7 @@ sealed class P5SigmaDoubleAOEs(BossModule module) : Components.GenericAOEs(modul
 {
     public bool Show;
     public List<AOEInstance> AOEs = [];
+    private readonly AOEShape[] shapes = [new AOEShapeRect(40f, 40f, -4f), new AOEShapeCross(100f, 5f)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Show ? CollectionsMarshal.AsSpan(AOEs) : [];
 
@@ -381,18 +382,18 @@ sealed class P5SigmaDoubleAOEs(BossModule module) : Components.GenericAOEs(modul
         var act = WorldState.FutureTime(15.1d);
         if (actor.ModelState.ModelState == 4)
         {
-            AOEs.Add(new(P5OmegaDoubleAOEs.Shapes[2], pos, rot + 90f.Degrees(), act));
-            AOEs.Add(new(P5OmegaDoubleAOEs.Shapes[2], pos, rot - 90f.Degrees(), act));
+            AOEs.Add(new(shapes[0], pos, rot + 90f.Degrees(), act));
+            AOEs.Add(new(shapes[0], pos, rot - 90f.Degrees(), act));
         }
         else
         {
-            AOEs.Add(new(P5OmegaDoubleAOEs.Shapes[3], pos, rot, act));
+            AOEs.Add(new(shapes[1], pos, rot, act));
             Show = true; // cross can be shown from the start
         }
     }
 }
 
-sealed class P5SigmaNearDistantWorld(BossModule module) : P5NearDistantWorld(module)
+sealed class P5SigmaNearDistantWorld(BossModule module) : NearDistantWorld(module)
 {
     private readonly P5SigmaRearLasers? _lasers = module.FindComponent<P5SigmaRearLasers>();
     private BitMask _dynamisStacks;

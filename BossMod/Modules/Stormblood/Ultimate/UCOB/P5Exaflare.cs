@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UCOB;
 
-class P5Exaflare(BossModule module) : Components.Exaflare(module, 6f)
+sealed class P5Exaflare(BossModule module) : Components.Exaflare(module, 6f)
 {
     public void Reset() => NumCasts = 0;
 
@@ -26,7 +26,9 @@ class P5Exaflare(BossModule module) : Components.Exaflare(module, 6f)
                 {
                     AdvanceLine(line, pos);
                     if (line.ExplosionsLeft == 0)
+                    {
                         Lines.RemoveAt(i);
+                    }
                     return;
                 }
             }

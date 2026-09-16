@@ -52,8 +52,8 @@ sealed class DynamicSensoryJammer(BossModule module) : Components.StayMove(modul
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.BozjaDuel, GroupID = 735, NameID = 4, PlanLevel = 80)]
-public sealed class Gabriel(WorldState ws, Actor primary) : BossModule(ws, primary, new WPos(631f, 687f).Quantized(), new ArenaBoundsCircle(15f))
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.BozjaDuel, GroupID = 735u, NameID = 4u, PlanLevel = 80)]
+public sealed class Duel1Gabriel(WorldState ws, Actor primary) : BossModule(ws, primary, new WPos(631f, 687f).Quantized(), new ArenaBoundsCircle(15f))
 {
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 15f);
 }

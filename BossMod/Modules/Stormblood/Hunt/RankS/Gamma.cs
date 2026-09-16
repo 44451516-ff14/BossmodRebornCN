@@ -60,7 +60,7 @@ class MagitekFlamehookPyretic(BossModule module) : BossComponent(module)
             hints.Add("Pyretic on you! STOP everything!");
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (casting)
             hints.Add("Applies Pyretic - STOP everything until it runs out!");

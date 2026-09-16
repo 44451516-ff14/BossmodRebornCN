@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Savage.P3SPhoinix;
 
 // state related to storms of asphodelos mechanics
-class StormsOfAsphodelos(BossModule module) : BossComponent(module)
+sealed class StormsOfAsphodelos(BossModule module) : BossComponent(module)
 {
     private readonly AOEShapeCone _windsAOE = new(50f, 30f.Degrees());
     private readonly AOEShapeCircle _beaconAOE = new(6);
@@ -124,7 +124,7 @@ class StormsOfAsphodelos(BossModule module) : BossComponent(module)
                 Arena.AddLine(Module.PrimaryActor.Position, player.Position, player.Role == Role.Tank ? Colors.Safe : Colors.Danger);
             var active = tethered || _bossTargets[i] || _twisterTargets.Contains(player);
             var failing = (_hitByMultipleAOEs | _closeToTetherTarget)[i];
-            Arena.Actor(player, active ? Colors.Danger : (failing ? Colors.PlayerInteresting : Colors.PlayerGeneric));
+            Arena.Actor(player, active ? Colors.Danger : (failing ? Colors.PlayerInteresting : Colors.PlayerGeneric), drawWorld: active || failing ? true : null);
         }
     }
 

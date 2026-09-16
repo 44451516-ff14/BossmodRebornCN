@@ -15,7 +15,7 @@ sealed class RapturousEchoTowers(BossModule module) : Components.GenericTowers(m
 
     public override void OnEventDirectorUpdate(uint updateID, uint param1, uint param2, uint param3, uint param4)
     {
-        if (updateID == 0x80000001 && param1 == 0x00000001)
+        if (updateID == 0x80000001 && param1 == 0x00000001u)
         {
             Towers.Clear();
             done = true;
@@ -44,7 +44,7 @@ sealed class RapturousEchoTowers(BossModule module) : Components.GenericTowers(m
 sealed class ScarletMelody(BossModule module) : BossComponent(module)
 {
     private readonly Dictionary<ulong, (WPos Position, Angle direction, DateTime time)> _towerData = [];
-    private static readonly Angle a175 = 175f.Degrees();
+    private readonly Angle a175 = 175f.Degrees();
 
     public override void OnActorEAnim(Actor actor, uint state)
     {

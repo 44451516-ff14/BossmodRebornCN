@@ -3,7 +3,6 @@
 namespace BossMod;
 
 // a triangle; as basic as it gets
-[SkipLocalsInit]
 public readonly struct RelTriangle(WDir a, WDir b, WDir c)
 {
     public readonly WDir A = a;

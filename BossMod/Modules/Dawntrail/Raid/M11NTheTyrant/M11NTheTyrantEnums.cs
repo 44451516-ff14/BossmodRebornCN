@@ -1,4 +1,4 @@
-namespace BossMod.Modules.Dawntrail.Raid.M11NTheTyrant;
+namespace BossMod.Dawntrail.Raid.M11NTheTyrant;
 
 /* Boss Actors */
 public enum OID : uint
@@ -134,5 +134,3 @@ public enum IconID : uint
     RawSteelSharedTankbuster = 600, // player->self
     VoidStardustSpread = 630, // player->self
 }
-
-

@@ -621,7 +621,6 @@ sealed class FlareBreathAOE(BossModule module)
 // 4 cones followed by 4 cones radiating out from center.
 sealed class PerfectDecimation(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PerfectDecimation1, new AOEShapeCone(60f, 22.5f.Degrees()), maxCasts: 4);
 
-[SkipLocalsInit]
 sealed class T04WarriorOfLightP1States : StateMachineBuilder
 {
     public T04WarriorOfLightP1States(T04WarriorOfLightP1 module) : base(module)
@@ -675,5 +674,4 @@ sealed class T04WarriorOfLightP1States : StateMachineBuilder
     SortOrder = 1,
     PlanLevel = 0)]
 
-[SkipLocalsInit]
 public sealed class T04WarriorOfLightP1(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsSquare(20f));

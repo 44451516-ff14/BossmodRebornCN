@@ -7,7 +7,7 @@ sealed class DropSplashOfVenom(BossModule module) : Components.UniformStackSprea
     public Mechanic NextMechanic;
     public DateTime Activation;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (NextMechanic != Mechanic.None)
             hints.Add(NextMechanic.ToString());

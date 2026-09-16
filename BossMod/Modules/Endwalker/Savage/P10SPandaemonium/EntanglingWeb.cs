@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Endwalker.Savage.P10SPandaemonium;
 
-class EntanglingWebAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EntanglingWebAOE, 5);
+sealed class EntanglingWebAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EntanglingWebAOE, 5);
 
-class EntanglingWebHints(BossModule module) : BossComponent(module)
+sealed class EntanglingWebHints(BossModule module) : BossComponent(module)
 {
     private readonly List<Actor> _pillars = module.Enemies((uint)OID.Pillar);
     private readonly List<Actor> _targets = [];

@@ -1,6 +1,5 @@
 namespace BossMod;
 
-[SkipLocalsInit]
 public static class PolygonUtil
 {
     public static ReadOnlySpan<(WDir, WDir)> EnumerateEdges(ReadOnlySpan<WDir> contour)

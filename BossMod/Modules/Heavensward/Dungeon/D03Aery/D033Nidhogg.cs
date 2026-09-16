@@ -59,7 +59,7 @@ class Fetters(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (chaintarget != null && chainsactive)
             hints.Add($"Destroy fetters on {chaintarget.Name}!");

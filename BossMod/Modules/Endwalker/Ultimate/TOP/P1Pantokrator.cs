@@ -1,13 +1,13 @@
 ﻿namespace BossMod.Endwalker.Ultimate.TOP;
 
-sealed class P1BallisticImpact(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BallisticImpact, 5);
+sealed class P1BallisticImpact(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BallisticImpact, 5f);
 
 sealed class P1FlameThrower(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly TOPConfig _config = Service.Config.Get<TOPConfig>();
     private readonly P1Pantokrator? _pantokrator = module.FindComponent<P1Pantokrator>();
     public readonly List<AOEInstance> AOEs = [];
-    private static readonly AOEShapeCone _shape = new(65f, 30f.Degrees());
+    private readonly AOEShapeCone _shape = new(65f, 30f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -87,8 +87,8 @@ sealed class P1Pantokrator(BossModule module) : P1CommonAssignments(module)
     public int NumSpreadsDone;
     public int NumStacksDone;
 
-    private const float _spreadRadius = 5;
-    private static readonly AOEShapeRect _stackShape = new(50f, 3f);
+    private const float _spreadRadius = 5f;
+    private readonly AOEShapeRect _stackShape = new(50f, 3f);
 
     protected override (GroupAssignmentUnique assignment, bool global) Assignments()
     {
@@ -163,9 +163,9 @@ sealed class P1Pantokrator(BossModule module) : P1CommonAssignments(module)
     }
 }
 
-class P1DiffuseWaveCannonKyrios : Components.GenericBaitAway
+sealed class P1DiffuseWaveCannonKyrios : Components.GenericBaitAway
 {
-    private static readonly AOEShape _shape = new AOEShapeCone(60f, 60f.Degrees()); // TODO: verify angle
+    private readonly AOEShape _shape = new AOEShapeCone(60f, 60f.Degrees()); // TODO: verify angle
 
     public P1DiffuseWaveCannonKyrios(BossModule module) : base(module, (uint)AID.DiffuseWaveCannonKyrios)
     {
@@ -178,8 +178,9 @@ class P1DiffuseWaveCannonKyrios : Components.GenericBaitAway
         var party = Raid.WithoutSlot(false, true, true);
         Array.Sort(party, (a, b) =>
             {
-                var distA = (a.Position - Arena.Center).LengthSq();
-                var distB = (b.Position - Arena.Center).LengthSq();
+                var center = Arena.Center;
+                var distA = (a.Position - center).LengthSq();
+                var distB = (b.Position - center).LengthSq();
                 return distA.CompareTo(distB);
             });
         List<Bait> baits = [];
@@ -192,9 +193,9 @@ class P1DiffuseWaveCannonKyrios : Components.GenericBaitAway
     }
 }
 
-class P1WaveCannonKyrios(BossModule module) : Components.GenericBaitAway(module)
+sealed class P1WaveCannonKyrios(BossModule module) : Components.GenericBaitAway(module)
 {
-    private static readonly AOEShapeRect _shape = new(50, 3);
+    private readonly AOEShapeRect _shape = new(50f, 3f);
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {

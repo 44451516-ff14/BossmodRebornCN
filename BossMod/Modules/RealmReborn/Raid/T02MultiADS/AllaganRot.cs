@@ -10,7 +10,7 @@ class AllaganRot(BossModule module) : BossComponent(module)
     private const float _rotPassRadius = 3;
     private static readonly PartyRolesConfig.Assignment[] _rotPriority = [PartyRolesConfig.Assignment.R1, PartyRolesConfig.Assignment.M1, PartyRolesConfig.Assignment.M2, PartyRolesConfig.Assignment.H1, PartyRolesConfig.Assignment.H2, PartyRolesConfig.Assignment.R2];
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_rotHolderSlot >= 0)
             hints.Add($"Rot: {(_rotExpiration[_rotHolderSlot] - WorldState.CurrentTime).TotalSeconds:f1}s");

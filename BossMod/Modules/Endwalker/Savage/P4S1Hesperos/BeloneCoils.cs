@@ -1,11 +1,11 @@
 ﻿namespace BossMod.Endwalker.Savage.P4S1Hesperos;
 
 // state related to belone coils mechanic (role towers)
-class BeloneCoils(BossModule module) : BossComponent(module)
+sealed class BeloneCoils(BossModule module) : BossComponent(module)
 {
     public enum Soaker { Unknown, TankOrHealer, DamageDealer }
 
-    public Soaker ActiveSoakers { get; private set; } = Soaker.Unknown;
+    public Soaker ActiveSoakers = Soaker.Unknown;
     private readonly List<Actor> _activeTowers = [];
 
     private const float _towerRadius = 4;
@@ -50,16 +50,16 @@ class BeloneCoils(BossModule module) : BossComponent(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID is AID.BeloneCoilsDPS or AID.BeloneCoilsTH)
+        if (spell.Action.ID is (uint)AID.BeloneCoilsDPS or (uint)AID.BeloneCoilsTH)
         {
             _activeTowers.Add(caster);
-            ActiveSoakers = (AID)spell.Action.ID == AID.BeloneCoilsDPS ? Soaker.DamageDealer : Soaker.TankOrHealer;
+            ActiveSoakers = spell.Action.ID == (uint)AID.BeloneCoilsDPS ? Soaker.DamageDealer : Soaker.TankOrHealer;
         }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID is AID.BeloneCoilsDPS or AID.BeloneCoilsTH)
+        if (spell.Action.ID is (uint)AID.BeloneCoilsDPS or (uint)AID.BeloneCoilsTH)
         {
             _activeTowers.Remove(caster);
             if (_activeTowers.Count == 0)

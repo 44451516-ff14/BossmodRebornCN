@@ -44,7 +44,7 @@ sealed class HeavenAndEarth(BossModule module) : Components.GenericRotatingAOE(m
 {
     private Angle _increment;
 
-    private static readonly AOEShapeCone _shape = new(20f, 15f.Degrees());
+    private readonly AOEShapeCone _shape = new(20f, 15f.Degrees());
 
     private int _index;
 
@@ -74,10 +74,8 @@ sealed class HeavenAndEarth(BossModule module) : Components.GenericRotatingAOE(m
     }
 }
 
-sealed class HeartOfNatureConcentric(BossModule module) : Components.ConcentricAOEs(module, _shapes)
+sealed class HeartOfNatureConcentric(BossModule module) : Components.ConcentricAOEs(module, [new AOEShapeCircle(10f), new AOEShapeDonut(10f, 20f), new AOEShapeDonut(20f, 30f)])
 {
-    private static readonly AOEShape[] _shapes = [new AOEShapeCircle(10), new AOEShapeDonut(10, 20), new AOEShapeDonut(20, 30)];
-
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.NaturesPulse1)

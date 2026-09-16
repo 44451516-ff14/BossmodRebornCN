@@ -58,7 +58,7 @@ public enum AID : uint
     SCrossAttack = 35919, // SMonk->player, 5.0s cast, single-target tankbuster
 }
 
-class Twister(BossModule module) : Components.Adds(module, (uint)OID.Twister)
+sealed class Twister(BossModule module) : Components.Adds(module, (uint)OID.Twister)
 {
     public override void DrawArenaForeground(int pcSlot, Actor pc) { }
 

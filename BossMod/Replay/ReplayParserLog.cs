@@ -120,11 +120,11 @@ public sealed class ReplayParserLog : IDisposable
         public override ActionID ReadAction()
         {
             var parts = ReadString().Split(' ');
-            var type = parts.Length > 0 ? Enum.Parse<ActionType>(parts[0]) : ActionType.None;
+            var type = parts.Length > 0 ? GeneratedEnumMetadata.Parse<ActionType>(parts[0]) : ActionType.None;
             var id = parts.Length > 1 ? uint.Parse(parts[1]) : 0;
             return new(type, id);
         }
-        public override Class ReadClass() => Enum.Parse<Class>(ReadString());
+        public override Class ReadClass() => GeneratedEnumMetadata.Parse<Class>(ReadString());
         public override ActorStatus ReadStatus()
         {
             var sid = ReadString();
@@ -480,6 +480,7 @@ public sealed class ReplayParserLog : IDisposable
             [new("CLDA"u8)] = ParseClientDutyActions,
             [new("CLBH"u8)] = ParseClientBozjaHolster,
             [new("CBLU"u8)] = ParseClientBlueMageSpells,
+            [new("CBST"u8)] = ParseClientBeastmasterBeasts,
             [new("CLVL"u8)] = ParseClientClassJobLevels,
             [new("CLAF"u8)] = ParseClientActiveFate,
             [new("CPET"u8)] = ParseClientActivePet,
@@ -671,7 +672,7 @@ public sealed class ReplayParserLog : IDisposable
     private ClientState.OpActionFailedLoS ParseClientFailedLoS() => new(_input.ReadUInt(false), _input.ReadActorID());
 
     private WaymarkState.OpWaymarkChange ParseWaymarkChange(bool set)
-        => new(_version < 10 ? Enum.Parse<Waymark>(_input.ReadString()) : (Waymark)_input.ReadByte(false), set ? _input.ReadVec3() : null);
+        => new(_version < 10 ? GeneratedEnumMetadata.Parse<Waymark>(_input.ReadString()) : (Waymark)_input.ReadByte(false), set ? _input.ReadVec3() : null);
 
     private WaymarkState.OpSignChange ParseSignChange(bool set) => new((Sign)_input.ReadByte(false), set ? _input.ReadActorID() : 0);
 
@@ -695,7 +696,7 @@ public sealed class ReplayParserLog : IDisposable
                 0,
                 parts[2],
                 0,
-                parts[3] == "Unknown" ? ActorType.Part : Enum.Parse<ActorType>(parts[3]),
+                parts[3] == "Unknown" ? ActorType.Part : GeneratedEnumMetadata.Parse<ActorType>(parts[3]),
                 cls,
                 0,
                 new(float.Parse(parts[4]), float.Parse(parts[5]), float.Parse(parts[6]), float.Parse(parts[7]).Degrees().Rad),
@@ -955,6 +956,17 @@ public sealed class ReplayParserLog : IDisposable
             contents[i] = _input.ReadUInt(false);
         }
 
+        return new(contents);
+    }
+
+    private ClientState.OpBeastmasterBeastsChanged ParseClientBeastmasterBeasts()
+    {
+        var contents = new byte[ClientState.NumBeastmasterBeasts];
+        var count = _input.ReadByte(false);
+        for (var i = 0; i < count; ++i)
+        {
+            contents[i] = _input.ReadByte(false);
+        }
         return new(contents);
     }
 

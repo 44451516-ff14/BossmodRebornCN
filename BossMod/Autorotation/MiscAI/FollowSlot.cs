@@ -27,7 +27,7 @@ public sealed class FollowSlot(RotationModuleManager manager, Actor player) : Ty
         if (Hints.GoalZones.Count == 0 && primaryTarget is { IsAlly: false })
         {
             var effectiveRange = Player.Role is Role.Melee or Role.Tank ? 3f : 25f;
-            Hints.GoalZones.Add(AIHints.GoalSingleTarget(primaryTarget, effectiveRange));
+            Hints.GoalZones.Add(Hints.GoalSingleTarget(primaryTarget, Player, World.Actors, effectiveRange));
         }
 
         var masterSlot = strategy.Master;
@@ -35,10 +35,14 @@ public sealed class FollowSlot(RotationModuleManager manager, Actor player) : Ty
         if (master != null)
         {
             if (_aiConfig.FocusTargetMaster)
+            {
                 Hints.ForcedFocusTarget = master;
+            }
 
             if (Bossmods.ActiveModule == null || _aiConfig.FollowDuringActiveBossModule)
-                Hints.GoalZones.Add(AIHints.GoalSingleTarget(master, _aiConfig.MaxDistanceToSlot, 0.2f));
+            {
+                Hints.GoalZones.Add(AIHints.GoalSingleTarget(master, _aiConfig.MaxDistanceToSlot + 0.5f, 0.2f));
+            }
         }
     }
 }

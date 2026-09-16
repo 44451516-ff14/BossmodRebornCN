@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P7SAgdistis;
 
-class ForbiddenFruit4(BossModule module) : ForbiddenFruitCommon(module, (uint)AID.BullishSwipeAOE)
+sealed class ForbiddenFruit4(BossModule module) : ForbiddenFruitCommon(module, (uint)AID.BullishSwipeAOE)
 {
     private int _bullPlatform;
 

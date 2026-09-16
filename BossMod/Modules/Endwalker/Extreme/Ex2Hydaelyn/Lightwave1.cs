@@ -2,7 +2,7 @@
 
 // component for first lightwave (2 waves, 4 crystals) mechanic
 // first we wait until we find two helpers with Z=70 - these are our lightwaves
-class Lightwave1(BossModule module) : LightwaveCommon(module)
+sealed class Lightwave1(BossModule module) : LightwaveCommon(module)
 {
     private WPos _safeCrystal;
     private WPos _firstHitCrystal;

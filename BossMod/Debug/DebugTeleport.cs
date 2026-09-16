@@ -7,17 +7,14 @@ using FFXIVClientStructs.FFXIV.Client.Game.Control;
 
 namespace BossMod;
 
-sealed class DebugTeleport : IDisposable
+sealed partial class DebugTeleport : IDisposable
 {
-    [DllImport("user32.dll")]
-    private static extern short GetAsyncKeyState(int vKey);
-
     private bool _enableNoClip;
     private bool _subscribed;
     private float _noClipSpeed = 6.0f; // units per second
     private Vector3 _inputCoordinates;
 
-    public unsafe void Draw()
+    public void Draw()
     {
         if (!_subscribed)
         {
@@ -115,12 +112,12 @@ sealed class DebugTeleport : IDisposable
         var right = new Vector3(c, 0f, s);
 
         // poll keys once; allow diagonals
-        var up = IsKeyPressed(32);
-        var down = IsKeyPressed(160);
-        var w = IsKeyPressed(87);
-        var sKey = IsKeyPressed(83);
-        var a = IsKeyPressed(65);
-        var d = IsKeyPressed(68);
+        var up = IsKeyPressed(VirtualKey.SPACE);
+        var down = IsKeyPressed(VirtualKey.LSHIFT);
+        var w = IsKeyPressed(VirtualKey.W);
+        var sKey = IsKeyPressed(VirtualKey.S);
+        var a = IsKeyPressed(VirtualKey.A);
+        var d = IsKeyPressed(VirtualKey.D);
 
         // cancel game input only for pressed keys
         if (up)
@@ -147,7 +144,6 @@ sealed class DebugTeleport : IDisposable
         {
             Service.KeyState.SetRawValue(VirtualKey.D, 0);
         }
-
         // accumulate movement
         var move = Vector3.Zero;
         if (up)
@@ -180,11 +176,16 @@ sealed class DebugTeleport : IDisposable
             var newPos = pos + move;
             obj->SetPosition(newPos.X, newPos.Y, newPos.Z);
         }
+    }
 
-        static bool IsKeyPressed(int vk)
-        {
-            static bool IsBitSet(short b, int bit) => (b & (1 << bit)) != 0;
-            return vk != 0 && IsBitSet(GetAsyncKeyState(vk), 15);
-        }
+    private static partial class Native
+    {
+        [LibraryImport("user32.dll")]
+        internal static partial short GetAsyncKeyState(int vKey);
+    }
+
+    private static bool IsKeyPressed(VirtualKey key)
+    {
+        return (Native.GetAsyncKeyState((int)key) & 0x8000) != 0;
     }
 }

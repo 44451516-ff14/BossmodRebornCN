@@ -1,11 +1,10 @@
-using BossMod.Autorotation.xan;
-using FFXIVClientStructs.FFXIV.Client.Game.Object;
+﻿using FFXIVClientStructs.FFXIV.Client.Game.Object;
 
 namespace BossMod.Autorotation.MiscAI;
 
 public sealed class AutoTarget(RotationModuleManager manager, Actor player) : RotationModule(manager, player)
 {
-    public enum Track { General, Retarget, QuestBattle, DeepDungeon, EpicEcho, Hunt, FATE, TreasureHunt, Everything, CollectFATE, Treasure, MaxTargets, Zodiac }
+    public enum Track { General, Retarget, QuestBattle, DeepDungeon, EpicEcho, Hunt, FATE, TreasureHunt, Everything, CollectFATE, Treasure, MaxTargets, Zodiac, Foray }
     public enum GeneralStrategy { Aggressive, Passive }
     public enum RetargetStrategy { NoTarget, Hostiles, Always, Never }
     public enum Flag { Disabled, Enabled }
@@ -16,7 +15,7 @@ public sealed class AutoTarget(RotationModuleManager manager, Actor player) : Ro
 
         res.Define(Track.General).As<GeneralStrategy>("General")
             .AddOption(GeneralStrategy.Aggressive, "Automatically prioritize targets", supportedTargets: ActionTargets.Hostile)
-            .AddOption(GeneralStrategy.Passive, "什么都不做");
+            .AddOption(GeneralStrategy.Passive, "Do nothing");
 
         res.Define(Track.Retarget).As<RetargetStrategy>("Retarget")
             .AddOption(RetargetStrategy.NoTarget, "Only switch target if player has no target")
@@ -56,13 +55,17 @@ public sealed class AutoTarget(RotationModuleManager manager, Actor player) : Ro
             .AddOption(Flag.Disabled)
             .AddOption(Flag.Enabled);
 
-        res.Define(Track.Treasure).As<Flag>("Treasure", "Open treasure chests", renderer: typeof(DefaultOffRenderer))
+        res.Define(Track.Treasure).As<Flag>("Treasure", "Open treasure chests", renderer: typeof(DefaultOffRenderer), uiPriority: -115)
             .AddOption(Flag.Disabled)
             .AddOption(Flag.Enabled);
 
         res.DefineInt(Track.MaxTargets, "Maximum targets to pull (0 = no max)", minValue: 0, maxValue: 30, uiPriority: -130);
 
         res.Define(Track.Zodiac).As<Flag>("Zodiac", "Prioritize mobs in the current Zodiac Book", renderer: typeof(DefaultOffRenderer), uiPriority: -95)
+            .AddOption(Flag.Disabled)
+            .AddOption(Flag.Enabled);
+
+        res.Define(Track.Foray).As<Flag>("Foray", "Prioritize Foray module targets (eg. Bozja, Occult Crescent)", renderer: typeof(DefaultOffRenderer), uiPriority: -105)
             .AddOption(Flag.Disabled)
             .AddOption(Flag.Enabled);
         return res;
@@ -134,7 +137,7 @@ public sealed class AutoTarget(RotationModuleManager manager, Actor player) : Ro
         if (strategy.Option(Track.TreasureHunt).As<Flag>() == Flag.Enabled)
             allowAll |= Bossmods.LoadedModules is [{ Info.Category: BossModuleInfo.Category.TreasureHunt }];
 
-        if (strategy.Option(Track.DeepDungeon).As<Flag>() == Flag.Enabled && !World.Party.WithoutSlot(includeDead: true, excludeNPCs: true).Skip(1).Any())
+        if (strategy.Option(Track.DeepDungeon).As<Flag>() == Flag.Enabled && World.Party.WithoutSlot(true, true, true).Length == 1)
             allowAll |= Bossmods.LoadedModules is [{ Info.Category: BossModuleInfo.Category.DeepDungeon }];
 
         if (strategy.Option(Track.EpicEcho).As<Flag>() == Flag.Enabled)
@@ -169,6 +172,12 @@ public sealed class AutoTarget(RotationModuleManager manager, Actor player) : Ro
         }
 
         var targetZodiac = strategy.Option(Track.Zodiac).As<Flag>() == Flag.Enabled;
+
+        var targetForay = strategy.Option(Track.Foray).As<Flag>() == Flag.Enabled && Bossmods.ActiveModule is
+        {
+            Info.Category: BossModuleInfo.Category.Foray
+        };
+        var forayPrimaryActor = targetForay ? Bossmods.ActiveModule!.PrimaryActor.OID : default;
 
         // first deal with pulling new enemies
         foreach (var target in Hints.PotentialTargets)
@@ -205,8 +214,14 @@ public sealed class AutoTarget(RotationModuleManager manager, Actor player) : Ro
                 continue;
             }
 
+            if (targetForay && forayPrimaryActor != default && target.Actor.OID == forayPrimaryActor)
+            {
+                prioritize(target, 0);
+                continue;
+            }
+
             // add all other targets to potential targets list (e.g. if modules modify out-of-combat mob priority)
-            if (target.Priority >= 0)
+            if (target.Priority >= 0 || target.ShouldBeTargeted)
                 prioritize(target, target.Priority);
         }
 

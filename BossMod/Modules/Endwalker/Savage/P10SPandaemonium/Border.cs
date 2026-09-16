@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P10SPandaemonium;
 
-class Border(BossModule module) : BossComponent(module)
+sealed class Border(BossModule module) : BossComponent(module)
 {
     public bool LBridgeActive;
     public bool RBridgeActive;
@@ -11,17 +11,29 @@ class Border(BossModule module) : BossComponent(module)
         {
             switch (index)
             {
-                case 2: RBridgeActive = state == 0x00020001u; break;
-                case 3: LBridgeActive = state == 0x00020001u; break;
+                case 0x02:
+                    RBridgeActive = state == 0x00020001u;
+                    break;
+                case 0x03:
+                    LBridgeActive = state == 0x00020001u;
+                    break;
             }
         }
         if (!LBridgeActive && !RBridgeActive)
-            Arena.Bounds = P10SPandaemonium.DefaultArena;
+        {
+            Arena.Bounds = P10SPandaemonium.GetDefaultArena();
+        }
         else if (!LBridgeActive && RBridgeActive)
-            Arena.Bounds = P10SPandaemonium.ArenaR;
+        {
+            Arena.Bounds = P10SPandaemonium.GetArenaR();
+        }
         else if (LBridgeActive && !RBridgeActive)
-            Arena.Bounds = P10SPandaemonium.ArenaL;
+        {
+            Arena.Bounds = P10SPandaemonium.GetArenaL();
+        }
         else if (LBridgeActive && RBridgeActive)
-            Arena.Bounds = P10SPandaemonium.ArenaLR;
+        {
+            Arena.Bounds = P10SPandaemonium.GetArenaLR();
+        }
     }
 }

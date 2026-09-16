@@ -39,14 +39,22 @@ abstract partial class AutoClear : ZoneModule
             {
                 var roomdata = tileset[i];
                 RoomCenters.Add(roomdata.Center.Position);
-                if (roomdata.North != default && !room.HasFlag(RoomFlags.ConnectionN))
+                if (roomdata.North != default && (room & RoomFlags.ConnectionN) == 0)
+                {
                     Walls.Add((roomdata.North, false));
-                if (roomdata.South != default && !room.HasFlag(RoomFlags.ConnectionS))
+                }
+                if (roomdata.South != default && (room & RoomFlags.ConnectionS) == 0)
+                {
                     Walls.Add((roomdata.South, false));
-                if (roomdata.East != default && !room.HasFlag(RoomFlags.ConnectionE))
+                }
+                if (roomdata.East != default && (room & RoomFlags.ConnectionE) == 0)
+                {
                     Walls.Add((roomdata.East, true));
-                if (roomdata.West != default && !room.HasFlag(RoomFlags.ConnectionW))
+                }
+                if (roomdata.West != default && (room & RoomFlags.ConnectionW) == 0)
+                {
                     Walls.Add((roomdata.West, true));
+                }
             }
         }
     }

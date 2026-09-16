@@ -1,4 +1,4 @@
-namespace BossMod.DawnTrail.Raid.M10NDaringDevils;
+namespace BossMod.Dawntrail.Raid.M10NDaringDevils;
 
 // Towers: 4 intercardinal, require at least 1 soaker.
 sealed class HotAerialTowers(BossModule module) : Components.CastTowers(

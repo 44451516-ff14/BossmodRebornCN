@@ -188,7 +188,7 @@ sealed class P5WrathOfTheHeavensCauterizeBait(BossModule module) : BossComponent
     }
 }
 
-sealed class P5WrathOfTheHeavensAscalonsMercyRevealed(BossModule module) : Components.BaitAwayEveryone(module, module.Enemies((uint)OID.BossP5).FirstOrDefault(), new AOEShapeCone(50f, 15f.Degrees()), (uint)AID.AscalonsMercyRevealedAOE);
+sealed class P5WrathOfTheHeavensAscalonsMercyRevealed(DSW2 module) : Components.BaitAwayEveryone(module, module.BossP5(), new AOEShapeCone(50f, 15f.Degrees()), (uint)AID.AscalonsMercyRevealedAOE);
 
 // TODO: detect baiter
 sealed class P5WrathOfTheHeavensLiquidHeaven(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.LiquidHeaven, m => m.Enemies((uint)OID.VoidzoneLiquidHeaven).Where(z => z.EventState != 7), 1.1f);

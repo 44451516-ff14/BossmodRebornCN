@@ -2,11 +2,11 @@
 
 // state related to act 1 wreath of thorns
 // note: there should be two tethered helpers for aoes on activation
-class WreathOfThorns1(BossModule module) : BossComponent(module)
+sealed class WreathOfThorns1(BossModule module) : BossComponent(module)
 {
     public enum State { FirstAOEs, Towers, LastAOEs, Done }
 
-    public State CurState { get; private set; } = State.FirstAOEs;
+    public State CurState = State.FirstAOEs;
     private readonly List<Actor> _relevantHelpers = []; // 2 aoes -> 8 towers -> 2 aoes
 
     private IEnumerable<Actor> FirstAOEs => _relevantHelpers.Take(2);
@@ -71,11 +71,11 @@ class WreathOfThorns1(BossModule module) : BossComponent(module)
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (CurState == State.FirstAOEs && (AID)spell.Action.ID == AID.AkanthaiExplodeAOE)
+        if (CurState == State.FirstAOEs && spell.Action.ID == (uint)AID.AkanthaiExplodeAOE)
             CurState = State.Towers;
-        else if (CurState == State.Towers && (AID)spell.Action.ID == AID.AkanthaiExplodeTower)
+        else if (CurState == State.Towers && spell.Action.ID == (uint)AID.AkanthaiExplodeTower)
             CurState = State.LastAOEs;
-        else if (CurState == State.LastAOEs && (AID)spell.Action.ID == AID.AkanthaiExplodeAOE)
+        else if (CurState == State.LastAOEs && spell.Action.ID == (uint)AID.AkanthaiExplodeAOE)
             CurState = State.Done;
     }
 }

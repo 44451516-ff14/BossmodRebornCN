@@ -1,21 +1,21 @@
 ﻿namespace BossMod.Endwalker.Savage.P4S1Hesperos;
 
 // state related to pinax mechanics
-class Pinax(BossModule module) : BossComponent(module)
+sealed class Pinax(BossModule module) : BossComponent(module)
 {
     private enum Order { Unknown, LUWU, WULU, LFWA, LAWF, WFLA, WALF }
 
-    public int NumFinished { get; private set; }
+    public int NumFinished;
     private Order _order;
     private Actor? _acid;
     private Actor? _fire;
     private Actor? _water;
     private Actor? _lighting;
 
-    private const float _acidAOERadius = 5;
-    private const float _fireAOERadius = 6;
-    private const float _knockbackRadius = 13;
-    private const float _lightingSafeDistance = 16; // linear falloff until 16, then constant (not sure whether it is true distance-based or max-coord-based)
+    private const float _acidAOERadius = 5f;
+    private const float _fireAOERadius = 6f;
+    private const float _knockbackRadius = 13f;
+    private const float _lightingSafeDistance = 16f; // linear falloff until 16, then constant (not sure whether it is true distance-based or max-coord-based)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -56,7 +56,7 @@ class Pinax(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var order = _order switch
         {
@@ -97,8 +97,15 @@ class Pinax(BossModule module) : BossComponent(module)
         if (_acid != null)
         {
             Arena.ZoneCircleOutline(pc.Position, _acidAOERadius, Colors.Danger);
-            foreach (var player in Raid.WithoutSlot(false, true, true).Exclude(pc))
-                Arena.Actor(player, player.Position.InCircle(pc.Position, _acidAOERadius) ? Colors.PlayerInteresting : Colors.PlayerGeneric);
+            foreach (var player in Raid.WithoutSlot(false, true, true))
+            {
+                if (player == pc)
+                {
+                    continue;
+                }
+                var isindanger = player.Position.InCircle(pc.Position, _acidAOERadius);
+                Arena.Actor(player, isindanger ? Colors.PlayerInteresting : Colors.PlayerGeneric, drawWorld: isindanger ? true : null);
+            }
         }
         if (_fire != null)
         {
@@ -106,7 +113,7 @@ class Pinax(BossModule module) : BossComponent(module)
             {
                 if (player.Role == Role.Healer)
                 {
-                    Arena.Actor(player, Colors.Danger);
+                    Arena.Actor(player, Colors.Danger, drawWorld: true);
                     Arena.ZoneCircleOutline(player.Position, _fireAOERadius, Colors.Danger);
                 }
                 else
@@ -128,28 +135,28 @@ class Pinax(BossModule module) : BossComponent(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.PinaxAcid:
+            case (uint)AID.PinaxAcid:
                 _acid = caster;
                 if (_order == Order.WULU)
                     _order = Order.WALF;
                 else if (_order == Order.LUWU)
                     _order = Order.LAWF;
                 break;
-            case AID.PinaxLava:
+            case (uint)AID.PinaxLava:
                 _fire = caster;
                 if (_order == Order.WULU)
                     _order = Order.WFLA;
                 else if (_order == Order.LUWU)
                     _order = Order.LFWA;
                 break;
-            case AID.PinaxWell:
+            case (uint)AID.PinaxWell:
                 _water = caster;
                 if (_order == Order.Unknown)
                     _order = Order.WULU;
                 break;
-            case AID.PinaxLevinstrike:
+            case (uint)AID.PinaxLevinstrike:
                 _lighting = caster;
                 if (_order == Order.Unknown)
                     _order = Order.LUWU;
@@ -159,21 +166,21 @@ class Pinax(BossModule module) : BossComponent(module)
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.PinaxAcid:
+            case (uint)AID.PinaxAcid:
                 _acid = null;
                 ++NumFinished;
                 break;
-            case AID.PinaxLava:
+            case (uint)AID.PinaxLava:
                 _fire = null;
                 ++NumFinished;
                 break;
-            case AID.PinaxWell:
+            case (uint)AID.PinaxWell:
                 _water = null;
                 ++NumFinished;
                 break;
-            case AID.PinaxLevinstrike:
+            case (uint)AID.PinaxLevinstrike:
                 _lighting = null;
                 ++NumFinished;
                 break;

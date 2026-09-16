@@ -1,6 +1,5 @@
 ﻿namespace BossMod.Heavensward.Alliance.A24Ozma;
 
-[SkipLocalsInit]
 sealed class A24OzmaStates : StateMachineBuilder
 {
     public A24OzmaStates(BossModule module) : base(module)

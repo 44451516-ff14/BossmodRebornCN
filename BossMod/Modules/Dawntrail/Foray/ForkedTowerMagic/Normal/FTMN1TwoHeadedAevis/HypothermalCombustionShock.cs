@@ -26,7 +26,7 @@ sealed class HypothermalCombustionShock(BossModule module) : Components.GenericA
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.ThunderfrostTempest)
+        if (spell.Action.ID == (uint)AID.ThunderfrostTempestVisual)
         {
             // x2 at same time, before orbs cast their own spell
             var act = Module.CastFinishAt(spell, 2.7d);

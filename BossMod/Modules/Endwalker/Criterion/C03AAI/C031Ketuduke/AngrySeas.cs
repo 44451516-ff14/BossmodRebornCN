@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C03AAI.C031Ketuduke;
 
-class AngrySeasAOE(BossModule module) : Components.GenericAOEs(module)
+sealed class AngrySeasAOE(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance[] _aoe = [];
 
@@ -18,10 +18,10 @@ class AngrySeasAOE(BossModule module) : Components.GenericAOEs(module)
 }
 
 // TODO: generalize
-class AngrySeasKnockback(BossModule module) : Components.GenericKnockback(module)
+sealed class AngrySeasKnockback(BossModule module) : Components.GenericKnockback(module)
 {
     private readonly List<Knockback> _sources = [with(2)];
-    private static readonly AOEShapeCone _shape = new(30f, 90f.Degrees());
+    private readonly AOEShapeCone _shape = new(30f, 90f.Degrees());
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => CollectionsMarshal.AsSpan(_sources);
 

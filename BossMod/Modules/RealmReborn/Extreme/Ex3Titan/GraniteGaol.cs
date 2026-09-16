@@ -1,6 +1,6 @@
 ﻿namespace BossMod.RealmReborn.Extreme.Ex3Titan;
 
-class GraniteGaol(BossModule module) : BossComponent(module)
+sealed class GraniteGaol(BossModule module) : BossComponent(module)
 {
     public BitMask PendingFetters;
     public DateTime ResolveAt;

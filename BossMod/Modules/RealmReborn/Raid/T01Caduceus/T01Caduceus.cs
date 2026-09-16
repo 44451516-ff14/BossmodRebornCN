@@ -35,7 +35,7 @@ class HoodSwing(BossModule module) : Components.Cleave(module, (uint)AID.HoodSwi
     private DateTime _lastBossCast; // assume boss/add cleaves are synchronized?..
     public float SecondsUntilNextCast() => Math.Max(0, 18 - (float)(WorldState.CurrentTime - _lastBossCast).TotalSeconds);
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         hints.Add($"Next cleave in ~{SecondsUntilNextCast():f1}s");
     }
@@ -68,7 +68,7 @@ class CloneMerge(BossModule module) : BossComponent(module)
             CloneSpawnTime = WorldState.CurrentTime;
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var clone = CloneIfValid;
         if (clone != null && !Module.PrimaryActor.IsDestroyed && !Module.PrimaryActor.IsDead && Module.PrimaryActor.IsTargetable)

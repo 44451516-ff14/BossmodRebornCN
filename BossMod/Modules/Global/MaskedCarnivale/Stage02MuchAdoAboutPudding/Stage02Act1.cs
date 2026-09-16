@@ -17,41 +17,19 @@ public enum AID : uint
 
 sealed class GoldenTongue(BossModule module) : Components.CastInterruptHint(module, (uint)AID.GoldenTongue);
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add("To beat this stage in a timely manner,\nyou should have at least one spell of each element.\n(Water, Fire, Ice, Lightning, Earth and Wind)");
-    }
-}
-
-sealed class Hints2(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add("Pudding is weak to wind spells.\nMarshmallow is weak to ice spells.\nBavarois is weak to earth spells.");
-    }
-}
-
 sealed class Stage02Act1States : StateMachineBuilder
 {
     public Stage02Act1States(BossModule module) : base(module)
     {
         TrivialPhase()
             .ActivateOnEnter<GoldenTongue>()
-            .ActivateOnEnter<Hints2>()
-            .DeactivateOnEnter<Hints>()
             .Raw.Update = () => AllDeadOrDestroyed(Stage02Act1.Trash);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 612, NameID = 8078, SortOrder = 1)]
-public sealed class Stage02Act1 : BossModule
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 612u, NameID = 8078u, SortOrder = 1)]
+public sealed class Stage02Act1(WorldState ws, Actor primary) : BossModule(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
 {
-    public Stage02Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
-    {
-        ActivateComponent<Hints>();
-    }
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.Marshmallow, (uint)OID.Bavarois];
 
     protected override bool CheckPull() => IsAnyActorInCombat(Trash);
@@ -62,4 +40,12 @@ public sealed class Stage02Act1 : BossModule
         Arena.Actors(Enemies((uint)OID.Marshmallow));
         Arena.Actors(Enemies((uint)OID.Bavarois));
     }
+
+    private readonly string[] _prePullHints =
+    [
+        "To beat this stage in a timely manner, you should have at least one spell of each element. (Water, Fire, Ice, Lightning, Earth and Wind)",
+        "For this act: Pudding is weak to wind spells. Marshmallow is weak to ice spells. Bavarois is weak to earth spells."
+    ];
+
+    public override string[] PrePullHints => _prePullHints;
 }

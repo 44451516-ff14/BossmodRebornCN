@@ -1,12 +1,8 @@
 ﻿namespace BossMod.Dawntrail.Foray.ForkedTowerMagic.Extreme.FTME1TwoHeadedAevis;
 
-[SkipLocalsInit]
 sealed class FreezingFugue(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.FreezingFugue1, (uint)AID.FreezingFugue2, (uint)AID.FreezingFugue3], 20f);
-[SkipLocalsInit]
 sealed class PoisonBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PoisonBreath, 18f);
-[SkipLocalsInit]
 sealed class FulgurousFugue(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.FulgurousFugue1, (uint)AID.FulgurousFugue2, (uint)AID.FulgurousFugue3], new AOEShapeDonut(20f, 60f));
-[SkipLocalsInit]
 sealed class FreezingFulgurousFugue(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> Casters = [];
@@ -78,9 +74,7 @@ sealed class FreezingFulgurousFugue(BossModule module) : Components.GenericAOEs(
         }
     }
 }
-[SkipLocalsInit]
 sealed class ThunderfrostTempest(BossModule module) : Components.RaidwideCast(module, (uint)AID.ThunderfrostTempest);
-[SkipLocalsInit]
 sealed class Archaeofury(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Tankbuster, default, 6f, 5f)
 {
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -108,11 +102,8 @@ sealed class Archaeofury(BossModule module) : Components.SpreadFromIcon(module, 
         }
     }
 }
-[SkipLocalsInit]
 sealed class TwoTerrorsWide(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TwoTerrors1, new AOEShapeRect(40f, 10f));
-[SkipLocalsInit]
 sealed class TwoTerrorsThin(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TwoTerrors2, new AOEShapeRect(40f, 5f));
-[SkipLocalsInit]
 sealed class ArcaneRevelation(BossModule module) : Components.GenericAOEs(module)
 {
     // arcane revelation, dangerous squares based on which boss is glowing during cast
@@ -201,35 +192,13 @@ sealed class ArcaneRevelation(BossModule module) : Components.GenericAOEs(module
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
-    StatesType = typeof(FTME1TwoHeadedAevisStates),
-    ConfigType = null, // replace null with typeof(FTME1TwoHeadedAevisConfig) if applicable
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID),
-    StatusIDType = typeof(SID),
-    TetherIDType = typeof(TetherID),
-    IconIDType = typeof(IconID),
-    PrimaryActorOID = (uint)OID.TwoHeadedAevis,
-    Contributors = "gynorhino",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.Foray,
-    GroupType = BossModuleInfo.GroupType.TheForkedTowerMagic,
-    GroupID = 1114u,
-    NameID = 14490u,
-    SortOrder = 1,
-    PlanLevel = 100)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.WIP, PrimaryActorOID = (uint)OID.GreenHead, Contributors = "gynorhino", GroupType = BossModuleInfo.GroupType.TheForkedTowerMagicExtreme, GroupID = 1114u, NameID = 14490u, SortOrder = 1, PlanLevel = 100)]
 public sealed class FTME1TwoHeadedAevis(WorldState ws, Actor primary) : BossModule(ws, primary, new(-900f, 700f), new ArenaBoundsSquare(20f))
 {
-    private Actor? _greenHead;
     private Actor? _blueHead;
     private Actor? _green1;
     private Actor? _blue1;
 
-    public Actor? GreenHead()
-    {
-        return _greenHead;
-    }
     public Actor? BlueHead()
     {
         return _blueHead;
@@ -243,9 +212,8 @@ public sealed class FTME1TwoHeadedAevis(WorldState ws, Actor primary) : BossModu
         return _blue1;
     }
 
-    protected override void UpdateModule()
+    protected override void UpdatePreModuleActivation()
     {
-        _greenHead ??= GetActor((uint)OID.GreenHead);
         _blueHead ??= GetActor((uint)OID.BlueHead);
         _green1 ??= GetActor((uint)OID.GreenHead1);
         _blue1 ??= GetActor((uint)OID.BlueHead1);
@@ -253,7 +221,7 @@ public sealed class FTME1TwoHeadedAevis(WorldState ws, Actor primary) : BossModu
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actor(_greenHead);
+        Arena.Actor(PrimaryActor);
         Arena.Actor(_blueHead);
     }
 

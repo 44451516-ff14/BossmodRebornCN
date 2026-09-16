@@ -3,8 +3,8 @@ namespace BossMod.Shadowbringers.Foray.Duel.Duel3Sartauvoir;
 sealed class BioIV(BossModule module) : BossComponent(module)
 {
     private bool poisoned;
-    private static readonly ActionID esuna = ActionID.MakeSpell(ClassShared.AID.Esuna);
-    private static readonly ActionID wardensPaean = ActionID.MakeSpell(BRD.AID.WardensPaean);
+    private readonly ActionID esuna = ActionID.MakeSpell(ClassShared.AID.Esuna);
+    private readonly ActionID wardensPaean = ActionID.MakeSpell(BRD.AID.WardensPaean);
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {

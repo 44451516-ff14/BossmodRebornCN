@@ -14,7 +14,7 @@ public sealed class ReplayManagementConfig : ConfigNode
     [PropertyDisplay("在副本开始/结束或户外模块开始/结束时自动录制录像")]
     public bool AutoRecord = false;
 
-    [PropertyDisplay("职责记录器重放时自动录像", tooltip: "需要启用自动录像功能")]
+    [PropertyDisplay("职责记录器重放时自动录像", tooltip: "需要启用自动录像功能", depends: nameof(AutoRecord))]
     public bool AutoARR = false;
 
     [PropertyDisplay("匿名化录像", tooltip: "若关闭此选项，录像会包含你本人及录制期间看到的其他玩家的可识别信息，包括名称与 Content ID。")]

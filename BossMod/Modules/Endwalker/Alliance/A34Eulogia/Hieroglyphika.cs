@@ -7,8 +7,8 @@ sealed class Hieroglyphika(BossModule module) : Components.GenericAOEs(module, (
     public bool BindsAssigned;
     public readonly List<AOEInstance> AOEs = [];
 
-    private static readonly AOEShapeRect _shape = new(12f, 6f);
-    private static readonly WDir[] _canonicalSafespots = [new(-18f, 18f), new(18f, -6f)];
+    private readonly AOEShapeRect _shape = new(12f, 6f);
+    private readonly WDir[] _canonicalSafespots = [new(-18f, 18f), new(18f, -6f)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);
 

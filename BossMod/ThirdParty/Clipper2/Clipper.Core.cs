@@ -9,7 +9,6 @@
 
 namespace Clipper2Lib;
 
-[SkipLocalsInit]
 public struct Point64 : IEquatable<Point64>
 {
     public long X;
@@ -125,7 +124,6 @@ public struct Point64 : IEquatable<Point64>
     }
 }
 
-[SkipLocalsInit]
 public struct PointD : IEquatable<PointD>
 {
     public double x;
@@ -234,7 +232,6 @@ public struct PointD : IEquatable<PointD>
     }
 }
 
-[SkipLocalsInit]
 public struct Rect64
 {
     public long left;
@@ -331,7 +328,6 @@ public struct Rect64
     }
 }
 
-[SkipLocalsInit]
 public struct RectD
 {
     public double left;
@@ -422,7 +418,6 @@ public struct RectD
     }
 }
 
-[SkipLocalsInit]
 public sealed class Path64 : List<Point64>
 {
     public Path64() : base() { }
@@ -454,7 +449,6 @@ public sealed class Path64 : List<Point64>
     }
 }
 
-[SkipLocalsInit]
 public sealed class Paths64 : List<Path64>
 {
     public Paths64() : base() { }
@@ -473,7 +467,6 @@ public sealed class Paths64 : List<Path64>
     }
 }
 
-[SkipLocalsInit]
 public sealed class PathD : List<PointD>
 {
     public PathD() : base() { }
@@ -496,7 +489,6 @@ public sealed class PathD : List<PointD>
     }
 }
 
-[SkipLocalsInit]
 public sealed class PathsD : List<PathD>
 {
     public PathsD() : base() { }
@@ -550,7 +542,6 @@ internal enum PipResult
     OnEdge
 }
 
-[SkipLocalsInit]
 public static class InternalClipper
 {
     internal const long MaxInt64 = 9223372036854775807;
@@ -826,9 +817,14 @@ public static class InternalClipper
             seg1.Y + Math.Round(q * dy, MidpointRounding.ToEven)); // use MidpointRounding.ToEven in order to explicitly match the nearbyint behaviour on the C++ side
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PointInPolygonResult PointInPolygon(Point64 pt, Path64 polygon)
     {
-        var points = CollectionsMarshal.AsSpan(polygon);
+        return PointInPolygon(pt, CollectionsMarshal.AsSpan(polygon));
+    }
+
+    internal static PointInPolygonResult PointInPolygon(Point64 pt, ReadOnlySpan<Point64> points)
+    {
         int len = points.Length, start = 0;
         if (len < 3)
         {

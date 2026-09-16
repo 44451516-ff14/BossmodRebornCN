@@ -35,7 +35,7 @@ sealed class CriticalRip(BossModule module) : Components.SingleTargetCast(module
 
 sealed class LightningBolt(BossModule module) : Components.GenericBaitAway(module, (uint)AID.LightningBolt, centerAtTarget: true)
 {
-    private static readonly AOEShapeCircle circle = new(10f);
+    private readonly AOEShapeCircle circle = new(10f);
     private DateTime activation;
     private readonly List<Actor> freeRods = module.Enemies((uint)OID.LightningRod);
 
@@ -104,15 +104,16 @@ sealed class LightningBolt(BossModule module) : Components.GenericBaitAway(modul
             return;
         }
         var count = freeRods.Count;
+        if (count == 0)
+        {
+            return;
+        }
         var forbidden = new ShapeDistance[count];
         for (var i = 0; i < count; ++i)
         {
             forbidden[i] = new SDInvertedCircle(freeRods[i].Position, 4f);
         }
-        if (count != 0)
-        {
-            hints.AddForbiddenZone(new SDIntersection(forbidden), activation);
-        }
+        hints.AddForbiddenZone(new SDIntersection(forbidden), activation);
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
@@ -132,7 +133,7 @@ sealed class LightningBolt(BossModule module) : Components.GenericBaitAway(modul
 
 sealed class Shock(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCircle circleSmall = new(5f), circleBig = new(10f);
+    private readonly AOEShapeCircle circleSmall = new(5f), circleBig = new(10f);
     private readonly List<AOEInstance> _aoes = [with(6)];
     private bool first = true;
 
@@ -168,7 +169,7 @@ sealed class Shock(BossModule module) : Components.GenericAOEs(module)
 
 sealed class WideBlasterSpikeFlail(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCone coneWide = new(26f, 60f.Degrees()), coneNarrow = new(25f, 30f.Degrees());
+    private readonly AOEShapeCone coneWide = new(26f, 60f.Degrees()), coneNarrow = new(25f, 30f.Degrees());
     private readonly List<AOEInstance> _aoes = [with(2)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

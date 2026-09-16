@@ -137,7 +137,11 @@ public sealed class CooldownPlannerColumns : Timeline.ColumnGroup
                     var alreadyAdded = false;
                     for (var pmi = 0; pmi < Plan.Modules.Count; ++pmi)
                     {
-                        if (Plan.Modules[pmi].Type == mt) { alreadyAdded = true; break; }
+                        if (Plan.Modules[pmi].Type == mt)
+                        {
+                            alreadyAdded = true;
+                            break;
+                        }
                     }
 
                     if (alreadyAdded)

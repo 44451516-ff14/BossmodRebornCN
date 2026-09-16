@@ -28,7 +28,6 @@ public enum IconID : uint
     RayOfLightning = 524 // TrenoCatoblepas->player
 }
 
-[SkipLocalsInit]
 sealed class ArenaChanges(BossModule module) : BossComponent(module)
 {
     public readonly List<Actor> rocksActors = module.Enemies([(uint)OID.SmallRock, (uint)OID.MediumRock, (uint)OID.BigRock]);
@@ -93,17 +92,14 @@ sealed class ArenaChanges(BossModule module) : BossComponent(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class BedevilingLight(BossModule module) : Components.CastLineOfSightAOE(module, (uint)AID.BedevilingLight, 30f)
 {
     private readonly ArenaChanges arena = module.FindComponent<ArenaChanges>()!;
     public override ReadOnlySpan<Actor> BlockerActors() => CollectionsMarshal.AsSpan(arena.rocksActors);
 }
 
-[SkipLocalsInit]
 sealed class Earthquake(BossModule module) : Components.RaidwideCast(module, (uint)AID.Earthquake);
 
-[SkipLocalsInit]
 sealed class ThunderIII(BossModule module) : Components.BaitAwayCast(module, (uint)AID.ThunderIII, 4f, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster)
 {
     private readonly ArenaChanges arena = module.FindComponent<ArenaChanges>()!;
@@ -149,7 +145,6 @@ sealed class ThunderIII(BossModule module) : Components.BaitAwayCast(module, (ui
     }
 }
 
-[SkipLocalsInit]
 sealed class RayOfLightning(BossModule module) : Components.LineStack(module, iconID: (uint)IconID.RayOfLightning, (uint)AID.RayOfLightning, 6.2d, 50f, 2.5f, 4, 4)
 {
     private readonly ArenaChanges arena = module.FindComponent<ArenaChanges>()!;
@@ -195,10 +190,8 @@ sealed class RayOfLightning(BossModule module) : Components.LineStack(module, ic
     }
 }
 
-[SkipLocalsInit]
 sealed class ThunderIIAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ThunderIIAOE, 5f);
 
-[SkipLocalsInit]
 sealed class ThunderIISpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.ThunderIISpread, 5f)
 {
     private readonly ThunderIIAOE aoe = module.FindComponent<ThunderIIAOE>()!;
@@ -269,10 +262,8 @@ sealed class ThunderIISpread(BossModule module) : Components.SpreadFromCastTarge
     }
 }
 
-[SkipLocalsInit]
 sealed class Petribreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Petribreath, new AOEShapeCone(30f, 60f.Degrees()));
 
-[SkipLocalsInit]
 sealed class D121TrenoCatoblepasStates : StateMachineBuilder
 {
     public D121TrenoCatoblepasStates(BossModule module) : base(module)
@@ -306,7 +297,6 @@ GroupID = 1064u,
 NameID = 14270u,
 SortOrder = 1,
 PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class D121TrenoCatoblepas : BossModule
 {
     public D121TrenoCatoblepas(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

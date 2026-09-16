@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Alliance.A21Nophica;
 
-class SowingCircle(BossModule module) : Components.Exaflare(module, 5f)
+sealed class SowingCircle(BossModule module) : Components.Exaflare(module, 5f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -24,7 +24,9 @@ class SowingCircle(BossModule module) : Components.Exaflare(module, 5f)
                 {
                     AdvanceLine(line, pos);
                     if (line.ExplosionsLeft == 0)
+                    {
                         Lines.RemoveAt(i);
+                    }
                     return;
                 }
             }

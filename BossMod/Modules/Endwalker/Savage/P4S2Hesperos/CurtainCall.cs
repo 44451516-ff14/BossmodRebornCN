@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Savage.P4S2Hesperos;
 
 // state related to curtain call mechanic
-class CurtainCall(BossModule module) : BossComponent(module)
+sealed class CurtainCall(BossModule module) : BossComponent(module)
 {
     private readonly int[] _playerOrder = new int[8];
     private List<Actor>? _playersInBreakOrder;
@@ -21,7 +21,7 @@ class CurtainCall(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_playersInBreakOrder != null)
             hints.Add($"Order: {string.Join(" -> ", _playersInBreakOrder.Skip(_numCasts).Select(OrderTextForPlayer))}");
@@ -30,8 +30,15 @@ class CurtainCall(BossModule module) : BossComponent(module)
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         // draw other players
-        foreach ((var slot, var player) in Raid.WithSlot(false, true, true).Exclude(pc))
-            Arena.Actor(player, _playerOrder[slot] == _numCasts + 1 ? Colors.Danger : Colors.PlayerGeneric);
+        foreach ((var slot, var player) in Raid.WithSlot(false, true, true))
+        {
+            if (player == pc)
+            {
+                continue;
+            }
+            var isRelevant = _playerOrder[slot] == _numCasts + 1;
+            Arena.Actor(player, isRelevant ? Colors.Danger : Colors.PlayerGeneric, drawWorld: isRelevant ? true : null);
+        }
 
         // tether
         var tetherTarget = WorldState.Actors.Find(pc.Tether.Target);
@@ -41,7 +48,7 @@ class CurtainCall(BossModule module) : BossComponent(module)
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        if ((SID)status.ID == SID.Thornpricked)
+        if (status.ID == (uint)SID.Thornpricked)
         {
             var slot = Raid.FindSlot(actor.InstanceID);
             if (slot >= 0)

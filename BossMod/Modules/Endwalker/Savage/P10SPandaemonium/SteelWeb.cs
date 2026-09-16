@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P10SPandaemonium;
 
-class SteelWebStack(BossModule module) : Components.UniformStackSpread(module, 6f, default, 3)
+sealed class SteelWebStack(BossModule module) : Components.UniformStackSpread(module, 6f, default, 3)
 {
     private BitMask _forbidden;
 
@@ -30,7 +30,7 @@ class SteelWebStack(BossModule module) : Components.UniformStackSpread(module, 6
     }
 }
 
-class SteelWebTethers(BossModule module) : BossComponent(module)
+sealed class SteelWebTethers(BossModule module) : BossComponent(module)
 {
     private readonly List<(Actor from, Actor to, uint color)> _webs = [];
 

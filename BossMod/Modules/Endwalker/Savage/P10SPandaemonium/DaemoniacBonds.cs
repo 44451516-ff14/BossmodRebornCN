@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P10SPandaemonium;
 
-class DaemoniacBonds(BossModule module) : Components.UniformStackSpread(module, 4f, 6f)
+sealed class DaemoniacBonds(BossModule module) : Components.UniformStackSpread(module, 4f, 6f)
 {
     public int NumMechanics;
     private readonly List<Actor> _spreadTargets = [];
@@ -16,7 +16,7 @@ class DaemoniacBonds(BossModule module) : Components.UniformStackSpread(module, 
             AddStacks(_stackTargets, _stackResolve);
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_spreadResolve == default || _stackResolve == default)
             return;

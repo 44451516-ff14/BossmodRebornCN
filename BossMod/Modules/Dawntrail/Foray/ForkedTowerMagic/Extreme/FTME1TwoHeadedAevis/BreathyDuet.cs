@@ -1,6 +1,5 @@
 ﻿namespace BossMod.Dawntrail.Foray.ForkedTowerMagic.Extreme.FTME1TwoHeadedAevis;
 
-[SkipLocalsInit]
 sealed class BreathyDuet(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<Actor> _lightning = [];

@@ -1,12 +1,10 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
-sealed class P6HPCheck(BossModule module) : BossComponent(module)
+sealed class P6HPCheck(DSW2 module) : BossComponent(module)
 {
-    private readonly DSW2 bossmodule = (DSW2)module;
-
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
-        if (bossmodule._NidhoggP6 is Actor nidhogg && bossmodule._HraesvelgrP6 is Actor hraesvelgr)
+        if (module._NidhoggP6 is Actor nidhogg && module._HraesvelgrP6 is Actor hraesvelgr)
         {
             var diff = (int)(nidhogg.HPMP.CurHP - hraesvelgr.HPMP.CurHP) * 100.0f / nidhogg.HPMP.MaxHP;
             hints.Add($"Nidhogg HP: {(diff > 0 ? "+" : "")}{diff:f1}%");

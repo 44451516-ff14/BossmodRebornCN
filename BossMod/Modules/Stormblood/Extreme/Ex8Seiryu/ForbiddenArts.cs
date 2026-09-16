@@ -30,7 +30,7 @@ sealed class ForbiddenArts(BossModule module) : Components.GenericBaitStack(modu
                         var length = targets.Length;
                         for (var i = 0; i < length; ++i)
                         {
-                            ref readonly var targ = ref targets[i];
+                            var targ = targets[i];
                             if (Raid.FindSlot(targ.ID) is var slot && slot >= 0)
                             {
                                 forbidden.Set(slot);
@@ -49,18 +49,18 @@ sealed class ForbiddenArts(BossModule module) : Components.GenericBaitStack(modu
                 var target = WorldState.Actors.Find(spell.MainTargetID);
                 if (target is Actor t)
                 {
-                    CurrentBaits.Add(new(source, t, rect, act));
+                    CurrentBaits.Add(new(source, t, rect, act, restrictToArenaProjectionLayer: null));
                 }
                 var slotT = Raid.FindSlot(tid);
                 forbidden.Set(slotT);
 
-                for (var i = 0; i < len; ++i) // unfortunately therew is no 2nd marker, so we need to find the 2nd healer. if there is no 2nd healer (alive) the target is random
+                for (var i = 0; i < len; ++i) // unfortunately there is no 2nd marker, so we need to find the 2nd healer. if there is no 2nd healer (alive) the target is random
                 {
-                    ref readonly var player = ref party[i];
+                    ref var player = ref party[i];
                     var p = player.Item2;
                     if (p.Role == Role.Healer && player.Item1 != slotT)
                     {
-                        CurrentBaits.Add(new(source, p, rect, act.AddSeconds(2d), forbidden: forbidden));
+                        CurrentBaits.Add(new(source, p, rect, act.AddSeconds(2d), forbidden: forbidden, restrictToArenaProjectionLayer: null));
                         break;
                     }
                 }

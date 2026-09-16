@@ -121,7 +121,7 @@ sealed class FlipToABSide(BossModule module) : Components.GenericBaitStack(modul
     private bool active;
     private DateTime activation;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (Source != null && CurrentBaits.Count == 0)
         {
@@ -235,13 +235,17 @@ sealed class FlipToABSide(BossModule module) : Components.GenericBaitStack(modul
         {
             Source = null;
             CurrentBaits.Clear();
+            active = false;
+            activation = DateTime.MaxValue;
         }
     }
 
     public override PlayerPriority CalcPriority(int pcSlot, Actor pc, int playerSlot, Actor player, ref uint customColor)
     {
         if (_lightparty || Source == null)
+        {
             return PlayerPriority.Irrelevant;
+        }
         return ClassRole.IsSameRole(pc, player) ? PlayerPriority.Interesting : PlayerPriority.Danger;
     }
 }

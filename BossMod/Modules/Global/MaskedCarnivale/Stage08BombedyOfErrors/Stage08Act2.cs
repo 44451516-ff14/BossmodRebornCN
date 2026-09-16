@@ -54,22 +54,15 @@ sealed class Selfdetonations(BossModule module) : BossComponent(module)
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         var count = bombs.Count;
+        var pos = actor.Position;
         for (var i = 0; i < count; ++i)
         {
-            if (actor.Position.InCircle(bombs[i].Position, 6f))
+            if (pos.InCircle(bombs[i].Position, 6f))
             {
                 hints.Add(hint);
                 return;
             }
         }
-    }
-}
-
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add("Clever activation of cherry bombs will freeze the Progenitrix.\nInterrupt its burst skill or wipe. The Progenitrix is weak to wind spells.");
     }
 }
 
@@ -84,12 +77,16 @@ sealed class Stage08Act2States : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 618, NameID = 8098, SortOrder = 2)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 618u, NameID = 8098u, SortOrder = 2)]
 public sealed class Stage08Act2 : BossModule
 {
     public Stage08Act2(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.Layout2Corners)
     {
-        ActivateComponent<Hints>();
+        var name = PrimaryActor.Name;
+        _prePullHints =
+        [
+           $"Clever activation of cherry bombs will freeze the {name}. Interrupt its burst skill or wipe. The {name} is weak to wind spells."
+        ];
         ActivateComponent<Selfdetonations>();
     }
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.Bomb, (uint)OID.Snoll];
@@ -116,4 +113,8 @@ public sealed class Stage08Act2 : BossModule
             };
         }
     }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

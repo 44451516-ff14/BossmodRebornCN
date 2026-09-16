@@ -2,16 +2,16 @@
 
 // state related to knockback + aoe mechanic
 // TODO: i'm not quite happy with implementation, consider revising...
-class Knockback : BossComponent
+sealed class Knockback : BossComponent
 {
-    public bool AOEDone { get; private set; }
+    public bool AOEDone;
     private readonly bool _isFlare; // true -> purge aka flare (stay away from MT), false -> grace aka holy (stack to MT)
     private readonly Actor? _knockbackTarget;
     private WPos _knockbackPos;
 
-    private const float _kbDistance = 15;
-    private const float _flareRange = 24; // max range is 50, but it has distance falloff - linear up to ~24, then constant ~3k
-    private const float _holyRange = 6;
+    private const float _kbDistance = 15f;
+    private const float _flareRange = 24f; // max range is 50, but it has distance falloff - linear up to ~24, then constant ~3k
+    private const float _holyRange = 6f;
 
     public Knockback(BossModule module) : base(module)
     {
@@ -114,7 +114,10 @@ class Knockback : BossComponent
         {
             // there will be AOE around me, draw all players to help with positioning - note that we use position adjusted for knockback
             foreach (var player in Raid.WithoutSlot(false, true, true))
-                Arena.Actor(player, player.Position.InCircle(targetPos, aoeRange) ? Colors.PlayerInteresting : Colors.PlayerGeneric);
+            {
+                var inaoe = player.Position.InCircle(targetPos, aoeRange);
+                Arena.Actor(player, inaoe ? Colors.PlayerInteresting : Colors.PlayerGeneric, drawWorld: inaoe ? true : null);
+            }
         }
         else
         {
@@ -125,12 +128,12 @@ class Knockback : BossComponent
 
         // draw vulnerable target
         if (_knockbackTarget != pc && _knockbackTarget != target)
-            Arena.Actor(_knockbackTarget, Colors.Vulnerable);
+            Arena.Actor(_knockbackTarget, Colors.Vulnerable, drawWorld: true);
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.TrueHoly2 or AID.TrueFlare2)
+        if (spell.Action.ID is (uint)AID.TrueHoly2 or (uint)AID.TrueFlare2)
             AOEDone = true;
     }
 

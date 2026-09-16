@@ -44,23 +44,23 @@ sealed class P1UtopianSkySpreadStack(BossModule module) : Components.UniformStac
     public Mechanic CurMechanic;
     public DateTime Activation = DateTime.MaxValue;
 
-    public void Show(DateTime activation)
+    public void Show(double delay)
     {
-        Activation = activation;
+        Activation = WorldState.FutureTime(delay);
         ExtraAISpreadThreshold = 0;
         switch (CurMechanic)
         {
             case Mechanic.Stack:
                 // TODO: this can target either tanks or healers
-                AddStacks(Raid.WithoutSlot(true, true, true).Where(p => p.Role == Role.Healer), activation);
+                AddStacks(Raid.WithoutSlot(true, true, true).Where(p => p.Role == Role.Healer), Activation);
                 break;
             case Mechanic.Spread:
-                AddSpreads(Raid.WithoutSlot(true, true, true), activation);
+                AddSpreads(Raid.WithoutSlot(true, true, true), Activation);
                 break;
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (CurMechanic != Mechanic.None)
             hints.Add($"Next: {CurMechanic}");

@@ -35,7 +35,6 @@ public enum AID : uint
     FlaringEpigraph = 41809 // Helper->location, 5.0s cast, range 60 circle
 }
 
-[SkipLocalsInit]
 sealed class FlamingEpigraph : Components.SimpleAOEs
 {
     public FlamingEpigraph(BossModule module) : base(module, (uint)AID.FlamingEpigraph, new AOEShapeCone(60f, 30f.Degrees()), 4)
@@ -43,14 +42,10 @@ sealed class FlamingEpigraph : Components.SimpleAOEs
         MaxDangerColor = 2;
     }
 }
-[SkipLocalsInit]
 sealed class FlaringEpigraph(BossModule module) : Components.RaidwideCast(module, (uint)AID.FlaringEpigraph);
-[SkipLocalsInit]
 sealed class EpigraphicFireII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EpigraphicFireII, 5f);
-[SkipLocalsInit]
 sealed class Epigraph(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Epigraph, new AOEShapeRect(45f, 2.5f));
 
-[SkipLocalsInit]
 sealed class ErosiveEye(BossModule module) : Components.GenericGaze(module)
 {
     private readonly List<Eye> _eyes = [with(4)];
@@ -81,7 +76,6 @@ sealed class ErosiveEye(BossModule module) : Components.GenericGaze(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class TongueLickOfFlameOutIn(BossModule module) : Components.ConcentricAOEs(module, [new AOEShapeCircle(10f), new AOEShapeDonut(10f, 40f)])
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -107,7 +101,6 @@ sealed class TongueLickOfFlameOutIn(BossModule module) : Components.ConcentricAO
     }
 }
 
-[SkipLocalsInit]
 sealed class TongueLickOfFlameInOut(BossModule module) : Components.ConcentricAOEs(module, [new AOEShapeDonut(10f, 40f), new AOEShapeCircle(10f)])
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -133,7 +126,6 @@ sealed class TongueLickOfFlameInOut(BossModule module) : Components.ConcentricAO
     }
 }
 
-[SkipLocalsInit]
 sealed class GoldenGuardianStates : StateMachineBuilder
 {
     public GoldenGuardianStates(BossModule module) : base(module)
@@ -148,7 +140,6 @@ sealed class GoldenGuardianStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.ForayFATE, GroupID = 1018u, NameID = 1963u)]
-[SkipLocalsInit]
 public sealed class GoldenGuardian : OpenWorldFate
 {
     public GoldenGuardian(WorldState ws, Actor primary) : base(ws, primary)

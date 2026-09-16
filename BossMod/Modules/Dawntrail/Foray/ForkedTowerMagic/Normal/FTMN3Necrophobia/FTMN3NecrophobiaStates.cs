@@ -1,9 +1,8 @@
 ﻿namespace BossMod.Dawntrail.Foray.ForkedTowerMagic.Normal.FTMN3Necrophobia;
 
-[SkipLocalsInit]
-sealed class NecrophobiaStates : StateMachineBuilder
+sealed class FTMN3NecrophobiaStates : StateMachineBuilder
 {
-    public NecrophobiaStates(BossModule module) : base(module)
+    public FTMN3NecrophobiaStates(BossModule module) : base(module)
     {
         TrivialPhase()
             .ActivateOnEnter<HailOfHellflares>()
@@ -11,8 +10,6 @@ sealed class NecrophobiaStates : StateMachineBuilder
             .ActivateOnEnter<AncientBlizzard>()
             .ActivateOnEnter<CorpseMangler>()
             .ActivateOnEnter<AncientThunder>()
-            //.ActivateOnEnter<DarkCurrent1>()
-            //.ActivateOnEnter<DarkCurrent2>()
             .ActivateOnEnter<DarkCurrent>()
             .ActivateOnEnter<DeathlyRay>()
             .ActivateOnEnter<VacuumWave>();

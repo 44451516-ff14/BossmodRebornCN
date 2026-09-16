@@ -48,7 +48,7 @@ sealed class OrbCollecting(BossModule module) : BossComponent(module)
             _orbs.Add(actor);
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_orbs.Count != 0)
             hints.Add("Soak the orbs!");

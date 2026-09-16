@@ -4,7 +4,7 @@ sealed class BrutalSmash(BossModule module) : Components.GenericSharedTankbuster
 {
     private bool close;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (Source != null)
             hints.Add($"Proximity shared tankbuster");

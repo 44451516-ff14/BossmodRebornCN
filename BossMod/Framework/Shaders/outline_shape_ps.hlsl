@@ -175,10 +175,6 @@ float sdShape(float2 p, float2 dir, float4 par, float2 extra)
 
 float arenaSdUv(float2 uv)
 {
-    // Never introduce a hard discontinuity at the finite SDF texture rectangle.
-    // Phase 3.5 returned 1e6 outside [0,1], which made fwidth(clippedSd) explode on
-    // that rectangular boundary and could produce box-shaped AA artifacts.
-    //
     // Clamp to the padded SDF edge, then continuously extend its positive distance
     // outside the texture. The SDF texture has guaranteed positive padding around the
     // arena, so this is a conservative continuation of the arena distance field.

@@ -1,13 +1,13 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un3Sophia;
 
 // TODO: there doesn't seem to be any event if mechanic is resolved correctly?..
-class Pairs(BossModule module) : BossComponent(module)
+sealed class Pairs(BossModule module) : BossComponent(module)
 {
     private BitMask _players1;
     private BitMask _players2;
     private DateTime _activation;
 
-    private const float _radius = 4; // TODO: verify
+    private const float _radius = 4f; // TODO: verify
 
     public bool Active => (_players1 | _players2).Any();
 
@@ -37,15 +37,15 @@ class Pairs(BossModule module) : BossComponent(module)
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
-        switch ((IconID)iconID)
+        switch (iconID)
         {
-            case IconID.Pairs1:
+            case (uint)IconID.Pairs1:
                 _players1.Set(Raid.FindSlot(actor.InstanceID));
-                _activation = WorldState.FutureTime(5); // TODO: verify
+                _activation = WorldState.FutureTime(5d); // TODO: verify
                 break;
-            case IconID.Pairs2:
+            case (uint)IconID.Pairs2:
                 _players2.Set(Raid.FindSlot(actor.InstanceID));
-                _activation = WorldState.FutureTime(5); // TODO: verify
+                _activation = WorldState.FutureTime(5d); // TODO: verify
                 break;
         }
     }

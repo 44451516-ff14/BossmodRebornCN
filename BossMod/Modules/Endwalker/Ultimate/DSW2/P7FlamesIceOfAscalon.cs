@@ -4,8 +4,8 @@ sealed class P7FlamesIceOfAscalon(BossModule module) : Components.GenericAOEs(mo
 {
     private AOEInstance[] _aoe = [];
 
-    private static readonly AOEShapeCircle _shapeOut = new(8f);
-    private static readonly AOEShapeDonut _shapeIn = new(8f, 50f);
+    private readonly AOEShapeCircle _shapeOut = new(8f);
+    private readonly AOEShapeDonut _shapeIn = new(8f, 50f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 

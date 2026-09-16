@@ -100,7 +100,7 @@ abstract class P6HallowedPlume(BossModule module) : Components.GenericBaitAway(m
             movementHints.Add(actor.Position, p, Colors.Safe);
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_caster != null)
             hints.Add($"Tankbuster {(_far ? "far" : "near")}");

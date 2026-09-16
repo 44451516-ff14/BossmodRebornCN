@@ -1,6 +1,3 @@
-using BossMod.Components;
-using BossMod;
-
 namespace BossMod.Stormblood.Raid.O1NAlteRoite;
 
 ////////////////////////
@@ -19,7 +16,7 @@ sealed class ClampAOE(BossModule module) : Components.SimpleAOEs(module, (uint)A
 // Twinbolt stuff    //
 ///////////////////////
 sealed class TwinBoltTetheredBuster(BossModule module) : Components.SingleTargetCast(module, (uint)AID.TwinBolt, hint: "Tankbuster! - Watch for Tethered Player!", AIHints.PredictedDamageType.Tankbuster);
-sealed class TwinBoltAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TwinBolt1, new AOEShapeCircle(5f));
+sealed class TwinBoltAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TwinBolt1, 5f);
 
 ////////////////////////
 // Knockbacks        //
@@ -29,21 +26,19 @@ sealed class ClampKB(BossModule module)
         module,
         (uint)AID.Clamp,
         distance: 20f,
-        kind: Components.GenericKnockback.Kind.DirForward,
+        kind: Kind.DirForward,
         shape: new AOEShapeRect(9f + module.PrimaryActor.HitboxRadius, 5f)); // width 10 => halfwidth 5
 
-sealed class BreathwingKB(BossModule module)
-    : Components.SimpleKnockbacks(module, (uint)AID.BreathWing, distance: 20f, kind: Components.GenericKnockback.Kind.DirForward);
+sealed class BreathwingKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.BreathWing, distance: 20f, kind: Kind.DirForward);
 
-sealed class DownburstKB(BossModule module)
-    : Components.SimpleKnockbacks(module, (uint)AID.Downburst, distance: 20f, kind: Components.GenericKnockback.Kind.AwayFromOrigin);
+sealed class DownburstKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Downburst, distance: 20f, kind: Kind.AwayFromOrigin);
 
 ////////////////////////
 // Tornado  Mechanics//
 ///////////////////////
 sealed class DownburstTornado(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCircle _shape = new(5f);
+    private readonly AOEShapeCircle _shape = new(5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -60,28 +55,11 @@ sealed class DownburstTornado(BossModule module) : Components.GenericAOEs(module
 ////////////////////////
 // Stack + Spread    //
 ///////////////////////
-sealed class BlazeLevinStackSpread(BossModule module)
-    : Components.IconStackSpread(
-        module,
-        stackIcon: 62,
-        spreadIcon: 108,
-        stackAID: (uint)AID.Blaze,
-        spreadAID: (uint)AID.Levinbolt,
-        stackRadius: 6f,
-        spreadRadius: 6f,
-        activationDelay: 5.0);
+sealed class BlazeLevinStackSpread(BossModule module) : Components.IconStackSpread(module, stackIcon: (uint)IconID.StackBlaze, spreadIcon: (uint)IconID.LevinSpread,
+ stackAID: (uint)AID.Blaze, spreadAID: (uint)AID.Levinbolt, stackRadius: 6f, spreadRadius: 6f, activationDelay: 5.0);
 
 ////////////////////////
 // Module Stuff       //
 ///////////////////////
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
-ObjectIDType = typeof(OID),
-ActionIDType = typeof(AID), // replace null with typeof(AID) if applicable
-StatusIDType = typeof(SID), // replace null with typeof(SID) if applicable
-TetherIDType = typeof(TetherID), // replace null with typeof(TetherID) if applicable
-IconIDType = typeof(IconID), // replace null with typeof(IconID) if applicable
-Contributors = "JoeSparkx",
-GroupType = BossModuleInfo.GroupType.CFC,
-GroupID = 252,
-NameID = 5629)]
-public class O1NAlteRoite(WorldState ws, Actor primary) : BossModule(ws, primary, new(00, 00), new ArenaBoundsCircle(20));
+[ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "JoeSparkx", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 252u, NameID = 5629u)]
+public class O1NAlteRoite(WorldState ws, Actor primary) : BossModule(ws, primary, default, new ArenaBoundsCircle(20f));

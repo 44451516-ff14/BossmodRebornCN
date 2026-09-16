@@ -14,9 +14,10 @@ sealed class Meltdown(BossModule module) : Components.GenericAOEs(module)
             ++NumCasts;
             var count = _aoes.Count;
             var pos = caster.Position;
+            var aoes = CollectionsMarshal.AsSpan(_aoes);
             for (var i = 0; i < count; ++i) // this assumes player actually moves between the 3x meltdown casts, otherwise 2 or more meltdowns might have the same origin
             {
-                if (_aoes[i].Origin == pos)
+                if (aoes[i].Origin == pos)
                 {
                     goto skip;
                 }
@@ -24,7 +25,7 @@ sealed class Meltdown(BossModule module) : Components.GenericAOEs(module)
             _aoes.Add(new(circle, caster.Position));
         skip:
             count = _aoes.Count;
-            var aoes = CollectionsMarshal.AsSpan(_aoes);
+            aoes = CollectionsMarshal.AsSpan(_aoes);
             for (var i = 0; i < count; ++i)
             {
                 ref var aoe = ref aoes[i];

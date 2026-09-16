@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Alliance.A33Oschon;
 
-class P1FlintedFoehn(BossModule module) : Components.UniformStackSpread(module, 6f, default, 8)
+sealed class P1FlintedFoehn(BossModule module) : Components.UniformStackSpread(module, 6f, default, 8)
 {
     public int NumCasts;
 
@@ -13,11 +13,11 @@ class P1FlintedFoehn(BossModule module) : Components.UniformStackSpread(module, 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.FlintedFoehn)
-            AddStack(actor, WorldState.FutureTime(5.1f));
+            AddStack(actor, WorldState.FutureTime(5.1d));
     }
 }
 
-class P2FlintedFoehn(BossModule module) : Components.UniformStackSpread(module, 8f, default, 8)
+sealed class P2FlintedFoehn(BossModule module) : Components.UniformStackSpread(module, 8f, default, 8)
 {
     public int NumCasts;
 

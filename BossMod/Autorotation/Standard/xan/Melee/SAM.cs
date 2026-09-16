@@ -126,9 +126,9 @@ public sealed class SAM(RotationModuleManager manager, Actor player) : Attackxan
 
     private int NumStickers => (Ice ? 1 : 0) + (Moon ? 1 : 0) + (Flower ? 1 : 0);
 
-    private bool Ice => Sen.HasFlag(SenFlags.Setsu);
-    private bool Moon => Sen.HasFlag(SenFlags.Getsu);
-    private bool Flower => Sen.HasFlag(SenFlags.Ka);
+    private bool Ice => (Sen & SenFlags.Setsu) != 0;
+    private bool Moon => (Sen & SenFlags.Getsu) != 0;
+    private bool Flower => (Sen & SenFlags.Ka) != 0;
 
     // fugetsu needs to cover end of iaijutsu cast
     private bool HaveDmg => DamageUpLeft > GCD + GetCastTime(AID.Higanbana);
@@ -239,7 +239,7 @@ public sealed class SAM(RotationModuleManager manager, Actor player) : Attackxan
         {
             // technically the remaining duration we need is ((1 + stacks) * GCD) + (application delay for next GCD) but that's at the mercy of network latency
             if (Meikyo.Left == 0 || CanFitGCD(Meikyo.Left, 2 + Meikyo.Stacks))
-                PushGCD(AID.OgiNamikiri, BestOgiTarget, GCDPriority.Ogi1);
+                PushGCD(AID.OgiNamikiri, BestOgiTarget, GCDPriority.Ogi1, setRotation: NumOgiTargets > 1);
         }
 
         if (Meikyo.Left > GCD)
@@ -357,7 +357,7 @@ public sealed class SAM(RotationModuleManager manager, Actor player) : Attackxan
         // namikiri combo is broken by all GCDs EXCEPT for non-tsubame iaijutsu, meaning we can use e.g. ogi 1 -> bana -> ogi 2 for alignment
         // TODO rotation does not currently do this
         if (OgiRepeat)
-            PushGCD(AID.KaeshiNamikiri, BestOgiTarget, GCDPriority.Ogi2);
+            PushGCD(AID.KaeshiNamikiri, BestOgiTarget, GCDPriority.Ogi2, setRotation: NumOgiTargets > 1);
 
         var (aid, target) = TsubameAction(primaryTarget, Tsubame.Action);
         if (aid == default)
@@ -457,7 +457,7 @@ public sealed class SAM(RotationModuleManager manager, Actor player) : Attackxan
 
         // accidentally overcapping shoha will probably cause the second one to fall out of buffs, resulting in huge potency loss
         if (Meditation == 3 && (RaidBuffsLeft > AnimLock || GrantsMeditation(NextGCD)))
-            PushOGCD(AID.Shoha, BestLineTarget);
+            PushOGCD(AID.Shoha, BestLineTarget, setRotation: NumLineTargets > 1);
 
         if (strategy.Buffs != OffensiveStrategy.Delay && Kenki <= 50)
             PushOGCD(AID.Ikishoten, Player);
@@ -465,18 +465,18 @@ public sealed class SAM(RotationModuleManager manager, Actor player) : Attackxan
         if (Kenki >= 25 && (RaidBuffsLeft > AnimLock || RaidBuffsIn > (Unlocked(TraitID.EnhancedHissatsu) ? 40 : 100)))
         {
             if (NumLineTargets > 2)
-                PushOGCD(AID.HissatsuGuren, BestLineTarget);
+                PushOGCD(AID.HissatsuGuren, BestLineTarget, setRotation: true);
 
             // queue senei since guren may not be unlocked (gated by job quest)
             PushOGCD(AID.HissatsuSenei, primaryTarget);
 
             // queue guren since senei may not be unlocked (unlocks at level 72)
             if (!Unlocked(AID.HissatsuSenei))
-                PushOGCD(AID.HissatsuGuren, BestLineTarget);
+                PushOGCD(AID.HissatsuGuren, BestLineTarget, setRotation: NumLineTargets > 1);
         }
 
         if (Kenki >= 50 && Zanshin > 0 && ReadyIn(AID.HissatsuSenei) > 30)
-            PushOGCD(AID.Zanshin, BestOgiTarget);
+            PushOGCD(AID.Zanshin, BestOgiTarget, setRotation: NumOgiTargets > 1);
 
         var saveKenki = RaidBuffsLeft <= AnimLock && RaidBuffsIn < 1000 || Zanshin > 0 || ReadyIn(AID.HissatsuSenei) < 10;
 
@@ -515,8 +515,8 @@ public sealed class SAM(RotationModuleManager manager, Actor player) : Attackxan
 
     private float HiganbanaLeft(Actor? p) => p == null ? float.MaxValue : StatusDetails(p, SID.Higanbana, Player.InstanceID).Left;
 
-    private bool InConeAOE(Actor primary, Actor other) => TargetInAOECone(other, Player.Position, 8, Player.DirectionTo(primary), 60f.Degrees());
-    private bool InLineAOE(Actor primary, Actor other) => TargetInAOERect(other, Player.Position, Player.DirectionTo(primary), 10f, 4f);
+    private bool InConeAOE(Actor primary, Actor other) => TargetInAOECone(other, Player.Position, 8, Player.DirectionTo(primary), 60.Degrees());
+    private bool InLineAOE(Actor primary, Actor other) => TargetInAOERect(other, Player.Position, Player.DirectionTo(primary), 10, 4);
 }
 
 internal static class StrategyExt

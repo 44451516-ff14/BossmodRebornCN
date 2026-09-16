@@ -8,7 +8,7 @@ sealed class InsideOutOutsideIn(BossModule module) : Components.GenericAOEs(modu
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOEs.Count != 0 ? CollectionsMarshal.AsSpan(AOEs)[..1] : [];
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var count = AOEs.Count;
         if (count > 0)

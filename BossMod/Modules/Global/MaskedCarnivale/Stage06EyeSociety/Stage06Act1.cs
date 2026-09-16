@@ -76,7 +76,7 @@ sealed class TearyTwirl(BossModule module) : Components.StackWithCastTargets(mod
     {
         if (status.ID == (uint)SID.Blind)
         {
-            _blinded[Raid.FindSlot(actor.InstanceID)] = true;
+            _blinded.Set(Raid.FindSlot(actor.InstanceID));
         }
     }
 
@@ -84,7 +84,7 @@ sealed class TearyTwirl(BossModule module) : Components.StackWithCastTargets(mod
     {
         if (status.ID == (uint)SID.Blind)
         {
-            _blinded[Raid.FindSlot(actor.InstanceID)] = false;
+            _blinded.Clear(Raid.FindSlot(actor.InstanceID));
         }
     }
 
@@ -101,31 +101,21 @@ sealed class TearyTwirl(BossModule module) : Components.StackWithCastTargets(mod
     }
 }
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add("Get blinded by the Teary Twirl AOE from the mandragoras.\nBlindness makes you immune to all the gaze attacks.\nThe eyes in act 2 are weak to lightning damage.");
-    }
-}
-
 sealed class Stage06Act1States : StateMachineBuilder
 {
     public Stage06Act1States(BossModule module) : base(module)
     {
         TrivialPhase()
-            .DeactivateOnEnter<Hints>()
             .ActivateOnEnter<ColdStare>()
             .Raw.Update = () => AllDeadOrDestroyed(Stage06Act1.Trash);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 616, NameID = 8090, SortOrder = 1)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 616u, NameID = 8090u, SortOrder = 1)]
 public sealed class Stage06Act1 : BossModule
 {
     public Stage06Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.LayoutBigQuad)
     {
-        ActivateComponent<Hints>();
         ActivateComponent<TearyTwirl>();
         ActivateComponent<DemonEye>();
     }
@@ -152,4 +142,11 @@ public sealed class Stage06Act1 : BossModule
             };
         }
     }
+
+    private readonly string[] _prePullHints =
+    [
+        "Get blinded by the Teary Twirl AOE from the mandragoras. Blindness makes you immune to all the gaze attacks. The eyes in act 2 are weak to lightning damage."
+    ];
+
+    public override string[] PrePullHints => _prePullHints;
 }

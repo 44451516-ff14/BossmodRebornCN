@@ -5,9 +5,9 @@ sealed class IronRainStorm(BossModule module) : Components.GenericAOEs(module)
     public List<AOEInstance> AOEs = [];
     private readonly IaiGiriBait? _bait = module.FindComponent<IaiGiriBait>();
 
-    private static readonly AOEShapeCircle _shapeRain = new(10f);
-    private static readonly AOEShapeCircle _shapeStorm = new(20f);
-    private static readonly WDir[] _safespotDirections = [new(1f, default), new(-1f, default), new(default, 1f), new(default, -1f)];
+    private readonly AOEShapeCircle _shapeRain = new(10f);
+    private readonly AOEShapeCircle _shapeStorm = new(20f);
+    private readonly WDir[] _safespotDirections = [new(1f, default), new(-1f, default), new(default, 1f), new(default, -1f)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);
 

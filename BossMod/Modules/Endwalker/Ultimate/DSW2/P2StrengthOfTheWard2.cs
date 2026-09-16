@@ -11,10 +11,10 @@ sealed class P2StrengthOfTheWard2SpreadStack : Components.UniformStackSpread
     private readonly Actor? _rightCharge;
     private readonly Angle _dirToStackPos;
 
-    public P2StrengthOfTheWard2SpreadStack(BossModule module) : base(module, 8, 24, 5)
+    public P2StrengthOfTheWard2SpreadStack(DSW2 module) : base(module, 8f, 24f, 5)
     {
-        var c1 = module.Enemies((uint)OID.SerAdelphel).FirstOrDefault();
-        var c2 = module.Enemies((uint)OID.SerJanlenoux).FirstOrDefault();
+        var c1 = module.SerAdelphel;
+        var c2 = module.SerJanlenoux;
         if (c1 == null || c2 == null)
         {
             ReportError($"Failed to find charge sources");
@@ -24,7 +24,7 @@ sealed class P2StrengthOfTheWard2SpreadStack : Components.UniformStackSpread
         var offset1 = c1.Position - Arena.Center;
         var offset2 = c2.Position - Arena.Center;
         var toStack = -(offset1 + offset2);
-        (_leftCharge, _rightCharge) = toStack.OrthoL().Dot(offset1) > 0 ? (c1, c2) : (c2, c1);
+        (_leftCharge, _rightCharge) = toStack.OrthoL().Dot(offset1) > 0f ? (c1, c2) : (c2, c1);
         _dirToStackPos = Angle.FromDirection(toStack);
     }
 
@@ -40,7 +40,7 @@ sealed class P2StrengthOfTheWard2SpreadStack : Components.UniformStackSpread
     {
         base.DrawArenaForeground(pcSlot, pc);
         foreach (var safespot in EnumSafeSpots(pc))
-            Arena.ZoneCircleOutline(safespot, 1, Colors.Safe);
+            Arena.ZoneCircleOutline(safespot, 1f, Colors.Safe);
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -101,9 +101,9 @@ sealed class P2StrengthOfTheWard2SpreadStack : Components.UniformStackSpread
 sealed class P2StrengthOfTheWard2Voidzones(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DimensionalCollapseAOE, 9f);
 
 // charges on tethered targets
-sealed class P2StrengthOfTheWard2Charges(BossModule module) : Components.CastCounter(module, (uint)AID.HolyShieldBash)
+sealed class P2StrengthOfTheWard2Charges(DSW2 module) : Components.CastCounter(module, (uint)AID.HolyShieldBash)
 {
-    private readonly List<Actor> _chargeSources = [.. module.Enemies((uint)OID.SerAdelphel), .. module.Enemies((uint)OID.SerJanlenoux)];
+    private readonly List<Actor> _chargeSources = [module.SerAdelphel!, module.SerJanlenoux!];
 
     private const float _chargeHalfWidth = 4f;
 

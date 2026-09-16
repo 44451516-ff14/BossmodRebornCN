@@ -3,7 +3,6 @@
 // used by two trio mechanics, in p2 and in p5
 abstract class DragonsGaze(BossModule module, uint bossOID, double activationDelay) : Components.GenericGaze(module, (uint)AID.DragonsGazeAOE)
 {
-    public bool EnableHints;
     private readonly uint _bossOID = bossOID;
     private Actor? _boss;
     private DateTime _activation;

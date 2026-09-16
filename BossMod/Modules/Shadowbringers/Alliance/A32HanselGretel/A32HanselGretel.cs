@@ -1,26 +1,17 @@
 ﻿namespace BossMod.Shadowbringers.Alliance.A32HanselGretel;
 
-[SkipLocalsInit]
 sealed class WailLamentation(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.Wail1, (uint)AID.Wail2, (uint)AID.Lamentation1, (uint)AID.Lamentation2]);
-[SkipLocalsInit]
 sealed class CripplingBlow(BossModule module) : Components.SingleTargetDelayableCasts(module, [(uint)AID.CripplingBlow1, (uint)AID.CripplingBlow2]);
 
-[SkipLocalsInit]
 sealed class BloodySweep(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.BloodySweep1, (uint)AID.BloodySweep2,
 (uint)AID.BloodySweep3, (uint)AID.BloodySweep4], new AOEShapeRect(50, 12.5f));
 
-[SkipLocalsInit]
 sealed class PassingLance(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PassingLance, new AOEShapeRect(50f, 12f));
-[SkipLocalsInit]
 sealed class UnevenFooting(BossModule module) : Components.SimpleAOEs(module, (uint)AID.UnevenFooting, 23f);
-[SkipLocalsInit]
 sealed class HungryLance(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.HungryLance1, (uint)AID.HungryLance2], new AOEShapeCone(40f, 60f.Degrees()));
 
-[SkipLocalsInit]
 sealed class Breakthrough(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Breakthrough, new AOEShapeRect(53f, 16f));
-[SkipLocalsInit]
 sealed class SeedOfMagicBeta(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SeedOfMagicBeta, 5f);
-[SkipLocalsInit]
 sealed class UpgradedShield(BossModule module) : Components.DirectionalParry(module, [(uint)OID.Gretel, (uint)OID.Hansel])
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -32,7 +23,6 @@ sealed class UpgradedShield(BossModule module) : Components.DirectionalParry(mod
     }
 }
 
-[SkipLocalsInit]
 sealed class MagicalConfluence(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<Actor> voidzones = module.Enemies((uint)OID.MagicalConfluence);
@@ -100,7 +90,6 @@ sealed class MagicalConfluence(BossModule module) : Components.GenericAOEs(modul
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", PrimaryActorOID = (uint)OID.Gretel, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 779, NameID = 9990, SortOrder = 2)]
-[SkipLocalsInit]
 public sealed class A32HanselGretel(WorldState ws, Actor primary) : BossModule(ws, primary, new(-800f, -951.03119f), new ArenaBoundsCircle(24.5f))
 {
     public Actor? BossHansel;

@@ -50,7 +50,7 @@ class EncounterHints : BossComponent
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         switch (NumCast)
         {
@@ -90,7 +90,7 @@ class EncounterHints : BossComponent
 
 class Hints(BossModule module) : BossComponent(module)
 {
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         hints.Add($"{Module.PrimaryActor.Name} will cast Trounce (Cone AOE) from the South and North wall. \nMake sure to stay near him to dodge the AOE. \n{Module.PrimaryActor.Name} will also cast Ecliptic Meteor at 15% HP, plan accordingly!");
     }
@@ -107,7 +107,7 @@ class ManualBurst(BossModule module) : BossComponent(module)
             e.Priority = AIHints.Enemy.PriorityForbidden;
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (HPRatio is > 0.15f and < 0.20f)
             hints.Add("Autorotation will not attack if boss HP is between 15 and 16% - press buttons manually when ready to start burst");

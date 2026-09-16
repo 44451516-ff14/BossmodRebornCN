@@ -1,4 +1,4 @@
-using BossMod.Data;
+﻿using BossMod.Data;
 using BossMod.DRG;
 using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 using static BossMod.AIHints;
@@ -29,6 +29,12 @@ public sealed class DRG(RotationModuleManager manager, Actor player) : Attackxan
         [Track("High Jump/Mirage Dive", Actions = [AID.Jump, AID.HighJump, AID.MirageDive])]
         public Track<HJMDStrategy> HJMD;
 
+        [Track("Hold GCD", Context = StrategyContext.Plan)]
+        public Track<DelayStrategy> HoldGCD;
+
+        [Track("Behavior for HP-locked targets")]
+        public Track<FillerStrategy> Filler;
+
         readonly Targeting IStrategyCommon.Targeting => Targeting.Value;
         readonly AOEStrategy IStrategyCommon.AOE => AOE.Value;
     }
@@ -47,9 +53,9 @@ public sealed class DRG(RotationModuleManager manager, Actor player) : Attackxan
     {
         [Option("Use on cooldown, once Power Surge is active")]
         Automatic,
-        [Option("不要使用", Cooldown = 20)] // hack to make UI display how long LC will last if we use it immediately at the end of the window
+        [Option("不使用", Cooldown = 20)] // so plan UI shows how long it will last if we use it at the end of the window
         Delay,
-        [Option("尽快使用", Effect = 20, Cooldown = 60)]
+        [Option("Use ASAP", Effect = 20, Cooldown = 60)]
         Force
     }
 
@@ -61,13 +67,29 @@ public sealed class DRG(RotationModuleManager manager, Actor player) : Attackxan
         HoldMD,
         [Option("Do not use either")]
         Delay,
-        [Option("尽快使用", Effect = 15, Cooldown = 30, Targets = ActionTargets.Hostile)]
+        [Option("Use ASAP", Effect = 15, Cooldown = 30, Targets = ActionTargets.Hostile)]
         Force
+    }
+
+    public enum DelayStrategy
+    {
+        [Option("保持 GCD 滚动")]
+        None,
+        [Option("延迟 GCD 至当前计划条目结束", Cooldown = 30)] // so plan UI shows how long the combo timer will last
+        Delay
+    }
+
+    public enum FillerStrategy
+    {
+        [Option("使用标准循环")]
+        None,
+        [Option("仅使用连击起手（真实突刺/龙眼雷电/死亡螺旋/龙炎冲）以便下个非填充 GCD 获得龙枪")]
+        ForceTT
     }
 
     public static RotationModuleDefinition Definition()
     {
-        return new RotationModuleDefinition("xan DRG", "Dragoon", "标准循环 (xan)|近战", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.DRG, Class.LNC), 100).WithStrategies<Strategy>();
+        return new RotationModuleDefinition("xan DRG", "Dragoon", "Standard rotation (xan)|Melee", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.DRG, Class.LNC), 100).WithStrategies<Strategy>();
     }
 
     public int Eyes;
@@ -124,11 +146,13 @@ public sealed class DRG(RotationModuleManager manager, Actor player) : Attackxan
         var pos = GetPositional(strategy, primaryTarget);
         UpdatePositionals(primaryTarget, ref pos);
 
+        var gcdDelay = strategy.HoldGCD.Value == DelayStrategy.Delay ? strategy.HoldGCD.ExpireIn : 0;
+
         if (CountdownRemaining > 0)
         {
             if (Player.DistanceToHitbox(primaryTarget) <= 3)
             {
-                if (CountdownRemaining < 0.76f)
+                if (CountdownRemaining < GetApplicationDelay(AID.TrueThrust))
                     PushGCD(AID.TrueThrust, primaryTarget);
             }
             else if (CountdownRemaining < 0.7f)
@@ -146,16 +170,18 @@ public sealed class DRG(RotationModuleManager manager, Actor player) : Attackxan
         if (strategy.Iainuki.IsEnabled() && DutyActionGCDReady(PhantomID.Iainuki) && DutyActionReadyIn(PhantomID.Zeninage) > GCD && DraconianFire <= GCD)
             PushGCD((AID)(uint)PhantomID.Iainuki, primaryTarget, priority: 90);
 
+        var spam1 = strategy.Filler.Value == FillerStrategy.ForceTT && primaryTarget?.Priority == Enemy.PriorityPointless;
+
         if (NumAOETargets > 2)
         {
             switch (ComboLastMove)
             {
                 case AID.SonicThrust:
-                    PushGCD(AID.CoerthanTorment, BestAOETarget);
+                    PushGCD(AID.CoerthanTorment, BestAOETarget, delay: gcdDelay, setRotation: true);
                     break;
                 case AID.DoomSpike:
                 case AID.DraconianFury:
-                    PushGCD(AID.SonicThrust, BestAOETarget);
+                    PushGCD(AID.SonicThrust, BestAOETarget, delay: gcdDelay, setRotation: true);
                     break;
             }
 
@@ -163,12 +189,12 @@ public sealed class DRG(RotationModuleManager manager, Actor player) : Attackxan
             if (!Unlocked(AID.SonicThrust) && PowerSurge <= GCD)
             {
                 if (ComboLastMove == AID.TrueThrust)
-                    PushGCD(AID.Disembowel, primaryTarget);
+                    PushGCD(AID.Disembowel, primaryTarget, delay: gcdDelay);
 
-                PushGCD(AID.TrueThrust, primaryTarget);
+                PushGCD(AID.TrueThrust, primaryTarget, delay: gcdDelay);
             }
 
-            PushGCD(DraconianFire > GCD ? AID.DraconianFury : AID.DoomSpike, BestAOETarget);
+            PushGCD(DraconianFire > GCD ? AID.DraconianFury : AID.DoomSpike, BestAOETarget, spam1 ? 100 : 2, delay: gcdDelay, setRotation: true);
         }
         else
         {
@@ -176,36 +202,36 @@ public sealed class DRG(RotationModuleManager manager, Actor player) : Attackxan
             {
                 case AID.WheelingThrust:
                 case AID.FangAndClaw:
-                    PushGCD(AID.Drakesbane, primaryTarget);
+                    PushGCD(AID.Drakesbane, primaryTarget, delay: gcdDelay);
                     break;
                 case AID.ChaosThrust:
                 case AID.ChaoticSpring:
-                    PushGCD(AID.WheelingThrust, primaryTarget);
+                    PushGCD(AID.WheelingThrust, primaryTarget, delay: gcdDelay);
                     break;
                 case AID.FullThrust:
                 case AID.HeavensThrust:
-                    PushGCD(AID.FangAndClaw, primaryTarget);
+                    PushGCD(AID.FangAndClaw, primaryTarget, delay: gcdDelay);
                     break;
                 case AID.Disembowel:
                 case AID.SpiralBlow:
-                    PushGCD(BestActionUnlocked(AID.ChaoticSpring, AID.ChaosThrust), primaryTarget);
+                    PushGCD(BestActionUnlocked(AID.ChaoticSpring, AID.ChaosThrust), primaryTarget, delay: gcdDelay);
                     break;
                 case AID.VorpalThrust:
                 case AID.LanceBarrage:
-                    PushGCD(BestActionUnlocked(AID.HeavensThrust, AID.FullThrust), primaryTarget);
+                    PushGCD(BestActionUnlocked(AID.HeavensThrust, AID.FullThrust), primaryTarget, delay: gcdDelay);
                     break;
                 case AID.TrueThrust:
                 case AID.RaidenThrust:
                     if (PowerSurge < 10)
-                        PushGCD(BestActionUnlocked(AID.SpiralBlow, AID.Disembowel), primaryTarget);
-                    PushGCD(BestActionUnlocked(AID.LanceBarrage, AID.VorpalThrust), primaryTarget);
+                        PushGCD(BestActionUnlocked(AID.SpiralBlow, AID.Disembowel), primaryTarget, delay: gcdDelay);
+                    PushGCD(BestActionUnlocked(AID.LanceBarrage, AID.VorpalThrust), primaryTarget, delay: gcdDelay);
                     break;
             }
         }
 
-        PushGCD(DraconianFire > GCD ? AID.RaidenThrust : AID.TrueThrust, primaryTarget);
+        PushGCD(DraconianFire > GCD ? AID.RaidenThrust : AID.TrueThrust, primaryTarget, spam1 ? 100 : 2, delay: gcdDelay);
         if (EnhancedTalon > GCD)
-            PushGCD(AID.PiercingTalon, primaryTarget);
+            PushGCD(AID.PiercingTalon, primaryTarget, delay: gcdDelay);
 
         OGCD(strategy, primaryTarget);
     }
@@ -221,7 +247,7 @@ public sealed class DRG(RotationModuleManager manager, Actor player) : Attackxan
             PushOGCD(AID.BattleLitany, Player);
 
         if (NastrondReady == 0 && LanceCharge > AnimLock)
-            PushOGCD(AID.Geirskogul, BestLongAOETarget);
+            PushOGCD(AID.Geirskogul, BestLongAOETarget, setRotation: NumLongAOETargets > 1);
 
         HJMD(strategy, primaryTarget);
 
@@ -230,7 +256,7 @@ public sealed class DRG(RotationModuleManager manager, Actor player) : Attackxan
 
         // ok to use WT outside of buffs, otherwise we might overcap and waste one
         if (ShouldWT(strategy))
-            PushOGCD(AID.WyrmwindThrust, BestLongAOETarget);
+            PushOGCD(AID.WyrmwindThrust, BestLongAOETarget, setRotation: NumLongAOETargets > 1);
 
         if (LanceCharge > GCD && ShouldLifeSurge())
             PushOGCD(AID.LifeSurge, Player);
@@ -239,7 +265,7 @@ public sealed class DRG(RotationModuleManager manager, Actor player) : Attackxan
             PushOGCD(AID.DragonfireDive, BestDiveTarget);
 
         if (NastrondReady > 0)
-            PushOGCD(AID.Nastrond, BestLongAOETarget);
+            PushOGCD(AID.Nastrond, BestLongAOETarget, setRotation: NumLongAOETargets > 1);
 
         if (LotD > AnimLock && moveOk)
         {

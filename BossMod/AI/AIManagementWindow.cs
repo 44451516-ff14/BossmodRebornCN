@@ -11,7 +11,7 @@ sealed class AIManagementWindow : UIWindow
     private readonly EventSubscriptions _subscriptions;
     private const string _title = $"AI：关闭{_windowID}";
     private const string _windowID = "###AI debug window";
-    private static readonly string[] positionals = Enum.GetNames<Positional>();
+    private static readonly string[] positionals = GeneratedEnumMetadata.Names<Positional>();
 
     public AIManagementWindow(AIManager manager) : base(_windowID, false, new(100f, 100f))
     {

@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Alliance.A14Naldthal;
 
 // TODO: create and use generic 'line stack' component
-class FarFlungFire(BossModule module) : Components.GenericWildCharge(module, 3f, fixedLength: 40f)
+sealed class FarFlungFire(BossModule module) : Components.GenericWildCharge(module, 3f, fixedLength: 40f)
 {
     private bool _real;
     private ulong _targetID;
@@ -47,7 +47,7 @@ class FarFlungFire(BossModule module) : Components.GenericWildCharge(module, 3f,
     }
 }
 
-class DeepestPit(BossModule module) : Components.GenericAOEs(module)
+sealed class DeepestPit(BossModule module) : Components.GenericAOEs(module)
 {
     private bool _real;
     private readonly List<Actor> _targets = [];
@@ -55,7 +55,7 @@ class DeepestPit(BossModule module) : Components.GenericAOEs(module)
 
     public bool Active => _aoes.Count != 0;
 
-    private static readonly AOEShapeCircle _shape = new(6f);
+    private readonly AOEShapeCircle _shape = new(6f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -67,7 +67,9 @@ class DeepestPit(BossModule module) : Components.GenericAOEs(module)
         {
             var count = _targets.Count;
             for (var i = 0; i < count; ++i)
+            {
                 Arena.ZoneCircleOutline(_targets[i].Position, _shape.Radius);
+            }
         }
     }
 
@@ -105,6 +107,7 @@ class DeepestPit(BossModule module) : Components.GenericAOEs(module)
             if (_aoes.Count == 0)
             {
                 _targets.Clear();
+                _real = false;
             }
         }
     }

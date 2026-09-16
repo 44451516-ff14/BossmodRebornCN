@@ -8,11 +8,19 @@ sealed class PhantomFlurryTB(BossModule module) : Components.TankSwap(module, (u
 sealed class PhantomFlurryAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PhantomFlurryAOE, new AOEShapeCone(41f, 90f.Degrees()));
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus), Kismet", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 597u, NameID = 7702u, PlanLevel = 70)]
-public sealed class Ex7Suzaku(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, Phase1Bounds)
+public sealed class Ex7Suzaku : BossModule
 {
-    public static readonly WPos ArenaCenter = new(100f, 100f);
-    public static readonly ArenaBoundsCustom Phase1Bounds = new([new Polygon(ArenaCenter, 19.5f, 80)]);
-    public static readonly ArenaBoundsCustom Phase2Bounds = new([new DonutV(ArenaCenter, 3.5f, 20f, 80)]);
+    public Ex7Suzaku(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private Ex7Suzaku(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(100f, 100f), 19.5f, 80)]);
+        return (arena.Center, arena);
+    }
+
+    public static ArenaBoundsCustom GetPhase2Bounds() => new([new DonutV(new(100f, 100f), 3.5f, 20f, 80)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.TOP;
 
-class P5NearDistantWorld(BossModule module) : Components.GenericStackSpread(module, true)
+abstract class NearDistantWorld(BossModule module) : Components.GenericStackSpread(module, true)
 {
     public int NumNearJumpsDone;
     public int NumDistantJumpsDone;
@@ -106,3 +106,5 @@ class P5NearDistantWorld(BossModule module) : Components.GenericStackSpread(modu
             _targets.Set(slot);
     }
 }
+
+sealed class P5NearDistantWorld(BossModule module) : NearDistantWorld(module) { }

@@ -2,7 +2,7 @@
 
 // common mechanics that are used for entire fight
 // TODO: consider splitting into multiple components, at least for mechanics that start in later phases...
-class Mechanics(BossModule module) : BossComponent(module)
+sealed class Mechanics(BossModule module) : BossComponent(module)
 {
     private readonly int[] _tankStacks = new int[PartyState.MaxPartySize];
 
@@ -13,14 +13,14 @@ class Mechanics(BossModule module) : BossComponent(module)
 
     private Angle? _magitekOffset;
 
-    private static readonly AOEShapeCircle _aoeCleave = new(2);
-    private static readonly AOEShapeCone _aoeDiffractive = new(12, 60.Degrees());
-    private static readonly AOEShapeRect _aoeAssaultCannon = new(45, 1);
-    private static readonly AOEShapeRect _aoeMagitekRay = new(40, 3);
+    private readonly AOEShapeCircle _aoeCleave = new(2f);
+    private readonly AOEShapeCone _aoeDiffractive = new(12f, 60f.Degrees());
+    private readonly AOEShapeRect _aoeAssaultCannon = new(45f, 1f);
+    private readonly AOEShapeRect _aoeMagitekRay = new(40f, 3f);
     //private static readonly float _homingLasersRange = 4;
     //private static readonly float _ceruleumVentRange = 8;
-    private const float _orbSharedRange = 8;
-    private const float _orbFixateRange = 6;
+    private const float _orbSharedRange = 8f;
+    private const float _orbFixateRange = 6f;
 
     public override void Update()
     {
@@ -94,7 +94,14 @@ class Mechanics(BossModule module) : BossComponent(module)
     {
         var mt = WorldState.Actors.Find(Module.PrimaryActor.TargetID);
         foreach (var player in Raid.WithoutSlot(false, true, true).Exclude(pc))
-            Arena.Actor(player, _orbKiters.Contains(player.InstanceID) ? Colors.Danger : player == mt ? Colors.PlayerInteresting : Colors.PlayerGeneric);
+        {
+            if (player == pc)
+            {
+                continue;
+            }
+            var isKiter = _orbKiters.Contains(player.InstanceID);
+            Arena.Actor(player, isKiter ? Colors.Danger : player == mt ? Colors.PlayerInteresting : Colors.PlayerGeneric, drawWorld: isKiter || player == mt ? true : null);
+        }
         if (mt != null)
             Arena.ZoneCircleOutline(mt.Position, _aoeCleave.Radius, Colors.Danger);
 
@@ -123,23 +130,23 @@ class Mechanics(BossModule module) : BossComponent(module)
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        if ((SID)status.ID == SID.ViscousAetheroplasm)
+        if (status.ID == (uint)SID.ViscousAetheroplasm)
             SetTankStacks(actor, status.Extra);
     }
 
     public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
-        if ((SID)status.ID == SID.ViscousAetheroplasm)
+        if (status.ID == (uint)SID.ViscousAetheroplasm)
             SetTankStacks(actor, 0);
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        Angle? ray = (AID)spell.Action.ID switch
+        Angle? ray = spell.Action.ID switch
         {
-            AID.MagitekRayCenter => 0.Degrees(),
-            AID.MagitekRayLeft => 45.Degrees(),
-            AID.MagitekRayRight => -45.Degrees(),
+            (uint)AID.MagitekRayCenter => default,
+            (uint)AID.MagitekRayLeft => 45f.Degrees(),
+            (uint)AID.MagitekRayRight => -45f.Degrees(),
             _ => null
         };
         if (ray == null)
@@ -151,21 +158,21 @@ class Mechanics(BossModule module) : BossComponent(module)
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID is AID.MagitekRayCenter or AID.MagitekRayLeft or AID.MagitekRayRight)
+        if (spell.Action.ID is (uint)AID.MagitekRayCenter or (uint)AID.MagitekRayLeft or (uint)AID.MagitekRayRight)
             _magitekOffset = null;
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.AetheroplasmBoom:
+            case (uint)AID.AetheroplasmBoom:
                 _orbsSharedExploded.Add(caster.InstanceID);
                 break;
-            case AID.AetheroplasmFixated:
+            case (uint)AID.AetheroplasmFixated:
                 _orbsKitedExploded.Add(caster.InstanceID);
                 break;
-            case AID.OrbFixate:
+            case (uint)AID.OrbFixate:
                 _orbKiters.Add(spell.MainTargetID);
                 break;
         }

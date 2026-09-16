@@ -20,14 +20,6 @@ sealed class Trounce(BossModule module) : Components.SimpleAOEs(module, (uint)AI
 sealed class SporeSac(BossModule module) : Components.CastHint(module, (uint)AID.SporeSac, "Calls Roselets. Prepare Ice Spikes if available.");
 sealed class InflammableFumes(BossModule module) : Components.CastInterruptHint(module, (uint)AID.InflammableFumes, false, true);
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"Use Bomb Toss to stun {Module.PrimaryActor.Name} when he casts Inflammable Fumes.\nUse Ice Spikes to instantly kill roselets once they become aggressive.\n{Module.PrimaryActor.Name} is weak against water and strong against earth spells.");
-    }
-}
-
 sealed class Stage12Act2States : StateMachineBuilder
 {
     public Stage12Act2States(BossModule module) : base(module)
@@ -36,17 +28,20 @@ sealed class Stage12Act2States : StateMachineBuilder
             .ActivateOnEnter<WildHorn>()
             .ActivateOnEnter<Trounce>()
             .ActivateOnEnter<SporeSac>()
-            .ActivateOnEnter<InflammableFumes>()
-            .DeactivateOnEnter<Hints>();
+            .ActivateOnEnter<InflammableFumes>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 622, NameID = 8102, SortOrder = 2)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 622u, NameID = 8102u, SortOrder = 2)]
 public sealed class Stage12Act2 : BossModule
 {
     public Stage12Act2(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {
-        ActivateComponent<Hints>();
+        var name = PrimaryActor.Name;
+        _prePullHints =
+        [
+            $"Use Bomb Toss to stun {name} when he casts Inflammable Fumes. Use Ice Spikes to instantly kill roselets once they become aggressive. {name} is weak against water and strong against earth spells."
+        ];
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
@@ -68,4 +63,8 @@ public sealed class Stage12Act2 : BossModule
             };
         }
     }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

@@ -131,7 +131,7 @@ abstract class C020Trash1States : StateMachineBuilder
     {
         _savage = savage;
         _module = module;
-        SimplePhase(0, Raiko, "")
+        SimplePhase(0u, Raiko, "")
             .ActivateOnEnter<NTornado>(!savage) // fuko
             .ActivateOnEnter<NScytheTail>(!savage)
             .ActivateOnEnter<NTwister>(!savage)
@@ -155,73 +155,73 @@ abstract class C020Trash1States : StateMachineBuilder
             .ActivateOnEnter<SRightSwipe>(savage)
             .ActivateOnEnter<SLeftSwipe>(savage)
             .Raw.Update = () => (_module.Raiko()?.IsDeadOrDestroyed ?? true) || _module.PrimaryActor.IsDeadOrDestroyed;
-        DeathPhase(1, Fuko)
+        DeathPhase(1u, Fuko)
             .Raw.Update = () => AllDeadOrDestroyed(savage ? Trash1Arena.TrashSavage : Trash1Arena.TrashNormal);
     }
 
     private void Raiko(uint id)
     {
         DisciplesOfLevin(id, 5.3f);
-        BarrelingSmashHowl(id + 0x10000, 6.1f);
-        MasterOfLevin(id + 0x20000, 7.6f);
-        BarrelingSmashHowl(id + 0x30000, 6.5f);
-        SimpleState(id + 0xFF0000, 10f, "???");
+        BarrelingSmashHowl(id + 0x10000u, 6.1f);
+        MasterOfLevin(id + 0x20000u, 7.6f);
+        BarrelingSmashHowl(id + 0x30000u, 6.5f);
+        SimpleState(id + 0xFF0000u, 10f, "???");
     }
 
     private void DisciplesOfLevin(uint id, float delay)
     {
-        ActorCast(id, _module.Raiko, _savage ? (uint)AID.SDisciplesOfLevin : (uint)AID.NDisciplesOfLevin, delay, 4f, false, "Out");
+        ActorCast(id, _module.Raiko, _savage ? AID.SDisciplesOfLevin : AID.NDisciplesOfLevin, delay, 4f, false, "Out");
     }
 
     private void BarrelingSmashHowl(uint id, float delay)
     {
-        ActorCast(id, _module.Raiko, _savage ? (uint)AID.SBarrelingSmash : (uint)AID.NBarrelingSmash, delay, 4f, false, "Charge");
-        ActorCast(id + 0x1000, _module.Raiko, _savage ? (uint)AID.SHowl : (uint)AID.NHowl, 2.1f, 4, false, "Raidwide");
+        ActorCast(id, _module.Raiko, _savage ? AID.SBarrelingSmash : AID.NBarrelingSmash, delay, 4f, false, "Charge");
+        ActorCast(id + 0x1000u, _module.Raiko, _savage ? AID.SHowl : AID.NHowl, 2.1f, 4, false, "Raidwide");
     }
 
     private void MasterOfLevin(uint id, float delay)
     {
-        ActorCast(id, _module.Raiko, _savage ? (uint)AID.SMasterOfLevin : (uint)AID.NMasterOfLevin, delay, 4f, false, "In");
+        ActorCast(id, _module.Raiko, _savage ? AID.SMasterOfLevin : AID.NMasterOfLevin, delay, 4f, false, "In");
     }
 
     private void Fuko(uint id)
     {
         ScytheTail(id, 5.7f);
-        Twister(id + 0x10000, 2.1f);
-        Crosswind(id + 0x20000, 12.0f);
-        ScytheTail(id + 0x30000, 5.8f);
-        Twister(id + 0x40000, 2.1f);
-        Crosswind(id + 0x50000, 10.4f);
-        ScytheTail(id + 0x60000, 6.0f);
-        Twister(id + 0x70000, 4.1f);
-        SimpleState(id + 0xFF0000, 10, "???");
+        Twister(id + 0x10000u, 2.1f);
+        Crosswind(id + 0x20000u, 12.0f);
+        ScytheTail(id + 0x30000u, 5.8f);
+        Twister(id + 0x40000u, 2.1f);
+        Crosswind(id + 0x50000u, 10.4f);
+        ScytheTail(id + 0x60000u, 6.0f);
+        Twister(id + 0x70000u, 4.1f);
+        SimpleState(id + 0xFF0000u, 10f, "???");
     }
 
     private void ScytheTail(uint id, float delay)
     {
-        ActorCast(id, _module.Fuko, _savage ? (uint)AID.SScytheTail : (uint)AID.NScytheTail, delay, 4f, false, "Out");
+        ActorCast(id, _module.Fuko, _savage ? AID.SScytheTail : AID.NScytheTail, delay, 4f, false, "Out");
     }
 
     private void Twister(uint id, float delay)
     {
-        ActorCast(id, _module.Fuko, _savage ? (uint)AID.STwister : (uint)AID.NTwister, delay, 5f, false, "Stack");
+        ActorCast(id, _module.Fuko, _savage ? AID.STwister : AID.NTwister, delay, 5f, false, "Stack");
     }
 
     private void Crosswind(uint id, float delay)
     {
-        ActorCast(id, _module.Raiko, _savage ? (uint)AID.SCrosswind : (uint)AID.NCrosswind, delay, 4f, false, "Knockback");
+        ActorCast(id, _module.Raiko, _savage ? AID.SCrosswind : AID.NCrosswind, delay, 4f, false, "Knockback");
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.NYuki, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 946, NameID = 12425, SortOrder = 1)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.NYuki, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 946u, NameID = 12425u, SortOrder = 1)]
 public sealed class C020NTrash1(WorldState ws, Actor primary) : Trash1Arena(ws, primary, false);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.SYuki, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 947, NameID = 12425, SortOrder = 1)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.SYuki, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 947u, NameID = 12425u, SortOrder = 1)]
 public sealed class C020STrash1(WorldState ws, Actor primary) : Trash1Arena(ws, primary, true);
 
 public abstract class Trash1Arena(WorldState ws, Actor primary, bool savage) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsCustom arena = new([new Square(default, 19.5f), new Rectangle(new(default, -20f), 4.5f, 9.5f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Square(default, 19.5f), new Rectangle(new(0f, -20f), 4.5f, 9.5f)]);
     public static readonly uint[] TrashNormal = [(uint)OID.NYuki, (uint)OID.NFuko, (uint)OID.NFurutsubaki, (uint)OID.NRaiko, (uint)OID.NPenghou];
     public static readonly uint[] TrashSavage = [(uint)OID.SYuki, (uint)OID.SFuko, (uint)OID.SFurutsubaki, (uint)OID.SRaiko, (uint)OID.SPenghou];
 

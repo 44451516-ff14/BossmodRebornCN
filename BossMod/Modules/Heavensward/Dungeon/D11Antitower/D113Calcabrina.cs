@@ -48,11 +48,11 @@ public enum IconID : uint
 }
 
 sealed class TerrifyingGlanceBait(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCone(42.25f, 61f.Degrees()), (uint)IconID.Gaze, (uint)AID.TerrifyingGlance, 3.1d, source: module.Enemies((uint)OID.Calcabrina)[0]);
-sealed class TerrifyingGlanceGaze(BossModule module) : Components.GenericGaze(module)
+sealed class TerrifyingGlanceGaze(D113Calcabrina module) : Components.GenericGaze(module)
 {
     private readonly TerrifyingGlanceBait _bait = module.FindComponent<TerrifyingGlanceBait>()!;
     private Eye[] _eye = [];
-    private readonly Actor boss = ((D113Calcabrina)module).Calcabrina!;
+    private Actor boss;
 
     public override ReadOnlySpan<Eye> ActiveEyes(int slot, Actor actor)
     {
@@ -73,6 +73,7 @@ sealed class TerrifyingGlanceGaze(BossModule module) : Components.GenericGaze(mo
     {
         if (iconID == (uint)IconID.Gaze)
         {
+            boss ??= module.Calcabrina!;
             var loc = boss.Position.Quantized();
             _eye = [(new(loc, WorldState.FutureTime(3.1d), eyeCenter: loc))];
         }

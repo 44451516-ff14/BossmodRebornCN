@@ -21,16 +21,11 @@ public enum AID : uint
     LozatlsFury2 = 15503 // Boss->self, 4.0s cast, range 60 width 20 rect
 }
 
-[SkipLocalsInit]
 sealed class LozatlsFury(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.LozatlsFury1, (uint)AID.LozatlsFury2], new AOEShapeRect(60f, 10f));
-[SkipLocalsInit]
 sealed class Stonefist(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.Stonefist);
-[SkipLocalsInit]
 sealed class LozatlsScorn(BossModule module) : Components.RaidwideCast(module, (uint)AID.LozatlsScorn);
-[SkipLocalsInit]
 sealed class SunToss(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SunToss, 5f);
 
-[SkipLocalsInit]
 sealed class RonkanLight(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly AOEShapeRect rect = new(60f, 20f);
@@ -57,7 +52,6 @@ sealed class RonkanLight(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class D031LozatlStates : StateMachineBuilder
 {
     public D031LozatlStates(BossModule module) : base(module)
@@ -72,7 +66,6 @@ sealed class D031LozatlStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 651u, NameID = 8231u)]
-[SkipLocalsInit]
 public sealed class D031Lozatl(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     public static readonly WPos ArenaCenter = new(default, 315f);

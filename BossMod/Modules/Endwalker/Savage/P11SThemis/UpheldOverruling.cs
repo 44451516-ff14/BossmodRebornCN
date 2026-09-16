@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P11SThemis;
 
-class UpheldOverruling(BossModule module) : Components.UniformStackSpread(module, 6f, 13f, 7, 7)
+sealed class UpheldOverruling(BossModule module) : Components.UniformStackSpread(module, 6f, 13f, 7, 7)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -36,9 +36,9 @@ class UpheldOverruling(BossModule module) : Components.UniformStackSpread(module
 }
 
 abstract class Lightburst(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 13f);
-class LightburstBoss(BossModule module) : Lightburst(module, (uint)AID.LightburstBoss);
-class LightburstClone(BossModule module) : Lightburst(module, (uint)AID.LightburstClone);
+sealed class LightburstBoss(BossModule module) : Lightburst(module, (uint)AID.LightburstBoss);
+sealed class LightburstClone(BossModule module) : Lightburst(module, (uint)AID.LightburstClone);
 
 abstract class DarkPerimeter(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeDonut(8f, 50f));
-class DarkPerimeterBoss(BossModule module) : DarkPerimeter(module, (uint)AID.DarkPerimeterBoss);
-class DarkPerimeterClone(BossModule module) : DarkPerimeter(module, (uint)AID.DarkPerimeterClone);
+sealed class DarkPerimeterBoss(BossModule module) : DarkPerimeter(module, (uint)AID.DarkPerimeterBoss);
+sealed class DarkPerimeterClone(BossModule module) : DarkPerimeter(module, (uint)AID.DarkPerimeterClone);

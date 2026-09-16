@@ -1,4 +1,4 @@
-namespace BossMod.Endwalker.DeepDungeon.PilgrimsTraverse.DD60AncestralMaliktender;
+namespace BossMod.Dawntrail.DeepDungeon.PilgrimsTraverse.DD60AncestralMaliktender;
 
 public enum OID : uint
 {
@@ -35,7 +35,6 @@ public enum AID : uint
     TwoStoneMarch = 44863, // AncestralMaliktender->self, 14.0s cast, single-target
 }
 
-[SkipLocalsInit]
 sealed class SeveralThousandNeedles : Components.SimpleAOEs
 {
     public SeveralThousandNeedles(BossModule module) : base(module, (uint)AID.SeveralThousandNeedles1, new AOEShapeRect(10f, 5f), 6)
@@ -44,7 +43,6 @@ sealed class SeveralThousandNeedles : Components.SimpleAOEs
     }
 }
 
-[SkipLocalsInit]
 sealed class LongRangeNeedles : Components.SimpleAOEs
 {
     public LongRangeNeedles(BossModule module) : base(module, (uint)AID.LongRangeNeedles1, new AOEShapeRect(30f, 15f), 2)
@@ -53,7 +51,6 @@ sealed class LongRangeNeedles : Components.SimpleAOEs
     }
 }
 
-[SkipLocalsInit]
 sealed class Spineshot(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(2)];
@@ -87,7 +84,6 @@ sealed class Spineshot(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class OneTwoStoneMarch(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = [with(8)];
@@ -272,7 +268,6 @@ sealed class OneTwoStoneMarch(BossModule module) : Components.GenericAOEs(module
     }
 }
 
-[SkipLocalsInit]
 sealed class SpinningNeedles(BossModule module) : Components.GenericRotatingAOE(module)
 {
     private readonly AOEShapeCone cone = new(60f, 30f.Degrees());
@@ -316,7 +311,6 @@ sealed class SpinningNeedles(BossModule module) : Components.GenericRotatingAOE(
     }
 }
 
-[SkipLocalsInit]
 sealed class DD60AncestralMaliktenderStates : StateMachineBuilder
 {
     public DD60AncestralMaliktenderStates(BossModule module) : base(module)
@@ -330,22 +324,5 @@ sealed class DD60AncestralMaliktenderStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
-StatesType = typeof(DD60AncestralMaliktenderStates),
-ConfigType = null,
-ObjectIDType = typeof(OID),
-ActionIDType = typeof(AID),
-StatusIDType = null,
-TetherIDType = null,
-IconIDType = null,
-PrimaryActorOID = (uint)OID.AncestralMaliktender,
-Contributors = "The Combat Reborn Team (Malediktus)",
-Expansion = BossModuleInfo.Expansion.Dawntrail,
-Category = BossModuleInfo.Category.DeepDungeon,
-GroupType = BossModuleInfo.GroupType.CFC,
-GroupID = 1037u,
-NameID = 14097u,
-SortOrder = 1,
-PlanLevel = 0)]
-[SkipLocalsInit]
-public sealed class AncestralMaliktender(WorldState ws, Actor primary) : BossModule(ws, primary, new(-600f, -300f), new ArenaBoundsSquare(19.5f));
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.AncestralMaliktender, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1037u, NameID = 14097u)]
+public sealed class DD60AncestralMaliktender(WorldState ws, Actor primary) : BossModule(ws, primary, new(-600f, -300f), new ArenaBoundsSquare(19.5f));

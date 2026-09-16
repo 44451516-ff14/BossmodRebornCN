@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P9SKokytos;
 
-class ChimericSuccession(BossModule module) : Components.UniformStackSpread(module, 6f, 20f, 4)
+sealed class ChimericSuccession(BossModule module) : Components.UniformStackSpread(module, 6f, 20f, 4)
 {
     public int NumCasts;
     private readonly Actor?[] _baitOrder = [null, null, null, null];
@@ -65,11 +65,9 @@ class ChimericSuccession(BossModule module) : Components.UniformStackSpread(modu
         Spreads.Clear();
         var target = NumCasts < _baitOrder.Length ? _baitOrder[NumCasts] : null;
         if (target != null)
-            AddSpread(target, WorldState.FutureTime(NumCasts == 0 ? 10.1f : 3));
+            AddSpread(target, WorldState.FutureTime(NumCasts == 0 ? 10.1d : 3d));
     }
 }
 
 // TODO: think of a way to show baits before cast start to help aiming outside...
-abstract class SwingingKick(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(40f, 90f.Degrees()));
-class SwingingKickFront(BossModule module) : SwingingKick(module, (uint)AID.SwingingKickFront);
-class SwingingKickRear(BossModule module) : SwingingKick(module, (uint)AID.SwingingKickRear);
+sealed class SwingingKick(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.SwingingKickFront, (uint)AID.SwingingKickRear], new AOEShapeCone(40f, 90f.Degrees()));

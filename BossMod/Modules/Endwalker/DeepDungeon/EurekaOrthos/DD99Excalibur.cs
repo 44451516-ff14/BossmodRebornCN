@@ -164,7 +164,7 @@ sealed class Steelstrike(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (nextRaidwide is bool next)
         {

@@ -3,8 +3,8 @@
 sealed class OnmyoSerpentEyeSigil(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(2)];
-    private static readonly AOEShapeDonut donut = new(7f, 30f);
-    private static readonly AOEShapeCircle circle = new(12f);
+    private readonly AOEShapeDonut donut = new(7f, 30f);
+    private readonly AOEShapeCircle circle = new(12f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -18,7 +18,11 @@ sealed class OnmyoSerpentEyeSigil(BossModule module) : Components.GenericAOEs(mo
 
     public override void OnActorModelStateChange(Actor actor, byte modelState, byte animState1, byte animState2)
     {
-        void AddAOE(AOEShape shape, bool first = true) => _aoes.Add(new(shape, actor.Position.Quantized(), default, WorldState.FutureTime(first ? 5.6d : 8.7d)));
+        void AddAOE(AOEShape shape, bool first = true)
+        {
+            var pos = actor.Position.Quantized();
+            _aoes.Add(new(shape, actor.Position.Quantized(), default, WorldState.FutureTime(first ? 5.6d : 8.7d), shapeDistance: shape.Distance(pos, default), restrictToArenaProjectionLayer: null));
+        }
         switch (modelState)
         {
             case 5:

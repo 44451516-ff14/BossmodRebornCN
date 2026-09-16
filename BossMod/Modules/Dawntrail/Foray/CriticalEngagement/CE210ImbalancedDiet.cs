@@ -48,26 +48,16 @@ public enum AID : uint
     Regurgitonion = 48107, // Algol->location, no cast, single-target
 }
 
-[SkipLocalsInit]
 sealed class CursedScreech(BossModule module) : Components.RaidwideCast(module, (uint)AID.CursedScreech);
-[SkipLocalsInit]
 sealed class ShrillPeal(BossModule module) : Components.RaidwideCast(module, (uint)AID.ShrillPeal);
-[SkipLocalsInit]
 sealed class Inhale(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Inhale2, new AOEShapeCone(60f, 15f.Degrees()));
-[SkipLocalsInit]
 sealed class DevourShort(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Devour, new AOEShapeCone(8f, 60f.Degrees()));
-[SkipLocalsInit]
 sealed class RottenOnion(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RottenOnion1, (uint)AID.RottenOnion2], new AOEShapeCone(60f, 15f.Degrees()));
-[SkipLocalsInit]
 sealed class RottenTomato(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RottenTomato1, (uint)AID.RottenTomato2], new AOEShapeRect(50f, 3f));
-[SkipLocalsInit]
 sealed class DevourLong(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Devour2, (uint)AID.Devour3], new AOEShapeCone(12f, 60f.Degrees()));
-[SkipLocalsInit]
 sealed class DigestedJuice(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.DigestedJuice, (uint)AID.DigestedJuice2], new AOEShapeRect(40f, 25f));
-[SkipLocalsInit]
 sealed class Malady(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Malady1, 11f);
 
-[SkipLocalsInit]
 sealed class SpinningInhale(BossModule module) : Components.GenericRotatingAOE(module)
 {
     private readonly AOEShapeCone cone = new(30f, 15f.Degrees());
@@ -84,7 +74,7 @@ sealed class SpinningInhale(BossModule module) : Components.GenericRotatingAOE(m
     {
         if (spell.Action.ID == (uint)AID.SpinningInhale3)
         {
-            AdvanceSequence(caster.Position, spell.Rotation, WorldState.CurrentTime);
+            AdvanceSequence(0, WorldState.CurrentTime);
         }
     }
 
@@ -99,7 +89,6 @@ sealed class SpinningInhale(BossModule module) : Components.GenericRotatingAOE(m
     }
 }
 
-[SkipLocalsInit]
 sealed class CE210ImbalancedDietStates : StateMachineBuilder
 {
     public CE210ImbalancedDietStates(BossModule module) : base(module)
@@ -118,24 +107,7 @@ sealed class CE210ImbalancedDietStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
-    StatesType = typeof(CE210ImbalancedDietStates),
-    ConfigType = null, // replace null with typeof(ImbalancedDietConfig) if applicable
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID), // replace null with typeof(AID) if applicable
-    StatusIDType = null, // replace null with typeof(SID) if applicable
-    TetherIDType = null, // replace null with typeof(TetherID) if applicable
-    IconIDType = null, // replace null with typeof(IconID) if applicable
-    PrimaryActorOID = (uint)OID.Algol,
-    Contributors = "Gynorhino",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.Foray,
-    GroupType = BossModuleInfo.GroupType.CriticalEngagement,
-    GroupID = 1093u,
-    NameID = 54u,
-    SortOrder = 6,
-    PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.Algol, Contributors = "Gynorhino", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 1093u, NameID = 54u)]
 public sealed class CE210ImbalancedDiet(WorldState ws, Actor primary) : BossModule(ws, primary, new WPos(765f, 0f).Quantized(), new ArenaBoundsCircle(24f))
 {
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 24f);

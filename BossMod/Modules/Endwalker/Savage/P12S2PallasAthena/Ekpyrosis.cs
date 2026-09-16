@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Endwalker.Savage.P12S2PallasAthena;
 
 abstract class Ekpyrosis(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 19f); // TODO: verify falloff
-class EkpyrosisProximityV(BossModule module) : Ekpyrosis(module, (uint)AID.EkpyrosisProximityV);
-class EkpyrosisProximityH(BossModule module) : Ekpyrosis(module, (uint)AID.EkpyrosisProximityH);
+sealed class EkpyrosisProximityV(BossModule module) : Ekpyrosis(module, (uint)AID.EkpyrosisProximityV);
+sealed class EkpyrosisProximityH(BossModule module) : Ekpyrosis(module, (uint)AID.EkpyrosisProximityH);
 
-class EkpyrosisExaflare(BossModule module) : Components.Exaflare(module, 6f)
+sealed class EkpyrosisExaflare(BossModule module) : Components.Exaflare(module, 6f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -37,7 +37,7 @@ class EkpyrosisExaflare(BossModule module) : Components.Exaflare(module, 6f)
     }
 }
 
-class EkpyrosisSpread : Components.UniformStackSpread
+sealed class EkpyrosisSpread : Components.UniformStackSpread
 {
     public EkpyrosisSpread(BossModule module) : base(module, default, 6f)
     {

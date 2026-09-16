@@ -9,7 +9,6 @@ class Mow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mow, new 
 class TailDrive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TailDrive, new AOEShapeCone(30, 45.Degrees()));
 
 [ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "The Combat Reborn Team", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 168, NameID = 4878)]
-[SkipLocalsInit]
 public sealed class A22Forgall : BossModule
 {
     public A22Forgall(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

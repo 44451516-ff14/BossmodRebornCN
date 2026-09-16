@@ -82,7 +82,7 @@ class SapShowerTendrilsHint(BossModule module) : BossComponent(module)
             active = false;
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (active)
         {

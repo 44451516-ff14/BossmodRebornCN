@@ -17,33 +17,19 @@ public enum AID : uint
 
 sealed class IronJustice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IronJustice, new AOEShapeCone(9.5f, 60f.Degrees()));
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add("This stage is trivial.\nUse whatever skills you have to defeat these opponents.");
-    }
-}
-
 sealed class Stage01States : StateMachineBuilder
 {
     public Stage01States(BossModule module) : base(module)
     {
         TrivialPhase()
             .ActivateOnEnter<IronJustice>()
-            .DeactivateOnEnter<Hints>()
             .Raw.Update = () => AllDeadOrDestroyed(Stage01.Trash);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 610, NameID = 8077)]
-public sealed class Stage01 : BossModule
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 610u, NameID = 8077u)]
+public sealed class Stage01(WorldState ws, Actor primary) : BossModule(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
 {
-    public Stage01(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
-    {
-        ActivateComponent<Hints>();
-    }
-
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.Slime];
 
     protected override bool CheckPull() => IsAnyActorInCombat(Trash);
@@ -53,4 +39,11 @@ public sealed class Stage01 : BossModule
         Arena.Actor(PrimaryActor);
         Arena.Actors(Enemies((uint)OID.Slime));
     }
+
+    private readonly string[] _prePullHints =
+    [
+        "This stage is trivial. Use whatever skills you have to defeat these opponents."
+    ];
+
+    public override string[] PrePullHints => _prePullHints;
 }

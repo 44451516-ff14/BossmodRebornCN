@@ -181,7 +181,7 @@ sealed class PalladionClearCut(BossModule module) : Components.GenericAOEs(modul
 {
     private readonly Palladion? _palladion = module.FindComponent<Palladion>();
 
-    private static readonly AOEShapeCircle _shape = new(4); // note: it's really a 270? degree cone, but we don't really know rotation early enough, and we just shouldn't stay in center anyway
+    private readonly AOEShapeCircle _shape = new(4f); // note: it's really a 270? degree cone, but we don't really know rotation early enough, and we just shouldn't stay in center anyway
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

@@ -38,7 +38,7 @@ sealed class P1FallOfFaith(BossModule module) : Components.CastCounter(module, d
         // TODO: hint if actor is clipping others?
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_tetherTargets.Count > NumCasts)
             hints.Add(string.Join(" -> ", Enumerable.Range(NumCasts, _tetherTargets.Count - NumCasts).Select(i => _fireTethers[i] ? "Fire" : "Lightning")));

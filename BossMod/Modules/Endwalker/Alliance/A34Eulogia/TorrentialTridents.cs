@@ -3,7 +3,7 @@ namespace BossMod.Endwalker.Alliance.A34Eulogia;
 sealed class TorrentialTrident(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = [with(6)];
-    private static readonly AOEShapeCircle _shape = new(18f);
+    private readonly AOEShapeCircle _shape = new(18f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

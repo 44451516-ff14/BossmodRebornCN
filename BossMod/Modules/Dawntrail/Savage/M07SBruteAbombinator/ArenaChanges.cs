@@ -1,5 +1,3 @@
-using static BossMod.Dawntrail.Raid.BruteAmbombinatorSharedBounds.BruteAmbombinatorSharedBounds;
-
 namespace BossMod.Dawntrail.Savage.M07SBruteAbombinator;
 
 sealed class ArenaChanges(BossModule module) : BossComponent(module)
@@ -10,12 +8,12 @@ sealed class ArenaChanges(BossModule module) : BossComponent(module)
         {
             if (index == 0x00)
             {
-                Arena.Bounds = RectArena;
-                Arena.Center = FinalCenter;
+                Arena.Bounds = new ArenaBoundsRect(12.5f, 25f);
+                Arena.Center = new(100f, 5f);
             }
             else if (index == 0x01)
             {
-                Arena.Bounds = DefaultArena;
+                Arena.Bounds = new ArenaBoundsSquare(20f) { Y = -200f, BorderY = -200f };
             }
         }
     }
@@ -24,8 +22,9 @@ sealed class ArenaChanges(BossModule module) : BossComponent(module)
     {
         if (spell.Action.ID == (uint)AID.NeoBombarianSpecial)
         {
-            Arena.Bounds = KnockbackArena;
-            Arena.Center = KnockbackArena.Center;
+            var arena = Dawntrail.Raid.M07NBruteAbombinator.ArenaChanges.GetKnockbackArena();
+            Arena.Bounds = arena;
+            Arena.Center = arena.Center;
         }
     }
 }

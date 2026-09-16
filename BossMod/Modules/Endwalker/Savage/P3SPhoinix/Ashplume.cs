@@ -3,22 +3,22 @@
 // state related to ashplumes (normal or parts of gloryplume)
 // normal ashplume is boss cast (with different IDs depending on stack/spread) + instant aoe some time later
 // gloryplume is one instant cast with animation only soon after boss cast + instant aoe some time later
-class Ashplume : BossComponent
+sealed class Ashplume : BossComponent
 {
     public enum State { UnknownGlory, Stack, Spread, Done }
 
-    public State CurState { get; private set; }
+    public State CurState;
 
     private const float _stackRadius = 8;
     private const float _spreadRadius = 6;
 
     public Ashplume(BossModule module) : base(module)
     {
-        CurState = (AID)(Module.PrimaryActor.CastInfo?.Action.ID ?? 0) switch
+        CurState = (Module.PrimaryActor.CastInfo?.Action.ID ?? 0) switch
         {
-            AID.ExperimentalAshplumeStack => State.Stack,
-            AID.ExperimentalAshplumeSpread => State.Spread,
-            AID.ExperimentalGloryplumeSingle or AID.ExperimentalGloryplumeMulti => State.UnknownGlory, // instant cast turns this into correct state ~3 sec after cast end
+            (uint)AID.ExperimentalAshplumeStack => State.Stack,
+            (uint)AID.ExperimentalAshplumeSpread => State.Spread,
+            (uint)AID.ExperimentalGloryplumeSingle or (uint)AID.ExperimentalGloryplumeMulti => State.UnknownGlory, // instant cast turns this into correct state ~3 sec after cast end
             _ => State.Done
         };
         if (CurState == State.Done)
@@ -57,7 +57,7 @@ class Ashplume : BossComponent
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (CurState == State.Stack)
             hints.Add("Stack!");
@@ -72,9 +72,14 @@ class Ashplume : BossComponent
 
         // draw all raid members, to simplify positioning
         var aoeRadius = CurState == State.Stack ? _stackRadius : _spreadRadius;
-        foreach (var player in Raid.WithoutSlot(false, true, true).Exclude(pc))
+        foreach (var player in Raid.WithoutSlot(false, true, true))
         {
-            Arena.Actor(player, player.Position.InCircle(pc.Position, aoeRadius) ? Colors.PlayerInteresting : Colors.PlayerGeneric);
+            if (player == pc)
+            {
+                continue;
+            }
+            var isinaoe = player.Position.InCircle(pc.Position, aoeRadius);
+            Arena.Actor(player, isinaoe ? Colors.PlayerInteresting : Colors.PlayerGeneric, drawWorld: isinaoe ? true : null);
         }
 
         // draw circle around pc
@@ -83,18 +88,18 @@ class Ashplume : BossComponent
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.ExperimentalGloryplumeSpread:
+            case (uint)AID.ExperimentalGloryplumeSpread:
                 CurState = State.Spread;
                 break;
-            case AID.ExperimentalGloryplumeStack:
+            case (uint)AID.ExperimentalGloryplumeStack:
                 CurState = State.Stack;
                 break;
-            case AID.ExperimentalGloryplumeSpreadAOE:
-            case AID.ExperimentalGloryplumeStackAOE:
-            case AID.ExperimentalAshplumeSpreadAOE:
-            case AID.ExperimentalAshplumeStackAOE:
+            case (uint)AID.ExperimentalGloryplumeSpreadAOE:
+            case (uint)AID.ExperimentalGloryplumeStackAOE:
+            case (uint)AID.ExperimentalAshplumeSpreadAOE:
+            case (uint)AID.ExperimentalAshplumeStackAOE:
                 CurState = State.Done;
                 break;
         }

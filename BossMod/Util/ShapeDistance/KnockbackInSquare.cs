@@ -1,6 +1,5 @@
 namespace BossMod;
 
-[SkipLocalsInit]
 public sealed class SDKnockbackInSquareFixedDirection(WPos Center, WDir Direction, float HalfWidth, Angle Rotation) : ShapeDistance
 {
     private readonly WPos center = Center;

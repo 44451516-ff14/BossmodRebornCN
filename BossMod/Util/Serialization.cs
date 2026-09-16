@@ -4,14 +4,13 @@ using System.Text.Json.Serialization;
 
 namespace BossMod;
 
-[SkipLocalsInit]
 public static class Serialization
 {
     public class JsonTypeConverter : JsonConverter<Type>
     {
-        public override Type? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => Type.GetType(reader.GetString() ?? "");
+        public override Type? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => GeneratedFactories.FindType(reader.GetString() ?? "");
         public override void Write(Utf8JsonWriter writer, Type value, JsonSerializerOptions options) => writer.WriteStringValue(value.FullName);
-        public override Type ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => Type.GetType(reader.GetString() ?? "")!;
+        public override Type ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => GeneratedFactories.FindType(reader.GetString() ?? "")!;
         public override void WriteAsPropertyName(Utf8JsonWriter writer, Type value, JsonSerializerOptions options) => writer.WritePropertyName(value.FullName!);
     }
 

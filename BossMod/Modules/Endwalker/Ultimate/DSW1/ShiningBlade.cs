@@ -2,7 +2,7 @@
 
 sealed class ShiningBladeKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.FaithUnmoving, 16f)
 {
-    private readonly WDir _dirToAdelphel = (module.Enemies((uint)OID.SerAdelphel).FirstOrDefault()?.Position ?? module.Center) - module.Center; // we don't want to be knocked near adelphel
+    private readonly WDir _dirToAdelphel = module.PrimaryActor.Position - module.Center; // we don't want to be knocked near adelphel
     private readonly List<Actor> _tears = module.Enemies((uint)OID.AetherialTear); // we don't want to be knocked into them
 
     private const float _tearRadius = 9f; // TODO: verify
@@ -144,7 +144,7 @@ sealed class ShiningBladeExecution(BossModule module) : Components.CastCounter(m
         switch (spell.Action.ID)
         {
             case (uint)AID.ShiningBlade:
-                _target = WorldState.Actors.Find(Module.Enemies((uint)OID.SerAdelphel).FirstOrDefault()?.TargetID ?? 0);
+                _target = WorldState.Actors.Find(Module.PrimaryActor.TargetID);
                 break;
             case (uint)AID.Execution:
                 _target = null;

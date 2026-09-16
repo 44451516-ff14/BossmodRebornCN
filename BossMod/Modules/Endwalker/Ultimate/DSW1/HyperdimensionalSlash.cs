@@ -9,8 +9,8 @@ sealed class HyperdimensionalSlash(BossModule module) : BossComponent(module)
     private BitMask _riskyTears;
 
     private const float _linkRadius = 9f; // TODO: verify
-    private static readonly AOEShapeRect _aoeLaser = new(70f, 4f);
-    private static readonly AOEShapeCone _aoeCone = new(40f, 60f.Degrees());
+    private readonly AOEShapeRect _aoeLaser = new(70f, 4f);
+    private readonly AOEShapeCone _aoeCone = new(40f, 60f.Degrees());
 
     public override void Update()
     {

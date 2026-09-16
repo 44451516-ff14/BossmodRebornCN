@@ -2,21 +2,11 @@ namespace BossMod.Shadowbringers.Foray.CastrumLacusLitore.CLL4Dawon;
 
 sealed class NaturesBlood(BossModule module) : Components.Exaflare(module, 4f)
 {
-    private readonly ArenaChange _arena = module.FindComponent<ArenaChange>()!;
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        if (!_arena.IsDawonArena)
-            return base.ActiveAOEs(slot, actor);
-        else
-            return [];
-    }
-
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.NaturesBloodFirst)
         {
-            Lines.Add(new(caster.Position, 6f * spell.Rotation.ToDirection(), Module.CastFinishAt(spell), 1.1d, 7, 3));
+            Lines.Add(new(caster.Position, 6f * spell.Rotation.ToDirection(), Module.CastFinishAt(spell), 1.1d, 7, 3, arenaProjectionLayer: 1, restrictToArenaProjectionLayer: true));
         }
     }
 
@@ -33,10 +23,20 @@ sealed class NaturesBlood(BossModule module) : Components.Exaflare(module, 4f)
                 {
                     AdvanceLine(line, pos);
                     if (line.ExplosionsLeft == 0)
+                    {
                         Lines.RemoveAt(i);
+                    }
                     return;
                 }
             }
+        }
+    }
+
+    public override void OnActorUntargetable(Actor actor)
+    {
+        if (actor.OID == (uint)OID.LyonTheBeastKing)
+        {
+            Lines.Clear();
         }
     }
 }

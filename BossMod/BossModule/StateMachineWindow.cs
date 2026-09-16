@@ -1,7 +1,7 @@
-using Dalamud.Bindings.ImGui;
+﻿using Dalamud.Bindings.ImGui;
+
 namespace BossMod;
 
-[SkipLocalsInit]
 public sealed class StateMachineWindow : UIWindow
 {
     private readonly Timeline _timeline = new();
@@ -15,7 +15,7 @@ public sealed class StateMachineWindow : UIWindow
 
     public override void Draw()
     {
-        if (ImGui.CollapsingHeader("设置"))
+        if (ImGui.CollapsingHeader("Settings"))
         {
             ImGui.Checkbox("Draw unnamed nodes", ref _col.DrawUnnamedNodes);
             ImGui.Checkbox("Draw tankbuster nodes only", ref _col.DrawTankbusterNodesOnly);

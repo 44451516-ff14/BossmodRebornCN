@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex6Golbez;
 
-class VoidStardust(BossModule module) : Components.GenericAOEs(module)
+sealed class VoidStardust(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
 
-    private static readonly AOEShapeCircle _shape = new(6);
+    private readonly AOEShapeCircle _shape = new(6f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -50,4 +50,4 @@ class VoidStardust(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class AbyssalQuasar(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.AbyssalQuasar, 3f, 2, 2);
+sealed class AbyssalQuasar(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.AbyssalQuasar, 3f, 2, 2);

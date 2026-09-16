@@ -1,13 +1,13 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un2Sephirot;
 
 // TODO: generalize
-class P1Ratzon(BossModule module) : BossComponent(module)
+sealed class P1Ratzon(BossModule module) : BossComponent(module)
 {
     private BitMask _greenTargets;
     private BitMask _purpleTargets;
 
-    private const float _greenRadius = 5;
-    private const float _purpleRadius = 10;
+    private const float _greenRadius = 5f;
+    private const float _purpleRadius = 10f;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -34,12 +34,12 @@ class P1Ratzon(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.RatzonAOEGreen:
+            case (uint)AID.RatzonAOEGreen:
                 _greenTargets.Clear(Raid.FindSlot(spell.MainTargetID));
                 break;
-            case AID.RatzonAOEPurple:
+            case (uint)AID.RatzonAOEPurple:
                 _purpleTargets.Clear(Raid.FindSlot(spell.MainTargetID));
                 break;
         }
@@ -47,12 +47,12 @@ class P1Ratzon(BossModule module) : BossComponent(module)
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
-        switch ((IconID)iconID)
+        switch (iconID)
         {
-            case IconID.RatzonGreen:
+            case (uint)IconID.RatzonGreen:
                 _greenTargets.Set(Raid.FindSlot(actor.InstanceID));
                 break;
-            case IconID.RatzonPurple:
+            case (uint)IconID.RatzonPurple:
                 _purpleTargets.Set(Raid.FindSlot(actor.InstanceID));
                 break;
         }

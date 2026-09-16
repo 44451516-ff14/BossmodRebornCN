@@ -3,7 +3,6 @@
 namespace BossMod;
 
 // utility for drawing 2d plots
-[SkipLocalsInit]
 public sealed class UIPlot
 {
     public float PointRadius = 2;

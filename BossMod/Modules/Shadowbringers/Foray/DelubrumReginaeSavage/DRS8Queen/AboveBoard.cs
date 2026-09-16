@@ -10,9 +10,9 @@ sealed class AboveBoard(BossModule module) : Components.GenericAOEs(module)
     private readonly List<Actor> _bigBombs = module.Enemies((uint)OID.AetherialBurst);
     private bool _invertedBombs; // bombs are always either all normal (big=short) or all inverted
     private BitMask _invertedPlayers; // default for player is 'long', short is considered inverted (has visible status)
-    private DateTime _activation = module.WorldState.FutureTime(14.4f);
+    private DateTime _activation = module.WorldState.FutureTime(14.4d);
 
-    private static readonly AOEShapeCircle _shape = new(10);
+    private readonly AOEShapeCircle _shape = new(10f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

@@ -195,7 +195,6 @@ sealed class DanceOfTheDead(BossModule module) : Components.RaidwideCast(module,
 
 sealed class ToAshes(BossModule module) : Components.RaidwideCast(module, (uint)AID.ToAshes);
 
-[SkipLocalsInit]
 sealed class TsukuyomiStates : StateMachineBuilder
 {
     public TsukuyomiStates(BossModule module) : base(module)
@@ -243,5 +242,4 @@ sealed class TsukuyomiStates : StateMachineBuilder
     NameID = 7225u,
     SortOrder = 1,
     PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class Tsukuyomi(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsCircle(20f));

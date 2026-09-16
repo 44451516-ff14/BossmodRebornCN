@@ -30,7 +30,6 @@ public enum IconID : uint
     EnterNight = 22 // player
 }
 
-[SkipLocalsInit]
 sealed class EnterNightPull(BossModule module) : Components.GenericKnockback(module)
 {
     private int target = -1;
@@ -78,10 +77,8 @@ sealed class EnterNightPull(BossModule module) : Components.GenericKnockback(mod
     }
 }
 
-[SkipLocalsInit]
 sealed class EnterNight(BossModule module) : Components.StretchTetherSingle(module, (uint)TetherID.EnterNight, 16f, activationDelay: 4.3d);
 
-[SkipLocalsInit]
 sealed class ShadowFlow(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly AOEShapeCircle circle = new(6f);
@@ -123,7 +120,6 @@ sealed class ShadowFlow(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class DO12TheGovernorStates : StateMachineBuilder
 {
     public DO12TheGovernorStates(BossModule module) : base(module)
@@ -152,7 +148,6 @@ GroupID = 238u,
 NameID = 6072u,
 SortOrder = 2,
 PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class DO12TheGovernor : BossModule
 {
     public DO12TheGovernor(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

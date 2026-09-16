@@ -10,7 +10,7 @@ class CommonEnumInfo
         return s.Length > 0 ? s : "none";
     }
 
-    protected string OIDString(uint oid) => oid == 0 ? "player" : _oidType?.GetEnumName(oid) ?? $"{oid:X}";
+    protected string OIDString(uint oid) => oid == 0 ? "player" : _oidType?.GeneratedEnumName(oid) ?? $"{oid:X}";
 
     protected string OIDListString(IEnumerable<uint> oids) => JoinStrings(oids.Select(OIDString));
 }

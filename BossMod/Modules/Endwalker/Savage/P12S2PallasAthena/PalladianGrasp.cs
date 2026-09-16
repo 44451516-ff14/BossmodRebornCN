@@ -2,11 +2,11 @@
 
 // TODO: allow invulning instead
 // TODO: not sure at what point target is snapshotted - assume first hit is on primary target when cast starts, second on current main target?..
-class PalladianGrasp(BossModule module) : Components.CastCounter(module, default)
+sealed class PalladianGrasp(BossModule module) : Components.CastCounter(module, default)
 {
     private ulong _firstPrimaryTarget;
 
-    private static readonly AOEShapeRect _shape = new(P12S2PallasAthena.DefaultBounds.HalfHeight, P12S2PallasAthena.DefaultBounds.HalfWidth / 2, P12S2PallasAthena.DefaultBounds.HalfHeight);
+    private readonly AOEShapeRect _shape = new(20f, 7.5f, 20f);
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {

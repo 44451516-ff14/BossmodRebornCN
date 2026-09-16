@@ -188,7 +188,7 @@ sealed class WaterPuddles(BossModule module) : BossComponent(module)
         return filteredWater;
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var orbs = GetPuddles(Module);
 
@@ -413,7 +413,6 @@ sealed class AerialBlast(BossModule module) : Components.SimpleKnockbacks(module
 
 sealed class Hypernova(BossModule module) : Components.StackWithIcon(module, (uint)IconID.HyperNovaStackIcon, (uint)AID.Hypernova, 7f, 6d);
 
-[SkipLocalsInit]
 sealed class ShinryuStates : StateMachineBuilder
 {
     public ShinryuStates(BossModule module) : base(module)
@@ -475,5 +474,4 @@ sealed class ShinryuStates : StateMachineBuilder
     SortOrder = 1,
     PlanLevel = 0)]
 
-[SkipLocalsInit]
 public sealed class T03Shinryu(WorldState ws, Actor primary) : BossModule(ws, primary, default, new ArenaBoundsSquare(20f, mapResolution: 0.3f));

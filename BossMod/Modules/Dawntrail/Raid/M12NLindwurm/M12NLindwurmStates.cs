@@ -1,6 +1,5 @@
 ﻿namespace BossMod.Dawntrail.Raid.M12NLindwurm;
 
-[SkipLocalsInit]
 sealed class M12NLindwurmStates : StateMachineBuilder
 {
     public M12NLindwurmStates(BossModule module) : base(module)

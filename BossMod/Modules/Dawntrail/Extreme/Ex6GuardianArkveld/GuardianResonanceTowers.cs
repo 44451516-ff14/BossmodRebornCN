@@ -21,7 +21,7 @@ sealed class GuardianResonanceTowers(BossModule module) : Components.GenericTowe
         return forbidden;
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (Towers.Count != 0)
         {

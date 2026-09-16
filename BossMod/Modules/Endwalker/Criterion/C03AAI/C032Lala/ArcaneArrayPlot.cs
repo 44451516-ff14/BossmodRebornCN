@@ -36,7 +36,7 @@ class ArcaneArrayPlot : Components.GenericAOEs
     }
 }
 
-class ArcaneArray(BossModule module) : ArcaneArrayPlot(module)
+sealed class ArcaneArray(BossModule module) : ArcaneArrayPlot(module)
 {
     public override void OnActorCreated(Actor actor)
     {
@@ -62,7 +62,7 @@ class ArcaneArray(BossModule module) : ArcaneArrayPlot(module)
     }
 }
 
-class ArcanePlot(BossModule module) : ArcaneArrayPlot(module)
+sealed class ArcanePlot(BossModule module) : ArcaneArrayPlot(module)
 {
     public override void OnActorCreated(Actor actor)
     {

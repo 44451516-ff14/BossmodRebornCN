@@ -7,7 +7,7 @@ sealed class AetherialConversion(BossModule module) : Components.CastCounter(mod
     public Mechanic CurMechanic;
     public float FirstOffsetX;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (CurMechanic != default)
             hints.Add($"{CurMechanic} {(FirstOffsetX < 0 ? "L->R" : "R->L")}");

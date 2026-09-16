@@ -23,7 +23,7 @@ public sealed class ReplayManagementWindow : UIWindow
     private bool _recordingManual; // recording was started manually, and so should not be stopped automatically
     private bool _recordingDuty; // recording was started automatically because we've entered duty
     private int _recordingActiveModules; // recording was started automatically, because we've activated N modules
-    private FileDialog? _folderDialog;
+    private readonly FileDialogManager _folderDialog = new();
     private string _lastErrorMessage = "";
     private DalamudLinkPayload? _startLinkPayload;
     private DalamudLinkPayload? _uploadLinkPayload;
@@ -93,20 +93,21 @@ public sealed class ReplayManagementWindow : UIWindow
         ImGui.SameLine();
         if (ImGui.Button("Select replay folder"))
         {
-            _folderDialog ??= new FileDialog("select_replay_folder", "Select replay folder", "", _config.ReplayFolder, "", "", 1, false, ImGuiFileDialogFlags.SelectOnly);
-            _folderDialog.Show();
+            _folderDialog.OpenFolderDialog(
+                "Select replay folder",
+                (success, path) =>
+                {
+                    if (success)
+                    {
+                        _config.ReplayFolder = path;
+                        _config.Modified.Fire();
+                    }
+                },
+                _config.ReplayFolder
+            );
         }
 
-        if (_folderDialog?.Draw() ?? false)
-        {
-            if (_folderDialog.GetIsOk())
-            {
-                _config.ReplayFolder = _folderDialog.GetResults().FirstOrDefault() ?? "";
-                _config.Modified.Fire();
-            }
-            _folderDialog.Hide();
-            _folderDialog = null;
-        }
+        _folderDialog.Draw();
         if (_recorder != null)
         {
             ImGui.InputText("###msg", ref _message, 1024);
@@ -148,7 +149,7 @@ public sealed class ReplayManagementWindow : UIWindow
     {
         if (_config.ImportantDutyAlert && IsImportantDuty(cfcId) && !ShouldAutoRecord)
         {
-            _startLinkPayload ??= Service.ChatGui.AddChatLinkHandler(default, (id, str) =>
+            _startLinkPayload ??= Service.ChatGui.AddChatLinkHandler(0u, (id, str) =>
             {
                 if (id == default)
                 {
@@ -185,7 +186,7 @@ public sealed class ReplayManagementWindow : UIWindow
         if (!ShouldAutoRecord || _recordingManual)
             return false; // don't care
 
-        var isDuty = cfcId != default;
+        var isDuty = cfcId != 0u;
         if (_recordingDuty == isDuty)
             return false; // don't care
         _recordingDuty = isDuty;
@@ -258,6 +259,9 @@ public sealed class ReplayManagementWindow : UIWindow
         AddRange(map, 967u, 978u); // crystalline conflict
         AddRange(map, 1012u, 1014u); // tutorial
         AddRange(map, 1046u, 1057u); // crystalline conflict
+        AddRange(map, 1080u, 1083u); // frontline, air force one
+        AddRange(map, 1098u, 1100u); // ocean fishing
+        AddRange(map, 1102u, 1113u); // crystalline conflict
 
         // check modules for WIP and non existing
         foreach (var module in BossModuleRegistry.RegisteredModules.Values)

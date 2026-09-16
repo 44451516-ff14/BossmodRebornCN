@@ -1,6 +1,5 @@
 namespace BossMod.Dawntrail.Alliance.A35ShinryuParadox;
 
-[SkipLocalsInit]
 sealed class A35ShinryuParadoxStates : StateMachineBuilder
 {
     readonly A35ShinryuParadox _module;
@@ -43,7 +42,7 @@ sealed class A35ShinryuParadoxStates : StateMachineBuilder
         Starflare2(id + 0x6000u, 3.5f);
         DarkNova(id + 0x7000u, 3.6f);
 
-        Cast(id + 0x8000u, (uint)AID.AtomicTailVisual1, 6.5f, 6);
+        Cast(id + 0x8000u, AID.AtomicTailVisual1, 6.5f, 6);
         Timeout(id + 0x8010u, 1f, "Ground floor disappears");
         ComponentCondition<GyreCharge>(id + 0x8020, 5.2f, static g => g.NumCasts > 0, "Raidwide + stun")
             .DeactivateOnExit<GyreCharge>()
@@ -53,7 +52,7 @@ sealed class A35ShinryuParadoxStates : StateMachineBuilder
 
     void UpDown(uint id, float delay)
     {
-        CastMulti(id, [(uint)AID.CosmicBreathVisual1, (uint)AID.CosmicTailVisual1], delay, 6f)
+        CastMulti(id, [AID.CosmicBreathVisual1, AID.CosmicTailVisual1], delay, 6f)
             .ActivateOnEnter<UpDownCounter>();
         ComponentCondition<UpDownCounter>(id + 0x10u, 1.1f, static d => d.NumCasts > 0, "Up/down")
             .DeactivateOnExit<UpDownCounter>();
@@ -61,14 +60,14 @@ sealed class A35ShinryuParadoxStates : StateMachineBuilder
 
     void Twilight1(uint id, float delay)
     {
-        Cast(id, (uint)AID.CloakOfTwilight1, delay, 3f);
+        Cast(id, AID.CloakOfTwilight1, delay, 3f);
         ComponentCondition<FloorAOEs>(id + 0x10u, 13.8f, static n => n.NumCasts > 0, "Light/dark")
             .ExecOnExit<FloorAOEs>(static comp => comp.NumCasts = 0);
     }
 
     void Starflare1(uint id, float delay)
     {
-        Cast(id, (uint)AID.StarflareVisual1, delay, 3f)
+        Cast(id, AID.StarflareVisual1, delay, 3f)
             .ActivateOnEnter<UpDownCounter>();
 
         ComponentCondition<StarflareP1>(id + 0x10u, 5.1f, static s => s.NumCasts >= 10, "Lines 1");
@@ -80,13 +79,13 @@ sealed class A35ShinryuParadoxStates : StateMachineBuilder
 
     void Vortex(uint id, float delay)
     {
-        CastStart(id, (uint)AID.CataclysmicVortexVisual1, delay);
+        CastStart(id, AID.CataclysmicVortexVisual1, delay);
         CastEnd(id + 0x01u, 7u, "Stay/move/gaze");
     }
 
     void Twilight2(uint id, float delay)
     {
-        Cast(id, (uint)AID.CloakOfTwilight1, delay, 3f);
+        Cast(id, AID.CloakOfTwilight1, delay, 3f);
         UpDown(id + 0x100u, 3.8f);
         ComponentCondition<FloorAOEs>(id + 0x200u, 8.7f, static n => n.NumCasts > 0, "Light/dark")
             .ExecOnExit<FloorAOEs>(static comp => comp.NumCasts = 0);
@@ -94,8 +93,8 @@ sealed class A35ShinryuParadoxStates : StateMachineBuilder
 
     void Starflare2(uint id, float delay)
     {
-        Cast(id, (uint)AID.StarflareVisual1, delay, 3f);
-        CastStart(id + 0x10u, (uint)AID.CataclysmicVortexVisual1, 3.6f);
+        Cast(id, AID.StarflareVisual1, delay, 3f);
+        CastStart(id + 0x10u, AID.CataclysmicVortexVisual1, 3.6f);
 
         ComponentCondition<StarflareP1>(id + 0x20u, 1.4f, static s => s.NumCasts >= 10, "Lines 1");
         ComponentCondition<StarflareP1>(id + 0x21u, 2f, static s => s.NumCasts >= 20, "Lines 2")
@@ -106,7 +105,7 @@ sealed class A35ShinryuParadoxStates : StateMachineBuilder
 
     void DarkNova(uint id, float delay)
     {
-        CastStart(id, (uint)AID.DarkNovaVisual1, delay);
+        CastStart(id, AID.DarkNovaVisual1, delay);
         ComponentCondition<DarkNova>(id + 0x10u, 6.2f, static d => d.NumCasts > 0, "Tankbusters");
     }
 
@@ -114,7 +113,7 @@ sealed class A35ShinryuParadoxStates : StateMachineBuilder
     {
         ActorTargetable(id, _module.BossP2M, true, delay, "Boss reappears")
             .DeactivateOnEnter<FloorAOEs>()
-            .DeactivateOnEnter<P2ArenaChange>()
+            .DeactivateOnExit<P2ArenaChange>()
             .DeactivateOnEnter<StarflareP1>()
             .SetHint(StateMachine.StateHint.DowntimeEnd);
 
@@ -140,47 +139,47 @@ sealed class A35ShinryuParadoxStates : StateMachineBuilder
 
     void EmptyProclamation(uint id, float delay)
     {
-        ActorCast(id, _module.BossP2M, (uint)AID.EmptyProclamation, delay, 4f, true, "Raidwide");
+        ActorCast(id, _module.BossP2M, AID.EmptyProclamation, delay, 4f, true, "Raidwide");
     }
 
     void Swordscross(uint id, float delay)
     {
-        ActorCastMulti(id, _module.BossP2M, [(uint)AID.RightSwordscrossVisual, (uint)AID.LeftSwordscrossVisual], delay, 8f, true);
+        ActorCastMulti(id, _module.BossP2M, [AID.RightSwordscrossVisual, AID.LeftSwordscrossVisual], delay, 8f, true);
         ComponentCondition<Swordscross1>(id + 0x10u, 1f, static s => s.NumCasts > 0, "Swords");
     }
 
     State TwinBlaze(uint id, float delay)
     {
-        ActorCastMulti(id, _module.BossP2M, [(uint)AID.TwinBlazeVisual1, (uint)AID.TwinBlazeVisual2], delay, 5f);
+        ActorCastMulti(id, _module.BossP2M, [AID.TwinBlazeVisual1, AID.TwinBlazeVisual2], delay, 5f);
         return ComponentCondition<TwinBlaze1>(id + 0x10u, 1f, static t => t.NumCasts > 0, "In/out")
             .ExecOnExit<TwinBlaze1>(static comp => comp.NumCasts = 0);
     }
 
     State CataclysmicBlade(uint id, float delay)
     {
-        ActorCastStart(id, _module.BossP2M, (uint)AID.CataclysmicBladeVisual, delay, true);
+        ActorCastStart(id, _module.BossP2M, AID.CataclysmicBladeVisual, delay, true);
         return ComponentCondition<CataclysmicBlade>(id + 0x10, 7, static c => c.NumCasts > 0, "Cones + stay/move/gaze")
             .ExecOnExit<CataclysmicBlade>(static comp => comp.NumCasts = 0);
     }
 
     void Burst(uint id, float delay)
     {
-        ActorCast(id, _module.BossP2M, (uint)AID.BurstVisual, delay, 3f);
+        ActorCast(id, _module.BossP2M, AID.BurstVisual, delay, 3f);
         TwinBlaze(id + 0x100u, 7.2f);
     }
 
     void CosmicFlame(uint id, float delay)
     {
-        ActorCastStart(id, _module.BossP2M, (uint)AID.CosmicFlameVisual, delay);
+        ActorCastStart(id, _module.BossP2M, AID.CosmicFlameVisual, delay);
         ComponentCondition<CosmicFlame>(id + 0x10u, 5f, static f => f.NumCasts > 0, "Exaflares start");
-        ActorCast(id + 0x100u, _module.BossP2M, (uint)AID.AtomicRayVisual, 7.2f, 3f, true);
+        ActorCast(id + 0x100u, _module.BossP2M, AID.AtomicRayVisual, 7.2f, 3f, true);
         ComponentCondition<CosmicFlame>(id + 0x110u, 4.2f, static f => f.NumCasts >= 40, "Exaflares end");
         CataclysmicBlade(id + 0x200u, 8f);
     }
 
     void SuperNova(uint id, float delay)
     {
-        ActorCastStart(id, _module.BossP2M, (uint)AID.SuperNovaVisual, delay, true);
+        ActorCastStart(id, _module.BossP2M, AID.SuperNovaVisual, delay, true);
         ComponentCondition<SuperNova>(id + 0x10u, 6.2f, static s => s.NumCasts > 0, "Stack 1");
         ComponentCondition<SuperNova>(id + 0x20u, 1.9f, static s => s.NumCasts >= 3, "Stack 3");
     }

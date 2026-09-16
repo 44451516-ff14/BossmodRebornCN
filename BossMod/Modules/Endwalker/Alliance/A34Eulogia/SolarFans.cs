@@ -67,7 +67,7 @@ sealed class RadiantRhythm(BossModule module) : Components.GenericAOEs(module)
 sealed class RadiantFlourish(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(2)];
-    private static readonly AOEShapeCircle _shape = new(25f);
+    private readonly AOEShapeCircle _shape = new(25f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

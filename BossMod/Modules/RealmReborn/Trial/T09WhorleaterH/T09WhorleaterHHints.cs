@@ -2,7 +2,7 @@ namespace BossMod.RealmReborn.Trial.T09WhorleaterH;
 
 class Hints(BossModule module) : BossComponent(module)
 {
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var converters = Module.Enemies((uint)OID.Converter);
         var converter = converters.Count != 0 ? converters[0] : null;

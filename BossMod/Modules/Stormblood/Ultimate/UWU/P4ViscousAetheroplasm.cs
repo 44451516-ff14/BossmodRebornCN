@@ -1,9 +1,9 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UWU;
 
-class P4ViscousAetheroplasmApply(BossModule module) : Components.Cleave(module, (uint)AID.ViscousAetheroplasmApply, new AOEShapeCircle(2f), [(uint)OID.UltimaWeapon], originAtTarget: true);
+sealed class P4ViscousAetheroplasmApply(BossModule module) : Components.Cleave(module, (uint)AID.ViscousAetheroplasmApply, new AOEShapeCircle(2f), [(uint)OID.UltimaWeapon], originAtTarget: true);
 
 // TODO: if aetheroplasm target is the same as homing laser target, assume it is being soaked solo; consider merging these two components
-class P4ViscousAetheroplasmResolve(BossModule module) : Components.UniformStackSpread(module, 4f, default, 7)
+sealed class P4ViscousAetheroplasmResolve(BossModule module) : Components.UniformStackSpread(module, 4f, default, 7)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -37,7 +37,7 @@ class P4ViscousAetheroplasmResolve(BossModule module) : Components.UniformStackS
     }
 }
 
-class P5ViscousAetheroplasmTriple(BossModule module) : Components.UniformStackSpread(module, 4f, default, 8, 8)
+sealed class P5ViscousAetheroplasmTriple(BossModule module) : Components.UniformStackSpread(module, 4f, default, 8, 8)
 {
     public int NumCasts;
     private readonly List<(Actor target, DateTime resolve)> _aetheroplasms = [];

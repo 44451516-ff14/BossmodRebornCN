@@ -13,7 +13,7 @@ sealed class EngravementOfSoulsTethers(BossModule module) : Components.GenericBa
 
     public PlayerState[] States = new PlayerState[PartyState.MaxPartySize];
 
-    private static readonly AOEShapeRect _shape = new(60, 3);
+    private readonly AOEShapeRect _shape = new(60f, 3f);
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {

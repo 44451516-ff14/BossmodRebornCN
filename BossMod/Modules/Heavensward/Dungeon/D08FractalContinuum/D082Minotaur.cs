@@ -82,7 +82,7 @@ sealed class OneOneOneOneTonzeSwing(BossModule module) : BossComponent(module)
         hints.InteractWithTarget = closest;
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (!casting)
         {

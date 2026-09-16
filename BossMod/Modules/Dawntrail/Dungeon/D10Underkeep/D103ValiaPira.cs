@@ -47,11 +47,11 @@ sealed class ConcurrentField(BossModule module) : Components.SimpleAOEs(module, 
 sealed class ElectricField(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCone(26f, 25f.Degrees()), (uint)IconID.ElectricField, (uint)AID.ElectricField, 7.4d);
 sealed class NeutralizeFrontLines(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NeutralizeFrontLines, new AOEShapeCone(30f, 90f.Degrees()));
 sealed class HyperchargedLight(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.HyperchargedLight, 5f);
-sealed class DeterrentPulse(BossModule module) : Components.LineStack(module, (uint)IconID.DeterrentPulse, (uint)AID.DeterrentPulse, 5.3d, 40f, 4f, 4, 4, 1, false);
+sealed class DeterrentPulse(BossModule module) : Components.LineStack(module, (uint)IconID.DeterrentPulse, (uint)AID.DeterrentPulse, 5.3d, 40f, 4f, 4, 4, 1, false, null);
 
 sealed class EnforcementRay(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCross cross = new(36f, 4.5f);
+    private readonly AOEShapeCross cross = new(36f, 4.5f);
     private readonly List<AOEInstance> _aoes = [with(3)];
     private bool teleported;
     private readonly List<WPos> startingpositions = [with(2)];

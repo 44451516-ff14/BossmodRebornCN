@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UWU;
 
-class P4Freefire(BossModule module) : Components.GenericAOEs(module, (uint)AID.FreefireIntermission)
+sealed class P4Freefire(BossModule module) : Components.GenericAOEs(module, (uint)AID.FreefireIntermission)
 {
     private readonly List<AOEInstance> _aoes = [];
 

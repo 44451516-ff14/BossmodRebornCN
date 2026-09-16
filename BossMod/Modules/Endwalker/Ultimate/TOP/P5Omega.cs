@@ -2,7 +2,7 @@
 
 sealed class P5OmegaDoubleAOEs(BossModule module) : Components.GenericAOEs(module)
 {
-    public static readonly AOEShape[] Shapes = [new AOEShapeDonut(10f, 40f), new AOEShapeCircle(10f), new AOEShapeRect(40f, 40f, -4f), new AOEShapeCross(100f, 5f)];
+    private readonly AOEShape[] shapes = [new AOEShapeDonut(10f, 40f), new AOEShapeCircle(10f), new AOEShapeRect(40f, 40f, -4f), new AOEShapeCross(100f, 5f)];
     public readonly List<AOEInstance> AOEs = [];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -59,22 +59,22 @@ sealed class P5OmegaDoubleAOEs(BossModule module) : Components.GenericAOEs(modul
             case (uint)OID.OmegaMP5:
                 if (actor.ModelState.ModelState == 4)
                 {
-                    AddAOE(Shapes[0]);
+                    AddAOE(shapes[0]);
                 }
                 else
                 {
-                    AddAOE(Shapes[1]);
+                    AddAOE(shapes[1]);
                 }
                 break;
             case (uint)OID.OmegaFP5:
                 if (actor.ModelState.ModelState == 4)
                 {
-                    AddAOE(Shapes[2], 90f.Degrees());
-                    AddAOE(Shapes[2], -90f.Degrees());
+                    AddAOE(shapes[2], 90f.Degrees());
+                    AddAOE(shapes[2], -90f.Degrees());
                 }
                 else
                 {
-                    AddAOE(Shapes[3]);
+                    AddAOE(shapes[3]);
                 }
                 break;
         }
@@ -85,7 +85,7 @@ sealed class P5OmegaDiffuseWaveCannon(BossModule module) : Components.GenericAOE
 {
     private readonly List<AOEInstance> _aoes = [];
 
-    private static readonly AOEShapeCone _shape = new(100f, 60f.Degrees());
+    private readonly AOEShapeCone _shape = new(100f, 60f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -116,14 +116,23 @@ sealed class P5OmegaDiffuseWaveCannon(BossModule module) : Components.GenericAOE
         if (spell.Action.ID == (uint)AID.OmegaDiffuseWaveCannonAOE)
         {
             ++NumCasts;
-            var count = _aoes.RemoveAll(aoe => aoe.Rotation.AlmostEqual(caster.Rotation, 0.1f));
-            if (count != 1)
-                ReportError($"Unexpected removed count: {count}");
+            var aoes = CollectionsMarshal.AsSpan(_aoes);
+            var len = aoes.Length;
+            var rot = spell.Rotation;
+            for (var i = 0; i < len; ++i)
+            {
+                if (aoes[i].Rotation.AlmostEqual(rot, 0.1f))
+                {
+                    _aoes.RemoveAt(i);
+                    return;
+                }
+            }
+            ReportError($"Failed to remove aoe");
         }
     }
 }
 
-sealed class P5OmegaNearDistantWorld(BossModule module) : P5NearDistantWorld(module)
+sealed class P5OmegaNearDistantWorld(BossModule module) : NearDistantWorld(module)
 {
     private BitMask _near;
     private BitMask _distant;
@@ -166,7 +175,7 @@ sealed class P5OmegaOversampledWaveCannon(BossModule module) : Components.Unifor
     private Actor? _boss;
     private Angle _bossAngle;
 
-    private static readonly AOEShapeRect _shape = new(50f, 50f);
+    private readonly AOEShapeRect _shape = new(50f, 50f);
 
     public bool IsActive => _boss != null;
 

@@ -29,13 +29,19 @@ sealed class Twister(BossModule module) : Components.Voidzone(module, 6.5f, GetT
     private static List<Actor> GetTwister(BossModule module) => module.Enemies((uint)OID.Twister);
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CastrumLacusLitore, GroupID = 735, NameID = 9442)]
-public sealed class CLL3Adrammelech(WorldState ws, Actor primary) : BossModule(ws, primary, startingArena.Center, startingArena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CastrumLacusLitore, GroupID = 735u, NameID = 9442u)]
+public sealed class CLL3Adrammelech : BossModule
 {
-    private static readonly WPos arenaCenter = new(80f, -606f);
-    private static readonly ArenaBoundsCustom startingArena = new([new Polygon(arenaCenter, 29.5f, 48)], [new Rectangle(new(80f, -575.788f), 20f, 1.25f),
-    new Rectangle(new(80f, -636.413f), 20f, 1.25f)]);
-    public static readonly ArenaBoundsCustom DefaultArena = new([new Polygon(arenaCenter, 25f, 48)]);
+    public CLL3Adrammelech(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private CLL3Adrammelech(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(80f, -606f), 29.5f, 48)], [new Rectangle(new(80f, -575.788f), 20f, 1.25f),
+            new Rectangle(new(80f, -636.413f), 20f, 1.25f)]);
+        return (arena.Center, arena);
+    }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

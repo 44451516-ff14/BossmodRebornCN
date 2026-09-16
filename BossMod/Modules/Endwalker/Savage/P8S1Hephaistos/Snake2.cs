@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Endwalker.Savage.P8S1Hephaistos;
 
-class Gorgospit(BossModule module) : Components.GenericAOEs(module, (uint)AID.Gorgospit)
+sealed class Gorgospit(BossModule module) : Components.GenericAOEs(module, (uint)AID.Gorgospit)
 {
     public List<(Actor caster, DateTime finish)> Casters = [];
 
-    private static readonly AOEShapeRect _shape = new(60f, 5f);
+    private readonly AOEShapeRect _shape = new(60f, 5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -37,7 +37,7 @@ class Gorgospit(BossModule module) : Components.GenericAOEs(module, (uint)AID.Go
 }
 
 // TODO: add various hints for gaze/explode
-class Snake2(BossModule module) : PetrifactionCommon(module)
+sealed class Snake2(BossModule module) : PetrifactionCommon(module)
 {
     struct PlayerState
     {

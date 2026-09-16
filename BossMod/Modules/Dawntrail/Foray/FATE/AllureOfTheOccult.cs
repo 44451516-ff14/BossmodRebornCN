@@ -25,7 +25,6 @@ sealed class WildWildBreath(BossModule module) : Components.SimpleAOEGroups(modu
     [(uint)AID.WildWildBreath, (uint)AID.WildWildWildWildWildBreath, (uint)AID.ExtensibleTendrils], new AOEShapeCross(30.0f, 3.0f));
 sealed class Burst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Burst, 10f);
 
-[SkipLocalsInit]
 sealed class AllureOfTheOccultStates : StateMachineBuilder
 {
     public AllureOfTheOccultStates(BossModule module) : base(module)
@@ -54,5 +53,4 @@ sealed class AllureOfTheOccultStates : StateMachineBuilder
     NameID = 2078u,
     SortOrder = 7,
     PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class AllureOfTheOccult(WorldState ws, Actor primary) : OpenWorldFate(ws, primary);

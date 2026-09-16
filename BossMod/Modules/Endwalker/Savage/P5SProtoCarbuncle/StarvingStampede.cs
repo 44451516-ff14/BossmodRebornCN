@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P5SProtoCarbuncle;
 
-class StarvingStampede(BossModule module) : Components.GenericAOEs(module, (uint)AID.StarvingStampede)
+sealed class StarvingStampede(BossModule module) : Components.GenericAOEs(module, (uint)AID.StarvingStampede)
 {
     private readonly List<AOEInstance> _aoes = [];
     private static readonly AOEShape _shape = new AOEShapeCircle(12f);

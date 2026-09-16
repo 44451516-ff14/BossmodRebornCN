@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P6SHegemone;
 
-class Transmission(BossModule module) : Components.CastCounter(module, (uint)AID.ReekHavoc)
+sealed class Transmission(BossModule module) : Components.CastCounter(module, (uint)AID.ReekHavoc)
 {
     private readonly DateTime[] _infectionExpire = new DateTime[PartyState.MaxPartySize]; // when status expires, it will be replaced with stun - we show aoes for last few seconds only
     private BitMask _snakeInfection; // hits front
@@ -9,7 +9,7 @@ class Transmission(BossModule module) : Components.CastCounter(module, (uint)AID
     private BitMatrix _clips; // row = player, col = others that he clips
     private BitMask _clippedByOthers;
 
-    private static readonly AOEShapeCone _shape = new(60f, 15f.Degrees());
+    private readonly AOEShapeCone _shape = new(60f, 15f.Degrees());
 
     public bool StunsActive => _stuns.Any();
 
@@ -93,13 +93,13 @@ class Transmission(BossModule module) : Components.CastCounter(module, (uint)AID
             if (_snakeInfection[slot])
                 yield return (slot, player, player.Rotation);
             if (_wingInfection[slot])
-                yield return (slot, player, player.Rotation + 180.Degrees());
+                yield return (slot, player, player.Rotation + 180f.Degrees());
         }
     }
 
     private bool ExpireImminent(int slot)
     {
         var expire = _infectionExpire[slot];
-        return expire != default && (expire - WorldState.CurrentTime).TotalSeconds < 2;
+        return expire != default && (expire - WorldState.CurrentTime).TotalSeconds < 2d;
     }
 }

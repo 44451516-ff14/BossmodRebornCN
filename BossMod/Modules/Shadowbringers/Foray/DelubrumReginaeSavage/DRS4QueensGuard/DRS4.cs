@@ -13,7 +13,7 @@ sealed class IcyPortent(BossModule module) : Components.CastHint(module, (uint)A
 sealed class PawnOff(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PawnOffReal, 20);
 sealed class Fracture(BossModule module) : Components.CastCounter(module, (uint)AID.Fracture); // TODO: consider showing reflect hints
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.Knight, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 761, NameID = 9838, PlanLevel = 80)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.Knight, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 761u, NameID = 9838u, PlanLevel = 80)]
 public sealed class DRS4QueensGuard : QueensGuard
 {
     private readonly List<Actor> _warrior;

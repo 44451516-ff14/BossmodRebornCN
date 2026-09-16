@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex7Zeromus;
 
-class DarkMatter(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
+sealed class DarkMatter(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
     private readonly List<int> _remainingCasts = [];
 
-    private static readonly AOEShapeCircle _shape = new(8);
+    private readonly AOEShapeCircle _shape = new(8f);
 
     public int RemainingCasts
     {
@@ -69,7 +69,7 @@ class DarkMatter(BossModule module) : Components.GenericBaitAway(module, centerA
     }
 }
 
-class ForkedLightningDarkBeckons(BossModule module) : Components.UniformStackSpread(module, 6f, 5f, 4, 4)
+sealed class ForkedLightningDarkBeckons(BossModule module) : Components.UniformStackSpread(module, 6f, 5f, 4, 4)
 {
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {

@@ -3,7 +3,7 @@ namespace BossMod.Shadowbringers.Foray.Duel.Duel3Sartauvoir;
 sealed class ThermalWave(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(3)];
-    private static readonly AOEShapeCone cone = new(60f, 45f.Degrees());
+    private readonly AOEShapeCone cone = new(60f, 45f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -21,7 +21,9 @@ sealed class ThermalWave(BossModule module) : Components.GenericAOEs(module)
         {
             ++NumCasts;
             if (_aoes.Count != 0)
+            {
                 _aoes.RemoveAt(0);
+            }
         }
     }
 }

@@ -2,7 +2,7 @@
 
 // note: rows at Z=100, 92, 84; columns at X=88, 96, 104, 112
 // note: assumes standard assignments (BPOG columns, alpha to tri, beta to square)
-class ClassicalConcepts(BossModule module, bool invert) : BossComponent(module)
+abstract class ClassicalConcepts(BossModule module, bool invert) : BossComponent(module)
 {
     enum Debuff { None, Alpha, Beta }
 
@@ -168,16 +168,16 @@ class ClassicalConcepts(BossModule module, bool invert) : BossComponent(module)
     }
 }
 
-class ClassicalConcepts1(BossModule module) : ClassicalConcepts(module, false);
-class ClassicalConcepts2(BossModule module) : ClassicalConcepts(module, true);
+sealed class ClassicalConcepts1(BossModule module) : ClassicalConcepts(module, false);
+sealed class ClassicalConcepts2(BossModule module) : ClassicalConcepts(module, true);
 
-class Implode(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Implode, 4f);
+sealed class Implode(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Implode, 4f);
 
-class PalladianRayBait(BossModule module) : Components.GenericBaitAway(module, (uint)AID.PalladianRayAOEFirst)
+sealed class PalladianRayBait(BossModule module) : Components.GenericBaitAway(module, (uint)AID.PalladianRayAOEFirst)
 {
     private readonly WPos[] _dummies = [new(92f, 92f), new(108f, 92f)];
 
-    private static readonly AOEShapeCone _shape = new(100f, 15f.Degrees());
+    private readonly AOEShapeCone _shape = new(100f, 15f.Degrees());
 
     public override void Update()
     {
@@ -188,12 +188,12 @@ class PalladianRayBait(BossModule module) : Components.GenericBaitAway(module, (
     }
 }
 
-class PalladianRayAOE(BossModule module) : Components.GenericAOEs(module, (uint)AID.PalladianRayAOERest)
+sealed class PalladianRayAOE(BossModule module) : Components.GenericAOEs(module, (uint)AID.PalladianRayAOERest)
 {
     private readonly List<AOEInstance> _aoes = [];
     public int NumConcurrentAOEs => _aoes.Count;
 
-    private static readonly AOEShapeCone _shape = new(100f, 15f.Degrees());
+    private readonly AOEShapeCone _shape = new(100f, 15f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

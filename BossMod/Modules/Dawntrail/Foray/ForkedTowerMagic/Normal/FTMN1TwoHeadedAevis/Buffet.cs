@@ -3,8 +3,8 @@
 sealed class Buffet(BossModule module) : BossComponent(module)
 {
     private readonly Actor?[] AssignedBoss = new Actor?[PartyState.MaxPartySize];
-    private readonly TwoHeadedAevis bossModule = (TwoHeadedAevis)module;
-    private readonly TwoHeadedAevisConfig _config = Service.Config.Get<TwoHeadedAevisConfig>();
+    private readonly FTMN1TwoHeadedAevis bossModule = (FTMN1TwoHeadedAevis)module;
+    private readonly FTMN1TwoHeadedAevisConfig _config = Service.Config.Get<FTMN1TwoHeadedAevisConfig>();
 
     public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {

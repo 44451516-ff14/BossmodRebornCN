@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Savage.P5SProtoCarbuncle;
 
 // this includes venom pools and raging claw/searing ray aoes
-class RubyGlow4(BossModule module) : RubyGlowRecolor(module, 5)
+sealed class RubyGlow4(BossModule module) : RubyGlowRecolor(module, 5)
 {
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

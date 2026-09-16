@@ -2,24 +2,8 @@
 
 sealed class LightOfJudgment(BossModule module) : Components.RaidwideCast(module, (uint)AID.LightOfJudgment);
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
-    StatesType = typeof(DMUStates),
-    ConfigType = typeof(DMUConfig),
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID),
-    StatusIDType = typeof(SID),
-    TetherIDType = typeof(TetherID),
-    IconIDType = typeof(IconID),
-    PrimaryActorOID = (uint)OID.Kefka,
-    Contributors = "Equilius",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.Ultimate,
-    GroupType = BossModuleInfo.GroupType.CFC,
-    GroupID = 1094u,
-    NameID = 7131u,
-    SortOrder = 1,
-    PlanLevel = 100)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.WIP, PrimaryActorOID = (uint)OID.Kefka, Contributors = "Equilius", Expansion = BossModuleInfo.Expansion.Dawntrail,
+    Category = BossModuleInfo.Category.Ultimate, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1094u, NameID = 7131u, SortOrder = 1, PlanLevel = 100)]
 public sealed class DMU : BossModule
 {
     public DMU(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

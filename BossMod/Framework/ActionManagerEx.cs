@@ -470,7 +470,7 @@ public sealed unsafe class ActionManagerEx : IDisposable
         blockMovement |= Config.PyreticThreshold > 0 && _hints.ImminentSpecialMode.mode is AIHints.SpecialMode.Pyretic or AIHints.SpecialMode.NoMovement && _hints.ImminentSpecialMode.activation < _ws.FutureTime(Config.PyreticThreshold);
 
         // note: if we cancel movement and start casting immediately, it will be canceled some time later - instead prefer to delay for one frame
-        var actionImminent = EffectiveAnimationLock <= 0 && AutoQueue.Action && !IsRecastTimerActive(AutoQueue.Action) && !(blockMovement && _movement.IsMoving());
+        var actionImminent = EffectiveAnimationLock <= 0f && AutoQueue.Action && !IsRecastTimerActive(AutoQueue.Action) && !(blockMovement && _movement.IsMoving());
         var desiredRotation = CalculateDesiredOrientation(actionImminent);
 
         // execute rotation, if needed
@@ -481,6 +481,8 @@ public sealed unsafe class ActionManagerEx : IDisposable
             autoRotateConfig->Value.UInt = 1;
             FaceDirection(desiredRotation.Value);
         }
+
+        var autoDismount = false;
 
         if (actionImminent)
         {
@@ -497,7 +499,7 @@ public sealed unsafe class ActionManagerEx : IDisposable
             else if (_dismountTweak.IsMountPreventingAction(actionAdj))
             {
                 Service.Log("[AMEx] Trying to dismount...");
-                _hints.WantDismount |= _dismountTweak.AutoDismountEnabled;
+                autoDismount = _dismountTweak.AutoDismountEnabled;
             }
             else
             {
@@ -519,7 +521,9 @@ public sealed unsafe class ActionManagerEx : IDisposable
             }
         }
 
-        if (_hints.WantDismount && !_movement.FollowPathActive() && _dismountTweak.AllowDismount())
+        var shouldDismount = _hints.WantDismount && _dismountTweak.AllowManualDismount() || autoDismount && _dismountTweak.AllowAutoDismount();
+
+        if (!_movement.FollowPathActive() && shouldDismount)
         {
             _inst->UseAction(CSActionType.GeneralAction, 23u);
         }

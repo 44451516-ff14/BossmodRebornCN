@@ -16,16 +16,12 @@ public enum AID : uint
     VoidMatter = 45568 // Helper->location, 8.0s cast, range 10 circle
 }
 
-[SkipLocalsInit]
 sealed class BlusteringBlink(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BlusteringBlink, new AOEShapeRect(55f, 5f));
 
-[SkipLocalsInit]
 sealed class VoidMatter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidMatter, 10f, 6);
 
-[SkipLocalsInit]
 sealed class EyesOnMe(BossModule module) : Components.RaidwideCast(module, (uint)AID.EyesOnMe);
 
-[SkipLocalsInit]
 sealed class D111AllSeeingEyeStates : StateMachineBuilder
 {
     public D111AllSeeingEyeStates(BossModule module) : base(module)
@@ -54,7 +50,6 @@ GroupID = 13u,
 NameID = 1397u,
 SortOrder = 1,
 PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class D111AllSeeingEye : BossModule
 {
     public D111AllSeeingEye(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

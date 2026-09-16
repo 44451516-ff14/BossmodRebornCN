@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un4Zurvan;
 
-class P2BrokenSeal(BossModule module) : BossComponent(module)
+sealed class P2BrokenSeal(BossModule module) : BossComponent(module)
 {
     public enum Color { None, Fire, Ice }
 

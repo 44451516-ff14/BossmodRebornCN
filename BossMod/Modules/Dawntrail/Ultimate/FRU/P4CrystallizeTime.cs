@@ -457,7 +457,6 @@ sealed class P4CrystallizeTimeQuietus(BossModule module) : Components.CastCounte
 
 sealed class P4CrystallizeTimeHints(BossModule module) : BossComponent(module)
 {
-    [Flags]
     public enum Hint
     {
         None = 0,
@@ -479,16 +478,21 @@ sealed class P4CrystallizeTimeHints(BossModule module) : BossComponent(module)
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (actor.PendingKnockbacks.Count > 0)
+        {
             return; // don't move while waiting for kb to resolve...
+        }
 
         var hint = CalculateHint(slot);
         if (hint.offset != default)
         {
             // we want to stay really close to border
             if (hint.offset.LengthSq() > 324f)
+            {
                 hint.offset *= 1.02632f;
+            }
 
-            if (hint.hint.HasFlag(Hint.KnockbackFrom))
+            var hint_ = hint.hint;
+            if ((hint_ & Hint.KnockbackFrom) != 0)
             {
                 var party = Raid.WithoutSlot(false, true, true);
                 var len = party.Length;
@@ -500,26 +504,27 @@ sealed class P4CrystallizeTimeHints(BossModule module) : BossComponent(module)
                     }
                 }
             }
-            if (hint.hint.HasFlag(Hint.SafespotRough))
+            if ((hint_ & Hint.SafespotRough) != 0)
             {
                 hints.AddForbiddenZone(new SDInvertedCircle(Arena.Center + hint.offset, 1f), DateTime.MaxValue);
             }
-            if (hint.hint.HasFlag(Hint.SafespotPrecise))
+            if ((hint_ & Hint.SafespotPrecise) != 0)
             {
                 hints.PathfindMapBounds = FRU.PathfindHugBorderBounds;
                 hints.AddForbiddenZone(new SDPrecisePosition(Arena.Center + hint.offset, new(default, 1f), Arena.Bounds.MapResolution, actor.Position, 0.1f));
             }
-            if (hint.hint.HasFlag(Hint.Maelstrom) && _hourglass != null)
+            if ((hint_ & Hint.Maelstrom) != 0 && _hourglass != null)
             {
                 var count = _hourglass.AOEs.Count;
+                var aoes = CollectionsMarshal.AsSpan(_hourglass.AOEs);
                 var max = count > 2 ? 2 : count;
                 for (var i = 0; i < max; ++i)
                 {
-                    var aoe = _hourglass.AOEs[i];
+                    ref var aoe = ref aoes[i];
                     hints.AddForbiddenZone(aoe.Shape.Distance(aoe.Origin, aoe.Rotation), aoe.Activation);
                 }
             }
-            if (hint.hint.HasFlag(Hint.Heads) && _heads != null)
+            if ((hint_ & Hint.Heads) != 0 && _heads != null)
             {
                 var count = _heads.Heads.Count;
                 for (var i = 0; i < count; ++i)
@@ -529,21 +534,24 @@ sealed class P4CrystallizeTimeHints(BossModule module) : BossComponent(module)
                         hints.AddForbiddenZone(new SDCircle(interceptor.Position, 12f));
                 }
             }
-            if (hint.hint.HasFlag(Hint.Knockback) && _ct != null)
+            if ((hint_ & Hint.Knockback) != 0 && _ct != null)
             {
                 var source = _ct.FindPlayerByAssignment(P4CrystallizeTime.Mechanic.ClawAir, _ct.NorthSlowHourglass.X > 0f ? -1 : 1);
                 var dest = Arena.Center + SafeOffsetDarknessStack(_ct.NorthSlowHourglass.X > 0 ? 1 : -1);
                 var pos = source != null ? source.Position + 2 * (dest - source.Position).Normalized() : Arena.Center + hint.offset;
                 hints.AddForbiddenZone(new SDPrecisePosition(pos, new(default, 1f), Arena.Bounds.MapResolution, actor.Position, 0.1f));
             }
-            if (hint.hint.HasFlag(Hint.Mid) && _hourglass != null)
+            if ((hint_ & Hint.Mid) != 0 && _hourglass != null)
             {
                 var count = _hourglass.AOEs.Count;
                 var max = count > 2 ? 2 : count;
+                var aoes = CollectionsMarshal.AsSpan(_hourglass.AOEs);
                 for (var i = 0; i < max; ++i)
                 {
-                    if (_hourglass.AOEs[i].Check(actor.Position))
+                    if (aoes[i].Check(actor.Position))
+                    {
                         return;
+                    }
                 }
                 // stay on correct side
                 var dest = Arena.Center + new WDir(default, hint.offset.Z > 0f ? 18f : -18f);

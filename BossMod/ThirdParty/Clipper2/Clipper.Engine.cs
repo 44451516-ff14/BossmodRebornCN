@@ -30,7 +30,6 @@ internal enum VertexFlags
     LocalMin = 8
 }
 
-[SkipLocalsInit]
 internal sealed class Vertex(Point64 pt, VertexFlags flags, Vertex? prev)
 {
     public Point64 pt = pt;
@@ -39,7 +38,6 @@ internal sealed class Vertex(Point64 pt, VertexFlags flags, Vertex? prev)
     public VertexFlags flags = flags;
 }
 
-[SkipLocalsInit]
 internal readonly struct LocalMinima(Vertex vertex, PathType polytype, bool isOpen = false)
 {
     public readonly Vertex vertex = vertex;
@@ -64,7 +62,6 @@ internal readonly struct LocalMinima(Vertex vertex, PathType polytype, bool isOp
 // IntersectNode: a structure representing 2 intersecting edges.
 // Intersections must be sorted so they are processed from the largest
 // Y coordinates to the smallest while keeping edges adjacent.
-[SkipLocalsInit]
 internal readonly struct IntersectNode(Point64 pt, Active edge1, Active edge2)
 {
     public readonly Point64 pt = pt;
@@ -72,7 +69,6 @@ internal readonly struct IntersectNode(Point64 pt, Active edge1, Active edge2)
     public readonly Active edge2 = edge2;
 }
 
-[SkipLocalsInit]
 internal struct LocMinSorter : IComparer<LocalMinima>
 {
     public readonly int Compare(LocalMinima locMin1, LocalMinima locMin2)
@@ -82,7 +78,6 @@ internal struct LocMinSorter : IComparer<LocalMinima>
 }
 
 // OutPt: vertex data structure for clipping solutions
-[SkipLocalsInit]
 internal sealed class OutPt
 {
     public Point64 pt;
@@ -105,7 +100,6 @@ internal enum JoinWith { None, Left, Right }
 internal enum HorzPosition { Bottom, Middle, Top }
 
 // OutRec: path data structure for clipping solutions
-[SkipLocalsInit]
 internal sealed class OutRec
 {
     public int idx;
@@ -122,7 +116,6 @@ internal sealed class OutRec
     public OutRec? recursiveSplit;
 }
 
-[SkipLocalsInit]
 internal sealed class HorzSegment(OutPt op)
 {
     public OutPt? leftOp = op;
@@ -130,7 +123,6 @@ internal sealed class HorzSegment(OutPt op)
     public bool leftToRight = true;
 }
 
-[SkipLocalsInit]
 internal sealed class HorzJoin(OutPt ltor, OutPt rtol)
 {
     public OutPt? op1 = ltor;
@@ -141,7 +133,6 @@ internal sealed class HorzJoin(OutPt ltor, OutPt rtol)
 // Important: UP and DOWN here are premised on Y-axis positive down
 // displays, which is the orientation used in Clipper's development.
 ///////////////////////////////////////////////////////////////////
-[SkipLocalsInit]
 internal sealed class Active
 {
     public Point64 bot;
@@ -172,7 +163,6 @@ internal sealed class Active
     internal JoinWith joinWith;
 }
 
-[SkipLocalsInit]
 internal static class ClipperEngine
 {
     internal static void AddLocMin(Vertex vert, PathType polytype, bool isOpen,
@@ -337,7 +327,6 @@ internal static class ClipperEngine
     }
 }
 
-[SkipLocalsInit]
 public sealed class ReuseableDataContainer64
 {
     private static readonly IComparer<LocalMinima> LocMinComparer = new LocMinSorter();
@@ -387,7 +376,6 @@ public sealed class ReuseableDataContainer64
     }
 }
 
-[SkipLocalsInit]
 public class ClipperBase
 {
     private const int ScanlineHeapThreshold = 32;
@@ -409,6 +397,9 @@ public class ClipperBase
     private readonly HorzSegmentPoolList _horzSegList;
     private readonly HorzJoinPoolList _horzJoinList;
     private readonly OutPtPoolList _outPtPool;
+    // Used only by ambiguous nesting checks. These paths never become results.
+    private Path64? _cleanPath1;
+    private Path64? _cleanPath2;
     private Active? _freeActives;
     private int _currentLocMin;
     private long _currentBotY;
@@ -917,27 +908,6 @@ protected ZCallback64? _zCallback;
             _isSortedMinimaList = true;
         }
 
-        var count = _minimaList.Count;
-        _scanlineList.EnsureCapacity(count);
-        var hasPreviousY = false;
-        var previousY = 0L;
-        var count1 = count - 1;
-        for (var i = count1; i >= 0; --i)
-        {
-            var y = _minimaList[i].vertex.pt.Y;
-            if (hasPreviousY && y == previousY)
-            {
-                continue;
-            }
-            _scanlineList.Add(y);
-            previousY = y;
-            hasPreviousY = true;
-        }
-        if (_scanlineList.Count > ScanlineHeapThreshold)
-        {
-            ActivateScanlineHeap();
-        }
-
         _currentBotY = 0L;
         _currentLocMin = 0;
         _actives = null;
@@ -1013,6 +983,18 @@ protected ZCallback64? _zCallback;
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool PopScanline(out long y)
     {
+        if (_currentLocMin < _minimaList.Count)
+        {
+            y = _minimaList[_currentLocMin].vertex.pt.Y;
+            var count = _scanlineList.Count;
+            if (count == 0 || y > _scanlineList[_scanlineIsHeap ? 0 : count - 1])
+            {
+                // InsertLocalMinimaIntoAEL consumes every minimum at this Y.
+                return true;
+            }
+            // Equal heights must pop the queued edge top too, so the sweep
+            // processes the shared height only once.
+        }
         if (_scanlineIsHeap)
         {
             return PopScanlineHeap(out y);
@@ -1136,7 +1118,7 @@ protected ZCallback64? _zCallback;
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void EnsureAdditionalVertexCapacity(int additionalCapacity)
     {
-        _vertexList.EnsureCapacity(checked(_vertexList.Count + additionalCapacity));
+        _vertexList.EnsureCapacity(_vertexList.Count + additionalCapacity);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -2394,10 +2376,12 @@ protected ZCallback64? _zCallback;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void AdjustCurrXAndCopyToSEL(long topY)
+    private bool AdjustCurrXAndCopyToSEL(long topY)
     {
         var ae = _actives;
         _sel = ae;
+        var previousX = long.MinValue;
+        var hasInversions = false;
         while (ae != null)
         {
             ae.prevInSEL = ae.prevInAEL;
@@ -2406,9 +2390,12 @@ protected ZCallback64? _zCallback;
             // it is safe to ignore 'joined' edges here because
             // if necessary they will be split in IntersectEdges()
             ae.curX = TopX(ae, topY);
+            hasInversions |= ae.curX < previousX;
+            previousX = ae.curX;
             // NB don't update ae.curr.Y yet (see AddNewIntersectNode)
             ae = ae.nextInAEL;
         }
+        return hasInversions;
     }
 
     protected void ExecuteInternal(ClipType ct, FillRule fillRule)
@@ -2560,7 +2547,13 @@ protected ZCallback64? _zCallback;
 
         // Calculate edge positions at the top of the current scanbeam, and from this
         // we will determine the intersections required to reach these new positions.
-        AdjustCurrXAndCopyToSEL(topY);
+        // Most scanbeams in disjoint or smoothly tessellated arena polygons have no
+        // crossings. The positions must still be updated, but a stable merge would
+        // leave an already ordered SEL unchanged and produce no intersections.
+        if (!AdjustCurrXAndCopyToSEL(topY))
+        {
+            return false;
+        }
 
         // Find all edge intersections in the current scanbeam using a stable merge
         // sort that ensures only adjacent edges are intersecting. Intersect info is
@@ -3367,9 +3360,10 @@ protected ZCallback64? _zCallback;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Path64 GetCleanPath(OutPt op)
+    private static Path64 GetCleanPath(OutPt op, Path64 result)
     {
-        Path64 result = [with(op.outrec.outPtCount)];
+        result.Clear();
+        result.EnsureCapacity(op.outrec.outPtCount);
         var op2 = op;
         while (op2.next != op && (op2.pt.X == op2.next!.pt.X && op2.pt.X == op2.prev.pt.X || op2.pt.Y == op2.next.pt.Y && op2.pt.Y == op2.prev.pt.Y))
         {
@@ -3497,7 +3491,7 @@ protected ZCallback64? _zCallback;
         return val == 0 ? PointInPolygonResult.IsOutside : PointInPolygonResult.IsInside;
     }
 
-    private static bool Path1InsidePath2(OutPt op1, OutPt op2)
+    private bool Path1InsidePath2(OutPt op1, OutPt op2)
     {
         // we need to make some accommodation for rounding errors
         // so we won't jump if the first vertex is found outside
@@ -3527,7 +3521,7 @@ protected ZCallback64? _zCallback;
             op = op.next!;
         } while (op != op1);
         // result is unclear, so try again using cleaned paths
-        return InternalClipper.Path2ContainsPath1(GetCleanPath(op1), GetCleanPath(op2)); // (#973)
+        return InternalClipper.Path2ContainsPath1(GetCleanPath(op1, _cleanPath1 ??= []), GetCleanPath(op2, _cleanPath2 ??= [])); // (#973)
     }
 
     private static void MoveSplits(OutRec fromOr, OutRec toOr)
@@ -3827,7 +3821,7 @@ protected ZCallback64? _zCallback;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Span<Point64> PreparePathBuffer(Path64 path, int expectedCount)
+    private static Span<T> PreparePathBuffer<T>(List<T> path, int expectedCount)
     {
         path.Clear();
         expectedCount = Math.Max(expectedCount, 4);
@@ -3837,7 +3831,7 @@ protected ZCallback64? _zCallback;
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void GrowPathBuffer(Path64 path, ref Span<Point64> buffer, int count)
+    private static void GrowPathBuffer<T>(List<T> path, ref Span<T> buffer, int count)
     {
         CollectionsMarshal.SetCount(path, count);
         path.EnsureCapacity(count + 1);
@@ -3915,6 +3909,57 @@ protected ZCallback64? _zCallback;
         return count != 3 || isOpen || !IsVerySmallTriangle(op2);
     }
 
+    private static bool BuildPathD(OutPt? op, bool reverse, bool isOpen, PathD path, double invScale)
+    {
+        if (op == null || op.next == op || !isOpen && op.next == op.prev)
+        {
+            return false;
+        }
+
+        Point64 lastPt;
+        OutPt op2;
+        if (reverse)
+        {
+            lastPt = op.pt;
+            op2 = op.prev;
+        }
+        else
+        {
+            op = op.next!;
+            lastPt = op.pt;
+            op2 = op.next!;
+        }
+        var buffer = PreparePathBuffer(path, op.outrec.outPtCount);
+        var count = 0;
+        buffer[count++] = new PointD(lastPt, invScale);
+
+        while (op2 != op)
+        {
+            // Compare integer coordinates before scaling, as BuildPath does.
+            // Distinct integer points can map to the same double coordinates.
+            if (op2.pt != lastPt)
+            {
+                lastPt = op2.pt;
+                if (count == buffer.Length)
+                {
+                    GrowPathBuffer(path, ref buffer, count);
+                }
+                buffer[count++] = new PointD(lastPt, invScale);
+            }
+            if (reverse)
+            {
+                op2 = op2.prev;
+            }
+            else
+            {
+                op2 = op2.next!;
+            }
+        }
+
+        CollectionsMarshal.SetCount(path, count);
+        return count != 3 || isOpen || !IsVerySmallTriangle(op2);
+    }
+
     private static bool BuildPathAndBounds(OutPt? op, bool reverse, Path64 path, out Rect64 bounds)
     {
         bounds = Clipper.InvalidRect64;
@@ -3973,12 +4018,15 @@ protected ZCallback64? _zCallback;
         solutionOpen.Clear();
         var count = _outrecList.Count;
         solutionClosed.EnsureCapacity(count);
-        solutionOpen.EnsureCapacity(count);
+        if (_hasOpenPaths)
+        {
+            solutionOpen.EnsureCapacity(count);
+        }
 
         var i = 0;
         // _outrecList.Count is not static here because
         // CleanCollinear can indirectly add additional OutRec
-        while (i < count)
+        while (i < _outrecList.Count)
         {
             var outrec = _outrecList[i++];
             if (outrec.pts == null)
@@ -3986,9 +4034,9 @@ protected ZCallback64? _zCallback;
                 continue;
             }
 
-            Path64 path = [with(outrec.outPtCount)];
             if (outrec.isOpen)
             {
+                Path64 path = [with(outrec.outPtCount)];
                 if (BuildPath(outrec.pts, ReverseSolution, true, path))
                 {
                     solutionOpen.Add(path);
@@ -3997,6 +4045,11 @@ protected ZCallback64? _zCallback;
             else
             {
                 CleanCollinear(outrec);
+                if (outrec.pts == null)
+                {
+                    continue;
+                }
+                Path64 path = [with(outrec.outPtCount)];
                 // closed paths should always return a Positive orientation
                 // except when ReverseSolution == true
                 if (BuildPath(outrec.pts, ReverseSolution, false, path))
@@ -4006,6 +4059,42 @@ protected ZCallback64? _zCallback;
             }
         }
         return true;
+    }
+
+    // ClipperD can emit scaled points during traversal instead of allocating an
+    // intermediate Path64 and traversing it again for every returned contour.
+    protected void BuildPaths(PathsD solutionClosed, PathsD solutionOpen, double invScale)
+    {
+        solutionClosed.Clear();
+        solutionOpen.Clear();
+        solutionClosed.EnsureCapacity(_outrecList.Count);
+        if (_hasOpenPaths)
+        {
+            solutionOpen.EnsureCapacity(_outrecList.Count);
+        }
+
+        // Cleanup can append split contours; keep the loop bound live.
+        for (var i = 0; i < _outrecList.Count; ++i)
+        {
+            var outrec = _outrecList[i];
+            if (outrec.pts == null)
+            {
+                continue;
+            }
+            if (!outrec.isOpen)
+            {
+                CleanCollinear(outrec);
+                if (outrec.pts == null)
+                {
+                    continue;
+                }
+            }
+            PathD path = [with(outrec.outPtCount)];
+            if (BuildPathD(outrec.pts, ReverseSolution, outrec.isOpen, path, invScale))
+            {
+                (outrec.isOpen ? solutionOpen : solutionClosed).Add(path);
+            }
+        }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -4020,8 +4109,12 @@ protected ZCallback64? _zCallback;
             return true;
         }
         CleanCollinear(outrec);
+        if (outrec.pts == null)
+        {
+            return false;
+        }
         var path = outrec.path ??= [with(outrec.outPtCount)];
-        if (outrec.pts == null || !BuildPathAndBounds(outrec.pts, ReverseSolution, path, out var bounds))
+        if (!BuildPathAndBounds(outrec.pts, ReverseSolution, path, out var bounds))
         {
             return false;
         }
@@ -4107,17 +4200,15 @@ protected ZCallback64? _zCallback;
     {
         polytree.Clear();
         solutionOpen.Clear();
-        var count = _outrecList.Count;
+
         if (_hasOpenPaths)
         {
-            solutionOpen.EnsureCapacity(count);
+            solutionOpen.EnsureCapacity(_outrecList.Count);
         }
 
         var i = 0;
-        // _outrecList.Count is not static here because
-        // CheckBounds below can indirectly add additional
-        // OutRec (via FixOutRecPts & CleanCollinear)
-        while (i < count)
+
+        while (i < _outrecList.Count)
         {
             var outrec = _outrecList[i++];
             if (outrec.pts == null)
@@ -4170,7 +4261,6 @@ protected ZCallback64? _zCallback;
     }
 }
 
-[SkipLocalsInit]
 public sealed class Clipper64 : ClipperBase
 {
     private readonly Paths64 _discardedOpenPaths = [];
@@ -4291,7 +4381,6 @@ public sealed class Clipper64 : ClipperBase
 
 }
 
-[SkipLocalsInit]
 public sealed class ClipperD : ClipperBase
 {
     private const string precision_range_error = "Error: Precision is out of range.";
@@ -4299,8 +4388,11 @@ public sealed class ClipperD : ClipperBase
 
     private readonly double _scale;
     private readonly double _invScale;
-    private readonly Paths64 _solutionClosed64 = [];
-    private readonly Paths64 _solutionOpen64 = [];
+    // Stage result references until all cleanup callbacks have finished. Caller
+    // output lists remain empty on failure and keep their existing alias behavior.
+    private readonly PathsD _solutionClosed = [];
+    private readonly PathsD _solutionOpen = [];
+    private Paths64? _solutionOpen64; // integer open paths are still needed by tree output
     private readonly PathsD _discardedOpenPaths = [];
     private Point64[] _scaledPathBuffer = [];
 
@@ -4378,7 +4470,6 @@ public sealed class ClipperD : ClipperBase
         AddScaledPath(path, polytype, isOpen, _scaledPathBuffer);
     }
 
-    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void AddScaledPathStack(PathD path, PathType polytype, bool isOpen)
     {
@@ -4386,7 +4477,6 @@ public sealed class ClipperD : ClipperBase
         AddScaledPath(path, polytype, isOpen, scaled);
     }
 
-    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void AddScaledPathsStack(scoped ReadOnlySpan<PathD> paths, int maximumPathCount, PathType polytype, bool isOpen)
     {
@@ -4478,7 +4568,6 @@ public sealed class ClipperD : ClipperBase
 
     public bool Execute(ClipType clipType, FillRule fillRule, PathsD solutionClosed, PathsD solutionOpen)
     {
-        Paths64 solClosed64 = _solutionClosed64, solOpen64 = _solutionOpen64;
 #if USINGZ
 		CheckZCallback();
 #endif
@@ -4490,7 +4579,7 @@ public sealed class ClipperD : ClipperBase
         try
         {
             ExecuteInternal(clipType, fillRule);
-            BuildPaths(solClosed64, solOpen64);
+            BuildPaths(_solutionClosed, _solutionOpen, _invScale);
         }
         catch
         {
@@ -4500,31 +4589,19 @@ public sealed class ClipperD : ClipperBase
         ClearSolutionOnly();
         if (!success)
         {
-            solClosed64.Clear();
-            solOpen64.Clear();
+            _solutionClosed.Clear();
+            _solutionOpen.Clear();
             return false;
         }
 
-        solutionClosed.EnsureCapacity(solClosed64.Count);
-        CollectionsMarshal.SetCount(solutionClosed, solClosed64.Count);
-        var closedSource = CollectionsMarshal.AsSpan(solClosed64);
-        var closedDestination = CollectionsMarshal.AsSpan(solutionClosed);
-        var lenC = closedSource.Length;
-        for (var i = 0; i < lenC; ++i)
-        {
-            closedDestination[i] = Clipper.ScalePathD(closedSource[i], _invScale);
-        }
-        solutionOpen.EnsureCapacity(solOpen64.Count);
-        CollectionsMarshal.SetCount(solutionOpen, solOpen64.Count);
-        var openSource = CollectionsMarshal.AsSpan(solOpen64);
-        var openDestination = CollectionsMarshal.AsSpan(solutionOpen);
-        var lenO = openSource.Length;
-        for (var i = 0; i < lenO; ++i)
-        {
-            openDestination[i] = Clipper.ScalePathD(openSource[i], _invScale);
-        }
-        solClosed64.Clear();
-        solOpen64.Clear();
+        solutionClosed.EnsureCapacity(_solutionClosed.Count);
+        CollectionsMarshal.SetCount(solutionClosed, _solutionClosed.Count);
+        CollectionsMarshal.AsSpan(_solutionClosed).CopyTo(CollectionsMarshal.AsSpan(solutionClosed));
+        solutionOpen.EnsureCapacity(_solutionOpen.Count);
+        CollectionsMarshal.SetCount(solutionOpen, _solutionOpen.Count);
+        CollectionsMarshal.AsSpan(_solutionOpen).CopyTo(CollectionsMarshal.AsSpan(solutionOpen));
+        _solutionClosed.Clear();
+        _solutionOpen.Clear();
 
         return true;
     }
@@ -4546,7 +4623,7 @@ public sealed class ClipperD : ClipperBase
 #if USINGZ
 		CheckZCallback();
 #endif
-        var oPaths = _solutionOpen64;
+        var oPaths = _solutionOpen64 ??= [];
         var success = true;
         try
         {
@@ -4589,7 +4666,6 @@ public sealed class ClipperD : ClipperBase
     }
 }
 
-[SkipLocalsInit]
 public abstract class PolyPathBase(PolyPathBase? parent = null) : IEnumerable
 {
     internal PolyPathBase? _parent = parent;
@@ -4714,7 +4790,6 @@ public abstract class PolyPathBase(PolyPathBase? parent = null) : IEnumerable
     }
 }
 
-[SkipLocalsInit]
 public class PolyPath64(PolyPathBase? parent = null) : PolyPathBase(parent)
 {
     public Path64? Polygon;// polytree root's polygon == null
@@ -4764,7 +4839,6 @@ public class PolyPath64(PolyPathBase? parent = null) : PolyPathBase(parent)
     }
 }
 
-[SkipLocalsInit]
 public class PolyPathD(PolyPathBase? parent = null) : PolyPathBase(parent)
 {
     internal double Scale;
@@ -4818,14 +4892,11 @@ public class PolyPathD(PolyPathBase? parent = null) : PolyPathBase(parent)
     }
 }
 
-[SkipLocalsInit]
 public sealed class PolyTree64 : PolyPath64 { }
 
-[SkipLocalsInit]
 public sealed class PolyTreeD : PolyPathD
 {
     public new double Scale => base.Scale;
 }
 
-[SkipLocalsInit]
 public sealed class ClipperLibException(string description) : Exception(description) { }

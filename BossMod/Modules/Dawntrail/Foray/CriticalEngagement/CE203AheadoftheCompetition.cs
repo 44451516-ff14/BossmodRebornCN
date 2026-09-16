@@ -209,7 +209,6 @@ sealed class Dissipate(BossModule module) : Components.Voidzone(module, 8.5f, mo
     }
 }
 
-[SkipLocalsInit]
 sealed class CE203AheadoftheCompetitionStates : StateMachineBuilder
 {
     public CE203AheadoftheCompetitionStates(BossModule module) : base(module)
@@ -227,24 +226,7 @@ sealed class CE203AheadoftheCompetitionStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
-    StatesType = typeof(CE203AheadoftheCompetitionStates),
-    ConfigType = null, // replace null with typeof(PhantomHydraConfig) if applicable
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID), // replace null with typeof(AID) if applicable
-    StatusIDType = null, // replace null with typeof(SID) if applicable
-    TetherIDType = null, // replace null with typeof(TetherID) if applicable
-    IconIDType = null, // replace null with typeof(IconID) if applicable
-    PrimaryActorOID = (uint)OID.PhantomHydra,
-    Contributors = "Equilius",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.Foray,
-    GroupType = BossModuleInfo.GroupType.CriticalEngagement,
-    GroupID = 1093u,
-    NameID = 62u,
-    SortOrder = 14,
-    PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.PhantomHydra, Contributors = "Equilius", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 1093u, NameID = 62u)]
 public sealed class CE203AheadoftheCompetition : BossModule
 {
     public CE203AheadoftheCompetition(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

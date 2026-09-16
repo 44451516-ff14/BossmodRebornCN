@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C03AAI.C032Lala;
 
-class PlanarTactics(BossModule module) : Components.GenericAOEs(module)
+sealed class PlanarTactics(BossModule module) : Components.GenericAOEs(module)
 {
     public struct PlayerState
     {
@@ -92,7 +92,7 @@ class PlanarTactics(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class PlanarTacticsForcedMarch : Components.GenericForcedMarch
+sealed class PlanarTacticsForcedMarch : Components.GenericForcedMarch
 {
     private readonly int[] _rotationCount = new int[4];
     private readonly Angle[] _rotation = new Angle[4];

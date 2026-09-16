@@ -1,14 +1,14 @@
 ﻿namespace BossMod.Endwalker.Savage.P4S1Hesperos;
 
 // state related to vengeful belone mechanic
-class VengefulBelone(BossModule module) : BossComponent(module)
+sealed class VengefulBelone(BossModule module) : BossComponent(module)
 {
     private readonly Dictionary<ulong, Role> _orbTargets = [];
     private int _orbsExploded;
     private readonly int[] _playerRuinCount = new int[8];
     private readonly Role[] _playerActingRole = new Role[8];
 
-    private const float _burstRadius = 8;
+    private const float _burstRadius = 8f;
 
     private Role OrbTarget(ulong instanceID) => _orbTargets.GetValueOrDefault(instanceID, Role.None);
 
@@ -18,7 +18,7 @@ class VengefulBelone(BossModule module) : BossComponent(module)
             return; // inactive
 
         var ruinCount = _playerRuinCount[slot];
-        if (ruinCount > 2 || (ruinCount == 2 && _playerActingRole[slot] != Role.None))
+        if (ruinCount > 2 || ruinCount == 2 && _playerActingRole[slot] != Role.None)
         {
             hints.Add("Failed orbs...");
         }
@@ -76,27 +76,27 @@ class VengefulBelone(BossModule module) : BossComponent(module)
         foreach ((var i, var player) in Raid.WithSlot(false, true, true))
         {
             var nearLethalOrb = orbs.Where(orb => IsOrbLethal(i, player, OrbTarget(orb.InstanceID))).InRadius(player.Position, _burstRadius).Any();
-            Arena.Actor(player, nearLethalOrb ? Colors.PlayerInteresting : Colors.PlayerGeneric);
+            Arena.Actor(player, nearLethalOrb ? Colors.PlayerInteresting : Colors.PlayerGeneric, drawWorld: nearLethalOrb ? true : null);
         }
     }
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.OrbRole:
+            case (uint)SID.OrbRole:
                 _orbTargets[actor.InstanceID] = OrbRoleFromStatusParam(status.Extra);
                 break;
-            case SID.ThriceComeRuin:
+            case (uint)SID.ThriceComeRuin:
                 ModifyRuinStacks(actor, status.Extra);
                 break;
-            case SID.ActingDPS:
+            case (uint)SID.ActingDPS:
                 ModifyActingRole(actor, Role.Melee);
                 break;
-            case SID.ActingHealer:
+            case (uint)SID.ActingHealer:
                 ModifyActingRole(actor, Role.Healer);
                 break;
-            case SID.ActingTank:
+            case (uint)SID.ActingTank:
                 ModifyActingRole(actor, Role.Tank);
                 break;
         }
@@ -104,14 +104,14 @@ class VengefulBelone(BossModule module) : BossComponent(module)
 
     public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.ThriceComeRuin:
+            case (uint)SID.ThriceComeRuin:
                 ModifyRuinStacks(actor, 0);
                 break;
-            case SID.ActingDPS:
-            case SID.ActingHealer:
-            case SID.ActingTank:
+            case (uint)SID.ActingDPS:
+            case (uint)SID.ActingHealer:
+            case (uint)SID.ActingTank:
                 ModifyActingRole(actor, Role.None);
                 break;
         }
@@ -119,7 +119,7 @@ class VengefulBelone(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.BeloneBurstsAOETank or AID.BeloneBurstsAOEHealer or AID.BeloneBurstsAOEDPS)
+        if (spell.Action.ID is (uint)AID.BeloneBurstsAOETank or (uint)AID.BeloneBurstsAOEHealer or (uint)AID.BeloneBurstsAOEDPS)
         {
             _orbTargets[caster.InstanceID] = Role.None;
             ++_orbsExploded;

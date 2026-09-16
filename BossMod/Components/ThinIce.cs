@@ -2,9 +2,10 @@ namespace BossMod.Components;
 
 // component for ThinIce mechanic
 // observation: for SID 911 the distance is 0.1 * status extra
-[SkipLocalsInit]
-public abstract class ThinIce(BossModule module, float distance, bool createforbiddenzones = false, uint statusID = 911u, bool stopAtWall = false, bool stopAfterWall = false) : GenericKnockback(module, stopAtWall: stopAtWall, stopAfterWall: stopAfterWall)
+public abstract class ThinIce(BossModule module, float distance, bool createforbiddenzones = false, uint statusID = 911u, bool stopAtWall = false, bool stopAfterWall = false, int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false) : GenericKnockback(module, stopAtWall: stopAtWall, stopAfterWall: stopAfterWall)
 {
+    public int? ArenaProjectionLayer = arenaProjectionLayer;
+    public bool? RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
     public readonly uint StatusID = statusID;
     public readonly float Distance = distance;
     private static readonly WDir offset = new(default, 1f);
@@ -12,9 +13,9 @@ public abstract class ThinIce(BossModule module, float distance, bool createforb
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
-        if (Mask[slot])
+        if (Mask[slot] && ArenaProjectionLayerParticipantApplies(actor, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
         {
-            return new Knockback[1] { new(actor.Position, Distance, default, default, MovementOverride.Instance!.LegacyMode ? Camera.Instance!.CameraAzimuth.Radians() + 180f.Degrees() : actor.Rotation, Kind.DirForward) };
+            return new Knockback[1] { new(actor.Position, Distance, default, default, MovementOverride.Instance!.LegacyMode ? Camera.Instance!.CameraAzimuth.Radians() + 180f.Degrees() : actor.Rotation, Kind.DirForward, arenaProjectionLayer: ArenaProjectionLayer, restrictToArenaProjectionLayer: RestrictToArenaProjectionLayer) };
         }
         return [];
     }
@@ -46,8 +47,9 @@ public abstract class ThinIce(BossModule module, float distance, bool createforb
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
+        using var projection = Arena.WorldProjectionLayer(ArenaProjectionLayer, RestrictToArenaProjectionLayer);
         base.DrawArenaForeground(pcSlot, pc);
-        if (Mask[pcSlot])
+        if (Mask[pcSlot] && ArenaProjectionLayerParticipantApplies(pc, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
         {
             Arena.ZoneCircleOutline(pc.Position, Distance, Colors.Vulnerable);
         }
@@ -55,7 +57,7 @@ public abstract class ThinIce(BossModule module, float distance, bool createforb
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (createforbiddenzones && Mask[slot])
+        if (createforbiddenzones && Mask[slot] && ArenaProjectionLayerParticipantApplies(actor, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
         {
             var pos = actor.Position;
             var ddistance = 2f * Distance;
@@ -65,7 +67,7 @@ public abstract class ThinIce(BossModule module, float distance, bool createforb
                 new SDInvertedDonut(pos, ddistance, ddistance + 1.2f),
                 new SDInvertedRect(pos, offset, 0.5f, 0.5f, 0.5f)
             };
-            hints.AddForbiddenZone(new SDIntersection(forbidden), DateTime.MaxValue);
+            hints.AddForbiddenZone(new SDIntersection(forbidden), DateTime.MaxValue, arenaProjectionLayer: ArenaProjectionLayerForAI(ArenaProjectionLayer, RestrictToArenaProjectionLayer));
         }
     }
 }

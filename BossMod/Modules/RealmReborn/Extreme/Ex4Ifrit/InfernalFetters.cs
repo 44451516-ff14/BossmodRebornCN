@@ -1,6 +1,6 @@
 ﻿namespace BossMod.RealmReborn.Extreme.Ex4Ifrit;
 
-class InfernalFetters(BossModule module) : BossComponent(module)
+sealed class InfernalFetters(BossModule module) : BossComponent(module)
 {
     public BitMask Fetters;
     private int _fettersStrength;
@@ -11,7 +11,7 @@ class InfernalFetters(BossModule module) : BossComponent(module)
         {
             var partner = Raid.WithSlot(false, true, true).Exclude(slot).IncludedInMask(Fetters).FirstOrDefault().Item2;
             if (partner != null)
-                hints.AddForbiddenZone(new SDInvertedCircle(partner.Position, 10)); // TODO: tweak range...
+                hints.AddForbiddenZone(new SDInvertedCircle(partner.Position, 10f)); // TODO: tweak range...
         }
     }
 
@@ -30,7 +30,7 @@ class InfernalFetters(BossModule module) : BossComponent(module)
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        if ((SID)status.ID == SID.InfernalFetters)
+        if (status.ID == (uint)SID.InfernalFetters)
         {
             Fetters.Set(Raid.FindSlot(actor.InstanceID));
             _fettersStrength = status.Extra;
@@ -39,7 +39,7 @@ class InfernalFetters(BossModule module) : BossComponent(module)
 
     public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
-        if ((SID)status.ID == SID.InfernalFetters)
+        if (status.ID == (uint)SID.InfernalFetters)
         {
             Fetters.Clear(Raid.FindSlot(actor.InstanceID));
             _fettersStrength = 0;

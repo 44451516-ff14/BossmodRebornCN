@@ -140,7 +140,7 @@ class StartingPositions(BossModule module) : BossComponent(module)
                         4 => new WPos(-11.719f, 2.587f),
                         5 => new WPos(-2.815f, 2.137f),
                         0x10 => new WPos(-1.511f, 4.501f),
-                        0x18 => new WPos(1.999f, 5.020f),
+                        0x18 => new WPos(0f, 5.020f),
                         _ => null
                     },
                 1014 => // NA03 React to Advanced Visual Indicators
@@ -443,7 +443,9 @@ class NA02UpwellKnockback(BossModule module) : Components.SimpleKnockbacks(modul
         }
     }
 }
-class NA02BlazingSurge(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.NA02BlazingSurge1, (uint)AID.NA02BlazingSurge2], new AOEShapeCone(20f, 90.Degrees()), maxCasts: 1);
+
+class NA02BlazingSurge(BossModule module) : Components.SimpleAOEGroupsByTimewindow(module,
+    [(uint)AID.NA02BlazingSurge1, (uint)AID.NA02BlazingSurge2], new AOEShapeCone(20f, 90.Degrees()), expectedNumCasters: 1);
 #endregion
 
 #region NA03

@@ -4,7 +4,7 @@ sealed class BA4ProtoOzmaStates : StateMachineBuilder
 {
     public BA4ProtoOzmaStates(BossModule module) : base(module)
     {
-        DeathPhase(0, SinglePhase)
+        DeathPhase(0u, SinglePhase)
             .ActivateOnEnter<TransitionAttacks>()
             .ActivateOnEnter<AutoAttacksCube>()
             .ActivateOnEnter<AutoAttacksPyramid>()
@@ -22,7 +22,7 @@ sealed class BA4ProtoOzmaStates : StateMachineBuilder
 
     private void SinglePhase(uint id)
     {
-        SimpleState(id + 0xFF0000, 10000, "???");
+        SimpleState(id + 0xFF0000u, 10000u, "???");
     }
     //TODO: implement
     //private void XXX(uint id, float delay)

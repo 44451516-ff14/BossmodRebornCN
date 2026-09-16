@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P10SPandaemonium;
 
-class WickedStep(BossModule module) : Components.GenericKnockback(module)
+sealed class WickedStep(BossModule module) : Components.GenericKnockback(module)
 {
     private readonly Actor?[] _towers = [null, null];
 

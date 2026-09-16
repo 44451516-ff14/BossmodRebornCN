@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Savage.P3SPhoinix;
 
 // state related to sunshadow tethers during fountain of fire mechanics
-class SunshadowTether(BossModule module) : BossComponent(module)
+sealed class SunshadowTether(BossModule module) : BossComponent(module)
 {
     private readonly HashSet<ulong> _chargedSunshadows = [];
     private BitMask _playersInAOE;
@@ -69,7 +69,10 @@ class SunshadowTether(BossModule module) : BossComponent(module)
 
         // draw all players
         foreach ((var i, var player) in Raid.WithSlot(false, true, true))
-            Arena.Actor(player, _playersInAOE[i] ? Colors.PlayerInteresting : Colors.PlayerGeneric);
+        {
+            var isinaoe = _playersInAOE[i];
+            Arena.Actor(player, isinaoe ? Colors.PlayerInteresting : Colors.PlayerGeneric, drawWorld: isinaoe ? true : null);
+        }
 
         // draw my tether
         var myBird = Module.Enemies((uint)OID.Sunshadow).FirstOrDefault(bird => BirdTarget(bird) == pc.InstanceID);
@@ -82,7 +85,7 @@ class SunshadowTether(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.Fireglide)
+        if (spell.Action.ID == (uint)AID.Fireglide)
             _chargedSunshadows.Add(caster.InstanceID);
     }
 

@@ -22,25 +22,18 @@ public enum SID : uint
     Paralysis = 3463 // Coincounter->player, extra=0x0
 }
 
-[SkipLocalsInit]
 sealed class TenHundredTonzeSwipe(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.HundredTonzeSwipe, (uint)AID.HundredTonzeSwipe], new AOEShapeCone(10f, 60f.Degrees()));
 
-[SkipLocalsInit]
 sealed class HundredTonzeSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HundredTonzeSwing, 12f);
 
-[SkipLocalsInit]
 sealed class Glower(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Glower, new AOEShapeRect(21f, 3.5f));
 
-[SkipLocalsInit]
 sealed class EyeOfTheBeholder(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EyeOfTheBeholder, new AOEShapeDonutSector(8f, 19f, 135f.Degrees()));
 
-[SkipLocalsInit]
 sealed class Paralysis(BossModule module) : Components.CleansableDebuff(module, (uint)SID.Paralysis, "Paralysis", "paralyzed");
 
-[SkipLocalsInit]
 sealed class Electrocution(BossModule module) : Components.CleansableDebuff(module, (uint)SID.Electrocution, "Electrocution", "electrocuted");
 
-[SkipLocalsInit]
 sealed class D122CoincounterStates : StateMachineBuilder
 {
     public D122CoincounterStates(BossModule module) : base(module)
@@ -72,7 +65,6 @@ GroupID = 5u,
 NameID = 1533u,
 SortOrder = 2,
 PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class D122Coincounter : BossModule
 {
     public D122Coincounter(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

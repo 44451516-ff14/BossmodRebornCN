@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex4Barbariccia;
 
-class StiffBreeze(BossModule module) : Components.Voidzone(module, 1f, GetVoidzones)
+sealed class StiffBreeze(BossModule module) : Components.Voidzone(module, 1f, GetVoidzones)
 {
     // note: actual aoe, if triggered, has radius 2, but we care about triggering radius
     private static Actor[] GetVoidzones(BossModule module)

@@ -5,7 +5,7 @@ abstract class SpiralThrust(BossModule module, float predictionDelay) : Componen
     private float _predictionDelay = predictionDelay;
     private readonly List<AOEInstance> _aoes = [];
 
-    private static readonly AOEShapeRect _shape = new(54.2f, 6f);
+    private readonly AOEShapeRect _shape = new(54.2f, 6f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

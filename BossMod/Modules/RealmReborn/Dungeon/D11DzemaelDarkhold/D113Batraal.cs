@@ -24,16 +24,12 @@ public enum SID : uint
     Invincibility = 4410 // none->Batraal, extra=0x0
 }
 
-[SkipLocalsInit]
 sealed class Desolation(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Desolation, new AOEShapeRect(60f, 3f));
 
-[SkipLocalsInit]
 sealed class AetherialSurge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AetherialSurge, 6f);
 
-[SkipLocalsInit]
 sealed class GrimHalo(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GrimHalo, 12f);
 
-[SkipLocalsInit]
 sealed class D113BatraalStates : StateMachineBuilder
 {
     public D113BatraalStates(BossModule module) : base(module)
@@ -62,7 +58,6 @@ GroupID = 13u,
 NameID = 1396u,
 SortOrder = 3,
 PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class D113Batraal : BossModule
 {
     public D113Batraal(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

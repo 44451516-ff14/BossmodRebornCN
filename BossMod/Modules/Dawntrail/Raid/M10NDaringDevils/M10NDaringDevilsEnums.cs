@@ -1,4 +1,4 @@
-namespace BossMod.DawnTrail.Raid.M10NDaringDevils;
+namespace BossMod.Dawntrail.Raid.M10NDaringDevils;
 
 public enum OID : uint
 {
@@ -66,7 +66,6 @@ public enum AID : uint
     InsaneAir2 = 47254, // DeepBlue->self, 3.9+1.5s cast, single-target
     Ability_3 = 46461, // DeepBlue->self, no cast, single-target
 }
-
 
 public enum TetherID : uint
 {

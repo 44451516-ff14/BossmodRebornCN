@@ -96,14 +96,6 @@ sealed class Brainstorm(BossModule module) : Components.StatusDrivenForcedMarch(
     }
 }
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"{Module.PrimaryActor.Name} will spawn upto 4 waves of adds which are weak to fire.\nA way to quickly heal yourself to full is mandatory and a ranged fire\nability such as Mustard Bomb and Flying Sardine for interrupts\nare highly recommended.");
-    }
-}
-
 sealed class Stage28States : StateMachineBuilder
 {
     public Stage28States(BossModule module) : base(module)
@@ -116,17 +108,20 @@ sealed class Stage28States : StateMachineBuilder
             .ActivateOnEnter<HelblarShriekFuneralPyre>()
             .ActivateOnEnter<NecrobaneVoidzone>()
             .ActivateOnEnter<MarchOfTheDraugar>()
-            .ActivateOnEnter<DoomImpending>()
-            .DeactivateOnEnter<Hints>();
+            .ActivateOnEnter<DoomImpending>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 697, NameID = 9233)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 697u, NameID = 9233u)]
 public sealed class Stage28 : BossModule
 {
     public Stage28(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {
-        ActivateComponent<Hints>();
+        _prePullHints =
+        [
+            $"{PrimaryActor.Name} will spawn upto 4 waves of adds which are weak to fire.",
+            "A way to quickly heal yourself to full is mandatory and a ranged fire ability such as Mustard Bomb and Flying Sardine for interrupts are highly recommended."
+        ];
     }
     private static readonly uint[] adds = [(uint)OID.UndeadSerf1, (uint)OID.UndeadSerf2, (uint)OID.UndeadGravekeeper, (uint)OID.UndeadSoldier, (uint)OID.UndeadWarrior];
 
@@ -149,4 +144,8 @@ public sealed class Stage28 : BossModule
             };
         }
     }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

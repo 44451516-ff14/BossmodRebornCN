@@ -1,6 +1,6 @@
 ﻿//TODO: Account for Dead Wake's shortening arena.
 
-namespace BossMod.Modules.Dawntrail.Raid.M09NVampFatale;
+namespace BossMod.Dawntrail.Raid.M09NVampFatale;
 
 sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {

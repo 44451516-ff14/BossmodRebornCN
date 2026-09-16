@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un2Sephirot;
 
-class P3Daat(BossModule module) : Components.CastCounter(module, (uint)AID.DaatRandom)
+sealed class P3Daat(BossModule module) : Components.CastCounter(module, (uint)AID.DaatRandom)
 {
-    private const float radius = 5;
+    private const float radius = 5f;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {

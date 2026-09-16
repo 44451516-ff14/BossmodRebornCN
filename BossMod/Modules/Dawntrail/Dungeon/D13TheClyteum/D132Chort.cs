@@ -86,7 +86,6 @@ sealed class EvilEmission(BossModule module) : Components.SpreadFromIcon(module,
 
 sealed class ProfanePressure(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.ProfanePressure1, 6f, 4);
 
-[SkipLocalsInit]
 sealed class D132ChortStates : StateMachineBuilder
 {
     public D132ChortStates(BossModule module) : base(module)
@@ -102,22 +101,5 @@ sealed class D132ChortStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
-    StatesType = typeof(D132ChortStates),
-    ConfigType = null, // replace null with typeof(ChortConfig) if applicable
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID), // replace null with typeof(AID) if applicable
-    StatusIDType = null, // replace null with typeof(SID) if applicable
-    TetherIDType = null, // replace null with typeof(TetherID) if applicable
-    IconIDType = null, // replace null with typeof(IconID) if applicable
-    PrimaryActorOID = (uint)OID.Chort,
-    Contributors = "Wen",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.Dungeon,
-    GroupType = BossModuleInfo.GroupType.CFC,
-    GroupID = 1011u,
-    NameID = 14734u,
-    SortOrder = 2,
-    PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.Chort, Contributors = "Wen", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1011u, NameID = 14734u, SortOrder = 2)]
 public sealed class D132Chort(WorldState ws, Actor primary) : BossModule(ws, primary, new(660f, -141f), new ArenaBoundsCircle(15f));

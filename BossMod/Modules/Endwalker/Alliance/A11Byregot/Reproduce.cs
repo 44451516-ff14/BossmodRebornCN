@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Alliance.A11Byregot;
 
-class Reproduce(BossModule module) : Components.Exaflare(module, 7f)
+sealed class Reproduce(BossModule module) : Components.Exaflare(module, 7f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

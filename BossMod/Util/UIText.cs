@@ -5,7 +5,6 @@ namespace BossMod;
 // Repeated hint strings normally pass through ImU8String's UTF-16 -> UTF-8 conversion on every
 // submission. Keep two small, thread-local generations of null-terminated UTF-8 instead.
 // The cache is deliberately bounded: encounter-authored literals stay hot, while rapidly changing actor names and timers cannot retain strings for the lifetime of the plugin.
-[SkipLocalsInit]
 internal static class UIText
 {
     private const int MaxEntriesPerGeneration = 512;

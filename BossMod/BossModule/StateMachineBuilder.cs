@@ -8,7 +8,6 @@ namespace BossMod;
 // - first nibble (mask 0x0000000F) is used for smallest possible states (e.g. cast-start + cast-end)
 // - second and third nibble can be used by modules needing more hierarchy levels
 // this is all done to provide ids that are relatively stable across refactorings (these are used e.g. for cooldown planning)
-[SkipLocalsInit]
 public class StateMachineBuilder(BossModule module)
 {
     // wrapper that simplifies building phases
@@ -83,11 +82,6 @@ public class StateMachineBuilder(BossModule module)
         public State DeactivateOnExit<C>(bool condition = true) where C : BossComponent => OnExit(module.DeactivateComponent<C>, condition);
         public State ExecOnEnter<C>(Action<C> fn, bool condition = true) where C : BossComponent => OnEnter(ExecForComponent(fn), condition);
         public State ExecOnExit<C>(Action<C> fn, bool condition = true) where C : BossComponent => OnExit(ExecForComponent(fn), condition);
-        public State ResetComp<C>(bool condition = true) where C : BossComponent
-        {
-            OnExit(module.DeactivateComponent<C>, condition);
-            return OnExit(module.ActivateComponent<C>, condition);
-        }
 
         public State SetHint(StateMachine.StateHint h, bool condition = true)
         {
@@ -283,7 +277,8 @@ public class StateMachineBuilder(BossModule module)
     public State ComponentCondition<T>(uint id, float expected, Func<T, bool> condition, string name = "", float maxOverdue = 1f, float checkDelay = default) where T : BossComponent
     {
         var state = SimpleState(id, expected, name);
-        state.Raw.Comment = $"Condition on {typeof(T).Name}";
+        var type = typeof(T);
+        state.Raw.Comment = $"Condition on {type.Name}";
         state.Raw.Update = (timeSinceTransition) =>
         {
             if (timeSinceTransition < checkDelay)
@@ -294,7 +289,7 @@ public class StateMachineBuilder(BossModule module)
             var comp = Module.FindComponent<T>();
             if (comp == null)
             {
-                Module.ReportError(null, $"State {id:X}: component {typeof(T)} needed for condition is missing");
+                Module.ReportError(null, $"State {id:X}: component {type} needed for condition is missing");
                 return 0;
             }
 
@@ -333,10 +328,12 @@ public class StateMachineBuilder(BossModule module)
     }
 
     // create a state triggered by expected cast start by arbitrary actor; unexpected casts still trigger a transition, but log error
-    public State ActorCastStart(uint id, Func<Actor?> actorAcc, uint aid, float delay, bool isBoss = false, string name = "")
+    public State ActorCastStart<TAID>(uint id, Func<Actor?> actorAcc, TAID aid, float delay, bool isBoss = false, string name = "") where TAID : unmanaged, Enum
     {
         var state = SimpleState(id, delay, name).SetHint(StateMachine.StateHint.BossCastStart, isBoss);
-        state.Raw.Comment = $"Cast start: {aid}";
+        var aiduint = Unsafe.BitCast<TAID, uint>(aid);
+        var aidname = GeneratedEnumMetadata.Name(typeof(TAID), aiduint);
+        state.Raw.Comment = $"Cast start: {aidname}";
         state.Raw.Update = _ =>
         {
             var castInfo = actorAcc()?.CastInfo;
@@ -344,26 +341,41 @@ public class StateMachineBuilder(BossModule module)
             {
                 return -1;
             }
-
-            if (castInfo.Action.ID != aid)
+            if (castInfo.Action.ID != aiduint)
             {
-                Module.ReportError(null, $"State {id:X}: unexpected cast start: got {castInfo.Action}, expected {aid}");
+                Module.ReportError(null, $"State {id:X}: unexpected cast start: got {castInfo.Action}, expected {aidname}");
             }
-
             return 0;
         };
         return state;
     }
 
     // create a state triggered by expected cast start by a primary actor; unexpected casts still trigger a transition, but log error
-    public State CastStart(uint id, uint aid, float delay, string name = "")
+    public State CastStart<TAID>(uint id, TAID aid, float delay, string name = "") where TAID : unmanaged, Enum
         => ActorCastStart(id, () => Module.PrimaryActor, aid, delay, true, name);
 
     // create a state triggered by one of a set of expected casts by arbitrary actor; unexpected casts still trigger a transition, but log error
-    public State ActorCastStartMulti(uint id, Func<Actor?> actorAcc, uint[] aids, float delay, bool isBoss = false, string name = "")
+    public State ActorCastStartMulti<TAID>(uint id, Func<Actor?> actorAcc, TAID[] aids, float delay, bool isBoss = false, string name = "") where TAID : unmanaged, Enum
     {
         var state = SimpleState(id, delay, name).SetHint(StateMachine.StateHint.BossCastStart, isBoss);
-        state.Raw.Comment = $"Cast start: [{string.Join(", ", aids)}]";
+        var len = aids.Length;
+        var sb = new StringBuilder("Cast start: [", 100);
+        var aidIDs = new uint[len];
+        var type = typeof(TAID);
+        for (var i = 0; i < len; ++i)
+        {
+            if (i != 0)
+            {
+                sb.Append(", ");
+            }
+
+            var raw = Unsafe.BitCast<TAID, uint>(aids[i]);
+            aidIDs[i] = raw;
+            sb.Append(GeneratedEnumMetadata.Name(type, raw));
+        }
+
+        sb.Append(']');
+        state.Raw.Comment = sb.ToString();
         state.Raw.Update = _ =>
         {
             var castInfo = actorAcc()?.CastInfo;
@@ -373,9 +385,11 @@ public class StateMachineBuilder(BossModule module)
             }
 
             var matchedAid = false;
-            for (var ai = 0; ai < aids.Length; ++ai)
+            var castID = castInfo.Action.ID;
+
+            for (var i = 0; i < len; ++i)
             {
-                if (aids[ai] == castInfo.Action.ID)
+                if (aidIDs[i] == castID)
                 {
                     matchedAid = true;
                     break;
@@ -393,18 +407,19 @@ public class StateMachineBuilder(BossModule module)
     }
 
     // create a state triggered by one of a set of expected casts by a primary actor; unexpected casts still trigger a transition, but log error
-    public State CastStartMulti(uint id, uint[] aids, float delay, string name = "")
+    public State CastStartMulti<TAID>(uint id, TAID[] aids, float delay, string name = "") where TAID : unmanaged, Enum
         => ActorCastStartMulti(id, () => Module.PrimaryActor, aids, delay, true, name);
 
     // create a state triggered by one of a set of expected casts by arbitrary actor, each of which forking to a separate subsequence
     // values in map are actions building state chains corresponding to each fork
-    public State ActorCastStartFork(uint id, Func<Actor?> actorAcc, Dictionary<uint, (uint seqID, Action<uint> buildState)> dispatch, float delay, bool isBoss = false, string name = "")
-        => ConditionFork(id, delay, () => actorAcc()?.CastInfo?.IsSpell() ?? false, () => actorAcc()!.CastInfo!.Action.ID, dispatch, name)
+    public State ActorCastStartFork<TAID>(uint id, Func<Actor?> actorAcc, Dictionary<TAID, (uint seqID, Action<uint> buildState)> dispatch, float delay, bool isBoss = false, string name = "")
+        where TAID : unmanaged, Enum
+        => ConditionFork(id, delay, () => actorAcc()?.CastInfo?.IsSpell() ?? false, () => (TAID)(object)actorAcc()!.CastInfo!.Action.ID, dispatch, name)
             .SetHint(StateMachine.StateHint.BossCastStart, isBoss);
 
     // create a state triggered by one of a set of expected casts by a primary actor, each of which forking to a separate subsequence
     // values in map are actions building state chains corresponding to each fork
-    public State CastStartFork(uint id, Dictionary<uint, (uint seqID, Action<uint> buildState)> dispatch, float delay, string name = "")
+    public State CastStartFork<TAID>(uint id, Dictionary<TAID, (uint seqID, Action<uint> buildState)> dispatch, float delay, string name = "") where TAID : unmanaged, Enum
         => ActorCastStartFork(id, () => Module.PrimaryActor, dispatch, delay, true, name);
 
     // create a state triggered by cast end by arbitrary actor
@@ -421,28 +436,32 @@ public class StateMachineBuilder(BossModule module)
         => ActorCastEnd(id, () => Module.PrimaryActor, castTime, true, name, interruptible);
 
     // create a chain of states: ActorCastStart -> ActorCastEnd; second state uses id+1
-    public State ActorCast(uint id, Func<Actor?> actorAcc, uint aid, float delay, float castTime, bool isBoss = false, string name = "", bool interruptible = false)
+    public State ActorCast<TAID>(uint id, Func<Actor?> actorAcc, TAID aid, float delay, float castTime, bool isBoss = false, string name = "", bool interruptible = false)
+        where TAID : unmanaged, Enum
     {
         ActorCastStart(id, actorAcc, aid, delay, isBoss, "");
         return ActorCastEnd(id + 1, actorAcc, castTime, isBoss, name, interruptible);
     }
 
     // create a chain of states: CastStart -> CastEnd; second state uses id+1
-    public State Cast(uint id, uint aid, float delay, float castTime, string name = "", bool interruptible = false)
+    public State Cast<TAID>(uint id, TAID aid, float delay, float castTime, string name = "", bool interruptible = false)
+        where TAID : unmanaged, Enum
     {
         CastStart(id, aid, delay, "");
         return CastEnd(id + 1, castTime, name, interruptible);
     }
 
     // create a chain of states: ActorCastStartMulti -> ActorCastEnd; second state uses id+1
-    public State ActorCastMulti(uint id, Func<Actor?> actorAcc, uint[] aids, float delay, float castTime, bool isBoss = false, string name = "", bool interruptible = false)
+    public State ActorCastMulti<TAID>(uint id, Func<Actor?> actorAcc, TAID[] aids, float delay, float castTime, bool isBoss = false, string name = "", bool interruptible = false)
+        where TAID : unmanaged, Enum
     {
         ActorCastStartMulti(id, actorAcc, aids, delay, isBoss, "");
         return ActorCastEnd(id + 1, actorAcc, castTime, isBoss, name, interruptible);
     }
 
     // create a chain of states: CastStartMulti -> CastEnd; second state uses id+1
-    public State CastMulti(uint id, uint[] aids, float delay, float castTime, string name = "", bool interruptible = false)
+    public State CastMulti<TAID>(uint id, TAID[] aids, float delay, float castTime, string name = "", bool interruptible = false)
+        where TAID : unmanaged, Enum
     {
         CastStartMulti(id, aids, delay, "");
         return CastEnd(id + 1, castTime, name, interruptible);

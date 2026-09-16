@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P8S1Hephaistos;
 
-class CthonicVent(BossModule module) : Components.GenericAOEs(module)
+sealed class CthonicVent(BossModule module) : Components.GenericAOEs(module)
 {
     public int NumTotalCasts;
     private readonly List<WPos> _centers = [];

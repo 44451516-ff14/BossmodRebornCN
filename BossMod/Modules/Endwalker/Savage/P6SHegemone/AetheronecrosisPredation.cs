@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Savage.P6SHegemone;
 
 // TODO: improve...
-class AetheronecrosisPredation(BossModule module) : BossComponent(module)
+sealed class AetheronecrosisPredation(BossModule module) : BossComponent(module)
 {
     public int NumCastsAetheronecrosis;
     public int NumCastsDualPredation;
@@ -19,15 +19,15 @@ class AetheronecrosisPredation(BossModule module) : BossComponent(module)
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.GlossalResistanceDown:
+            case (uint)SID.GlossalResistanceDown:
                 _vulnSnake.Set(Raid.FindSlot(actor.InstanceID));
                 break;
-            case SID.ChelicResistanceDown:
+            case (uint)SID.ChelicResistanceDown:
                 _vulnWing.Set(Raid.FindSlot(actor.InstanceID));
                 break;
-            case SID.Aetheronecrosis:
+            case (uint)SID.Aetheronecrosis:
                 var slot = Raid.FindSlot(actor.InstanceID);
                 if (slot >= 0)
                 {
@@ -45,12 +45,12 @@ class AetheronecrosisPredation(BossModule module) : BossComponent(module)
 
     public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.GlossalResistanceDown:
+            case (uint)SID.GlossalResistanceDown:
                 _vulnSnake.Clear(Raid.FindSlot(actor.InstanceID));
                 break;
-            case SID.ChelicResistanceDown:
+            case (uint)SID.ChelicResistanceDown:
                 _vulnWing.Clear(Raid.FindSlot(actor.InstanceID));
                 break;
         }
@@ -58,12 +58,12 @@ class AetheronecrosisPredation(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.Aetheronecrosis:
+            case (uint)AID.Aetheronecrosis:
                 ++NumCastsAetheronecrosis;
                 break;
-            case AID.GlossalPredation:
+            case (uint)AID.GlossalPredation:
                 ++NumCastsDualPredation;
                 break;
         }

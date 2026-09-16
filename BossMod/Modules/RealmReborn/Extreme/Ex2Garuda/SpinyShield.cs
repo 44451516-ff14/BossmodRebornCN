@@ -1,6 +1,6 @@
 ﻿namespace BossMod.RealmReborn.Extreme.Ex2Garuda;
 
-class SpinyShield(BossModule module) : BossComponent(module)
+sealed class SpinyShield(BossModule module) : BossComponent(module)
 {
     private readonly List<Actor> _shield = module.Enemies((uint)OID.SpinyShield);
     public Actor? ActiveShield => _shield.FirstOrDefault(a => a.EventState != 7);

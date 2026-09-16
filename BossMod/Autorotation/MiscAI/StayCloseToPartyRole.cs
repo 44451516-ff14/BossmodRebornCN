@@ -49,9 +49,9 @@ public sealed class StayCloseToPartyRole(RotationModuleManager manager, Actor pl
                 var radius = roleActor.HitboxRadius;
                 var range = strategy.Option(Tracks.Range);
                 if (range.As<RangeDefinition>() == RangeDefinition.OnHitbox)
-                    Hints.GoalZones.Add(p => p.InDonut(position, radius - 1, radius + 1) ? 0.5f : 0);
+                    Hints.GoalZones.Add(p => p.InDonut(position, radius - 1f, radius + 1f) ? 0.5f : 0f);
                 else
-                    Hints.GoalZones.Add(AIHints.GoalSingleTarget(position, (range.Value.Option + 10f) / 10f + roleActor.HitboxRadius, 1f));
+                    Hints.GoalZones.Add(AIHints.GoalSingleTarget(position, (range.Value.Option + 10f) * 0.1f + roleActor.HitboxRadius, 1f));
             }
         }
     }

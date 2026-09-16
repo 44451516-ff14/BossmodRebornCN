@@ -289,23 +289,26 @@ public static class ActorEnumeration
         return (match, mismatch);
     }
 
-    public static IEnumerable<(int, Actor)> ClockOrder(this IEnumerable<(int, Actor)> range, Actor starting, WPos center, bool counterclockwise = false)
+    public static (int, Actor)[] ClockOrder(this (int, Actor)[] range, Actor starting, WPos center, bool counterclockwise = false)
     {
+        var len = range.Length;
         var startingAngle = (starting.Position - center).ToAngle();
-        var list = new List<((int, Actor) item, float angle)>();
-        foreach (var r in range)
+        var rad = startingAngle.Rad;
+        var list = new List<((int, Actor) item, float angle)>(len);
+        for (var i = 0; i < len; ++i)
         {
+            var r = range[i];
             var thisAngle = (r.Item2.Position - center).ToAngle().Rad;
             if (counterclockwise)
             {
-                if (r.Item2 != starting && thisAngle < startingAngle.Rad)
+                if (r.Item2 != starting && thisAngle < rad)
                 {
                     thisAngle += Angle.DoublePI;
                 }
             }
             else
             {
-                if (r.Item2 != starting && thisAngle > startingAngle.Rad)
+                if (r.Item2 != starting && thisAngle > rad)
                 {
                     thisAngle -= Angle.DoublePI;
                 }
@@ -321,29 +324,34 @@ public static class ActorEnumeration
             list.Sort(static (a, b) => b.angle.CompareTo(a.angle));
         }
 
-        foreach (var (item, _) in list)
+        var array = new (int, Actor)[len];
+        for (var i = 0; i < len; ++i)
         {
-            yield return item;
+            array[i] = list[i].item;
         }
+        return array;
     }
 
-    public static IEnumerable<Actor> ClockOrder(this IEnumerable<Actor> range, Actor starting, WPos center, bool counterclockwise = false)
+    public static Actor[] ClockOrder(this List<Actor> range, Actor starting, WPos center, bool counterclockwise = false)
     {
-        var list = new List<(Actor actor, float angle)>();
+        var count = range.Count;
+        var list = new List<(Actor actor, float angle)>(count);
         var startingAngle = (starting.Position - center).ToAngle();
-        foreach (var r in range)
+        var rad = startingAngle.Rad;
+        for (var i = 0; i < count; ++i)
         {
+            var r = range[i];
             var thisAngle = (r.Position - center).ToAngle().Rad;
             if (counterclockwise)
             {
-                if (r != starting && thisAngle < startingAngle.Rad)
+                if (r != starting && thisAngle < rad)
                 {
                     thisAngle += Angle.DoublePI;
                 }
             }
             else
             {
-                if (r != starting && thisAngle > startingAngle.Rad)
+                if (r != starting && thisAngle > rad)
                 {
                     thisAngle -= Angle.DoublePI;
                 }
@@ -359,9 +367,11 @@ public static class ActorEnumeration
             list.Sort(static (a, b) => b.angle.CompareTo(a.angle));
         }
 
-        foreach (var (actor, _) in list)
+        var array = new Actor[count];
+        for (var i = 0; i < count; ++i)
         {
-            yield return actor;
+            array[i] = list[i].actor;
         }
+        return array;
     }
 }

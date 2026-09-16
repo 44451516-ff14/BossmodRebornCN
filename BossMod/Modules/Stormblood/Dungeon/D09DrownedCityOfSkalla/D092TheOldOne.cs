@@ -85,7 +85,6 @@ sealed class Shatterstone(BossModule module) : BossComponent(module)
 
 sealed class OrderToDetonate(BossModule module) : Components.RaidwideCast(module, (uint)AID.OrderToDetonate);
 
-[SkipLocalsInit]
 sealed class D092TheOldOneStates : StateMachineBuilder
 {
     public D092TheOldOneStates(BossModule module) : base(module)
@@ -118,5 +117,4 @@ sealed class D092TheOldOneStates : StateMachineBuilder
     SortOrder = 2,
     PlanLevel = 0)]
 
-[SkipLocalsInit]
 public sealed class D092TheOldOne(WorldState ws, Actor primary) : BossModule(ws, primary, new(115f, 4f), new ArenaBoundsCircle(20f));

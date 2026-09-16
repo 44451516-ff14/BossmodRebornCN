@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Reflection;
+using System.IO;
 using System.Text.Json;
 
 namespace BossMod;
@@ -8,28 +7,22 @@ public sealed class ConfigRoot
 {
     public Event Modified = new();
     public readonly Dictionary<Type, ConfigNode> _nodes = [];
-    public List<ConfigNode> Nodes => [.. _nodes.Values];
+    private readonly Dictionary<string, ConfigNode> _nodesByName = [];
 
-    public void Initialize()
+    public void Initialize() => GeneratedRegistries.RegisterConfigNodes(RegisterNode);
+
+    private void RegisterNode(Type type, ConfigNode node)
     {
-        foreach (var t in Utils.GetDerivedTypes<ConfigNode>(Assembly.GetExecutingAssembly()))
+        node.Modified.Subscribe(Modified.Fire);
+        _nodes[type] = node;
+        if (type.FullName is { } fullName)
         {
-            if (!t.IsAbstract)
-            {
-                if (Activator.CreateInstance(t) is not ConfigNode inst)
-                {
-                    Service.Log($"[Config] Failed to create an instance of {t}");
-                    continue;
-                }
-                inst.Modified.Subscribe(Modified.Fire);
-                _nodes[t] = inst;
-            }
+            _nodesByName[fullName] = node;
         }
     }
 
     public T Get<T>() where T : ConfigNode => (T)_nodes[typeof(T)];
     public T Get<T>(Type derived) where T : ConfigNode => (T)_nodes[derived];
-
     public ConfigListener<T> GetAndSubscribe<T>(Action<T> modified) where T : ConfigNode => new(Get<T>(), modified);
 
     public void LoadFromFile(FileInfo file)
@@ -39,11 +32,9 @@ public sealed class ConfigRoot
             var data = ConfigConverter.Schema.Load(file);
             using var json = data.document;
             var ser = Serialization.BuildSerializationOptions();
-
             foreach (var jconfig in data.payload.EnumerateObject())
             {
-                var type = Type.GetType(jconfig.Name);
-                var node = type != null ? _nodes.GetValueOrDefault(type) : null;
+                var node = _nodesByName.GetValueOrDefault(jconfig.Name);
                 try
                 {
                     node?.Deserialize(jconfig.Value, ser);
@@ -66,7 +57,6 @@ public sealed class ConfigRoot
         {
             var ser = Serialization.BuildSerializationOptions();
             var serializedNodes = new ConcurrentDictionary<Type, string>();
-
             Parallel.ForEach(_nodes, entry =>
             {
                 using var ms = new MemoryStream();
@@ -78,18 +68,15 @@ public sealed class ConfigRoot
 
             using var stream = new FileStream(file.FullName, FileMode.Create, FileAccess.Write, FileShare.None);
             using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
-
             writer.WriteStartObject();
             writer.WriteNumber("Version", ConfigConverter.Schema.CurrentVersion);
             writer.WritePropertyName("Payload");
             writer.WriteStartObject();
-
-            foreach (var (t, jsonStr) in serializedNodes)
+            foreach (var (type, json) in serializedNodes)
             {
-                writer.WritePropertyName(t.FullName!);
-                writer.WriteRawValue(jsonStr);
+                writer.WritePropertyName(type.FullName!);
+                writer.WriteRawValue(json);
             }
-
             writer.WriteEndObject();
             writer.WriteEndObject();
         }
@@ -106,150 +93,117 @@ public sealed class ConfigRoot
         {
             result.Add("Usage: /bmr cfg <config-type> <field> <value>");
             result.Add("Both config-type and field can be shortened. Valid config-types:");
-            foreach (var t in _nodes.Keys)
-            {
-                result.Add($"- {t.Name}");
-            }
+            foreach (var type in _nodes.Keys)
+                result.Add($"- {type.Name}");
+            return result;
         }
-        else
+
+        List<ConfigNode> matchingNodes = [];
+        foreach (var (type, node) in _nodes)
         {
-            List<ConfigNode> matchingNodes = [];
-            foreach (var (t, n) in _nodes)
+            var arg = args[0];
+            if (!type.Name.Contains(arg, StringComparison.CurrentCultureIgnoreCase))
+                continue;
+            if (type.Name.Length == arg.Length)
             {
-                var arg = args[0];
-                if (t.Name.Contains(arg, StringComparison.CurrentCultureIgnoreCase))
-                {
-                    // check for exact match
-                    if (t.Name.Length == arg.Length)
-                    {
-                        matchingNodes.Clear();
-                        matchingNodes.Add(n);
-                        break;
-                    }
-                    matchingNodes.Add(n);
-                }
+                matchingNodes.Clear();
+                matchingNodes.Add(node);
+                break;
             }
-            if (matchingNodes.Count == 0)
+            matchingNodes.Add(node);
+        }
+
+        if (matchingNodes.Count == 0)
+        {
+            result.Add("Config type not found. Valid types:");
+            foreach (var type in _nodes.Keys)
+                result.Add($"- {type.Name}");
+            return result;
+        }
+        if (matchingNodes.Count > 1)
+        {
+            result.Add("Ambiguous config type, pass longer pattern. Matches:");
+            foreach (var node in matchingNodes)
+                result.Add($"- {node.GetType().Name}");
+            return result;
+        }
+
+        var selectedNode = matchingNodes[0];
+        var fields = GeneratedConfigMetadata.Get(selectedNode).DisplayFields;
+        if (args.Length == 1)
+        {
+            result.Add("Usage: /bmr cfg <config-type> <field> <value>");
+            result.Add($"Valid fields for {selectedNode.GetType().Name}:");
+            foreach (var field in fields)
+                result.Add($"- {field.Name}");
+            return result;
+        }
+
+        List<ConfigFieldMetadata> matchingFields = [];
+        foreach (var field in fields)
+        {
+            var arg = args[1];
+            if (!field.Name.Contains(arg, StringComparison.CurrentCultureIgnoreCase))
+                continue;
+            if (field.Name.Length == arg.Length)
             {
-                result.Add("Config type not found. Valid types:");
-                foreach (var t in _nodes.Keys)
-                {
-                    result.Add($"- {t.Name}");
-                }
+                matchingFields.Clear();
+                matchingFields.Add(field);
+                break;
             }
-            else if (matchingNodes.Count > 1)
+            matchingFields.Add(field);
+        }
+
+        if (matchingFields.Count == 0)
+        {
+            result.Add($"Field not found {args[1]}, Valid fields:");
+            foreach (var field in fields)
+                result.Add($"- {field.Name}");
+            return result;
+        }
+        if (matchingFields.Count > 1)
+        {
+            result.Add("Ambiguous field name, pass longer pattern. Matches:");
+            foreach (var field in matchingFields)
+                result.Add($"- {field.Name}");
+            return result;
+        }
+
+        var selectedField = matchingFields[0];
+        try
+        {
+            if (args.Length == 2)
             {
-                result.Add("Ambiguous config type, pass longer pattern. Matches:");
-                foreach (var n in matchingNodes)
-                {
-                    result.Add($"- {n.GetType().Name}");
-                }
-            }
-            else if (args.Length == 1)
-            {
-                result.Add("Usage: /bmr cfg <config-type> <field> <value>");
-                result.Add($"Valid fields for {matchingNodes[0].GetType().Name}:");
-                foreach (var f in matchingNodes[0].GetType().GetFields())
-                {
-                    if (f.GetCustomAttribute<PropertyDisplayAttribute>() != null)
-                    {
-                        result.Add($"- {f.Name}");
-                    }
-                }
+                result.Add(selectedField.Getter(selectedNode)?.ToString() ?? $"Failed to get value of '{selectedField.Name}'");
             }
             else
             {
-                List<FieldInfo> matchingFields = [];
-                foreach (var f in matchingNodes[0].GetType().GetFields())
+                var value = FromConsoleString(args[2], selectedField.FieldType);
+                if (value == null)
                 {
-                    if (f.GetCustomAttribute<PropertyDisplayAttribute>() == null)
-                    {
-                        continue;
-                    }
-
-                    var arg = args[1];
-                    if (f.Name.Contains(arg, StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        // check for exact match
-                        if (f.Name.Length == arg.Length)
-                        {
-                            matchingFields.Clear();
-                            matchingFields.Add(f);
-                            break;
-                        }
-                        matchingFields.Add(f);
-                    }
+                    result.Add($"Failed to convert '{args[2]}' to {selectedField.FieldType}");
                 }
-                if (matchingFields.Count == 0)
-                {
-                    result.Add($"Field not found {args[1]}, Valid fields:");
-                    foreach (var f in matchingNodes[0].GetType().GetFields())
-                    {
-                        if (f.GetCustomAttribute<PropertyDisplayAttribute>() != null)
-                        {
-                            result.Add($"- {f.Name}");
-                        }
-                    }
-                }
-                else if (matchingFields.Count > 1)
-                {
-                    result.Add("Ambiguous field name, pass longer pattern. Matches:");
-                    foreach (var f in matchingFields)
-                    {
-                        result.Add($"- {f.Name}");
-                    }
-                }
-                /*else if (args.Count == 2)
-                {
-                    result.Add("Usage: /bmr cfg <config-type> <field> <value>");
-                    result.Add($"Type of {matchingNodes[0].GetType().Name}.{matchingFields[0].Name} is {matchingFields[0].FieldType.Name}");
-                }*/
                 else
                 {
-                    try
-                    {
-                        if (args.Length == 2)
-                        {
-                            result.Add(matchingFields[0].GetValue(matchingNodes[0])?.ToString() ?? $"Failed to get value of '{args[2]}'");
-                        }
-                        else
-                        {
-                            var val = FromConsoleString(args[2], matchingFields[0].FieldType);
-                            if (val == null)
-                            {
-                                result.Add($"Failed to convert '{args[2]}' to {matchingFields[0].FieldType}");
-                            }
-                            else
-                            {
-                                matchingFields[0].SetValue(matchingNodes[0], val);
-                                if (save)
-                                {
-                                    matchingNodes[0].Modified.Fire();
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        if (args.Length == 2)
-                        {
-                            result.Add($"Failed to get value of {matchingNodes[0].GetType().Name}.{matchingFields[0].Name} : {e}");
-                        }
-                        else
-                        {
-                            result.Add($"Failed to set {matchingNodes[0].GetType().Name}.{matchingFields[0].Name} to {args[2]}: {e}");
-                        }
-                    }
+                    selectedField.Setter(selectedNode, value);
+                    if (save)
+                        selectedNode.Modified.Fire();
                 }
             }
+        }
+        catch (Exception e)
+        {
+            result.Add(args.Length == 2
+                ? $"Failed to get value of {selectedNode.GetType().Name}.{selectedField.Name}: {e}"
+                : $"Failed to set {selectedNode.GetType().Name}.{selectedField.Name} to {args[2]}: {e}");
         }
         return result;
     }
 
-    private object? FromConsoleString(string str, Type t)
-        => t == typeof(bool) ? bool.Parse(str)
-        : t == typeof(float) ? float.Parse(str)
-        : t == typeof(int) ? int.Parse(str)
-        : t.IsAssignableTo(typeof(Enum)) ? Enum.Parse(t, str)
+    private static object? FromConsoleString(string str, Type type)
+        => type == typeof(bool) ? bool.Parse(str)
+        : type == typeof(float) ? float.Parse(str)
+        : type == typeof(int) ? int.Parse(str)
+        : GeneratedEnumMetadata.IsRegistered(type) ? GeneratedEnumMetadata.Parse(type, str)
         : null;
 }

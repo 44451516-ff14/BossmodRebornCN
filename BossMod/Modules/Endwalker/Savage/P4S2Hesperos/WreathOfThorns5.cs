@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Savage.P4S2Hesperos;
 
 // state related to act 5 (finale) wreath of thorns
-class WreathOfThorns5(BossModule module) : BossComponent(module)
+sealed class WreathOfThorns5(BossModule module) : BossComponent(module)
 {
     private readonly List<ulong> _playersOrder = [];
     private readonly List<Actor> _towersOrder = [];
@@ -28,7 +28,7 @@ class WreathOfThorns5(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         hints.Add($"Order: {string.Join(" -> ", _playersOrder.Skip(_castsDone).Select(id => WorldState.Actors.Find(id)?.Name ?? "???"))}");
     }
@@ -48,8 +48,15 @@ class WreathOfThorns5(BossModule module) : BossComponent(module)
         if (_playersOrder.Count < 8)
         {
             Arena.ZoneCircleOutline(pc.Position, _impulseAOERadius, Colors.Danger);
-            foreach (var player in Raid.WithoutSlot(false, true, true).Exclude(pc))
-                Arena.Actor(player, player.Position.InCircle(pc.Position, _impulseAOERadius) ? Colors.PlayerInteresting : Colors.PlayerGeneric);
+            foreach (var player in Raid.WithoutSlot(false, true, true))
+            {
+                if (player == pc)
+                {
+                    continue;
+                }
+                var isindanger = player.Position.InCircle(pc.Position, _impulseAOERadius);
+                Arena.Actor(player, isindanger ? Colors.PlayerInteresting : Colors.PlayerGeneric, drawWorld: isindanger ? true : null);
+            }
         }
     }
 
@@ -61,12 +68,12 @@ class WreathOfThorns5(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.FleetingImpulseAOE:
+            case (uint)AID.FleetingImpulseAOE:
                 _playersOrder.Add(spell.MainTargetID);
                 break;
-            case AID.AkanthaiExplodeTower:
+            case (uint)AID.AkanthaiExplodeTower:
                 ++_castsDone;
                 break;
         }

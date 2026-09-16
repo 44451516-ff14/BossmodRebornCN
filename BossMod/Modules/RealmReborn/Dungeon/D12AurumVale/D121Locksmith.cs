@@ -23,16 +23,12 @@ public enum SID : uint
     GoldLung = 302 // Boss->player, extra=0x1/0x2/0x3/0x4
 }
 
-[SkipLocalsInit]
 sealed class HundredLashings(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.HundredLashings);
 
-[SkipLocalsInit]
 sealed class GoldDust(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GoldDust, 8f);
 
-[SkipLocalsInit]
 sealed class GoldRush(BossModule module) : Components.RaidwideCast(module, (uint)AID.GoldDust);
 
-[SkipLocalsInit]
 sealed class MorbolFruit(BossModule module) : BossComponent(module)
 {
     private BitMask goldlung;
@@ -123,7 +119,6 @@ sealed class MorbolFruit(BossModule module) : BossComponent(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class D121LocksmithStates : StateMachineBuilder
 {
     public D121LocksmithStates(BossModule module) : base(module)
@@ -152,7 +147,6 @@ GroupID = 5u,
 NameID = 1534u,
 SortOrder = 1,
 PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class D121Locksmith : BossModule
 {
     public D121Locksmith(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

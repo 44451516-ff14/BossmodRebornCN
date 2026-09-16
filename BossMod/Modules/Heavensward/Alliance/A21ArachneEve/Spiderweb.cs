@@ -1,6 +1,5 @@
 namespace BossMod.Heavensward.Alliance.A21ArachneEve;
 
-[SkipLocalsInit]
 sealed class SpiderWeb(BossModule module) : BossComponent(module)
 {
     private readonly bool[] isSpiderWebArena = new bool[PartyState.MaxAllianceSize];

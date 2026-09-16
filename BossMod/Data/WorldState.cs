@@ -3,7 +3,6 @@
 // this class represents parts of a world state that are interesting to boss modules
 // it does not know anything about dalamud, so it can be used for UI test - there is a separate utility that updates it based on game state every frame
 // world state is supposed to be modified using "operations" - this provides opportunity to listen and react to state changes
-[SkipLocalsInit]
 public sealed class WorldState
 {
     // state access

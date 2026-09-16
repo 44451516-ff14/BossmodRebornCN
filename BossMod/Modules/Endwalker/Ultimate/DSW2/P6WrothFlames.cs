@@ -6,8 +6,8 @@ sealed class P6WrothFlames : Components.GenericAOEs
     private WPos _startingSpot;
     private readonly DSW2 bossmodule;
 
-    private static readonly AOEShapeRect _shapeCauterize = new(80f, 11f);
-    private static readonly AOEShapeCross _shapeBlast = new(44f, 3f);
+    private readonly AOEShapeRect _shapeCauterize = new(80f, 11f);
+    private readonly AOEShapeCross _shapeBlast = new(44f, 3f);
 
     public bool ShowStartingSpot => _startingSpot.X != 0 && _startingSpot.Z != 0 && NumCasts == 0;
 

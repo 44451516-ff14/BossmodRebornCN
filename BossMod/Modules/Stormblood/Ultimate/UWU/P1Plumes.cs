@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UWU;
 
-class P1Plumes(BossModule module) : BossComponent(module)
+sealed class P1Plumes(BossModule module) : BossComponent(module)
 {
     private readonly List<Actor> _razor = module.Enemies((uint)OID.RazorPlume);
     private readonly List<Actor> _spiny = module.Enemies((uint)OID.SpinyPlume);

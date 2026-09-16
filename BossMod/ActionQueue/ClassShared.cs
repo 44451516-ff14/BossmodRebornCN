@@ -294,7 +294,7 @@ public sealed class Definitions : Defs
         #endregion
 
         #region Phantom actions
-        foreach (var action in typeof(PhantomID).GetEnumValues())
+        foreach (var action in typeof(PhantomID).GeneratedEnumValues())
         {
             if ((uint)action > 0)
             {

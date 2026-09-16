@@ -1,20 +1,20 @@
 ﻿namespace BossMod.Endwalker.Savage.P11SThemis;
 
 // note: currently we start showing stacks right after previous mechanic ends
-class InevitableLawSentence(BossModule module) : Components.GenericStackSpread(module)
+sealed class InevitableLawSentence(BossModule module) : Components.GenericStackSpread(module)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.DivisiveOverrulingSoloLight:
-            case AID.InnerLight:
-            case AID.DivisiveOverrulingBossLight:
+            case (uint)AID.DivisiveOverrulingSoloLight:
+            case (uint)AID.InnerLight:
+            case (uint)AID.DivisiveOverrulingBossLight:
                 AddPartyStacks();
                 break;
-            case AID.DivisiveOverrulingSoloDark:
-            case AID.OuterDark:
-            case AID.DivisiveOverrulingBossDark:
+            case (uint)AID.DivisiveOverrulingSoloDark:
+            case (uint)AID.OuterDark:
+            case (uint)AID.DivisiveOverrulingBossDark:
                 AddPairStacks();
                 break;
         }
@@ -22,18 +22,18 @@ class InevitableLawSentence(BossModule module) : Components.GenericStackSpread(m
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.JuryOverrulingProteanLight:
-            case AID.UpheldOverrulingAOELight:
+            case (uint)AID.JuryOverrulingProteanLight:
+            case (uint)AID.UpheldOverrulingAOELight:
                 AddPartyStacks();
                 break;
-            case AID.JuryOverrulingProteanDark:
-            case AID.UpheldOverrulingAOEDark:
+            case (uint)AID.JuryOverrulingProteanDark:
+            case (uint)AID.UpheldOverrulingAOEDark:
                 AddPairStacks();
                 break;
-            case AID.InevitableLaw:
-            case AID.InevitableSentence:
+            case (uint)AID.InevitableLaw:
+            case (uint)AID.InevitableSentence:
                 Stacks.Clear();
                 break;
         }

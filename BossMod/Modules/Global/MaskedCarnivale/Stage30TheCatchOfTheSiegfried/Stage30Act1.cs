@@ -94,11 +94,40 @@ sealed class Explosion(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-sealed class Hints2(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
-    public override void AddGlobalHints(GlobalHints hints)
+    private bool shieldActive;
+    private bool isBound;
+
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        if (Module.PrimaryActor.FindStatus((uint)SID.MagitekField) != null)
+        switch (status.ID)
+        {
+            case (uint)SID.MagitekField:
+                shieldActive = true;
+                break;
+            case (uint)SID.Bind:
+                isBound = true;
+                break;
+        }
+    }
+
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
+    {
+        switch (status.ID)
+        {
+            case (uint)SID.MagitekField:
+                shieldActive = false;
+                break;
+            case (uint)SID.Bind:
+                isBound = false;
+                break;
+        }
+    }
+
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
+    {
+        if (shieldActive)
         {
             hints.Add($"{Module.PrimaryActor.Name} will reflect all magic damage!");
         }
@@ -106,23 +135,10 @@ sealed class Hints2(BossModule module) : BossComponent(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (actor.FindStatus((uint)SID.Bind) != null)
+        if (isBound)
         {
             hints.Add("You were bound! Cleanse it with Exuviation.");
         }
-    }
-}
-
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"{Module.PrimaryActor.Name} will have phases where all magic damage gets reflected.\nExuviation, a melee ability and fire, wind and ice spells are recommended.");
-    }
-
-    public override void AddHints(int slot, Actor actor, TextHints hints)
-    {
-        hints.Add("Requirements for achievement: Take no damage, use all 6 magic elements,\nuse all 3 melee types, kill all 3 clones in act3 and finish faster than ideal time.", false);
     }
 }
 
@@ -136,16 +152,24 @@ sealed class Stage30Act1States : StateMachineBuilder
             .ActivateOnEnter<Explosion>()
             .ActivateOnEnter<RubberBullet>()
             .ActivateOnEnter<MagicDrain>()
-            .ActivateOnEnter<Hints2>()
-            .DeactivateOnEnter<Hints>();
+            .ActivateOnEnter<Hints>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 699, NameID = 9245, SortOrder = 1)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 699u, NameID = 9245u, SortOrder = 1)]
 public sealed class Stage30Act1 : BossModule
 {
     public Stage30Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {
-        ActivateComponent<Hints>();
+        _prePullHints =
+        [
+            $"{PrimaryActor.Name} will have phases where all magic damage gets reflected.",
+            "Exuviation, a melee ability and fire, wind and ice spells are recommended.",
+            "Requirements for achievement: Take no damage, use all 6 magic elements, use all 3 melee types, kill all 3 clones in act3 and finish faster than 6min 30s."
+        ];
     }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

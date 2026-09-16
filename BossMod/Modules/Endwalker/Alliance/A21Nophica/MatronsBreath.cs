@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Alliance.A21Nophica;
 
-class MatronsBreath(BossModule module) : Components.GenericAOEs(module)
+sealed class MatronsBreath(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<Actor> _blueSafe = module.Enemies((uint)OID.BlueSafeZone);
     private readonly List<Actor> _goldSafe = module.Enemies((uint)OID.GoldSafeZone);
@@ -11,7 +11,9 @@ class MatronsBreath(BossModule module) : Components.GenericAOEs(module)
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         if (_flowers.Count != 0)
-            return new AOEInstance[1] { _flowers[0] };
+        {
+            return CollectionsMarshal.AsSpan(_flowers)[..1];
+        }
         return [];
     }
 
@@ -24,7 +26,9 @@ class MatronsBreath(BossModule module) : Components.GenericAOEs(module)
             _ => null
         };
         if (safezone != null)
+        {
             _flowers.Add(new(_shape, safezone.Position, default, WorldState.FutureTime(11.1d)));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -33,7 +37,9 @@ class MatronsBreath(BossModule module) : Components.GenericAOEs(module)
         {
             ++NumCasts;
             if (_flowers.Count != 0)
+            {
                 _flowers.RemoveAt(0);
+            }
         }
     }
 }

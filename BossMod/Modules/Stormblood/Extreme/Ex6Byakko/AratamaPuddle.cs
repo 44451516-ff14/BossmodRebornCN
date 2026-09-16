@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Stormblood.Extreme.Ex6Byakko;
 
-class AratamaPuddleBait(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.AratamaPuddle, (uint)AID.AratamaPuddle, 4f, 5.1f)
+sealed class AratamaPuddleBait(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.AratamaPuddle, (uint)AID.AratamaPuddle, 4f, 5.1f)
 {
     private DateTime _nextSpread;
 
@@ -11,12 +11,12 @@ class AratamaPuddleBait(BossModule module) : Components.SpreadFromIcon(module, (
             if (++NumFinishedSpreads >= 3)
                 Spreads.Clear();
             else
-                _nextSpread = WorldState.FutureTime(0.5f); // protection in case one target dies
+                _nextSpread = WorldState.FutureTime(0.5d); // protection in case one target dies
         }
     }
 }
 
-class AratamaPuddleVoidzone(BossModule module) : Components.Voidzone(module, 4f, GetVoidzones)
+sealed class AratamaPuddleVoidzone(BossModule module) : Components.Voidzone(module, 4f, GetVoidzones)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {

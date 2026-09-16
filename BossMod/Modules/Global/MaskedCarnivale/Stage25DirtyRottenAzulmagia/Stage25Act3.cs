@@ -101,30 +101,56 @@ sealed class MeteorVoidzone(BossModule module) : Components.VoidzoneAtCastTarget
 
 sealed class Hints(BossModule module) : BossComponent(module)
 {
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"In this act {Module.PrimaryActor.Name} will switch between magic and physical reflects.\nSpend attention to that so you don't accidently kill yourself.\nAs soon as he starts casting Web go to the edge to bait Meteor, then use Loom\nto escape. You can start the Final Sting combination at about 50% health left.\n(Off-guard->Bristle->Moonflute->Final Sting)");
-    }
-}
+    private bool repellingSprayActive;
+    private bool iceSpikesActive;
+    private bool isDoomed;
 
-sealed class Hints2(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        var primary = Module.PrimaryActor;
-        if (primary.FindStatus((uint)SID.RepellingSpray) != null)
+        switch (status.ID)
         {
-            hints.Add($"{primary.Name} will reflect all magic damage!");
+            case (uint)SID.RepellingSpray:
+                repellingSprayActive = true;
+                break;
+            case (uint)SID.IceSpikes:
+                iceSpikesActive = true;
+                break;
+            case (uint)SID.Doom:
+                isDoomed = true;
+                break;
         }
-        else if (primary.FindStatus((uint)SID.IceSpikes) != null)
+    }
+
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
+    {
+        switch (status.ID)
         {
-            hints.Add($"{primary.Name} will reflect all physical damage!");
+            case (uint)SID.RepellingSpray:
+                repellingSprayActive = false;
+                break;
+            case (uint)SID.IceSpikes:
+                iceSpikesActive = false;
+                break;
+            case (uint)SID.Doom:
+                isDoomed = false;
+                break;
+        }
+    }
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
+    {
+        if (repellingSprayActive)
+        {
+            hints.Add($"{Module.PrimaryActor.Name} will reflect all magic damage!");
+        }
+        else if (iceSpikesActive)
+        {
+            hints.Add($"{Module.PrimaryActor.Name} will reflect all physical damage!");
         }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (actor.FindStatus((uint)SID.Doom) != null)
+        if (isDoomed)
         {
             hints.Add("You were doomed! Cleanse it with Exuviation or finish the act fast.");
         }
@@ -148,16 +174,24 @@ sealed class Stage25Act3States : StateMachineBuilder
             .ActivateOnEnter<MeteorVoidzone>()
             .ActivateOnEnter<Maelstrom>()
             .ActivateOnEnter<Web>()
-            .ActivateOnEnter<Hints2>()
-            .DeactivateOnEnter<Hints>();
+            .ActivateOnEnter<Hints>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 635, NameID = 8129, SortOrder = 3)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 635u, NameID = 8129u, SortOrder = 3)]
 public sealed class Stage25Act3 : BossModule
 {
     public Stage25Act3(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {
-        ActivateComponent<Hints>();
+        _prePullHints =
+        [
+            $"In this act {PrimaryActor.Name} will switch between magic and physical reflects. Spend attention to that so you don't accidently kill yourself.",
+            "As soon as he starts casting Web go to the edge to bait Meteor, then use Loom to escape.",
+            "You can start the Final Sting combination at about 50% health left. (Off-guard->Bristle->Moonflute->Final Sting)"
+        ];
     }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

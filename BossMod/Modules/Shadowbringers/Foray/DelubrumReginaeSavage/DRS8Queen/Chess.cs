@@ -9,7 +9,7 @@ abstract class Chess(BossModule module) : Components.GenericAOEs(module)
     }
 
     protected GuardState[] GuardStates = new GuardState[4];
-    protected static readonly AOEShapeCross Shape = new(60f, 5f);
+    protected readonly AOEShapeCross Shape = new(60f, 5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -27,7 +27,7 @@ abstract class Chess(BossModule module) : Components.GenericAOEs(module)
 
         for (var i = start; i < start + count; ++i)
         {
-            ref readonly var gs = ref GuardStates[i];
+            ref var gs = ref GuardStates[i];
             if (gs.Actor != null)
                 aoes[index++] = new(Shape, gs.FinalPosition, gs.Actor.Rotation);
         }

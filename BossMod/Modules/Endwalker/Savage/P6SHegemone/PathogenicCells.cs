@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Savage.P6SHegemone;
 
 // TODO: improve...
-class PathogenicCells(BossModule module) : Components.CastCounter(module, (uint)AID.PathogenicCellsAOE)
+sealed class PathogenicCells(BossModule module) : Components.CastCounter(module, (uint)AID.PathogenicCellsAOE)
 {
     private readonly int[] _order = new int[PartyState.MaxPartySize];
 

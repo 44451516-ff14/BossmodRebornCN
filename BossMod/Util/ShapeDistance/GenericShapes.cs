@@ -1,6 +1,5 @@
 namespace BossMod;
 
-[SkipLocalsInit]
 public sealed class SDHalfPlane : ShapeDistance
 {
     private readonly float normalX, normalZ, bias;
@@ -33,7 +32,6 @@ public sealed class SDHalfPlane : ShapeDistance
     }
 }
 
-[SkipLocalsInit]
 public sealed class SDCircle : ShapeDistance
 {
     private readonly float originX, originZ, radius, radiusSq;
@@ -97,7 +95,6 @@ public sealed class SDCircle : ShapeDistance
     }
 }
 
-[SkipLocalsInit]
 public sealed class SDInvertedCircle : ShapeDistance
 {
     private readonly float originX, originZ, radius, radiusSq;
@@ -143,7 +140,6 @@ public sealed class SDInvertedCircle : ShapeDistance
     }
 }
 
-[SkipLocalsInit]
 public sealed class SDDonut : ShapeDistance
 {
     private readonly float originX, originZ, innerRadius, outerRadius, innerRadiusSq, outerRadiusSq;
@@ -232,7 +228,6 @@ public sealed class SDDonut : ShapeDistance
     }
 }
 
-[SkipLocalsInit]
 public sealed class SDInvertedDonut : ShapeDistance
 {
     private readonly float originX, originZ, innerRadius, outerRadius, innerRadiusSq, outerRadiusSq;
@@ -330,7 +325,6 @@ public sealed class SDInvertedDonut : ShapeDistance
     }
 }
 
-[SkipLocalsInit]
 public sealed class SDCone : ShapeDistance
 {
     private readonly float originX, originZ, coneFactor, radius, radiusSq, nlX, nlZ, nrX, nrZ;
@@ -516,7 +510,6 @@ public sealed class SDCone : ShapeDistance
     }
 }
 
-[SkipLocalsInit]
 public sealed class SDInvertedCone : ShapeDistance
 {
     private readonly float originX, originZ, coneFactor, radius, radiusSq, nlX, nlZ, nrX, nrZ;
@@ -589,7 +582,6 @@ public sealed class SDInvertedCone : ShapeDistance
     public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
 }
 
-[SkipLocalsInit]
 public sealed class SDDonutSector : ShapeDistance
 {
     private readonly float originX, originZ, coneFactor, innerRadius, outerRadius, innerRadiusSq, outerRadiusSq, nlX, nlZ, nrX, nrZ;
@@ -853,7 +845,6 @@ public sealed class SDDonutSector : ShapeDistance
     }
 }
 
-[SkipLocalsInit]
 public sealed class SDInvertedDonutSector : ShapeDistance
 {
     private readonly float originX, originZ, coneFactor, innerRadius, outerRadius, innerRadiusSq, outerRadiusSq, nlX, nlZ, nrX, nrZ;
@@ -925,7 +916,6 @@ public sealed class SDInvertedDonutSector : ShapeDistance
     public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
 }
 
-[SkipLocalsInit]
 public sealed class SDTri : ShapeDistance
 {
     private readonly float n1X, n1Z, n2X, n2Z, n3X, n3Z, aX, aZ, bX, bZ, cX, cZ;
@@ -1036,7 +1026,6 @@ public sealed class SDTri : ShapeDistance
     }
 }
 
-[SkipLocalsInit]
 public sealed class SDInvertedTri : ShapeDistance
 {
     private readonly float n1X, n1Z, n2X, n2Z, n3X, n3Z, aX, aZ, bX, bZ, cX, cZ;
@@ -1104,7 +1093,6 @@ public sealed class SDInvertedTri : ShapeDistance
     public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
 }
 
-[SkipLocalsInit]
 public sealed class SDRect : ShapeDistance
 {
     private readonly float originX, originZ, dirX, dirZ, normalX, normalZ, lenFront, lenBack, halfWidth;
@@ -1267,7 +1255,6 @@ public sealed class SDRect : ShapeDistance
     }
 }
 
-[SkipLocalsInit]
 public sealed class SDInvertedRect : ShapeDistance
 {
     private readonly float originX, originZ, dirX, dirZ, normalX, normalZ, lenFront, lenBack, halfWidth;
@@ -1360,7 +1347,6 @@ public sealed class SDInvertedRect : ShapeDistance
     }
 }
 
-[SkipLocalsInit]
 public sealed class SDCapsule : ShapeDistance
 {
     private readonly float originX, originZ, dirX, dirZ, length, radius, radiusSq;
@@ -1503,7 +1489,6 @@ public sealed class SDCapsule : ShapeDistance
     }
 }
 
-[SkipLocalsInit]
 public sealed class SDInvertedCapsule : ShapeDistance
 {
     private readonly float originX, originZ, dirX, dirZ, length, radius, radiusSq;
@@ -1571,7 +1556,6 @@ public sealed class SDInvertedCapsule : ShapeDistance
     public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
 }
 
-[SkipLocalsInit]
 public sealed class SDCross : ShapeDistance
 {
     private readonly float length, halfWidth;
@@ -1700,7 +1684,6 @@ public sealed class SDCross : ShapeDistance
     }
 }
 
-[SkipLocalsInit]
 public sealed class SDInvertedCross : ShapeDistance
 {
     private readonly float length, halfWidth;
@@ -1787,7 +1770,6 @@ public sealed class SDInvertedCross : ShapeDistance
     }
 }
 
-[SkipLocalsInit]
 public sealed class SDConvexPolygon : ShapeDistance
 {
     private readonly bool cw;
@@ -1995,7 +1977,6 @@ public sealed class SDConvexPolygon : ShapeDistance
     }
 }
 
-[SkipLocalsInit]
 public sealed class SDArcCapsule : ShapeDistance
 {
     // orbit center
@@ -2349,7 +2330,6 @@ public sealed class SDArcCapsule : ShapeDistance
     }
 }
 
-[SkipLocalsInit]
 public sealed class SDInvertedArcCapsule : ShapeDistance
 {
     private readonly SDArcCapsule _core;

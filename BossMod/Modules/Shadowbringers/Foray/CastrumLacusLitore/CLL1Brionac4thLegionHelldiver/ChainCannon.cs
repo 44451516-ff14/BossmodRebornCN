@@ -3,22 +3,17 @@ namespace BossMod.Shadowbringers.Foray.CastrumLacusLitore.CLL1Brionac4thLegionHe
 sealed class ChainCannon(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(4)];
-    private static readonly AOEShapeRect rect = new(60f, 2.5f);
-    private readonly DetermineArena _arena = module.FindComponent<DetermineArena>()!;
+    private readonly AOEShapeRect rect = new(60f, 2.5f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        if (!_arena.IsBrionacArena)
-            return CollectionsMarshal.AsSpan(_aoes);
-        else
-            return [];
-    }
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.ChainCannonFirst)
         {
-            _aoes.Add(new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
+            var loc = spell.LocXZ;
+            var rot = spell.Rotation;
+            _aoes.Add(new(rect, loc, rot, Module.CastFinishAt(spell), shapeDistance: rect.Distance(loc, rot), arenaProjectionLayer: 0, restrictToArenaProjectionLayer: true));
         }
     }
 

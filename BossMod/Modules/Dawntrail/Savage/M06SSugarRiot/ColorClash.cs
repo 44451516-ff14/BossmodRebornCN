@@ -5,7 +5,7 @@ sealed class ColorClash(BossModule module) : Components.GenericStackSpread(modul
     private bool? partnerStack;
     private DateTime activation;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (partnerStack is bool stack)
             hints.Add($"Stored: {(stack ? "Partner" : "Light party")} stack");

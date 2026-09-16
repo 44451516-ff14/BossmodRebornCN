@@ -23,20 +23,13 @@ public enum IconID : uint
     Stackmarker = 62
 }
 
-[SkipLocalsInit]
 sealed class ConcussiveOscillationBoss(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ConcussiveOscillationBoss, 7f);
-[SkipLocalsInit]
 sealed class ConcussiveOscillation(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ConcussiveOscillation, 8f);
-[SkipLocalsInit]
 sealed class AmorphousApplause(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AmorphousApplause, new AOEShapeCone(24.5f, 90f.Degrees()));
-[SkipLocalsInit]
 sealed class Hydroball(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stackmarker, (uint)AID.Hydroball, 5f, 5f, 4, 4);
-[SkipLocalsInit]
 sealed class SeaSwallowsAll(BossModule module) : Components.RaidwideCast(module, (uint)AID.SeaSwallowsAll);
-[SkipLocalsInit]
 sealed class Overtow(BossModule module) : Components.RaidwideCast(module, (uint)AID.Overtow);
 
-[SkipLocalsInit]
 sealed class D011LugatStates : StateMachineBuilder
 {
     public D011LugatStates(BossModule module) : base(module)
@@ -68,7 +61,6 @@ GroupID = 238u,
 NameID = 6071u,
 SortOrder = 1,
 PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class D011Lugat : BossModule
 {
     public D011Lugat(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

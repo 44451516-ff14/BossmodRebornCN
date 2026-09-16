@@ -1,5 +1,3 @@
-using static BossMod.Dawntrail.Raid.BruteAmbombinatorSharedBounds.BruteAmbombinatorSharedBounds;
-
 namespace BossMod.Dawntrail.Raid.M07NBruteAbombinator;
 
 sealed class BrutalImpactRevengeOfTheVines1NeoBombarianSpecial(BossModule module) : Components.RaidwideCasts(module,
@@ -49,15 +47,17 @@ sealed class NeoBombarianSpecialKB(BossModule module) : Components.SimpleKnockba
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (Arena.Bounds == KnockbackArena) // this doesn't seem to be a regular knockback that ends up in PendingKnockbacks, so forbidden zone must stay longer than cast
+        if (Arena.Bounds is ArenaBoundsCustom) // this doesn't seem to be a regular knockback that ends up in PendingKnockbacks, so forbidden zone must stay longer than cast
         {
             if (!polyInit)
             {
-                poly = KnockbackArena.Shape.Offset(-1f); // shrink polygon by 1 yalm for less suspect kb
+                poly = Arena.Bounds.Shape.Offset(-1f); // shrink polygon by 1 yalm for less suspect kb
                 polyInit = true;
             }
             if (Casters.Count == 0)
+            {
                 return;
+            }
             ref readonly var c = ref Casters.Ref(0);
             hints.AddForbiddenZone(new SDKnockbackInComplexPolygonAwayFromOrigin(Arena.Center, Module.PrimaryActor.Position, 58f, poly), c.Activation);
         }
@@ -67,7 +67,7 @@ sealed class NeoBombarianSpecialKB(BossModule module) : Components.SimpleKnockba
 sealed class PulpSmash(BossModule module) : Components.StackWithIcon(module, (uint)IconID.PulpSmash, (uint)AID.PulpSmash, 6f, 5.2f, 8, 8);
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1023, NameID = 13756)]
-public sealed class M07NBruteAbombinator(WorldState ws, Actor primary) : BossModule(ws, primary, FirstCenter, DefaultArena)
+public sealed class M07NBruteAbombinator(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsSquare(20f))
 {
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

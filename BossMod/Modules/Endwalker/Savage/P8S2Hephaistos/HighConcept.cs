@@ -1,39 +1,39 @@
 ﻿namespace BossMod.Endwalker.Savage.P8S2;
 
 // note: this is currently tailored to strat my static uses...
-class HighConceptCommon(BossModule module) : BossComponent(module)
+abstract class HighConceptCommon(BossModule module) : BossComponent(module)
 {
     public enum Mechanic { Explosion1, Towers1, Explosion2, Towers2, Done }
     public enum PlayerRole { Unassigned, Stack1, Stack2, Stack3, ShortAlpha, ShortBeta, ShortGamma, LongAlpha, LongBeta, LongGamma, Count }
     public enum TowerColor { Unknown, Purple, Blue, Green }
 
-    public Mechanic NextMechanic { get; private set; } = Mechanic.Explosion1;
-    protected TowerColor FirstTowers { get; private set; } // if assigned - two towers of same color at (0, +-10)
-    protected TowerColor SecondTowersHC1 { get; private set; } // if assigned - four towers of same color at (0, +-5/15)
-    protected List<(WPos p, TowerColor c)> SecondTowersHC2 { get; private set; } = [];
-    protected int NumAssignedRoles { get; private set; }
+    public Mechanic NextMechanic = Mechanic.Explosion1;
+    protected TowerColor FirstTowers; // if assigned - two towers of same color at (0, +-10)
+    protected TowerColor SecondTowersHC1; // if assigned - four towers of same color at (0, +-5/15)
+    protected List<(WPos p, TowerColor c)> SecondTowersHC2 = [];
+    protected int NumAssignedRoles;
     private readonly int[] _roleSlots = Utils.MakeArray((int)PlayerRole.Count, -1);
     private readonly PlayerRole[] _playerRoles = new PlayerRole[PartyState.MaxPartySize]; // for HC2, this doesn't have stack roles, since players also have long letters
 
     protected int SlotForRole(PlayerRole r) => _roleSlots[(int)r];
     protected PlayerRole RoleForSlot(int slot) => _playerRoles[slot];
 
-    protected const float ShiftRadius = 20;
-    protected const float SpliceRadius = 6;
-    protected const float TowerRadius = 3;
+    protected const float ShiftRadius = 20f;
+    protected const float SpliceRadius = 6f;
+    protected const float TowerRadius = 3f;
 
     public override PlayerPriority CalcPriority(int pcSlot, Actor pc, int playerSlot, Actor player, ref uint customColor) => NumAssignedRoles < 8 ? PlayerPriority.Irrelevant : PlayerPriority.Normal;
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        var role = (SID)status.ID switch
+        var role = status.ID switch
         {
-            SID.ImperfectionAlpha => (status.ExpireAt - WorldState.CurrentTime).TotalSeconds > 15 ? PlayerRole.LongAlpha : PlayerRole.ShortAlpha,
-            SID.ImperfectionBeta => (status.ExpireAt - WorldState.CurrentTime).TotalSeconds > 15 ? PlayerRole.LongBeta : PlayerRole.ShortBeta,
-            SID.ImperfectionGamma => (status.ExpireAt - WorldState.CurrentTime).TotalSeconds > 15 ? PlayerRole.LongGamma : PlayerRole.ShortGamma,
-            SID.Solosplice => PlayerRole.Stack1,
-            SID.Multisplice => PlayerRole.Stack2,
-            SID.Supersplice => PlayerRole.Stack3,
+            (uint)SID.ImperfectionAlpha => (status.ExpireAt - WorldState.CurrentTime).TotalSeconds > 15d ? PlayerRole.LongAlpha : PlayerRole.ShortAlpha,
+            (uint)SID.ImperfectionBeta => (status.ExpireAt - WorldState.CurrentTime).TotalSeconds > 15d ? PlayerRole.LongBeta : PlayerRole.ShortBeta,
+            (uint)SID.ImperfectionGamma => (status.ExpireAt - WorldState.CurrentTime).TotalSeconds > 15d ? PlayerRole.LongGamma : PlayerRole.ShortGamma,
+            (uint)SID.Solosplice => PlayerRole.Stack1,
+            (uint)SID.Multisplice => PlayerRole.Stack2,
+            (uint)SID.Supersplice => PlayerRole.Stack3,
             _ => PlayerRole.Unassigned
         };
 
@@ -49,18 +49,18 @@ class HighConceptCommon(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.ConceptualShiftAlpha:
-            case AID.ConceptualShiftBeta:
-            case AID.ConceptualShiftGamma:
-            case AID.Splicer1:
-            case AID.Splicer2:
-            case AID.Splicer3:
+            case (uint)AID.ConceptualShiftAlpha:
+            case (uint)AID.ConceptualShiftBeta:
+            case (uint)AID.ConceptualShiftGamma:
+            case (uint)AID.Splicer1:
+            case (uint)AID.Splicer2:
+            case (uint)AID.Splicer3:
                 if (NextMechanic is Mechanic.Explosion1 or Mechanic.Explosion2)
                     ++NextMechanic;
                 break;
-            case AID.ArcaneChannel:
+            case (uint)AID.ArcaneChannel:
                 if (NextMechanic is Mechanic.Towers1 or Mechanic.Towers2)
                     ++NextMechanic;
                 break;
@@ -69,7 +69,7 @@ class HighConceptCommon(BossModule module) : BossComponent(module)
 
     public override void OnMapEffect(byte index, uint state)
     {
-        if (state != 0x00020001)
+        if (state != 0x00020001u)
             return;
 
         var firstColor = index switch
@@ -131,7 +131,7 @@ class HighConceptCommon(BossModule module) : BossComponent(module)
     }
 }
 
-class HighConcept1(BossModule module) : HighConceptCommon(module)
+sealed class HighConcept1(BossModule module) : HighConceptCommon(module)
 {
     public bool LongGoS => Service.Config.Get<P8S2Config>().HC1LongGoS;
 
@@ -317,7 +317,7 @@ class HighConcept1(BossModule module) : HighConceptCommon(module)
     }
 }
 
-class HighConcept2(BossModule module) : HighConceptCommon(module)
+sealed class HighConcept2(BossModule module) : HighConceptCommon(module)
 {
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {

@@ -1,4 +1,4 @@
-﻿namespace BossMod.Modules.Dawntrail.Raid.M09NVampFatale;
+﻿namespace BossMod.Dawntrail.Raid.M09NVampFatale;
 
 sealed class KillerVoice(BossModule module) : Components.RaidwideCast(module, (uint)AID.KillerVoice);
 
@@ -75,22 +75,5 @@ sealed class CoffinMaker(BossModule module) : Components.Voidzone(module, 3f, Ge
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Contributed,
-StatesType = typeof(M09VampFataleStates),
-ConfigType = null, // replace null with typeof(VampFataleConfig) if applicable
-ObjectIDType = typeof(OID),
-ActionIDType = typeof(AID), // replace null with typeof(AID) if applicable
-StatusIDType = null, // replace null with typeof(SID) if applicable
-TetherIDType = null, // replace null with typeof(TetherID) if applicable
-IconIDType = typeof(IconID), // replace null with typeof(IconID) if applicable
-PrimaryActorOID = (uint)OID.VampFatale,
-Contributors = "HerStolenLight",
-Expansion = BossModuleInfo.Expansion.Dawntrail,
-Category = BossModuleInfo.Category.Raid,
-GroupType = BossModuleInfo.GroupType.CFC,
-GroupID = 1068u,
-NameID = 14300u,
-SortOrder = 1,
-PlanLevel = 0)]
-[SkipLocalsInit]
-public sealed class VampFatale(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsSquare(20f));
+[ModuleInfo(BossModuleInfo.Maturity.Contributed, PrimaryActorOID = (uint)OID.VampFatale, Contributors = "HerStolenLight", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1068u, NameID = 14300u)]
+public sealed class M09NVampFatale(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsSquare(20f));

@@ -368,12 +368,11 @@ sealed class CE115CursedConcernStates : StateMachineBuilder
             .ActivateOnEnter<CostOfLiving>()
             .ActivateOnEnter<BuyersRemorseECFreeze>()
             .ActivateOnEnter<BuyersRemorseForcedMarch>()
-            .ActivateOnEnter<WhatreYouBuying>()
-        ;
+            .ActivateOnEnter<WhatreYouBuying>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 1018, NameID = 45)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 1018u, NameID = 45u)]
 public sealed class CE115CursedConcern(WorldState ws, Actor primary) : BossModule(ws, primary, new WPos(72f, -545f).Quantized(), new ArenaBoundsCircle(25f))
 {
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 30f);

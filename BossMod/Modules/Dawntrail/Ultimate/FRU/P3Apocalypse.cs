@@ -112,7 +112,7 @@ sealed class P3ApocalypseDarkWater(BossModule module) : Components.UniformStackS
             hints.Add($"Order: {state.Order}", false);
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_swaps.Length > 0)
             hints.Add(_swaps);
@@ -290,7 +290,7 @@ sealed class P3ApocalypseDarkWater(BossModule module) : Components.UniformStackS
             hints.Add($"Order: {state.Order}", false);
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var text = _swaps;
 

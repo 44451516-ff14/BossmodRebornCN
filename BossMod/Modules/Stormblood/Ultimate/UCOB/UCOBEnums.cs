@@ -118,10 +118,15 @@ public enum AID : uint
 public enum SID : uint
 {
     Doom = 210, // none->player, extra=0x0
+    Neurolink = 344, // none->player, extra=0x0
     Firescorched = 464, // Firehorn->player, extra=0x0
     Icebitten = 465, // Iceclaw->player, extra=0x0
     Thunderstruck = 466, // none->player, extra=0x0
     DownForTheCount = 783, // none->player, extra=0xEC7
+    SlashingResistanceDownII = 1272, // Twintania->player, extra=0x0
+    ManaHypersensitivity = 1434, // Oviform->player, extra=0x0
+    DamageUp = 290, // NaelDeusDarnus->NaelGeminus/NaelDeusDarnus, extra=0x0
+    Paralysis = 216, // Helper->player, extra=0x0
 }
 
 public enum TetherID : uint

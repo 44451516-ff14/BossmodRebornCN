@@ -2,10 +2,10 @@
 
 // state relared to darkened fire add placement mechanic
 // adds should be neither too close (or they insta explode and wipe raid) nor too far (or during brightened fire someone wouldn't be able to hit two adds)
-class DarkenedFire(BossModule module) : BossComponent(module)
+sealed class DarkenedFire(BossModule module) : BossComponent(module)
 {
-    private const float _minRange = 11; // note: on one of our pulls adds at (94.14, 105.55) and (94.21, 94.69) (distance=10.860) linked and wiped us
-    private const float _maxRange = 13; // brigthened fire aoe radius is 7, so this is x2 minus some room for positioning
+    private const float _minRange = 11f; // note: on one of our pulls adds at (94.14, 105.55) and (94.21, 94.69) (distance=10.860) linked and wiped us
+    private const float _maxRange = 13f; // brigthened fire aoe radius is 7, so this is x2 minus some room for positioning
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -31,12 +31,15 @@ class DarkenedFire(BossModule module) : BossComponent(module)
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         // draw other potential targets, to simplify positioning
-        var healerOrTank = pc.Role is Role.Tank or Role.Healer;
-        foreach (var player in Raid.WithoutSlot(false, true, true).Where(player => CanBothBeTargets(player, pc)))
+        foreach (var player in Raid.WithoutSlot(false, true, true))
         {
+            if (!CanBothBeTargets(player, pc))
+            {
+                continue;
+            }
             var tooClose = player.Position.InCircle(pc.Position, _minRange);
             var inRange = player.Position.InCircle(pc.Position, _maxRange);
-            Arena.Actor(player, tooClose ? Colors.Danger : (inRange ? Colors.PlayerInteresting : Colors.PlayerGeneric));
+            Arena.Actor(player, tooClose ? Colors.Danger : (inRange ? Colors.PlayerInteresting : Colors.PlayerGeneric), drawWorld: tooClose || inRange ? true : null);
         }
 
         // draw circles around pc

@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Endwalker.Savage.P7SAgdistis;
 
-class ForbiddenFruit8(BossModule module) : ForbiddenFruitCommon(module, (uint)AID.StymphalianStrike)
+sealed class ForbiddenFruit8(BossModule module) : ForbiddenFruitCommon(module, (uint)AID.StymphalianStrike)
 {
-    private BitMask _noBirdsPlatforms = ValidPlatformsMask;
+    private BitMask _noBirdsPlatforms = new(7);
 
     public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {

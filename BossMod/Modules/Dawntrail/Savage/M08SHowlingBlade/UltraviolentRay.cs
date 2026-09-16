@@ -99,7 +99,7 @@ sealed class UltraviolentRay(BossModule module) : Components.GenericBaitAway(mod
                 }
             }
 
-            var loc = M08SHowlingBlade.ArenaCenter.Quantized();
+            var loc = new WPos(100f, 100f).Quantized();
             var act = baits[0].Activation;
             for (var i = 0; i < 5; ++i)
             {

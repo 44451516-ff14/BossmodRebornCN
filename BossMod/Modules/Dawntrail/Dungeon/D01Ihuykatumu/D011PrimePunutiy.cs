@@ -231,10 +231,12 @@ sealed class D011PrimePunutiyStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 826u, NameID = 12723u)]
 public sealed class D011PrimePunutiy(WorldState ws, Actor primary) : BossModule(ws, primary, new(35f, -95f), new ArenaBoundsSquare(19.5f))
 {
-    private static readonly uint[] adds = [(uint)OID.Punutiy, (uint)OID.PetitPunutiy, (uint)OID.ProdigiousPunutiy];
+    private readonly uint[] adds = [(uint)OID.Punutiy, (uint)OID.PetitPunutiy, (uint)OID.ProdigiousPunutiy];
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
         Arena.Actors(this, adds);
     }
+
+    public override bool ShouldPrioritizeAllEnemies => true;
 }

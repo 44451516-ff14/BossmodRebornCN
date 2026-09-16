@@ -8,7 +8,7 @@ sealed class P3Geocrush2(BossModule module) : Components.GenericAOEs(module, (ui
     private Actor? _caster;
 
     //private static WDir[] _possibleOffsets = { new(14, 0), new(0, 14), new(-14, 0), new(0, -14) };
-    private static readonly AOEShapeCircle _shapeCrush = new(24f);
+    private readonly AOEShapeCircle _shapeCrush = new(24f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

@@ -1,8 +1,6 @@
 ﻿namespace BossMod.Components;
 
 // generic component that counts specified casts
-
-[SkipLocalsInit]
 public class CastCounter(BossModule module, uint aid) : BossComponent(module)
 {
     public readonly uint WatchedAction = aid;
@@ -17,7 +15,6 @@ public class CastCounter(BossModule module, uint aid) : BossComponent(module)
     }
 }
 
-[SkipLocalsInit]
 public class CastCounterMulti(BossModule module, uint[] aids) : BossComponent(module)
 {
     public readonly uint[] WatchedActions = aids;

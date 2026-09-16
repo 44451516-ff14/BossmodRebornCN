@@ -1,6 +1,5 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-[SkipLocalsInit]
 sealed class P4OpticalSight(BossModule module) : Components.UniformStackSpread(module, 6f, 6f, 4, 4)
 {
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)

@@ -1,13 +1,13 @@
 ﻿namespace BossMod.Endwalker.Savage.P8S1Hephaistos;
 
 // component dealing with tetra/octaflare mechanics (conceptual or not)
-class TetraOctaFlareCommon(BossModule module) : Components.UniformStackSpread(module, 3, 6, 2, 2)
+abstract class TetraOctaFlareCommon(BossModule module) : Components.UniformStackSpread(module, 3, 6, 2, 2)
 {
     public enum Concept { None, Tetra, Octa }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.EmergentOctaflare or AID.EmergentTetraflare)
+        if (spell.Action.ID is (uint)AID.EmergentOctaflare or (uint)AID.EmergentTetraflare)
         {
             Stacks.Clear();
             Spreads.Clear();
@@ -29,27 +29,27 @@ class TetraOctaFlareCommon(BossModule module) : Components.UniformStackSpread(mo
     }
 }
 
-class TetraOctaFlareImmediate(BossModule module) : TetraOctaFlareCommon(module)
+sealed class TetraOctaFlareImmediate(BossModule module) : TetraOctaFlareCommon(module)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.Octaflare:
+            case (uint)AID.Octaflare:
                 SetupMasks(Concept.Octa);
                 break;
-            case AID.Tetraflare:
+            case (uint)AID.Tetraflare:
                 SetupMasks(Concept.Tetra);
                 break;
         }
     }
 }
 
-class TetraOctaFlareConceptual(BossModule module) : TetraOctaFlareCommon(module)
+sealed class TetraOctaFlareConceptual(BossModule module) : TetraOctaFlareCommon(module)
 {
     private Concept _concept;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_concept != Concept.None)
             hints.Add(_concept == Concept.Tetra ? "Prepare to stack in pairs" : "Prepare to spread");
@@ -63,12 +63,12 @@ class TetraOctaFlareConceptual(BossModule module) : TetraOctaFlareCommon(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.ConceptualOctaflare:
+            case (uint)AID.ConceptualOctaflare:
                 _concept = Concept.Octa;
                 break;
-            case AID.ConceptualTetraflare:
+            case (uint)AID.ConceptualTetraflare:
                 _concept = Concept.Tetra;
                 break;
         }

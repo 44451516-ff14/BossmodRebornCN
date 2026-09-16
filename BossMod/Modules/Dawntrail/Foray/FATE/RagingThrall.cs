@@ -148,7 +148,6 @@ sealed class OctupleSwipe(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class RagingThrallStates : StateMachineBuilder
 {
     public RagingThrallStates(BossModule module) : base(module)
@@ -177,7 +176,6 @@ sealed class RagingThrallStates : StateMachineBuilder
     NameID = 2074u,
     SortOrder = 3,
     PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class RagingThrall : OpenWorldFate
 {
     public RagingThrall(WorldState ws, Actor primary) : base(ws, primary)

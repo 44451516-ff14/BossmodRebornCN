@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C03AAI.C031Ketuduke;
 
-class BlowingBubbles(BossModule module) : BossComponent(module)
+sealed class BlowingBubbles(BossModule module) : BossComponent(module)
 {
     private readonly List<Actor> _actors = [];
 

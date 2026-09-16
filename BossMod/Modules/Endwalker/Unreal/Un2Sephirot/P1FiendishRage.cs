@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un2Sephirot;
 
-class P1FiendishRage(BossModule module) : Components.CastCounter(module, (uint)AID.FiendishRage)
+sealed class P1FiendishRage(BossModule module) : Components.CastCounter(module, (uint)AID.FiendishRage)
 {
     private BitMask _targets;
 
-    private const float _range = 6;
+    private const float _range = 6f;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -38,7 +38,7 @@ class P1FiendishRage(BossModule module) : Components.CastCounter(module, (uint)A
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
-        if ((IconID)iconID == IconID.FiendishRage)
+        if (iconID == (uint)IconID.FiendishRage)
             _targets.Set(Raid.FindSlot(actor.InstanceID));
     }
 }

@@ -1,9 +1,9 @@
-namespace BossMod.Modules.Dawntrail.Raid.M11NTheTyrant;
+namespace BossMod.Dawntrail.Raid.M11NTheTyrant;
 
 sealed class CrownOfArcadia(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
-    private static readonly AOEShapeRect rect = new(20, 6, 20);
+    private readonly AOEShapeRect rect = new(20, 6, 20);
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         var count = _aoes.Count;
@@ -12,7 +12,6 @@ sealed class CrownOfArcadia(BossModule module) : Components.GenericAOEs(module)
 
         var aoes = CollectionsMarshal.AsSpan(_aoes);
         var color = Colors.AOE;
-
 
         for (var i = 0; i < count; ++i)
         {
@@ -41,10 +40,6 @@ sealed class CrownOfArcadia(BossModule module) : Components.GenericAOEs(module)
         }
     }
 }
-
-
-
-
 
 sealed class Smashdown1(BossModule module) : Components.SimpleAOEs(module, (uint)AID._Weaponskill_SmashdownScytheAOE, new AOEShapeDonut(5, 60));
 sealed class Smashdown2(BossModule module) : Components.SimpleAOEs(module, (uint)AID._Weaponskill_SmashdownAxeAOE, 8f);
@@ -89,7 +84,6 @@ sealed class RawSteelTankBuster(BossModule module) : Components.IconSharedTankbu
 sealed class RawSteelSpreads(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.RawSteelSpread, (uint)AID._Weaponskill_Impact, 6, 0);
 sealed class Charybdistopia(BossModule module) : Components.RaidwideCast(module, (uint)AID._Spell_Charybdistopia);
 
-
 sealed class Maelstrom(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
@@ -104,7 +98,6 @@ sealed class Maelstrom(BossModule module) : Components.GenericAOEs(module)
         var aoes = CollectionsMarshal.AsSpan(_aoes);
         var color = Colors.AOE;
 
-
         for (var i = 0; i < count; ++i)
         {
             ref var aoe = ref aoes[i];
@@ -116,7 +109,6 @@ sealed class Maelstrom(BossModule module) : Components.GenericAOEs(module)
         }
         return aoes;
     }
-
 
     public override void OnActorCreated(Actor actor)
     {
@@ -150,7 +142,6 @@ class PowerfulGust(BossModule module) : Components.GenericAOEs(module)
 
         var aoes = CollectionsMarshal.AsSpan(_aoes);
         var color = Colors.AOE;
-
 
         for (var i = 0; i < count; ++i)
         {
@@ -241,7 +232,6 @@ sealed class Flatliner(BossModule module) : Components.GenericAOEs(module)
 
         var aoes = CollectionsMarshal.AsSpan(_aoes);
         var color = Colors.AOE;
-
 
         for (var i = 0; i < count; ++i)
         {
@@ -419,22 +409,6 @@ sealed class GreatWallOfFire(BossModule module) : Components.IconSharedTankbuste
 // Module
 // =========================
 
-[ModuleInfo(BossModuleInfo.Maturity.Contributed,
-    StatesType = typeof(M11TheTyrantStates),
-    ConfigType = null, // replace null with typeof(TheTyrantConfig) if applicable
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID),
-    StatusIDType = typeof(SID),
-    TetherIDType = typeof(TetherID),
-    IconIDType = typeof(IconID),
-    PrimaryActorOID = (uint)OID.Boss,
-    Contributors = "VeraNala, wen, Topas",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.Raid,
-    GroupType = BossModuleInfo.GroupType.CFC,
-    GroupID = 1072u,
-    NameID = 14305u,
-    SortOrder = 1,
-    PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.Contributed, PrimaryActorOID = (uint)OID.Boss, Contributors = "VeraNala, wen, Topas", GroupType = BossModuleInfo.GroupType.CFC,
+    GroupID = 1072u, NameID = 14305u)]
 public sealed class M11NTheTyrant(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsSquare(20f));

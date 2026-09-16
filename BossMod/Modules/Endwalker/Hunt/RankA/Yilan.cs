@@ -29,7 +29,7 @@ class Soundstorm(BossModule module) : Components.StatusDrivenForcedMarch(module,
 {
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos) => MiniLight.Shape.Check(pos, Module.PrimaryActor);
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (Module.PrimaryActor.CastInfo?.IsSpell(AID.Soundstorm) ?? false)
             hints.Add("Apply march debuffs");

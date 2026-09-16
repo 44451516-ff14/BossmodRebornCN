@@ -6,9 +6,9 @@ sealed class WeaponTracker(BossModule module) : Components.GenericAOEs(module)
     private AOEInstance[] _aoe = [];
     public enum Stance { None, Sword, Staff, Chakram }
     public Stance CurStance;
-    private static readonly AOEShapeDonut donut = new(5f, 40f);
-    private static readonly AOEShapeCircle circle = new(10f);
-    private static readonly AOEShapeCross cross = new(40f, 5f);
+    private readonly AOEShapeDonut donut = new(5f, 40f);
+    private readonly AOEShapeCircle circle = new(10f);
+    private readonly AOEShapeCross cross = new(40f, 5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 

@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Savage.P2SHippokampos;
 
 // state related to predatory avarice mechanic
-class PredatoryAvarice(BossModule module) : BossComponent(module)
+sealed class PredatoryAvarice(BossModule module) : BossComponent(module)
 {
     private BitMask _playersWithTides;
     private BitMask _playersWithDepths;
@@ -74,31 +74,31 @@ class PredatoryAvarice(BossModule module) : BossComponent(module)
             {
                 // tides are always drawn
                 Arena.ZoneCircleOutline(actor.Position, _tidesRadius, Colors.Danger);
-                Arena.Actor(actor, Colors.Danger);
+                Arena.Actor(actor, Colors.Danger, drawWorld: true);
             }
             else if (_playersWithDepths[i] && !pcHasTides)
             {
                 // depths are drawn only if pc has no tides - otherwise it is to be considered a generic player
                 Arena.ZoneCircleOutline(actor.Position, _tidesRadius, Colors.Safe);
-                Arena.Actor(actor, Colors.Danger);
+                Arena.Actor(actor, Colors.Danger, drawWorld: true);
             }
             else if (pcHasTides || pcHasDepths)
             {
                 // other players are only drawn if pc has some debuff
                 var playerInteresting = pcHasTides ? _playersInTides[i] : _playersInDepths[i];
-                Arena.Actor(actor.Position, actor.Rotation, playerInteresting ? Colors.PlayerInteresting : Colors.PlayerGeneric);
+                Arena.Actor(actor, playerInteresting ? Colors.PlayerInteresting : Colors.PlayerGeneric, drawWorld: playerInteresting ? true : null);
             }
         }
     }
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.MarkOfTides:
+            case (uint)SID.MarkOfTides:
                 _playersWithTides.Set(Raid.FindSlot(actor.InstanceID));
                 break;
-            case SID.MarkOfDepths:
+            case (uint)SID.MarkOfDepths:
                 _playersWithDepths.Set(Raid.FindSlot(actor.InstanceID));
                 break;
         }
@@ -106,12 +106,12 @@ class PredatoryAvarice(BossModule module) : BossComponent(module)
 
     public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.MarkOfTides:
+            case (uint)SID.MarkOfTides:
                 _playersWithTides.Clear(Raid.FindSlot(actor.InstanceID));
                 break;
-            case SID.MarkOfDepths:
+            case (uint)SID.MarkOfDepths:
                 _playersWithDepths.Clear(Raid.FindSlot(actor.InstanceID));
                 break;
         }

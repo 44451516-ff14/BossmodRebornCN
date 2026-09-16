@@ -2,9 +2,9 @@ namespace BossMod.Shadowbringers.Foray.CastrumLacusLitore.CLL4Dawon;
 
 sealed class VerdantScarletPlume(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCircle circle = new(10f);
-    private static readonly AOEShapeDonut donut = new(3f, 12f);
-    private static readonly AOEShapeRect rect = new(30f, 15f);
+    private readonly AOEShapeCircle circle = new(10f);
+    private readonly AOEShapeDonut donut = new(3f, 12f);
+    private readonly AOEShapeRect rect = new(30f, 15f);
     private readonly List<AOEInstance> _aoes = [with(12)];
     private bool first = true;
 
@@ -21,11 +21,17 @@ sealed class VerdantScarletPlume(BossModule module) : Components.GenericAOEs(mod
                 _ => null
             };
             if (shape != null)
+            {
                 AddAOE(shape, actor.Position, WorldState.FutureTime(10.5d));
+            }
         }
     }
 
-    private void AddAOE(AOEShape shape, WPos position, DateTime activation) => _aoes.Add(new(shape, position.Quantized(), default, activation));
+    private void AddAOE(AOEShape shape, WPos position, DateTime activation)
+    {
+        var pos = position.Quantized();
+        _aoes.Add(new(shape, pos, default, activation, shapeDistance: shape.Distance(pos, default), arenaProjectionLayer: 0, restrictToArenaProjectionLayer: true));
+    }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -43,13 +49,17 @@ sealed class VerdantScarletPlume(BossModule module) : Components.GenericAOEs(mod
             {
                 var pos = verdantPlumes[i].Position;
                 if (rect.Check(pos, origin, rot))
+                {
                     AddAOE(donut, pos + dir, act);
+                }
             }
             for (var i = 0; i < countS; ++i)
             {
                 var pos = scarletPlumes[i].Position;
                 if (rect.Check(pos, origin, rot))
+                {
                     AddAOE(circle, pos + dir, act);
+                }
             }
         }
     }

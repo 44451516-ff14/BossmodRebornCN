@@ -1,15 +1,15 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex3Endsigner;
 
 // used both for single planets (elegeia) and successions (fatalism)
-class Planets(BossModule module) : BossComponent(module)
+sealed class Planets(BossModule module) : BossComponent(module)
 {
     private Actor? _head;
     private readonly List<WPos> _planetsFiery = [];
     private readonly List<WPos> _planetsAzure = [];
 
-    private static readonly AOEShapeCone _aoeHead = new(20, 90.Degrees());
-    private static readonly AOEShapeCircle _aoePlanet = new(30);
-    private const float _knockbackDistance = 25;
+    private readonly AOEShapeCone _aoeHead = new(20f, 90f.Degrees());
+    private readonly AOEShapeCircle _aoePlanet = new(30f);
+    private const float _knockbackDistance = 25f;
     private const float _planetOffset = 19.8f; // == 14 * sqrt(2)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
@@ -53,7 +53,7 @@ class Planets(BossModule module) : BossComponent(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.DiairesisElegeia)
+        if (spell.Action.ID == (uint)AID.DiairesisElegeia)
             _head = caster;
     }
 
@@ -65,31 +65,31 @@ class Planets(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.FatalismFieryStar1:
+            case (uint)AID.FatalismFieryStar1:
                 AddPlanet(caster, false, true);
                 break;
-            case AID.FatalismFieryStar2:
-            case AID.FieryStarVisual:
+            case (uint)AID.FatalismFieryStar2:
+            case (uint)AID.FieryStarVisual:
                 AddPlanet(caster, false, false);
                 break;
-            case AID.FatalismAzureStar1:
+            case (uint)AID.FatalismAzureStar1:
                 AddPlanet(caster, true, true);
                 break;
-            case AID.FatalismAzureStar2:
-            case AID.AzureStarVisual:
+            case (uint)AID.FatalismAzureStar2:
+            case (uint)AID.AzureStarVisual:
                 AddPlanet(caster, true, false);
                 break;
-            case AID.RubistellarCollision:
-            case AID.FatalismRubistallarCollisionAOE:
+            case (uint)AID.RubistellarCollision:
+            case (uint)AID.FatalismRubistallarCollisionAOE:
                 if (_planetsFiery.Count > 0)
                     _planetsFiery.RemoveAt(0);
                 else
                     ReportError("Unexpected fiery cast, no casters available");
                 break;
-            case AID.CaerustellarCollision:
-            case AID.FatalismCaerustallarCollisionAOE:
+            case (uint)AID.CaerustellarCollision:
+            case (uint)AID.FatalismCaerustallarCollisionAOE:
                 if (_planetsAzure.Count > 0)
                     _planetsAzure.RemoveAt(0);
                 else

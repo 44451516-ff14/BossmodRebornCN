@@ -17,36 +17,26 @@ sealed class Fireball(BossModule module) : Components.SimpleAOEs(module, (uint)A
 sealed class Snort(BossModule module) : Components.CastHint(module, (uint)AID.Snort, "Use Diamondback!");
 sealed class SnortKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Snort, 30f, kind: Kind.AwayFromOrigin, stopAtWall: true);
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add("Diamondback and Flying Sardine are essential for this stage. The Final\nSting combo (Off-guard->Bristle->Moonflute->Final Sting) can make act 3\nincluding the achievement much easier. Ultros in act 2 and 3 is weak to\nfire.");
-    }
-
-    public override void AddHints(int slot, Actor actor, TextHints hints)
-    {
-        hints.Add("Requirement for achievement: Don't kill any tentacles in act 3", false);
-    }
-}
-
 sealed class Stage20Act1States : StateMachineBuilder
 {
     public Stage20Act1States(BossModule module) : base(module)
     {
         TrivialPhase()
-            .DeactivateOnEnter<Hints>()
             .ActivateOnEnter<Snort>()
             .ActivateOnEnter<SnortKB>()
             .ActivateOnEnter<Fireball>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 630, NameID = 3046, SortOrder = 1)]
-public sealed class Stage20Act1 : BossModule
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 630u, NameID = 3046u, SortOrder = 1)]
+public sealed class Stage20Act1(WorldState ws, Actor primary) : BossModule(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
 {
-    public Stage20Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
-    {
-        ActivateComponent<Hints>();
-    }
+    private readonly string[] _prePullHints =
+    [
+        "Diamondback and Flying Sardine are essential for this stage.",
+        "The Final Sting combo (Off-guard->Bristle->Moonflute->Final Sting) can make act 3 including the achievement much easier. Ultros in act 2 and 3 is weak to fire.",
+        "Requirement for the achievement: Don't kill any tentacles in act 3"
+    ];
+
+    public override string[] PrePullHints => _prePullHints;
 }

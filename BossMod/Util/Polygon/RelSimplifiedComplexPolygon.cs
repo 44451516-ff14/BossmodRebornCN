@@ -3,7 +3,6 @@ using Clipper2Lib;
 namespace BossMod;
 
 // generic 'simplified' complex polygon that consists of 0 or more non-intersecting polygons with holes (note however that some polygons could be fully inside other polygon's hole)
-[SkipLocalsInit]
 public sealed class RelSimplifiedComplexPolygon(List<RelPolygonWithHoles> parts)
 {
     public readonly List<RelPolygonWithHoles> Parts = parts;

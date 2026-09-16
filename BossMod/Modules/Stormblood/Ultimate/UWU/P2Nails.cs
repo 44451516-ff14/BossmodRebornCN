@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UWU;
 
 // TODO: kill priorities
-class P2Nails(BossModule module) : BossComponent(module)
+sealed class P2Nails(BossModule module) : BossComponent(module)
 {
     private readonly List<Actor> _nails = module.Enemies((uint)OID.InfernalNail);
 

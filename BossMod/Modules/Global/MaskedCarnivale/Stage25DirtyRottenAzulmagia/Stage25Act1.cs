@@ -34,22 +34,38 @@ sealed class TremblingEarth2(BossModule module) : Components.SimpleAOEs(module, 
 
 sealed class Hints(BossModule module) : BossComponent(module)
 {
-    public override void AddGlobalHints(GlobalHints hints)
+    private bool iceSpikesActive;
+    private bool isDoomed;
+
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        hints.Add($"{Module.PrimaryActor.Name} will reflect all physical damage in act 1, all magic damage in act 2\nand switch between both in act 3. Loom, Exuviation and Diamondback\nare recommended. In act 3 can start the Final Sting combination\nat about 50% health left. (Off-guard->Bristle->Moonflute->Final Sting)");
+        switch (status.ID)
+        {
+            case (uint)SID.IceSpikes:
+                iceSpikesActive = true;
+                break;
+            case (uint)SID.Doom:
+                isDoomed = true;
+                break;
+        }
     }
 
-    public override void AddHints(int slot, Actor actor, TextHints hints)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
-        hints.Add("Requirements for achievement: Take no damage, use all 6 magic elements,\nuse all 3 melee types and finish faster than ideal time", false);
+        switch (status.ID)
+        {
+            case (uint)SID.IceSpikes:
+                iceSpikesActive = false;
+                break;
+            case (uint)SID.Doom:
+                isDoomed = false;
+                break;
+        }
     }
-}
 
-sealed class Hints2(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
-        if (Module.PrimaryActor.FindStatus((uint)SID.IceSpikes) != null)
+        if (iceSpikesActive)
         {
             hints.Add($"{Module.PrimaryActor.Name} will reflect all physical damage!");
         }
@@ -57,7 +73,7 @@ sealed class Hints2(BossModule module) : BossComponent(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (actor.FindStatus((uint)SID.Doom) != null)
+        if (isDoomed)
         {
             hints.Add("You were doomed! Cleanse it with Exuviation or finish the act fast.");
         }
@@ -76,16 +92,25 @@ sealed class Stage25Act1States : StateMachineBuilder
             .ActivateOnEnter<Plaincracker>()
             .ActivateOnEnter<TremblingEarth1>()
             .ActivateOnEnter<TremblingEarth2>()
-            .ActivateOnEnter<Hints2>()
-            .DeactivateOnEnter<Hints>();
+            .ActivateOnEnter<Hints>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 635, NameID = 8129, SortOrder = 1)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 635u, NameID = 8129u, SortOrder = 1)]
 public sealed class Stage25Act1 : BossModule
 {
     public Stage25Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {
-        ActivateComponent<Hints>();
+        _prePullHints =
+        [
+            $"{PrimaryActor.Name} will reflect all physical damage in act 1, all magic damage in act 2 and switch between both in act 3.",
+            "Loom, Exuviation and Diamondback are recommended.",
+            "In act 3 can start the Final Sting combination at about 50% health left. (Off-guard->Bristle->Moonflute->Final Sting)",
+            "Requirements for achievement: Take no damage, use no healing, use all 6 magic elements, use all 3 melee types and finish faster than 7min 15s"
+        ];
     }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

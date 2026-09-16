@@ -1,17 +1,17 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex2Hydaelyn;
 
 // common base for lightwaves components
-class LightwaveCommon(BossModule module) : Components.CastCounter(module, (uint)AID.LightOfTheCrystal)
+abstract class LightwaveCommon(BossModule module) : Components.CastCounter(module, (uint)AID.LightOfTheCrystal)
 {
     protected List<Actor> Waves = [];
-    protected static readonly AOEShapeRect WaveAOE = new(50, 8); // note that actual length is 15, but we want to show aoe for full path
+    protected readonly AOEShapeRect WaveAOE = new(50f, 8f); // note that actual length is 15, but we want to show aoe for full path
 
     private const float _losRadius = 1;
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         base.OnEventCast(caster, spell);
-        if ((AID)spell.Action.ID == AID.RayOfLight && !Waves.Contains(caster))
+        if (spell.Action.ID == (uint)AID.RayOfLight && !Waves.Contains(caster))
         {
             Waves.Add(caster);
         }

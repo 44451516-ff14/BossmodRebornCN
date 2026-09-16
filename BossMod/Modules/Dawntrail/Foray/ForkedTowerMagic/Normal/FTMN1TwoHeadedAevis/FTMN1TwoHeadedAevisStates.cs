@@ -1,9 +1,8 @@
 ﻿namespace BossMod.Dawntrail.Foray.ForkedTowerMagic.Normal.FTMN1TwoHeadedAevis;
 
-[SkipLocalsInit]
-sealed class TwoHeadedAevisStates : StateMachineBuilder
+sealed class FTMN1TwoHeadedAevisStates : StateMachineBuilder
 {
-    public TwoHeadedAevisStates(BossModule module) : base(module)
+    public FTMN1TwoHeadedAevisStates(BossModule module) : base(module)
     {
         TrivialPhase()
             .ActivateOnEnter<Buffet>()

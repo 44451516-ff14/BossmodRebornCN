@@ -52,7 +52,8 @@ sealed class ChampionsCircuit(BossModule module) : Components.GenericAOEs(module
 
                     if (aoe.Shape == donut)
                     {
-                        var rotate = (caster.Position - M08SHowlingBlade.ArenaCenter).Rotate(incrAdj) + M08SHowlingBlade.ArenaCenter;
+                        var center = new WPos(100f, 100f);
+                        var rotate = (caster.Position - center).Rotate(incrAdj) + center;
                         aoe.Origin = rotate.Quantized();
                     }
                     else

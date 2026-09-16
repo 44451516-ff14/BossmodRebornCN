@@ -10,8 +10,8 @@ sealed class P6CosmoArrow(BossModule module) : Components.GenericAOEs(module)
 
     public bool Active => _lines.Count > 0;
 
-    private static readonly AOEShapeRect _shapeFirst = new(40f, 5f);
-    private static readonly AOEShapeRect _shapeRest = new(100f, 2.5f);
+    private readonly AOEShapeRect _shapeFirst = new(40f, 5f);
+    private readonly AOEShapeRect _shapeRest = new(100f, 2.5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -28,7 +28,7 @@ sealed class P6CosmoArrow(BossModule module) : Components.GenericAOEs(module)
         return CollectionsMarshal.AsSpan(aoes);
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (CurPattern != Pattern.Unknown)
             hints.Add($"Pattern: {(CurPattern == Pattern.InOut ? "in -> out" : "out -> in")}");

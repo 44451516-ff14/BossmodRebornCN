@@ -13,7 +13,6 @@ sealed class P1BrightfireLarge(BossModule module) : Components.SimpleAOEs(module
 // TODO: fixed tethers strat variant (tether target with clone on safe side goes S, other goes N, if any group has 5 players prio1 adjusts)
 sealed class P1BoundOfFaith(BossModule module) : Components.UniformStackSpread(module, 6f, default, 4, 4)
 {
-    public bool EnableHints;
     public WDir SafeSide;
     public DateTime Activation;
     public readonly int[] AssignedGroups = new int[PartyState.MaxPartySize];
@@ -21,12 +20,6 @@ sealed class P1BoundOfFaith(BossModule module) : Components.UniformStackSpread(m
     private uint _safeHalo;
 
     public WDir AssignedLane(int slot) => new(0, AssignedGroups[slot] * 5.4f);
-
-    public override void AddHints(int slot, Actor actor, TextHints hints)
-    {
-        if (EnableHints)
-            base.AddHints(slot, actor, hints);
-    }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) { } // we have dedicated components for this
 

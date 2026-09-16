@@ -1,9 +1,9 @@
 ﻿namespace BossMod.Endwalker.Savage.P7SAgdistis;
 
 // TODO: implement!
-class ForbiddenFruit10(BossModule module) : ForbiddenFruitCommon(module, (uint)AID.BronzeBellows)
+sealed class ForbiddenFruit10(BossModule module) : ForbiddenFruitCommon(module, (uint)AID.BronzeBellows)
 {
-    private BitMask _minotaurPlaforms = ValidPlatformsMask;
+    private BitMask _minotaurPlaforms = new(7);
     private BitMask _bullPlatforms;
 
     public override void DrawArenaBackground(int pcSlot, Actor pc)

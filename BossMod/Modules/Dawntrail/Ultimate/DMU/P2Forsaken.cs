@@ -54,21 +54,45 @@ sealed class AllThingsEnding(BossModule module) : Components.GenericBaitAway(mod
             return;
         }
 
-        foreach (var clone in clones)
+        var raid = Raid.WithoutSlot(false, true, true);
+        var len = raid.Length;
+        var countC = clones.Count;
+        for (var i = 0; i < countC; ++i)
         {
-            var baiter = Raid.WithoutSlot().Where(p => !baiters.Contains(p)).SortedByRange(clone.Position).Take(1).FirstOrDefault();
+            var clone = clones[i];
+            Actor? baiter = null;
+            var bestDistance = float.MaxValue;
+            var clonePos = clone.Position;
+            for (var j = 0; j < len; ++j)
+            {
+                var player = raid[j];
+                if (baiters.Contains(player))
+                {
+                    continue;
+                }
+
+                var distance = (clonePos - player.Position).LengthSq();
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    baiter = player;
+                }
+            }
+
             if (baiter == null)
             {
                 continue;
             }
 
             baiters.Add(baiter);
+
             var direction = clone.AngleTo(baiter);
             if (currentBait == BaitType.Close)
             {
-                direction += 180.Degrees();
+                direction += 180f.Degrees();
             }
-            CurrentBaits.Add(new(clone.Position, baiter, cone, customRotation: direction));
+
+            CurrentBaits.Add(new(clonePos, baiter, cone, customRotation: direction));
         }
     }
 
@@ -86,7 +110,7 @@ sealed class AllThingsEnding(BossModule module) : Components.GenericBaitAway(mod
             return;
         }
 
-        if (shapes.currentTowerSet % 2 == 0 && shapes.currentTowerSet != 8)
+        if ((shapes.currentTowerSet & 1) == 0 && shapes.currentTowerSet != 8)
         {
             return;
         }

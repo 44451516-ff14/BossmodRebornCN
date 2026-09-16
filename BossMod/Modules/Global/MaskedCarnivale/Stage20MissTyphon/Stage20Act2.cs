@@ -21,20 +21,11 @@ sealed class Waterspout(BossModule module) : Components.SimpleAOEs(module, (uint
 sealed class LightningBolt(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LightningBolt, 3f);
 sealed class ImpSong(BossModule module) : Components.CastInterruptHint(module, (uint)AID.ImpSong);
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"{Module.PrimaryActor.Name} is weak to fire. Interrupt Imp Song.");
-    }
-}
-
 sealed class Stage20Act2States : StateMachineBuilder
 {
     public Stage20Act2States(BossModule module) : base(module)
     {
         TrivialPhase()
-            .DeactivateOnEnter<Hints>()
             .ActivateOnEnter<LightningBolt>()
             .ActivateOnEnter<Waterspout>()
             .ActivateOnEnter<Megavolt>()
@@ -44,11 +35,18 @@ sealed class Stage20Act2States : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 630, NameID = 7111, SortOrder = 2)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 630u, NameID = 7111u, SortOrder = 2)]
 public sealed class Stage20Act2 : BossModule
 {
     public Stage20Act2(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {
-        ActivateComponent<Hints>();
+        _prePullHints =
+        [
+            $"{PrimaryActor.Name} is weak to fire. Interrupt Imp Song."
+        ];
     }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

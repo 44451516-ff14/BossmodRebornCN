@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex5Rubicante;
 
-class Dualfire(BossModule module) : Components.GenericBaitAway(module, (uint)AID.DualfireAOE)
+sealed class Dualfire(BossModule module) : Components.GenericBaitAway(module, (uint)AID.DualfireAOE)
 {
-    private static readonly AOEShapeCone _shape = new(60, 60.Degrees()); // TODO: verify angle
+    private readonly AOEShapeCone _shape = new(60f, 60f.Degrees()); // TODO: verify angle
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {

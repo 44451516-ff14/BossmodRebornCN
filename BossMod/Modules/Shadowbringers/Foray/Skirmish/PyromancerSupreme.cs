@@ -60,7 +60,7 @@ sealed class PyromancerSupremeStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.ForayFATE, GroupID = 735, NameID = 1616)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.ForayFATE, GroupID = 735u, NameID = 1616u)]
 public sealed class PyromancerSupreme : OpenWorldFate
 {
     public PyromancerSupreme(WorldState ws, Actor primary) : base(ws, primary)

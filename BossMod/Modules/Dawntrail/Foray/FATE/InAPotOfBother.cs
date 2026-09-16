@@ -32,7 +32,6 @@ sealed class AeroIII : Components.SimpleAOEs
     }
 }
 
-[SkipLocalsInit]
 sealed class InAPotOfBotherStates : StateMachineBuilder
 {
     public InAPotOfBotherStates(BossModule module) : base(module)
@@ -61,7 +60,6 @@ sealed class InAPotOfBotherStates : StateMachineBuilder
     NameID = 2073u,
     SortOrder = 2,
     PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class InAPotOfBother(WorldState ws, Actor primary) : OpenWorldFate(ws, primary);
 // no singular actor we can use to trigger arena draw
 // really onlt want this for FATE completion and so AI doesn't move for Aero III

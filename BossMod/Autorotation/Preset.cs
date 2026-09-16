@@ -10,7 +10,6 @@ public sealed record class Preset(string Name)
 {
     public bool HiddenByDefault;
 
-    [Flags]
     public enum Modifier
     {
         None = 0,
@@ -95,7 +94,7 @@ public class JsonPresetConverter : JsonConverter<Preset>
         var res = new Preset(jdoc.RootElement.GetProperty(nameof(Preset.Name)).GetString() ?? "");
         foreach (var jm in jdoc.RootElement.GetProperty(nameof(Preset.Modules)).EnumerateObject())
         {
-            var mt = Type.GetType(jm.Name);
+            var mt = RotationModuleRegistry.FindType(jm.Name);
             if (mt == null || !RotationModuleRegistry.Modules.TryGetValue(mt, out var md))
             {
                 Service.Log($"Error while deserializing preset {res.Name}: failed to find module {jm.Name}");
@@ -147,7 +146,7 @@ public class JsonPresetConverter : JsonConverter<Preset>
                 }
 
                 if (js.TryGetProperty(nameof(Preset.ModuleSetting.Mod), out var jmod))
-                    s.Mod = Enum.Parse<Preset.Modifier>(jmod.GetString() ?? "");
+                    s.Mod = GeneratedEnumMetadata.Parse<Preset.Modifier>(jmod.GetString() ?? "");
 
                 s.Value.DeserializeFields(js);
 

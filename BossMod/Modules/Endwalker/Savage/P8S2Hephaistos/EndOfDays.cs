@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Endwalker.Savage.P8S2;
 
-class EndOfDays(BossModule module) : Components.GenericAOEs(module, (uint)AID.EndOfDays)
+sealed class EndOfDays(BossModule module) : Components.GenericAOEs(module, (uint)AID.EndOfDays)
 {
     public List<(Actor caster, DateTime finish)> Casters = [];
 
-    private static readonly AOEShapeRect _shape = new(60f, 5f);
+    private readonly AOEShapeRect _shape = new(60f, 5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

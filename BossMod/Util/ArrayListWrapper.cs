@@ -1,6 +1,5 @@
 namespace BossMod;
 
-[SkipLocalsInit]
 public static class ArrayListWrapper<T>
 {
     [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_items")]

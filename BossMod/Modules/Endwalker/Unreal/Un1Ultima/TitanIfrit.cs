@@ -1,15 +1,15 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un1Ultima;
 
 // both phases use radiant plumes
-class TitanIfrit(BossModule module) : BossComponent(module)
+sealed class TitanIfrit(BossModule module) : BossComponent(module)
 {
     private readonly List<(Actor, AOEShapeCircle)> _activeSimpleAOEs = [];
     private readonly List<Actor> _crimsonCyclone = [];
 
-    private static readonly AOEShapeCircle _aoeRadiantPlume = new(8);
-    private static readonly AOEShapeCircle _aoeWeightOfLand = new(6);
-    private static readonly AOEShapeCircle _aoeEruption = new(8);
-    private static readonly AOEShapeRect _aoeCrimsonCyclone = new(38, 6);
+    private readonly AOEShapeCircle _aoeRadiantPlume = new(8f);
+    private readonly AOEShapeCircle _aoeWeightOfLand = new(6f);
+    private readonly AOEShapeCircle _aoeEruption = new(8f);
+    private readonly AOEShapeRect _aoeCrimsonCyclone = new(38f, 6f);
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -27,18 +27,18 @@ class TitanIfrit(BossModule module) : BossComponent(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.RadiantPlume:
+            case (uint)AID.RadiantPlume:
                 _activeSimpleAOEs.Add((caster, _aoeRadiantPlume));
                 break;
-            case AID.WeightOfTheLand:
+            case (uint)AID.WeightOfTheLand:
                 _activeSimpleAOEs.Add((caster, _aoeWeightOfLand));
                 break;
-            case AID.Eruption:
+            case (uint)AID.Eruption:
                 _activeSimpleAOEs.Add((caster, _aoeEruption));
                 break;
-            case AID.CrimsonCyclone:
+            case (uint)AID.CrimsonCyclone:
                 _crimsonCyclone.Add(caster);
                 break;
         }
@@ -46,14 +46,14 @@ class TitanIfrit(BossModule module) : BossComponent(module)
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.RadiantPlume:
-            case AID.WeightOfTheLand:
-            case AID.Eruption:
+            case (uint)AID.RadiantPlume:
+            case (uint)AID.WeightOfTheLand:
+            case (uint)AID.Eruption:
                 _activeSimpleAOEs.RemoveAll(e => e.Item1 == caster);
                 break;
-            case AID.CrimsonCyclone:
+            case (uint)AID.CrimsonCyclone:
                 _crimsonCyclone.Remove(caster);
                 break;
         }

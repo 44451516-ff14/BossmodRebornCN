@@ -20,6 +20,11 @@ public sealed class CancelCastTweak(WorldState ws, AIHints hints)
             return false;
         }
 
+        if (_ws.Party.Player() is { CastInfo.Action.Type: ActionType.Mount })
+        {
+            return false;
+        }
+
         if (!force && !WantCancel())
         {
             return false;
@@ -38,12 +43,6 @@ public sealed class CancelCastTweak(WorldState ws, AIHints hints)
 
         var cast = _ws.Party.Player()?.CastInfo;
         if (cast == null || cast.Action.Type == ActionType.KeyItem) // don't auto cancel quest items, that's never a good idea
-        {
-            return false;
-        }
-
-        // mount doesn't break movement as of 7.whatever
-        if (cast.Action.Type == ActionType.Mount)
         {
             return false;
         }

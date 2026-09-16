@@ -2,23 +2,12 @@ namespace BossMod.Shadowbringers.Foray.CastrumLacusLitore.CLL1Brionac4thLegionHe
 
 sealed class OrbsAOE(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly DetermineArena _arena = module.FindComponent<DetermineArena>()!;
     private readonly List<(Actor Orb, AOEShape Shape)> orbs = [with(4)];
-    public static readonly AOEShapeDonut Donut = new(5f, 20f);
-    private static readonly AOEShapeCircle circle = new(12f);
+    private readonly AOEShapeDonut donut = new(5f, 20f);
+    private readonly AOEShapeCircle circle = new(12f);
     public readonly List<AOEInstance> AOEs = [with(4)];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        if (_arena.IsBrionacArena)
-        {
-            return CollectionsMarshal.AsSpan(AOEs);
-        }
-        else
-        {
-            return [];
-        }
-    }
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -45,7 +34,7 @@ sealed class OrbsAOE(BossModule module) : Components.GenericAOEs(module)
             {
                 var orb = orbs[i];
                 var shape = orb.Shape;
-                AddAOE(poleshift ? shape == Donut ? circle : Donut : shape, orb.Orb, activation);
+                AddAOE(poleshift ? shape == donut ? circle : donut : shape, orb.Orb, activation);
             }
         }
     }
@@ -59,13 +48,17 @@ sealed class OrbsAOE(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    private void AddAOE(AOEShape shape, Actor actor, DateTime activation) => AOEs.Add(new(shape, actor.Position.Quantized(), default, activation));
+    private void AddAOE(AOEShape shape, Actor actor, DateTime activation)
+    {
+        var pos = actor.Position.Quantized();
+        AOEs.Add(new(shape, pos, default, activation, shapeDistance: shape.Distance(pos, default), arenaProjectionLayer: 1, restrictToArenaProjectionLayer: true));
+    }
 
     public override void OnActorCreated(Actor actor)
     {
         AOEShape? shape = actor.OID switch
         {
-            (uint)OID.Lightsphere => Donut,
+            (uint)OID.Lightsphere => donut,
             (uint)OID.Shadowsphere => circle,
             _ => null
         };
@@ -85,23 +78,20 @@ sealed class OrbsAOE(BossModule module) : Components.GenericAOEs(module)
 
 sealed class Magnetism(BossModule module) : Components.GenericKnockback(module)
 {
-    private readonly Knockback?[] _sources = new Knockback?[8];
+    private readonly Knockback[][] _sources = new Knockback[8][];
     private readonly byte[] playerPoles = new byte[8];
     private readonly List<(ulong ActorID, WPos Position, List<Actor> Targets, byte Pole)> orbsData = []; // Pole 1: plus, Pole 2: minus
     private BitMask tethered;
-    private static readonly Angle a90 = 90f.Degrees();
-    private static readonly WPos pos1 = new(63f, -222f), pos2 = new(97f, -222f);
+    private readonly WPos pos1 = new(63f, -222f), pos2 = new(97f, -222f);
     private readonly OrbsAOE _aoe = module.FindComponent<OrbsAOE>()!;
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
-        if (slot > 7) // we don't support the random allied NPCs
-            return [];
-        if (_sources[slot] is Knockback source)
+        if (slot > 7 || _sources[slot] is not { Length: > 0 } sources) // we don't support the random allied NPCs (legacy for old replays, where the tunnel machine wasn't removed from allies yet)
         {
-            return new Knockback[1] { source };
+            return [];
         }
-        return [];
+        return sources;
     }
 
     public override void OnActorCreated(Actor actor)
@@ -140,7 +130,9 @@ sealed class Magnetism(BossModule module) : Components.GenericKnockback(module)
         {
             var slot = Raid.FindSlot(targetID);
             if (slot < 0)
+            {
                 return;
+            }
             playerPoles[slot] = 1;
             InitIfReady();
         }
@@ -148,7 +140,9 @@ sealed class Magnetism(BossModule module) : Components.GenericKnockback(module)
         {
             var slot = Raid.FindSlot(targetID);
             if (slot < 0)
+            {
                 return;
+            }
             playerPoles[slot] = 2;
             InitIfReady();
         }
@@ -160,7 +154,7 @@ sealed class Magnetism(BossModule module) : Components.GenericKnockback(module)
         var aoes = CollectionsMarshal.AsSpan(_aoe.AOEs);
         for (var i = 0; i < count; ++i)
         {
-            ref readonly var aoe = ref aoes[i];
+            ref var aoe = ref aoes[i];
             if (aoe.Check(pos))
             {
                 return true;
@@ -186,7 +180,9 @@ sealed class Magnetism(BossModule module) : Components.GenericKnockback(module)
         {
             var slot = Raid.FindSlot(source.InstanceID);
             if (slot < 0)
+            {
                 return;
+            }
             tethered[slot] = true;
             var count = orbsData.Count;
             var target = tether.Target;
@@ -211,11 +207,15 @@ sealed class Magnetism(BossModule module) : Components.GenericKnockback(module)
 
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var oID = ref orbs[i].ActorID;
+                ref var oID = ref orbs[i].ActorID;
                 if (oID == sourceID)
+                {
                     sourceIndex = i;
+                }
                 else if (oID == target)
+                {
                     targetIndex = i;
+                }
             }
             if (sourceIndex != -1 && targetIndex != -1)
             {
@@ -235,8 +235,8 @@ sealed class Magnetism(BossModule module) : Components.GenericKnockback(module)
             var count = orbsData.Count;
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var pSlot = ref party[i].Item1;
-                ref readonly var pPlayer = ref party[i].Item2;
+                ref var pSlot = ref party[i].Item1;
+                ref var pPlayer = ref party[i].Item2;
             next:
                 if (_sources[pSlot] == null && tethered[pSlot] && playerPoles[pSlot] != default)
                 {
@@ -245,7 +245,9 @@ sealed class Magnetism(BossModule module) : Components.GenericKnockback(module)
                         var orb = orbsData[j];
                         var pole = orb.Pole;
                         if (pole == 0)
+                        {
                             continue;
+                        }
                         var countT = orb.Targets.Count;
                         for (var k = 0; k < countT; ++k)
                         {
@@ -260,29 +262,35 @@ sealed class Magnetism(BossModule module) : Components.GenericKnockback(module)
                 }
             }
         }
-        void AddSource(int slot, WPos position, bool isKnockback) => _sources[slot] = new(position, 30f, WorldState.FutureTime(8.2d), kind: isKnockback ? Kind.AwayFromOrigin : Kind.TowardsOrigin, ignoreImmunes: true);
+        void AddSource(int slot, WPos position, bool isKnockback) => _sources[slot] = [new(position, 30f, WorldState.FutureTime(8.2d), kind: isKnockback ? Kind.AwayFromOrigin : Kind.TowardsOrigin, ignoreImmunes: true)];
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (slot > 7) // we don't support the random allied NPCs
-            return;
-        if (_sources[slot] is Knockback source)
+        if (slot > 7) // we don't support the random allied NPCs (legacy for old replays, where the tunnel machine wasn't removed from allies yet)
         {
-            if (source.Kind == Kind.TowardsOrigin)
+            return;
+        }
+        if (_sources[slot] is not { Length: > 0 } sources)
+        {
+            return;
+        }
+
+        ref readonly var source = ref sources[0];
+        if (source.Kind == Kind.TowardsOrigin)
+        {
+            hints.AddForbiddenZone(new SDInvertedCircle(source.Origin, 35f), source.Activation);
+        }
+        else
+        {
+            var a90 = 90f.Degrees();
+            var oX = source.Origin.X > 90f;
+            var opposite = oX ? pos1 : pos2;
+            var angle = oX ? a90 : -a90;
+            var dir = angle.ToDirection();
+            if (opposite != default)
             {
-                hints.AddForbiddenZone(new SDInvertedCircle(source.Origin, 35f), source.Activation);
-            }
-            else
-            {
-                var oX = source.Origin.X > 90f;
-                var opposite = oX ? pos1 : pos2;
-                var angle = oX ? a90 : -a90;
-                var dir = angle.ToDirection();
-                if (opposite != default)
-                {
-                    hints.AddForbiddenZone(new SDInvertedRect(opposite + 35f * dir, -dir, 5f, default, 0.5f), source.Activation);
-                }
+                hints.AddForbiddenZone(new SDInvertedRect(opposite + 35f * dir, -dir, 5f, default, 0.5f), source.Activation);
             }
         }
     }

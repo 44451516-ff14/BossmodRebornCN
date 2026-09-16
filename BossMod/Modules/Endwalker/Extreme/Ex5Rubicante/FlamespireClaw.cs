@@ -1,11 +1,11 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex5Rubicante;
 
-class FlamespireClaw(BossModule module) : Components.GenericBaitAway(module, (uint)AID.FlamespireClawAOE)
+sealed class FlamespireClaw(BossModule module) : Components.GenericBaitAway(module, (uint)AID.FlamespireClawAOE)
 {
     private readonly int[] _order = new int[PartyState.MaxPartySize];
     private BitMask _tethers;
 
-    private static readonly AOEShapeCone _shape = new(20f, 45f.Degrees()); // TODO: verify angle
+    private readonly AOEShapeCone _shape = new(20f, 45f.Degrees()); // TODO: verify angle
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {

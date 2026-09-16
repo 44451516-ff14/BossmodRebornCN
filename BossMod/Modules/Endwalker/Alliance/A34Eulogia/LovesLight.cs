@@ -3,7 +3,7 @@ namespace BossMod.Endwalker.Alliance.A34Eulogia;
 sealed class LovesLight(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = [with(4)];
-    private static readonly AOEShapeRect _shape = new(80f, 12.5f);
+    private readonly AOEShapeRect _shape = new(80f, 12.5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

@@ -45,12 +45,12 @@ sealed class IncandescentInterlude(BossModule module) : Components.GenericTowers
         base.AddAIHints(slot, actor, assignment, hints);
         if (_kb.Casters.Count != 0 && party == 8) // don't affect unsync farming
         {
-            var towers = Module.Enemies((uint)OID.Towers);
             var forbidden = new ShapeDistance[4];
             var a35 = 35f.Degrees();
+            var center = Arena.Center;
             for (var i = 0; i < 4; ++i)
             {
-                forbidden[i] = new SDCone(Ex7Suzaku.ArenaCenter, 20f, _forbidden[slot] ? Angle.AnglesCardinals[i] : Angle.AnglesIntercardinals[i], a35);
+                forbidden[i] = new SDCone(center, 20f, _forbidden[slot] ? Angle.AnglesCardinals[i] : Angle.AnglesIntercardinals[i], a35);
             }
             hints.AddForbiddenZone(new SDUnion(forbidden), _kb.Casters.Ref(0).Activation);
         }

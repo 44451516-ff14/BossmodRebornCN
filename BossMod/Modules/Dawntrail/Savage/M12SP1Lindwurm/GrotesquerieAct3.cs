@@ -211,7 +211,7 @@ sealed class GrotesquerieAct3(BossModule module) : Components.GenericAOEs(module
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_pattern != Pattern.Unknown)
             hints.Add(_pattern == Pattern.CardinalSafe ? "Cardinals Safe" : "Intercardinals Safe");

@@ -53,7 +53,7 @@ sealed class Wingblade(BossModule module) : Components.GenericAOEs(module)
         return aoes[..max];
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var count = offsets.Count;
         if (count != 0)

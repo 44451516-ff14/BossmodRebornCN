@@ -11,10 +11,10 @@ sealed class CoursingRiverForceOfNature(BossModule module) : Components.GenericK
         switch (spell.Action.ID)
         {
             case (uint)AID.CoursingRiverKB:
-                _kbs.Add(new(spell.LocXZ, 25f, Module.CastFinishAt(spell), null, spell.Rotation, Kind.DirForward, ignoreImmunes: true));
+                _kbs.Add(new(spell.LocXZ, 25f, Module.CastFinishAt(spell), null, spell.Rotation, Kind.DirForward, ignoreImmunes: true, restrictToArenaProjectionLayer: null));
                 break;
             case (uint)AID.ForceOfNatureKB:
-                _kbs.Insert(0, new(spell.LocXZ, 10f, Module.CastFinishAt(spell)));
+                _kbs.Insert(0, new(spell.LocXZ, 10f, Module.CastFinishAt(spell), restrictToArenaProjectionLayer: null));
                 break;
         }
     }
@@ -60,4 +60,4 @@ sealed class CoursingRiverForceOfNature(BossModule module) : Components.GenericK
     }
 }
 
-sealed class ForceOfNatureAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ForceOfNature, 5f);
+sealed class ForceOfNatureAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ForceOfNature, 5f, arenaProjectionLayer: 1);

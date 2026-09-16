@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P7SAgdistis;
 
-class BladesOfAttis(BossModule module) : Components.Exaflare(module, 7f)
+sealed class BladesOfAttis(BossModule module) : Components.Exaflare(module, 7f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

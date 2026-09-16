@@ -1,4 +1,4 @@
-﻿namespace BossMod.Modules.Dawntrail.Extreme.Ex8Enuo;
+﻿namespace BossMod.Dawntrail.Extreme.Ex8Enuo;
 
 sealed class GazeOfTheVoidAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GazeOfTheVoid2, new AOEShapeCone(40f, 22.5f.Degrees()), 7); // This is the easy part!
 
@@ -17,7 +17,7 @@ sealed class GazeOfTheVoidSoaks(BossModule module) : BossComponent(module)
         var count = orbs.Count;
         return count == 0 ? [] : orbs;
     }
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (GetSmallOrbs(Module).Count != 0 || GetBigOrbs(Module).Count != 0)
             hints.Add("Soak the orbs in pairs!");

@@ -1,11 +1,11 @@
-﻿using BossMod.Autorotation.xan;
+﻿using BossMod.Autorotation;
 using RID = BossMod.Roleplay.AID;
 
 namespace BossMod.QuestBattle.Endwalker.MSQ;
 
 // single target shield is status 2844
 
-sealed class AlphinaudAI(WorldState ws) : UnmanagedRotation(ws, 25)
+sealed class AlphinaudAI(WorldState ws) : UnmanagedRotation(ws, 25f)
 {
     private readonly TrackPartyHealth PartyHealth = new(ws);
 
@@ -13,9 +13,9 @@ sealed class AlphinaudAI(WorldState ws) : UnmanagedRotation(ws, 25)
     {
         PartyHealth.Update(Hints);
 
-        Hints.InteractWithTarget = World.Actors.FirstOrDefault(x => x.OID is 0x1EB44F or 0x1EB2FB && x.IsTargetable);
+        Hints.InteractWithTarget = World.Actors.FirstOrDefault(x => x.OID is 0x1EB44Fu or 0x1EB2FBu && x.IsTargetable);
 
-        var refugee = World.Party.WithoutSlot(false, true, true).FirstOrDefault(x => x.OID == 0x35F1 && x.HPMP.CurHP < x.HPMP.MaxHP && x.IsTargetable);
+        var refugee = World.Party.WithoutSlot(false, true, true).FirstOrDefault(x => x.OID == 0x35F1u && x.HPMP.CurHP < x.HPMP.MaxHP && x.IsTargetable);
         if (refugee is Actor r)
         {
             UseAction(RID.Diagnosis, r);
@@ -29,7 +29,7 @@ sealed class AlphinaudAI(WorldState ws) : UnmanagedRotation(ws, 25)
         }
 
         UseAction(RID.DosisIII, primaryTarget);
-        UseAction(RID.LeveilleurToxikon, primaryTarget, -50);
+        UseAction(RID.LeveilleurToxikon, primaryTarget, -50f);
     }
 
     private void AutoHeal()
@@ -145,8 +145,12 @@ internal sealed class AsTheHeavensBurn(WorldState ws) : QuestBattle(ws)
 
         new QuestObjective(ws)
             .Hints((player, hints) => {
-                if (!player.InCombat) { hints.PrioritizeAll(); } _alisaie.Execute(player, hints);
-            })
+                if (!player.InCombat)
+                {
+                    hints.PrioritizeAll();
+                }
+                _alisaie.Execute(player, hints);
+                })
             .CompleteOnCreated(0x35EE)
     ];
 }

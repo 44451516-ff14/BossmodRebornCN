@@ -2,7 +2,7 @@ namespace BossMod.Stormblood.Extreme.Ex8Seiryu;
 
 sealed class Cursekeeper(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster)
 {
-    private static readonly AOEShapeCircle circle = new(4f);
+    private readonly AOEShapeCircle circle = new(4f);
     private ulong prevTarget;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -12,7 +12,7 @@ sealed class Cursekeeper(BossModule module) : Components.GenericBaitAway(module,
             prevTarget = spell.TargetID;
             if (WorldState.Actors.Find(prevTarget) is Actor t)
             {
-                CurrentBaits.Add(new(Module.PrimaryActor, t, circle, Module.CastFinishAt(spell, 3.1d)));
+                CurrentBaits.Add(new(Module.PrimaryActor, t, circle, Module.CastFinishAt(spell, 3.1d), restrictToArenaProjectionLayer: null));
             }
         }
     }
@@ -52,7 +52,7 @@ sealed class Cursekeeper(BossModule module) : Components.GenericBaitAway(module,
     }
 }
 
-sealed class KarmicCurse(BossModule module) : Components.RaidwideInstant(module, (uint)AID.KarmicCurse, 4d)
+sealed class KarmicCurse(BossModule module) : Components.RaidwideInstant(module, (uint)AID.KarmicCurse, 4d, restrictToArenaProjectionLayer: null)
 {
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {

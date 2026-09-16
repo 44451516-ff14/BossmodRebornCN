@@ -1,19 +1,18 @@
-// TODO: revise and refactor voidzone components;
+﻿// TODO: revise and refactor voidzone components;
 namespace BossMod.Components;
 
 // voidzone (circle aoe that stays active for some time) centered at each existing object with specified OID, assumed to be persistent voidzone center
 // for moving 'voidzones', the hints can mark the area in front of each source as dangerous
 // TODO: typically sources are either eventobj's with eventstate != 7 or normal actors that are non dead; other conditions are much rarer
 
-[SkipLocalsInit]
 public class Voidzone(BossModule module, float radius, Func<BossModule, IEnumerable<Actor>> sources, float moveHintLength = default,
-    int? arenaProjectionLayer = null, bool restrictToArenaProjectionLayer = false) : GenericAOEs(module, default, "离开危险区域！")
+    int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false) : GenericAOEs(module, default, "离开危险区域！")
 {
     public readonly float MovementHintLength = moveHintLength;
     public readonly AOEShape Shape = moveHintLength == default ? new AOEShapeCircle(radius) : new AOEShapeCapsule(radius, moveHintLength);
     public readonly Func<BossModule, IEnumerable<Actor>> Sources = sources;
     public int? ArenaProjectionLayer = arenaProjectionLayer;
-    public bool RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
+    public bool? RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -37,7 +36,7 @@ public class Voidzone(BossModule module, float radius, Func<BossModule, IEnumera
             {
                 if (ArenaProjectionLayerParticipantApplies(s, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
                 {
-                    hints.TemporaryObstacles.Add(hints.ClipToArenaProjectionLayer(new SDCircle(s.Position, radius), ArenaProjectionLayer));
+                    hints.TemporaryObstacles.Add(hints.ClipToArenaProjectionLayer(new SDCircle(s.Position, radius), ArenaProjectionLayerForAI(ArenaProjectionLayer, RestrictToArenaProjectionLayer)));
                 }
             }
         }
@@ -53,11 +52,11 @@ public class Voidzone(BossModule module, float radius, Func<BossModule, IEnumera
                 {
                     var pos = s.Position;
                     var rot = s.Rotation;
-                    hints.AddForbiddenZone(new SDCapsule(pos, rot, MovementHintLength * 0.5f, radius), forbiddenNearFuture, arenaProjectionLayer: ArenaProjectionLayer);
-                    hints.AddForbiddenZone(new SDCapsule(pos, rot, MovementHintLength, radius), forbiddenSoon, arenaProjectionLayer: ArenaProjectionLayer);
-                    hints.AddForbiddenZone(new SDCapsule(pos, rot, 2f * MovementHintLength, radius), forbiddenFarFuture, arenaProjectionLayer: ArenaProjectionLayer);
-                    hints.AddForbiddenZone(new SDCapsule(pos, rot, 3f * MovementHintLength, radius), forbiddenFarFarFuture, arenaProjectionLayer: ArenaProjectionLayer);
-                    hints.TemporaryObstacles.Add(hints.ClipToArenaProjectionLayer(new SDCircle(pos, radius), ArenaProjectionLayer));
+                    hints.AddForbiddenZone(new SDCapsule(pos, rot, MovementHintLength * 0.5f, radius), forbiddenNearFuture, arenaProjectionLayer: ArenaProjectionLayerForAI(ArenaProjectionLayer, RestrictToArenaProjectionLayer));
+                    hints.AddForbiddenZone(new SDCapsule(pos, rot, MovementHintLength, radius), forbiddenSoon, arenaProjectionLayer: ArenaProjectionLayerForAI(ArenaProjectionLayer, RestrictToArenaProjectionLayer));
+                    hints.AddForbiddenZone(new SDCapsule(pos, rot, 2f * MovementHintLength, radius), forbiddenFarFuture, arenaProjectionLayer: ArenaProjectionLayerForAI(ArenaProjectionLayer, RestrictToArenaProjectionLayer));
+                    hints.AddForbiddenZone(new SDCapsule(pos, rot, 3f * MovementHintLength, radius), forbiddenFarFarFuture, arenaProjectionLayer: ArenaProjectionLayerForAI(ArenaProjectionLayer, RestrictToArenaProjectionLayer));
+                    hints.TemporaryObstacles.Add(hints.ClipToArenaProjectionLayer(new SDCircle(pos, radius), ArenaProjectionLayerForAI(ArenaProjectionLayer, RestrictToArenaProjectionLayer)));
                 }
             }
         }
@@ -68,9 +67,8 @@ public class Voidzone(BossModule module, float radius, Func<BossModule, IEnumera
 // note that if voidzone is predicted by cast start rather than cast event, we have to account for possibility of cast finishing without event (e.g. if actor dies before cast finish)
 // TODO: this has problems when target moves - castevent and spawn position could be quite different
 // TODO: this has problems if voidzone never actually spawns after castevent, eg because of phase changes
-[SkipLocalsInit]
 public class VoidzoneAtCastTarget(BossModule module, float radius, uint aid, Func<BossModule, IEnumerable<Actor>> sources, double castEventToSpawn = default,
-    int? arenaProjectionLayer = null, bool restrictToArenaProjectionLayer = false) : GenericAOEs(module, aid, "离开危险区域！")
+    int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false) : GenericAOEs(module, aid, "离开危险区域！")
 {
     public readonly AOEShapeCircle Shape = new(radius);
     public readonly Func<BossModule, IEnumerable<Actor>> Sources = sources;
@@ -79,7 +77,7 @@ public class VoidzoneAtCastTarget(BossModule module, float radius, uint aid, Fun
     protected readonly List<(Actor caster, DateTime time)> _predictedByCast = [];
     private readonly List<AOEInstance> _aoes = [];
     public int? ArenaProjectionLayer = arenaProjectionLayer;
-    public bool RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
+    public bool? RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
     public bool HaveCasters => _predictedByCast.Count > 0;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -163,9 +161,8 @@ public class VoidzoneAtCastTarget(BossModule module, float radius, uint aid, Fun
     }
 }
 
-[SkipLocalsInit]
 public class VoidzoneAtCastTargetGroup(BossModule module, float radius, uint[] aids, Func<BossModule, IEnumerable<Actor>> sources, double castEventToSpawn,
-    int? arenaProjectionLayer = null, bool restrictToArenaProjectionLayer = false) : VoidzoneAtCastTarget(module, radius, default, sources, castEventToSpawn, arenaProjectionLayer, restrictToArenaProjectionLayer)
+    int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false) : VoidzoneAtCastTarget(module, radius, default, sources, castEventToSpawn, arenaProjectionLayer, restrictToArenaProjectionLayer)
 {
     private readonly uint[] AIDs = aids;
 
@@ -215,15 +212,14 @@ public class VoidzoneAtCastTargetGroup(BossModule module, float radius, uint[] a
 // these are normal voidzones that could be 'inverted' (e.g. when you need to enter a voidzone at specific time to avoid some mechanic)
 // TODO: i'm not sure whether these should be considered actual voidzones (if so, should i merge them with base component? what about cast prediction?) or some completely other type of mechanic (maybe drawing differently)
 // TODO: might want to have per-player invertability
-[SkipLocalsInit]
 public class PersistentInvertibleVoidzone(BossModule module, float radius, Func<BossModule, IEnumerable<Actor>> sources, uint aid = default,
-    int? arenaProjectionLayer = null, bool restrictToArenaProjectionLayer = false) : CastCounter(module, aid)
+    int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false) : CastCounter(module, aid)
 {
     public readonly AOEShapeCircle Shape = new(radius);
     public readonly Func<BossModule, IEnumerable<Actor>> Sources = sources;
     public DateTime InvertResolveAt;
     public int? ArenaProjectionLayer = arenaProjectionLayer;
-    public bool RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
+    public bool? RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
 
     public bool Inverted => InvertResolveAt != default;
 
@@ -247,7 +243,9 @@ public class PersistentInvertibleVoidzone(BossModule module, float radius, Func<
             hints.Add(inVoidzone ? "Stay in voidzone" : "Go to voidzone!", !inVoidzone);
         }
         else if (inVoidzone)
+        {
             hints.Add("离开危险区域！");
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -270,7 +268,7 @@ public class PersistentInvertibleVoidzone(BossModule module, float radius, Func<
             return;
         }
 
-        hints.AddForbiddenZone(Inverted ? new SDInvertedUnion([.. shapes]) : new SDUnion([.. shapes]), InvertResolveAt, arenaProjectionLayer: ArenaProjectionLayer);
+        hints.AddForbiddenZone(Inverted ? new SDInvertedUnion([.. shapes]) : new SDUnion([.. shapes]), InvertResolveAt, arenaProjectionLayer: ArenaProjectionLayerForAI(ArenaProjectionLayer, RestrictToArenaProjectionLayer));
     }
 
     // TODO: reconsider - draw foreground circles instead?
@@ -289,9 +287,8 @@ public class PersistentInvertibleVoidzone(BossModule module, float radius, Func<
 }
 
 // invertible voidzone that is inverted when specific spell is being cast; resolved when cast ends
-[SkipLocalsInit]
 public class PersistentInvertibleVoidzoneByCast(BossModule module, float radius, Func<BossModule, IEnumerable<Actor>> sources, uint aid,
-    int? arenaProjectionLayer = null, bool restrictToArenaProjectionLayer = false) : PersistentInvertibleVoidzone(module, radius, sources, aid, arenaProjectionLayer, restrictToArenaProjectionLayer)
+    int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false) : PersistentInvertibleVoidzone(module, radius, sources, aid, arenaProjectionLayer, restrictToArenaProjectionLayer)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

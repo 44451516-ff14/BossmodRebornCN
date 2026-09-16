@@ -1,11 +1,10 @@
 namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-[SkipLocalsInit]
-sealed class P3Inception3Sacrament(BossModule module) : Components.GenericAOEs(module, (uint)AID.SacramentInception)
+sealed class P3Inception3Sacrament(TEA module) : Components.GenericAOEs(module, (uint)AID.SacramentInception)
 {
     private AOEInstance[] _aoe = [];
-    private readonly Actor? boss = ((TEA)module).AlexPrime();
-    private readonly Actor? heart = ((TEA)module).TrueHeart();
+    private readonly Actor? boss = module.AlexPrime();
+    private readonly Actor? heart = module.TrueHeart();
     private readonly AOEShapeCross cross = new(100f, 8f);
     private WPos initialPos;
     private DateTime activation;
@@ -49,7 +48,6 @@ sealed class P3Inception3Sacrament(BossModule module) : Components.GenericAOEs(m
     }
 }
 
-[SkipLocalsInit]
 sealed class P3Inception3Debuffs(BossModule module) : Components.GenericStackSpread(module)
 {
     private Actor? _sharedSentence;
@@ -107,14 +105,11 @@ sealed class P3Inception3Debuffs(BossModule module) : Components.GenericStackSpr
     }
 }
 
-[SkipLocalsInit]
 sealed class P3TrueHeart(BossModule module) : Components.Adds(module, (uint)OID.TrueHeart, AIHints.Enemy.PriorityPointless);
 
-[SkipLocalsInit]
-sealed class P3Inception3EarlyHints(BossModule module) : BossComponent(module)
+sealed class P3Inception3EarlyHints(TEA module) : BossComponent(module)
 {
     private WPos[]? _safespots;
-    private readonly TEA bossmod = (TEA)module;
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
@@ -133,7 +128,7 @@ sealed class P3Inception3EarlyHints(BossModule module) : BossComponent(module)
         if (_safespots != null)
             return;
 
-        var h = bossmod.TrueHeart();
+        var h = module.TrueHeart();
         if (h != null && h.LastFrameMovement != default)
         {
             var dir = h.LastFrameMovement.Normalized();

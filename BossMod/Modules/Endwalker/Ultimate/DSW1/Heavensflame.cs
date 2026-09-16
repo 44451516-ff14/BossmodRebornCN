@@ -120,9 +120,9 @@ sealed class HeavensflameKnockback(BossModule module) : Components.SimpleKnockba
             case DSW1Config.HeavensflameHints.Waymarks:
                 {
                     if (WorldState.Waymarks.GetFieldMark((int)Waymark.A + (icon - 1)) is var alt1 && alt1 != null)
-                        hints.Add(new(alt1.Value.XZ()));
+                        hints.Add(new(alt1.Value));
                     if (WorldState.Waymarks.GetFieldMark((int)Waymark.N1 + (icon - 1)) is var alt2 && alt2 != null)
-                        hints.Add(new(alt2.Value.XZ()));
+                        hints.Add(new(alt2.Value));
                 }
                 break;
             case DSW1Config.HeavensflameHints.LPDU:

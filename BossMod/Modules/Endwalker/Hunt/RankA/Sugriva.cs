@@ -65,7 +65,7 @@ sealed class TwisterKB(BossModule module) : Components.GenericKnockback(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (target != null)
         {

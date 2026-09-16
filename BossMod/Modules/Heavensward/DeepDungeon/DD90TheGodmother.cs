@@ -66,9 +66,10 @@ sealed class GiddyBomb(BossModule module) : BossComponent(module)
         }
 
         var nextBombSpot = BombSpawns[_index & 3];
-        hints.GoalZones.Add(hints.PullTargetToLocation(Module.PrimaryActor, nextBombSpot));
+        hints.FindEnemy(Module.PrimaryActor)?.DesiredPosition = nextBombSpot;
     }
 }
+
 sealed class MassiveBurst(BossModule module) : Components.RaidwideCast(module, (uint)AID.MassiveBurst, "Knock the Giddy bomb into the boss and let it explode on the boss. \n or else take 99% damage!");
 sealed class Sap(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Sap, 8f);
 sealed class ScaldingScolding(BossModule module) : Components.Cleave(module, (uint)AID.ScaldingScolding, new AOEShapeCone(11.75f, 60f.Degrees()))

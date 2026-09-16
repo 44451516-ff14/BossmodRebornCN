@@ -82,9 +82,10 @@ sealed class KegExplosion(BossModule module) : BossComponent(module)
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         var count = kegs.Count;
+        var pos = actor.Position;
         for (var i = 0; i < count; ++i)
         {
-            if (actor.Position.InCircle(kegs[i].Position, 10f))
+            if (pos.InCircle(kegs[i].Position, 10f))
             {
                 hints.Add("In keg explosion radius!");
                 return;
@@ -93,20 +94,11 @@ sealed class KegExplosion(BossModule module) : BossComponent(module)
     }
 }
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add("Make the manticores run to the kegs and their attacks will make them\nblow up. They take 2500 damage per keg explosion.\nThe Ram's Voice and Ultravibration combo can be used to kill manticores.");
-    }
-}
-
 sealed class Stage18Act1States : StateMachineBuilder
 {
     public Stage18Act1States(BossModule module) : base(module)
     {
         TrivialPhase()
-            .DeactivateOnEnter<Hints>()
             .ActivateOnEnter<Explosion>()
             .ActivateOnEnter<Fireball>()
             .ActivateOnEnter<RipperClaw>()
@@ -116,12 +108,11 @@ sealed class Stage18Act1States : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 628, NameID = 8116, SortOrder = 1)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 628u, NameID = 8116u, SortOrder = 1)]
 public sealed class Stage18Act1 : BossModule
 {
     public Stage18Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {
-        ActivateComponent<Hints>();
         ActivateComponent<KegExplosion>();
     }
     public static readonly uint[] Kegs = [(uint)OID.Boss, (uint)OID.Keg];
@@ -147,4 +138,12 @@ public sealed class Stage18Act1 : BossModule
             };
         }
     }
+
+    private readonly string[] _prePullHints =
+    [
+        "Make the manticores run to the kegs and their attacks will make them blow up. They take 2500 damage per keg explosion.",
+        "The Ram's Voice and Ultravibration combo can be used to kill manticores."
+    ];
+
+    public override string[] PrePullHints => _prePullHints;
 }

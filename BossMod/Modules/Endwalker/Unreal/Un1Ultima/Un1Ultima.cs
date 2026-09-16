@@ -1,9 +1,9 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un1Ultima;
 
 // TODO: consider how phase changes could be detected and create different states for them?..
-class Phases(BossModule module) : BossComponent(module)
+sealed class Phases(BossModule module) : BossComponent(module)
 {
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var hint = ((float)Module.PrimaryActor.HPMP.CurHP / Module.PrimaryActor.HPMP.MaxHP) switch
         {
@@ -20,12 +20,12 @@ class Phases(BossModule module) : BossComponent(module)
     }
 }
 
-public class Un1UltimaStates : StateMachineBuilder
+public sealed class Un1UltimaStates : StateMachineBuilder
 {
     public Un1UltimaStates(BossModule module) : base(module)
     {
         // TODO: reconsider
-        TrivialPhase(0, 600)
+        TrivialPhase(0u, 600f)
             .ActivateOnEnter<Phases>()
             .ActivateOnEnter<Mechanics>()
             .ActivateOnEnter<Garuda>()
@@ -33,5 +33,5 @@ public class Un1UltimaStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.RemovedUnreal, GroupID = 825, NameID = 2137)]
-public class Un1Ultima(WorldState ws, Actor primary) : BossModule(ws, primary, default, new ArenaBoundsCircle(20));
+[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.RemovedUnreal, GroupID = 825u, NameID = 2137u)]
+public class Un1Ultima(WorldState ws, Actor primary) : BossModule(ws, primary, default, new ArenaBoundsCircle(20f));

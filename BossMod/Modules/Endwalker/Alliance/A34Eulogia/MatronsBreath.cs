@@ -6,7 +6,7 @@ sealed class MatronsBreath(BossModule module) : Components.GenericAOEs(module)
     private readonly List<Actor> _goldSafe = module.Enemies((uint)OID.GoldSafeZone);
     private readonly List<AOEInstance> _flowers = [];
 
-    private static readonly AOEShapeDonut _shape = new(8f, 50f);
+    private readonly AOEShapeDonut _shape = new(8f, 50f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

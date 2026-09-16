@@ -31,11 +31,9 @@ public enum AID : uint
 
 sealed class HighVoltage(BossModule module) : Components.CastInterruptHint(module, (uint)AID.HighVoltage);
 
-sealed class Ballast(BossModule module) : Components.ConcentricAOEs(module, _shapes, true)
+sealed class Ballast(BossModule module) : Components.ConcentricAOEs(module,
+    [new AOEShapeCone(5.5f, 135f.Degrees()), new AOEShapeDonutSector(5.5f, 10.5f, 135f.Degrees()), new AOEShapeDonutSector(10.5f, 15.5f, 135f.Degrees())], true)
 {
-    private static readonly Angle a135 = 135f.Degrees();
-    private static readonly AOEShape[] _shapes = [new AOEShapeCone(5.5f, a135), new AOEShapeDonutSector(5.5f, 10.5f, a135), new AOEShapeDonutSector(10.5f, 15.5f, a135)];
-
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.BallastVisual1)
@@ -66,14 +64,6 @@ sealed class Superstorm(BossModule module) : Components.SimpleAOEs(module, (uint
 sealed class Spellsword(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spellsword, new AOEShapeCone(7.1f, 60f.Degrees()));
 sealed class Disseminate(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Disseminate, 7.2f);
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add("For this stage Flying Sardine and Acorn Bomb are highly recommended.\nUse Flying Sardine to interrupt High Voltage.\nUse Acorn Bomb to put Shabtis to sleep until their buff runs out.");
-    }
-}
-
 sealed class Stage15States : StateMachineBuilder
 {
     public Stage15States(BossModule module) : base(module)
@@ -85,19 +75,13 @@ sealed class Stage15States : StateMachineBuilder
             .ActivateOnEnter<RepellingCannons>()
             .ActivateOnEnter<Superstorm>()
             .ActivateOnEnter<Spellsword>()
-            .ActivateOnEnter<Disseminate>()
-            .DeactivateOnEnter<Hints>();
+            .ActivateOnEnter<Disseminate>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 625, NameID = 8109)]
-public sealed class Stage15 : BossModule
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 625u, NameID = 8109u)]
+public sealed class Stage15(WorldState ws, Actor primary) : BossModule(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
 {
-    public Stage15(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
-    {
-        ActivateComponent<Hints>();
-    }
-
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
@@ -119,4 +103,11 @@ public sealed class Stage15 : BossModule
             };
         }
     }
+
+    private readonly string[] _prePullHints =
+    [
+        "For this stage Flying Sardine and Acorn Bomb are highly recommended. Use Flying Sardine to interrupt High Voltage. Use Acorn Bomb to put Shabtis to sleep until their buff runs out."
+    ];
+
+    public override string[] PrePullHints => _prePullHints;
 }

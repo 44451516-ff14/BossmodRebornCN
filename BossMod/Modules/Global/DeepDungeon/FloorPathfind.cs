@@ -54,14 +54,22 @@ internal sealed class FloorPathfind(ReadOnlySpan<RoomFlags> Map)
     {
         var md = Map[roomIndex];
         var edges = new List<int>(4);
-        if (md.HasFlag(RoomFlags.ConnectionN))
+        if ((md & RoomFlags.ConnectionN) != 0)
+        {
             edges.Add(roomIndex - 5);
-        if (md.HasFlag(RoomFlags.ConnectionS))
+        }
+        if ((md & RoomFlags.ConnectionS) != 0)
+        {
             edges.Add(roomIndex + 5);
-        if (md.HasFlag(RoomFlags.ConnectionW))
+        }
+        if ((md & RoomFlags.ConnectionW) != 0)
+        {
             edges.Add(roomIndex - 1);
-        if (md.HasFlag(RoomFlags.ConnectionE))
+        }
+        if ((md & RoomFlags.ConnectionE) != 0)
+        {
             edges.Add(roomIndex + 1);
+        }
         return edges;
     }
 }

@@ -26,13 +26,15 @@ sealed class Fungah(BossModule module) : Components.GenericKnockback(module, sto
 {
     private DateTime _activation;
     private bool otherpatterns;
-    private static readonly AOEShapeCone cone = new(12.5f, 45f.Degrees());
+    private readonly AOEShapeCone cone = new(12.5f, 45f.Degrees());
     private readonly Explosion _aoe = module.FindComponent<Explosion>()!;
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
         if (_activation != default || otherpatterns)
+        {
             return new Knockback[1] { new(Module.PrimaryActor.Position, 15f, _activation, cone, direction: Angle.FromDirection(actor.Position - Module.PrimaryActor.Position)) };
+        }
         return [];
     }
 
@@ -54,10 +56,14 @@ sealed class Fungah(BossModule module) : Components.GenericKnockback(module, sto
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action.ID == (uint)AID.Explosion)
+        if (spell.Action.ID is var id && id == (uint)AID.Explosion)
+        {
             _activation = default;
-        else if (spell.Action.ID is (uint)AID.Fungah or (uint)AID.Fungahhh)
+        }
+        else if (id is (uint)AID.Fungah or (uint)AID.Fungahhh)
+        {
             otherpatterns = false;
+        }
     }
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
@@ -78,47 +84,20 @@ sealed class Fungah(BossModule module) : Components.GenericKnockback(module, sto
 
 sealed class Explosion(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<Actor> _casters = [];
-    private static readonly AOEShapeCircle circle = new(8);
+    private readonly List<Actor> _casters = [with(6)];
+    private readonly List<AOEInstance> _aoes = [with(6)];
+    private readonly AOEShapeCircle circle = new(8);
     private DateTime _activation;
     private DateTime _snortingeffectends;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        var count = _casters.Count;
-        if (count == 0)
-            return [];
-
-        var aoes = new AOEInstance[count];
-        if (_snortingeffectends == default)
-        {
-            for (var i = 0; i < count; ++i)
-                aoes[i] = new(circle, _casters[i].Position, default, _activation);
-            return aoes;
-        }
-        else if (_snortingeffectends > WorldState.CurrentTime)
-        {
-            var primary = Module.PrimaryActor.Position;
-            for (var i = 0; i < count; ++i)
-            {
-                var pos = _casters[i].Position;
-                var raydir = (pos - primary).Normalized();
-                aoes[i] = new(circle, pos + Math.Min(15f, Module.Arena.IntersectRayBounds(pos, raydir) - 0.4f) * raydir, default, _activation); // 0.4f = half of hitbox radius is used for some reason
-            }
-            return aoes;
-        }
-        return [];
-    }
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
     public override void OnActorModelStateChange(Actor actor, byte modelState, byte animState1, byte animState2)
     {
-        if (actor.OID == (uint)OID.Bomb)
+        if (actor.OID == (uint)OID.Bomb && animState1 == 1)
         {
-            if (animState1 == 1)
-            {
-                _casters.Add(actor);
-                _activation = WorldState.FutureTime(6d);
-            }
+            _casters.Add(actor);
+            _activation = WorldState.FutureTime(6d);
         }
     }
 
@@ -128,11 +107,37 @@ sealed class Explosion(BossModule module) : Components.GenericAOEs(module)
         {
             _snortingeffectends = default;
         }
+
+        var count = _casters.Count;
+        if (count == 0)
+        {
+            _aoes.Clear();
+            return;
+        }
+
+        // bombs can be moved after spawning, so we can't cache the AOEs easily
+        if (_snortingeffectends == default)
+        {
+            for (var i = 0; i < count; ++i)
+            {
+                _aoes.Add(new(circle, _casters[i].Position, default, _activation));
+            }
+        }
+        else if (_snortingeffectends > WorldState.CurrentTime)
+        {
+            var primary = Module.PrimaryActor.Position;
+            for (var i = 0; i < count; ++i)
+            {
+                var pos = _casters[i].Position;
+                var raydir = (pos - primary).Normalized();
+                _aoes.Add(new(circle, pos + Math.Min(15f, Module.Arena.IntersectRayBounds(pos, raydir) - 0.4f) * raydir, default, _activation)); // 0.4f = half of hitbox radius is used for some reason
+            }
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (_casters.Count > 0 && spell.Action.ID == (uint)AID.Explosion)
+        if (spell.Action.ID == (uint)AID.Explosion)
         {
             _casters.Remove(caster);
         }
@@ -149,26 +154,20 @@ sealed class Explosion(BossModule module) : Components.GenericAOEs(module)
 
 sealed class Hints(BossModule module) : BossComponent(module)
 {
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"{Module.PrimaryActor.Name} will spawn Bombs and Magitek Explosives throughout the fight.\nUse Snort to push away Bombs from Magitek Explosives and bait Fireballs\naway from the MEs. Meanwhile destroy the MEs asap because they will blow\nup on their own after about 35s. If any ME detonates you will be wiped.\nThe MEs are weak against water abilities and strong against fire attacks.");
-    }
-}
-
-sealed class Hints2(BossModule module) : BossComponent(module)
-{
     private DateTime _activation;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var explosives = Module.Enemies((uint)OID.MagitekExplosive);
         var count = explosives.Count;
         if (count == 0)
+        {
             return;
+        }
         var explosive = explosives[0];
         if (!explosive.IsDead)
         {
-            hints.Add($"A {explosive!.Name} spawned, destroy it asap.");
+            hints.Add($"A {explosive.Name} spawned, destroy it asap.");
         }
     }
 
@@ -177,11 +176,13 @@ sealed class Hints2(BossModule module) : BossComponent(module)
         var explosives = Module.Enemies((uint)OID.MagitekExplosive);
         var count = explosives.Count;
         if (count == 0)
+        {
             return;
+        }
         var explosive = explosives[0];
         if (explosive.IsTargetable)
         {
-            hints.Add($"Explosion in ca.: {Math.Max(35f - (WorldState.CurrentTime - _activation).TotalSeconds, 0.0f):f1}s");
+            hints.Add($"Explosion in ca.: {Math.Max(35d - (WorldState.CurrentTime - _activation).TotalSeconds, 0d):f1}s");
         }
     }
 
@@ -203,8 +204,7 @@ sealed class Stage27States : StateMachineBuilder
             .ActivateOnEnter<Snort>()
             .ActivateOnEnter<Explosion>()
             .ActivateOnEnter<Fungah>()
-            .ActivateOnEnter<Hints2>()
-            .DeactivateOnEnter<Hints>();
+            .ActivateOnEnter<Hints>();
     }
 }
 
@@ -213,7 +213,12 @@ public sealed class Stage27 : BossModule
 {
     public Stage27(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {
-        ActivateComponent<Hints>();
+        _prePullHints =
+        [
+            $"{PrimaryActor.Name} will spawn Bombs and Magitek Explosives throughout the fight. Use Snort to push away Bombs from Magitek Explosives and bait Fireballs away from them.",
+            "Meanwhile destroy the explosives as soon as possible, because they will blow up on their own after about 35s.",
+            "If any magitek explosive detonates you will be wiped. The explosives are vulnerable against water abilities and strong against fire attacks."
+        ];
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
@@ -237,4 +242,8 @@ public sealed class Stage27 : BossModule
             };
         }
     }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

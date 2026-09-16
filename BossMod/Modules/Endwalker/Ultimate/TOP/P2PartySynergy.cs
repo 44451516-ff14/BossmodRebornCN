@@ -14,7 +14,7 @@ sealed class P2PartySynergy(BossModule module) : CommonAssignments(module)
         return (config.P2PartySynergyAssignments, config.P2PartySynergyGlobalPriority);
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (ActiveGlitch != Glitch.Unknown)
             hints.Add($"Glitch: {ActiveGlitch}");
@@ -109,6 +109,7 @@ sealed class P2PartySynergy(BossModule module) : CommonAssignments(module)
 sealed class P2PartySynergyDoubleAOEs(BossModule module) : Components.GenericAOEs(module)
 {
     public List<AOEInstance> AOEs = [];
+    private readonly AOEShape[] shapes = [new AOEShapeDonut(10f, 40f), new AOEShapeCircle(10f), new AOEShapeRect(40f, 40f, -4f), new AOEShapeCross(100f, 5f)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);
 
@@ -130,22 +131,22 @@ sealed class P2PartySynergyDoubleAOEs(BossModule module) : Components.GenericAOE
             case (uint)OID.OmegaMHelper:
                 if (actor.ModelState.ModelState == 4)
                 {
-                    AOEs.Add(new(P5OmegaDoubleAOEs.Shapes[0], pos, rot, act));
+                    AOEs.Add(new(shapes[0], pos, rot, act));
                 }
                 else
                 {
-                    AOEs.Add(new(P5OmegaDoubleAOEs.Shapes[1], pos, rot, act));
+                    AOEs.Add(new(shapes[1], pos, rot, act));
                 }
                 break;
             case (uint)OID.OmegaFHelper:
                 if (actor.ModelState.ModelState == 4)
                 {
-                    AOEs.Add(new(P5OmegaDoubleAOEs.Shapes[2], pos, rot + 90f.Degrees(), act));
-                    AOEs.Add(new(P5OmegaDoubleAOEs.Shapes[2], pos, rot - 90f.Degrees(), act));
+                    AOEs.Add(new(shapes[2], pos, rot + 90f.Degrees(), act));
+                    AOEs.Add(new(shapes[2], pos, rot - 90f.Degrees(), act));
                 }
                 else
                 {
-                    AOEs.Add(new(P5OmegaDoubleAOEs.Shapes[3], pos, rot, act));
+                    AOEs.Add(new(shapes[3], pos, rot, act));
                 }
                 break;
         }
@@ -166,13 +167,13 @@ sealed class P2PartySynergyOptimizedFire : Components.UniformStackSpread
     }
 }
 
-sealed class P2PartySynergyOpticalLaser(BossModule module) : Components.GenericAOEs(module, (uint)AID.OpticalLaser)
+sealed class P2PartySynergyOpticalLaser(TOP module) : Components.GenericAOEs(module, (uint)AID.OpticalLaser)
 {
     private readonly P2PartySynergy? _synergy = module.FindComponent<P2PartySynergy>();
-    private readonly Actor? _source = module.Enemies((uint)OID.OpticalUnit).FirstOrDefault();
+    private readonly Actor? _source = module.OpticalUnit();
     private DateTime _activation;
 
-    private static readonly AOEShapeRect _shape = new(100f, 8f);
+    private readonly AOEShapeRect _shape = new(100f, 8f);
 
     public void Show()
     {
@@ -253,7 +254,7 @@ class P2PartySynergyEfficientBladework : Components.GenericAOEs
         return [];
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_swaps.Length > 0)
             hints.Add($"Swaps: {_swaps}");

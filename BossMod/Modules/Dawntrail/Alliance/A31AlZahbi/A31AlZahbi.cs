@@ -65,27 +65,16 @@ public enum AID : uint
     FulminationKhryseos = 50093 // NemeanLion->self, 5.0s cast, range 70 circle, interruptible raidwide
 }
 
-[SkipLocalsInit]
 sealed class Earthshatter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Earthshatter, 8f);
-[SkipLocalsInit]
 sealed class TranscendentShot(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TranscendentShot, new AOEShapeRect(60f, 2.5f), maxCasts: 4);
-[SkipLocalsInit]
 sealed class LeapingCleave(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.LeapingCleave, 22f);
-[SkipLocalsInit]
 sealed class FeralLunge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FeralLunge, 10f);
-[SkipLocalsInit]
 sealed class WhirlingSlash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WhirlingSlash, 6f);
-[SkipLocalsInit]
 sealed class Perdition(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Perdition, 9f);
-[SkipLocalsInit]
 sealed class Tourbillion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Tourbillion, new AOEShapeRect(40f, 25f));
-[SkipLocalsInit]
 sealed class PinningShot(BossModule module) : Components.BaitAwayCast(module, (uint)AID.PinningShot, 13f, tankbuster: true);
-[SkipLocalsInit]
 sealed class FulminationKhalkeos(BossModule module) : Components.RaidwideCast(module, (uint)AID.FulminationKhalkeos);
-[SkipLocalsInit]
 sealed class FulminationKhryseos(BossModule module) : Components.CastInterruptHint(module, (uint)AID.FulminationKhryseos, showNameInHint: true);
-[SkipLocalsInit]
 sealed class DanceToDust(BossModule module) : Components.Exaflare(module, 7f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -107,21 +96,14 @@ sealed class DanceToDust(BossModule module) : Components.Exaflare(module, 7f)
         }
     }
 }
-[SkipLocalsInit]
 sealed class ShadowSlash(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RightShadowSlash, (uint)AID.LeftShadowSlash], new AOEShapeCone(60f, 90f.Degrees()));
-[SkipLocalsInit]
 sealed class BellowingGrunt(BossModule module) : Components.RaidwideCast(module, (uint)AID.BellowingGrunt);
-[SkipLocalsInit]
 sealed class Disregard(BossModule module) : Components.RaidwideCast(module, (uint)AID.DisregardRaidwide);
-[SkipLocalsInit]
 sealed class DisregardRect(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DisregardRect, new AOEShapeRect(55f, 5f));
-[SkipLocalsInit]
 sealed class Petrifaction(BossModule module) : Components.CastGaze(module, (uint)AID.Petrifaction);
 
-[SkipLocalsInit]
 sealed class AlZahbiTrash(BossModule module) : Components.AddsMulti(module, A31AlZahbi.AlZahbiMobs);
 
-[SkipLocalsInit]
 sealed class A31AlZahbiStates : StateMachineBuilder
 {
     public A31AlZahbiStates(BossModule module) : base(module)
@@ -147,19 +129,7 @@ sealed class A31AlZahbiStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Contributed,
-    StatesType = typeof(A31AlZahbiStates),
-    ConfigType = null,
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID),
-    Contributors = "Xan, ported by wen",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.Alliance,
-    GroupType = BossModuleInfo.GroupType.CFC,
-    GroupID = 1117u,
-    NameID = 14834u,
-    SortOrder = 2,
-    PlanLevel = 0)]
+[ModuleInfo(BossModuleInfo.Maturity.Contributed, Contributors = "Xan, ported by wen", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1117u, NameID = 14834u)]
 
 /*
  * This one is different because there isn't one mob exactly that is the boss.  To get around this
@@ -168,7 +138,6 @@ sealed class A31AlZahbiStates : StateMachineBuilder
  * for the AlZahbiMobs[] list.  We could also probably finish on Swarmsinger being dead as well since she
  * is generally last wave.
  */
-[SkipLocalsInit]
 public class A31AlZahbi(WorldState ws, Actor primary) : BossModule(ws, primary, new(721f, 720f), new ArenaBoundsRect(25f, 20f))
 {
     protected override bool CheckPull() => PrimaryActor.InCombat;

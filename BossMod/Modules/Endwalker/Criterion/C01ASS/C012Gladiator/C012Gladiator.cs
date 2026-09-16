@@ -10,8 +10,8 @@ sealed class SRushOfMightBack(BossModule module) : RushOfMightBack(module, (uint
 
 public abstract class C012Gladiator(WorldState ws, Actor primary) : BossModule(ws, primary, new(-35f, -271f), new ArenaBoundsSquare(19.5f));
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.NBoss, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 878, NameID = 11387, SortOrder = 4, PlanLevel = 90)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.NBoss, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 878u, NameID = 11387u, SortOrder = 4, PlanLevel = 90)]
 public sealed class C012NGladiator(WorldState ws, Actor primary) : C012Gladiator(ws, primary);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.SBoss, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 879, NameID = 11387, SortOrder = 4, PlanLevel = 90)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.SBoss, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 879u, NameID = 11387u, SortOrder = 4, PlanLevel = 90)]
 public sealed class C012SGladiator(WorldState ws, Actor primary) : C012Gladiator(ws, primary);

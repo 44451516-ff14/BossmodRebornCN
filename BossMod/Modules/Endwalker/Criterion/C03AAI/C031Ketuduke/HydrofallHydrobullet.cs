@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C03AAI.C031Ketuduke;
 
-class HydrofallHydrobullet(BossModule module) : Components.UniformStackSpread(module, 6f, 15f)
+sealed class HydrofallHydrobullet(BossModule module) : Components.UniformStackSpread(module, 6f, 15f)
 {
     public struct Mechanic
     {
@@ -29,7 +29,7 @@ class HydrofallHydrobullet(BossModule module) : Components.UniformStackSpread(mo
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var firstMech = Math.Max(ActiveMechanic, 0);
         if (Mechanics.Count > firstMech)

@@ -4,7 +4,7 @@ class M12S2LindwurmStates : StateMachineBuilder
 {
     public M12S2LindwurmStates(BossModule module) : base(module)
     {
-        DeathPhase(0, SinglePhase);
+        DeathPhase(0u, SinglePhase);
     }
 
     private void SinglePhase(uint id)
@@ -19,106 +19,106 @@ class M12S2LindwurmStates : StateMachineBuilder
 
     void Replication1(uint id, float delay)
     {
-        Cast(id, (uint)AID.ArcadiaAflame, delay, 5, "Raidwide")
+        Cast(id, AID.ArcadiaAflame, delay, 5f, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide)
             .ActivateOnEnter<ArcadiaAflame>()
             .DeactivateOnExit<ArcadiaAflame>();
 
-        Cast(id + 0x100, (uint)AID.Replication, 9.5f, 3)
+        Cast(id + 0x100u, AID.Replication, 9.5f, 3f)
             .ActivateOnEnter<Replication1SecondBait>()
             .ActivateOnEnter<Replication1Guidance>()
             .ActivateOnEnter<WingedScourge>()
             .ActivateOnEnter<WingedScourgeSecond>()
             .ActivateOnEnter<MightyMagicTopTierSlamFirstBait>()
             .ActivateOnEnter<SnakingKick>()
-            .ExecOnEnter<SnakingKick>(k => k.Risky = false);
+            .ExecOnEnter<SnakingKick>(static comp => comp.Risky = false);
 
-        ComponentCondition<MightyMagicTopTierSlamFirstBait>(id + 0x110, 11.6f, m => m.NumFire > 0, "Fire bait");
-        ComponentCondition<WingedScourge>(id + 0x111, 0.8f, w => w.NumCasts > 0, "Cones");
-        ComponentCondition<MightyMagicTopTierSlamFirstBait>(id + 0x112, 0.3f, m => m.NumDark > 0, "Dark baits")
+        ComponentCondition<MightyMagicTopTierSlamFirstBait>(id + 0x110u, 11.6f, static comp => comp.NumFire > 0, "Fire bait");
+        ComponentCondition<WingedScourge>(id + 0x111u, 0.8f, static comp => comp.NumCasts > 0, "Cones");
+        ComponentCondition<MightyMagicTopTierSlamFirstBait>(id + 0x112u, 0.3f, static comp => comp.NumDark > 0, "Dark baits")
             .DeactivateOnExit<MightyMagicTopTierSlamFirstBait>()
-            .ExecOnExit<SnakingKick>(k => k.Risky = true);
+            .ExecOnExit<SnakingKick>(static comp => comp.Risky = true);
 
-        ComponentCondition<SnakingKick>(id + 0x120, 4.6f, k => k.NumCasts > 0, "Half-room cleave")
+        ComponentCondition<SnakingKick>(id + 0x120u, 4.6f, static comp => comp.NumCasts > 0, "Half-room cleave")
             .ActivateOnEnter<MightyMagicTopTierSlamSecondBait>()
             .DeactivateOnExit<SnakingKick>();
 
-        ComponentCondition<WingedScourge>(id + 0x130, 12.6f, w => w.Casters.Count > 0)
+        ComponentCondition<WingedScourge>(id + 0x130u, 12.6f, static comp => comp.Casters.Count > 0)
             .DeactivateOnExit<WingedScourgeSecond>();
 
-        ComponentCondition<MightyMagicTopTierSlamSecondBait>(id + 0x140, 3.2f, b => b.NumFire > 0, "Fire baits");
-        ComponentCondition<WingedScourge>(id + 0x141, 0.8f, w => w.NumCasts > 4, "Cones");
-        ComponentCondition<MightyMagicTopTierSlamSecondBait>(id + 0x142, 0.3f, b => b.NumDark > 0, "Dark baits")
+        ComponentCondition<MightyMagicTopTierSlamSecondBait>(id + 0x140u, 3.2f, static comp => comp.NumFire > 0, "Fire baits");
+        ComponentCondition<WingedScourge>(id + 0x141u, 0.8f, static comp => comp.NumCasts > 4, "Cones");
+        ComponentCondition<MightyMagicTopTierSlamSecondBait>(id + 0x142u, 0.3f, static comp => comp.NumDark > 0, "Dark baits")
             .DeactivateOnExit<MightyMagicTopTierSlamSecondBait>()
             .DeactivateOnExit<Replication1SecondBait>()
             .DeactivateOnExit<Replication1Guidance>()
             .DeactivateOnExit<WingedScourge>();
 
-        DoubleSobat(id + 0x200, 2.4f);
+        DoubleSobat(id + 0x200u, 2.4f);
     }
 
     void DoubleSobat(uint id, float delay)
     {
-        CastStart(id, (uint)AID.DoubleSobatBoss1, delay)
+        CastStart(id, AID.DoubleSobatBoss1, delay)
             .ActivateOnEnter<DoubleSobatBuster>()
             .ActivateOnEnter<DoubleSobatRepeat>();
-        ComponentCondition<DoubleSobatBuster>(id + 1, 5.6f, b => b.NumCasts > 0, "Half-room buster")
+        ComponentCondition<DoubleSobatBuster>(id + 1u, 5.6f, static comp => comp.NumCasts > 0, "Half-room buster")
             .SetHint(StateMachine.StateHint.Tankbuster)
             .DeactivateOnExit<DoubleSobatBuster>();
-        ComponentCondition<DoubleSobatRepeat>(id + 0x10, 4.6f, b => b.NumCasts > 0, "Half-room cleave")
+        ComponentCondition<DoubleSobatRepeat>(id + 0x10u, 4.6f, static comp => comp.NumCasts > 0, "Half-room cleave")
             .ActivateOnEnter<EsotericFinisher>()
             .DeactivateOnExit<DoubleSobatRepeat>()
-            .ExecOnEnter<EsotericFinisher>(f => f.EnableHints = false)
-            .ExecOnExit<EsotericFinisher>(f => f.EnableHints = true);
+            .ExecOnEnter<EsotericFinisher>(static comp => comp.EnableHints = false)
+            .ExecOnExit<EsotericFinisher>(static comp => comp.EnableHints = true);
 
-        ComponentCondition<EsotericFinisher>(id + 0x20, 2.5f, f => f.NumCasts > 0, "Double tankbuster")
+        ComponentCondition<EsotericFinisher>(id + 0x20u, 2.5f, static comp => comp.NumCasts > 0, "Double tankbuster")
             .SetHint(StateMachine.StateHint.Tankbuster)
             .DeactivateOnExit<EsotericFinisher>();
     }
 
     void Replication2(uint id, float delay)
     {
-        Cast(id, (uint)AID.Staging, delay, 3)
+        Cast(id, AID.Staging, delay, 3f)
             .ActivateOnEnter<Replication2Staging>();
-        ComponentCondition<Replication2Staging>(id + 3, 7.9f, r => r.PlayersAssigned, "Player clones appear");
-        Cast(id + 0x10, (uint)AID.Replication, 3.3f, 3);
+        ComponentCondition<Replication2Staging>(id + 3u, 7.9f, static comp => comp.PlayersAssigned, "Player clones appear");
+        Cast(id + 0x10u, AID.Replication, 3.3f, 3f);
 
-        ComponentCondition<Replication2Staging>(id + 0x100, 16.5f, t => t.WurmsAssigned, "Clone tethers");
-        CastStart(id + 0x101, (uint)AID.FirefallSplashCast, 0.1f)
+        ComponentCondition<Replication2Staging>(id + 0x100u, 16.5f, static comp => comp.WurmsAssigned, "Clone tethers");
+        CastStart(id + 0x101u, AID.FirefallSplashCast, 0.1f)
             .ActivateOnEnter<Replication2FirefallSplash>()
             .ActivateOnEnter<Replication2ScaldingWaves>()
             .ActivateOnEnter<Replication2ManaBurst>()
             .ActivateOnEnter<SnakingKick>()
-            .ExecOnEnter<SnakingKick>(k => k.Risky = false);
+            .ExecOnEnter<SnakingKick>(static comp => comp.Risky = false);
 
-        ComponentCondition<Replication2FirefallSplash>(id + 0x110, 5.9f, r => r.NumCasts > 0, "Boss jumps (spread)")
+        ComponentCondition<Replication2FirefallSplash>(id + 0x110u, 5.9f, static comp => comp.NumCasts > 0, "Boss jumps (spread)")
             .DeactivateOnExit<Replication2FirefallSplash>();
-        ComponentCondition<Replication2ScaldingWaves>(id + 0x111, 0.6f, r => r.NumCasts > 0, "Proteans");
+        ComponentCondition<Replication2ScaldingWaves>(id + 0x111u, 0.6f, static comp => comp.NumCasts > 0, "Proteans");
         //.DeactivateOnExit<Replication2ScaldingWaves>(); // keep activated since we need to track targets
-        ComponentCondition<Replication2ManaBurst>(id + 0x112, 1.4f, r => r.NumCasts > 0, "Defamations")
+        ComponentCondition<Replication2ManaBurst>(id + 0x112u, 1.4f, static comp => comp.NumCasts > 0, "Defamations")
             .ActivateOnEnter<Replication2HeavySlam>()
             .ActivateOnEnter<Replication2HemorrhagicProjection>()
             .DeactivateOnExit<Replication2ManaBurst>();
-        ComponentCondition<Replication2HeavySlam>(id + 0x113, 5.5f, r => r.NumCasts > 0, "Stacks")
-            //.ExecOnEnter<Replication2HeavySlam>(s => s.EnableHints = true)
+        ComponentCondition<Replication2HeavySlam>(id + 0x113u, 5.5f, static comp => comp.NumCasts > 0, "Stacks")
+            //.ExecOnEnter<Replication2HeavySlam>(static comp => comp.EnableHints = true)
             .DeactivateOnExit<Replication2HeavySlam>();
-        ComponentCondition<Replication2HemorrhagicProjection>(id + 0x114, 1.8f, p => p.NumCasts > 0, "Cones")
-            .ExecOnEnter<Replication2HemorrhagicProjection>(s => s.EnableHints = true)
+        ComponentCondition<Replication2HemorrhagicProjection>(id + 0x114u, 1.8f, static comp => comp.NumCasts > 0, "Cones")
+            .ExecOnEnter<Replication2HemorrhagicProjection>(static comp => comp.EnableHints = true)
             .DeactivateOnExit<Replication2HemorrhagicProjection>();
 
-        ComponentCondition<SnakingKick>(id + 0x120, 3.8f, k => k.NumCasts > 0, "Half-room cleave")
-            .ExecOnEnter<SnakingKick>(k => k.Risky = true)
+        ComponentCondition<SnakingKick>(id + 0x120u, 3.8f, static comp => comp.NumCasts > 0, "Half-room cleave")
+            .ExecOnEnter<SnakingKick>(static comp => comp.Risky = true)
             .DeactivateOnExit<SnakingKick>();
 
-        Cast(id + 0x200, (uint)AID.Reenactment, 7.2f, 3)
+        Cast(id + 0x200u, AID.Reenactment, 7.2f, 3f)
             .ActivateOnEnter<Replication2ReenactmentOrder>()
             .ActivateOnEnter<Replication2ReenactmentAOEs>()
             .ActivateOnEnter<Replication2ReenactmentScaldingWaves>()
             .ActivateOnEnter<Replication2ReenactmentTowers>();
 
-        CastMulti(id + 0x210, [(uint)AID.NetherwrathNear, (uint)AID.NetherwrathFar], 3.2f, 5)
+        CastMulti(id + 0x210u, [AID.NetherwrathNear, AID.NetherwrathFar], 3.2f, 5f)
             .ActivateOnEnter<Replication2TimelessSpite>();
-        ComponentCondition<Replication2TimelessSpite>(id + 0x220, 1.2f, s => s.NumCasts > 0, "Close/far stack + reenactment start")
+        ComponentCondition<Replication2TimelessSpite>(id + 0x220u, 1.2f, static comp => comp.NumCasts > 0, "Close/far stack + reenactment start")
             .DeactivateOnExit<Replication2ScaldingWaves>()
             .DeactivateOnExit<Replication2TimelessSpite>()
             .DeactivateOnExit<Replication2ReenactmentOrder>();
@@ -134,105 +134,105 @@ class M12S2LindwurmStates : StateMachineBuilder
             .DeactivateOnExit<Replication2ReenactmentAOEs>()
             .DeactivateOnExit<Replication2Staging>();
 
-        Cast(id + 1, (uint)AID.MutatingCells, 5.1f, 3)
+        Cast(id + 1u, AID.MutatingCells, 5.1f, 3f)
             .ActivateOnEnter<ManaSphere>();
-        ComponentCondition<ManaSphere>(id + 3, 1.8f, m => m.HaveDebuff, "Alpha/beta debuffs");
+        ComponentCondition<ManaSphere>(id + 3u, 1.8f, static comp => comp.HaveDebuff, "Alpha/beta debuffs");
 
-        ComponentCondition<ManaSphere>(id + 0x10, 8.2f, m => m.Spheres.Count > 0, "Shapes appear");
-        ComponentCondition<ManaSphere>(id + 0x11, 8.7f, m => m.SwapDone, "Debuffs swap");
+        ComponentCondition<ManaSphere>(id + 0x10u, 8.2f, static comp => comp.Spheres.Count > 0, "Shapes appear");
+        ComponentCondition<ManaSphere>(id + 0x11u, 8.7f, static comp => comp.SwapDone, "Debuffs swap");
 
-        Cast(id + 0x100, (uint)AID.BloodWakening, 11.7f, 3)
+        Cast(id + 0x100u, AID.BloodWakening, 11.7f, 3f)
             .ActivateOnEnter<BloodWakeningReplay>();
-        ComponentCondition<BloodWakeningReplay>(id + 0x110, 1.7f, r => r.NumCasts > 0, "AOEs 1");
-        ComponentCondition<BloodWakeningReplay>(id + 0x111, 5.1f, r => r.NumCasts >= 12, "AOEs 2")
+        ComponentCondition<BloodWakeningReplay>(id + 0x110u, 1.7f, static comp => comp.NumCasts > 0, "AOEs 1");
+        ComponentCondition<BloodWakeningReplay>(id + 0x111u, 5.1f, static comp => comp.NumCasts >= 12, "AOEs 2")
             .DeactivateOnExit<BloodWakeningReplay>();
 
-        CastMulti(id + 0x200, [(uint)AID.NetherworldNear, (uint)AID.NetherworldFar], 0, 4.3f)
+        CastMulti(id + 0x200u, [AID.NetherworldNear, AID.NetherworldFar], 0, 4.3f)
             .ActivateOnEnter<Netherworld>();
-        ComponentCondition<Netherworld>(id + 0x210, 1.3f, n => n.NumCasts > 0, "Close/far stack")
+        ComponentCondition<Netherworld>(id + 0x210u, 1.3f, static comp => comp.NumCasts > 0, "Close/far stack")
             .DeactivateOnExit<ManaSphere>()
             .DeactivateOnExit<Netherworld>();
 
-        Cast(id + 0x300, (uint)AID.ArcadiaAflame, 1.8f, 5, "Raidwide")
+        Cast(id + 0x300u, AID.ArcadiaAflame, 1.8f, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide)
             .ActivateOnEnter<ArcadiaAflame>()
             .DeactivateOnExit<ArcadiaAflame>();
 
-        DoubleSobat(id + 0x400, 4.3f);
+        DoubleSobat(id + 0x400u, 4.3f);
     }
 
     void IdyllicDream(uint id, float delay)
     {
-        Cast(id, (uint)AID.IdyllicDream, delay, 5, "Raidwide")
+        Cast(id, AID.IdyllicDream, delay, 5f, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide)
             .ActivateOnEnter<IdyllicDreamRaidwide>()
             .ActivateOnEnter<IdyllicDreamStaging>()
             .ActivateOnEnter<IdyllicDreamArena>()
             .DeactivateOnExit<IdyllicDreamRaidwide>()
-            .ExecOnExit<IdyllicDreamStaging>(s => s.WatchSpawns = false); // N->S clones spawn before 8x staging set does
+            .ExecOnExit<IdyllicDreamStaging>(static comp => comp.WatchSpawns = false); // N->S clones spawn before 8x staging set does
 
-        Cast(id + 0x10, (uint)AID.Staging, 3.2f, 3);
+        Cast(id + 0x10u, AID.Staging, 3.2f, 3f);
 
-        ComponentCondition<IdyllicDreamStaging>(id + 0x20, 5.4f, r => r.PlayersAssigned, "Player clones appear");
+        ComponentCondition<IdyllicDreamStaging>(id + 0x20u, 5.4f, static comp => comp.PlayersAssigned, "Player clones appear");
 
         // red arena -> blue arena
-        Cast(id + 0x100, (uint)AID.TwistedVision, 5.8f, 4);
+        Cast(id + 0x100u, AID.TwistedVision, 5.8f, 4f);
 
         // 3x boss clones spawn along X=0, store casts for later
-        Cast(id + 0x110, (uint)AID.Replication, 3.1f, 3)
+        Cast(id + 0x110u, AID.Replication, 3.1f, 3f)
             .ActivateOnEnter<IdyllicDreamPowerGusherSnakingKick>();
 
         // blue arena -> red arena, boss clones disappear before finishing cast
-        Cast(id + 0x120, (uint)AID.TwistedVision, 8.5f, 4);
+        Cast(id + 0x120u, AID.TwistedVision, 8.5f, 4f);
 
         // 8x boss clones spawn in clockwise paired order
-        Cast(id + 0x130, (uint)AID.Replication, 3.2f, 3)
-            .ExecOnEnter<IdyllicDreamStaging>(s => s.WatchSpawns = true);
+        Cast(id + 0x130u, AID.Replication, 3.2f, 3f)
+            .ExecOnEnter<IdyllicDreamStaging>(static comp => comp.WatchSpawns = true);
 
         // twisted vision resummons stored AOEs
         // clones pick tethers during cast
-        CastStart(id + 0x140, (uint)AID.TwistedVision, 15.5f)
-            .ExecOnExit<IdyllicDreamPowerGusherSnakingKick>(k => k.Visible = true);
-        ComponentCondition<IdyllicDreamStaging>(id + 0x141, 3.9f, t => t.WurmsAssigned, "Clone tethers")
-            .ExecOnExit<IdyllicDreamPowerGusherSnakingKick>(k => k.Risky = true);
-        CastEnd(id + 0x142, 0.1f);
+        CastStart(id + 0x140u, AID.TwistedVision, 15.5f)
+            .ExecOnExit<IdyllicDreamPowerGusherSnakingKick>(static comp => comp.Visible = true);
+        ComponentCondition<IdyllicDreamStaging>(id + 0x141u, 3.9f, static comp => comp.WurmsAssigned, "Clone tethers")
+            .ExecOnExit<IdyllicDreamPowerGusherSnakingKick>(static comp => comp.Risky = true);
+        CastEnd(id + 0x142u, 0.1f);
 
-        CastStart(id + 0x150, (uint)AID.LindwurmsMeteor, 3.5f)
+        CastStart(id + 0x150u, AID.LindwurmsMeteor, 3.5f)
             .ActivateOnEnter<LindwurmsMeteor>();
-        ComponentCondition<IdyllicDreamPowerGusherSnakingKick>(id + 0x151, 0.9f, k => k.NumCasts > 0, "Stored AOEs")
-            .ExecOnExit<IdyllicDreamArena>(static p => p.Predict(7.8d));
-        CastEnd(id + 0x152, 4.1f, "Raidwide")
+        ComponentCondition<IdyllicDreamPowerGusherSnakingKick>(id + 0x151u, 0.9f, static comp => comp.NumCasts > 0, "Stored AOEs")
+            .ExecOnExit<IdyllicDreamArena>(static comp => comp.Predict(7.8d));
+        CastEnd(id + 0x152u, 4.1f, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide)
             .DeactivateOnExit<LindwurmsMeteor>();
 
         // platform transform during cast, towers appear on platforms at cast end
-        CastStart(id + 0x160, (uint)AID.Downfall, 3.1f)
+        CastStart(id + 0x160u, AID.Downfall, 3.1f)
             .ActivateOnEnter<IdyllicDreamElementalMeteor>();
-        ComponentCondition<IdyllicDreamArena>(id + 0x161, 0.9f, a => a.State == 1, "Platforms appear");
-        CastEnd(id + 0x162, 2.2f);
+        ComponentCondition<IdyllicDreamArena>(id + 0x161u, 0.9f, static comp => comp.State == 1, "Platforms appear");
+        CastEnd(id + 0x162u, 2.2f);
 
-        Cast(id + 0x200, (uint)AID.ArcadianArcanumCast, 3.1f, 3)
+        Cast(id + 0x200u, AID.ArcadianArcanumCast, 3.1f, 3f)
             .ActivateOnEnter<ArcadianArcanum>();
-        ComponentCondition<ArcadianArcanum>(id + 0x202, 1.3f, a => a.NumCasts > 0, "Random spreads")
+        ComponentCondition<ArcadianArcanum>(id + 0x202u, 1.3f, static comp => comp.NumCasts > 0, "Random spreads")
             .DeactivateOnExit<ArcadianArcanum>();
 
         // circle transform, clone mechanics trigger after a delay
         // 359.88 (cast start) -> 370.37 (first) -> 375.32 (second)
-        CastStart(id + 0x210, (uint)AID.TwistedVision, 2.8f)
+        CastStart(id + 0x210u, AID.TwistedVision, 2.8f)
             .ActivateOnEnter<IdyllicDreamWurmStackSpread>();
-        ComponentCondition<IdyllicDreamArena>(id + 0x211, 5.2f, a => a.State == 0, "Platforms disappear");
-        //.ExecOnExit<IdyllicDreamWurmStackSpread>(p => p.EnableHints = true);
+        ComponentCondition<IdyllicDreamArena>(id + 0x211u, 5.2f, static comp => comp.State == 0, "Platforms disappear");
+        //.ExecOnExit<IdyllicDreamWurmStackSpread>(static comp => comp.EnableHints = true);
 
-        ComponentCondition<IdyllicDreamWurmStackSpread>(id + 0x220, 5.2f, w => w.NumCasts == 2, "Clone mechanics start");
-        ComponentCondition<IdyllicDreamWurmStackSpread>(id + 0x221, 15, w => w.NumCasts == 8, "Clone mechanics end")
-            .ExecOnExit<IdyllicDreamStaging>(s => s.WurmsFinished = true);
+        ComponentCondition<IdyllicDreamWurmStackSpread>(id + 0x220u, 5.2f, static comp => comp.NumCasts == 2, "Clone mechanics start");
+        ComponentCondition<IdyllicDreamWurmStackSpread>(id + 0x221u, 15f, static comp => comp.NumCasts == 8, "Clone mechanics end")
+            .ExecOnExit<IdyllicDreamStaging>(static comp => comp.WurmsFinished = true);
 
-        Timeout(id + 0x222, 1.5f).DeactivateOnExit<IdyllicDreamWurmStackSpread>()
-            .ExecOnExit<IdyllicDreamArena>(static p => p.Predict(8.8d))
-            .ExecOnExit<IdyllicDreamElementalMeteor>(static m => m.CreateTowers());
+        Timeout(id + 0x222u, 1.5f).DeactivateOnExit<IdyllicDreamWurmStackSpread>()
+            .ExecOnExit<IdyllicDreamArena>(static comp => comp.Predict(8.8d))
+            .ExecOnExit<IdyllicDreamElementalMeteor>(static comp => comp.CreateTowers());
 
         // platform transform, towers appear and activate
-        Cast(id + 0x230, (uint)AID.TwistedVision, 3.6f, 4)
+        Cast(id + 0x230u, AID.TwistedVision, 3.6f, 4f)
             .ActivateOnEnter<IdyllicDreamSharedState>()
             .ActivateOnEnter<IdyllicDreamLindwurmsDarkII>()
             .ActivateOnEnter<IdyllicDreamWindTower>()
@@ -240,81 +240,73 @@ class M12S2LindwurmStates : StateMachineBuilder
             .ActivateOnEnter<IdyllicDreamDoom>()
             .ActivateOnEnter<LindwurmsStoneIII>();
 
-        ComponentCondition<IdyllicDreamArena>(id + 0x232, 1.3f, a => a.State == 1, "Platforms appear");
-        ComponentCondition<IdyllicDreamElementalMeteor>(id + 0x233, 3.1f, m => m.NumCasts > 0, "Towers")
-            .ExecOnEnter<IdyllicDreamLindwurmsDarkII>(d => d.EnableHints = true)
-        //    .ExecOnEnter<IdyllicDreamElementalMeteor>(d => d.EnableHints = true)
+        ComponentCondition<IdyllicDreamArena>(id + 0x232u, 1.3f, static comp => comp.State == 1, "Platforms appear");
+        ComponentCondition<IdyllicDreamElementalMeteor>(id + 0x233u, 3.1f, static comp => comp.NumCasts > 0, "Towers")
+            .ExecOnEnter<IdyllicDreamLindwurmsDarkII>(static comp => comp.EnableHints = true)
             .DeactivateOnExit<IdyllicDreamElementalMeteor>();
-
-        ComponentCondition<LindwurmsStoneIII>(id + 0x234, 5.7f, s => s.NumCasts > 0, "Delayed puddles")
+        ComponentCondition<LindwurmsStoneIII>(id + 0x234u, 5.7f, static comp => comp.NumCasts > 0, "Delayed puddles")
             .ActivateOnEnter<LindwurmsPortent>()
             //.DeactivateOnExit<IdyllicDreamHotBlooded>() // keep enabled, in case the status lingers for some reason
             .DeactivateOnExit<IdyllicDreamLindwurmsDarkII>()
             .DeactivateOnExit<IdyllicDreamWindTower>()
             .DeactivateOnExit<LindwurmsStoneIII>();
 
-        ComponentCondition<LindwurmsPortent>(id + 0x240, 5, p => p.NumCasts > 0, "Proximity baits")
+        ComponentCondition<LindwurmsPortent>(id + 0x240u, 5f, static comp => comp.NumCasts > 0, "Proximity baits")
             .DeactivateOnExit<LindwurmsPortent>()
             .DeactivateOnExit<IdyllicDreamHotBlooded>()
             .DeactivateOnExit<IdyllicDreamDoom>()
             .DeactivateOnExit<IdyllicDreamSharedState>()
-            .ExecOnExit<IdyllicDreamPowerGusherSnakingKick>(k =>
-            {
-                //k.Visible = true;
-                k.WatchTeleport = true;
-            });
+            .ExecOnExit<IdyllicDreamPowerGusherSnakingKick>(static comp => comp.WatchTeleport = true);
 
         // black hole appears and absorbs one clone; remaining clones jump
-        Cast(id + 0x300, (uint)AID.TemporalCurtain, 5.4f, 3);
+        Cast(id + 0x300u, AID.TemporalCurtain, 5.4f, 3f);
 
         // circle transform
-        CastStart(id + 0x310, (uint)AID.TwistedVision, 8.7f);
-        ComponentCondition<IdyllicDreamArena>(id + 0x311, 5.2f, a => a.State == 0, "Platforms disappear")
+        CastStart(id + 0x310u, AID.TwistedVision, 8.7f);
+        ComponentCondition<IdyllicDreamArena>(id + 0x311u, 5.2f, static comp => comp.State == 0, "Platforms disappear")
             .ActivateOnEnter<IdyllicDreamManaBurstPlayer>()
             .ActivateOnEnter<IdyllicDreamHeavySlamPlayer>()
             .ActivateOnEnter<IdyllicDreamPlayerCastCounter>()
-            .ExecOnEnter<IdyllicDreamManaBurstPlayer>(p => p.Predict(0))
-            .ExecOnEnter<IdyllicDreamHeavySlamPlayer>(p => p.Predict(0));
+            .ExecOnEnter<IdyllicDreamManaBurstPlayer>(static comp => comp.Predict(0))
+            .ExecOnEnter<IdyllicDreamHeavySlamPlayer>(static comp => comp.Predict(0));
 
         // clones replay stack/spread
-        Cast(id + 0x320, (uint)AID.Reenactment, 1.9f, 3)
-            .ExecOnEnter<IdyllicDreamManaBurstPlayer>(p => p.Risky = true);
-        //    .ExecOnEnter<IdyllicDreamHeavySlamPlayer>(p => p.EnableHints = true);
-        ComponentCondition<IdyllicDreamPlayerCastCounter>(id + 0x322, 3.6f, c => c.NumCasts == 4, "Reenactment 1")
-            .ExecOnExit<IdyllicDreamArena>(static a => a.Predict(6.7d));
+        Cast(id + 0x320u, AID.Reenactment, 1.9f, 3f)
+            .ExecOnEnter<IdyllicDreamManaBurstPlayer>(static comp => comp.Risky = true);
+        ComponentCondition<IdyllicDreamPlayerCastCounter>(id + 0x322u, 3.6f, static comp => comp.NumCasts == 4, "Reenactment 1")
+            .ExecOnExit<IdyllicDreamArena>(static comp => comp.Predict(6.7d));
         // platform transform, jumpy clones
-        Cast(id + 0x330, (uint)AID.TwistedVision, 1.5f, 4)
+        Cast(id + 0x330u, AID.TwistedVision, 1.5f, 4f)
             // TODO: fix aoe activation time, im tired
-            .ExecOnEnter<IdyllicDreamPowerGusherSnakingKick>(k =>
+            .ExecOnEnter<IdyllicDreamPowerGusherSnakingKick>(static comp =>
             {
-                k.Visible = true;
-                k.Reset();
+                comp.Visible = true;
+                comp.Reset();
             });
-        ComponentCondition<IdyllicDreamArena>(id + 0x332, 1.3f, a => a.State == 1, "Platforms appear");
+        ComponentCondition<IdyllicDreamArena>(id + 0x332u, 1.3f, static comp => comp.State == 1, "Platforms appear");
 
-        CastStart(id + 0x340, (uint)AID.TwistedVision, 2.3f);
-        ComponentCondition<IdyllicDreamPowerGusherSnakingKick>(id + 0x341, 0.9f, k => k.NumCasts > 0, "Safe platform")
-            .ExecOnExit<IdyllicDreamManaBurstPlayer>(p => p.Predict(1))
-            .ExecOnExit<IdyllicDreamHeavySlamPlayer>(p => p.Predict(1));
+        CastStart(id + 0x340u, AID.TwistedVision, 2.3f);
+        ComponentCondition<IdyllicDreamPowerGusherSnakingKick>(id + 0x341u, 0.9f, static comp => comp.NumCasts > 0, "Safe platform")
+            .ExecOnExit<IdyllicDreamManaBurstPlayer>(static comp => comp.Predict(1))
+            .ExecOnExit<IdyllicDreamHeavySlamPlayer>(static comp => comp.Predict(1));
 
-        ComponentCondition<IdyllicDreamArena>(id + 0x350, 4.3f, a => a.State == 0, "Platforms disappear")
-            .ExecOnExit<IdyllicDreamManaBurstPlayer>(p => p.Risky = true);
-        //    .ExecOnExit<IdyllicDreamHeavySlamPlayer>(p => p.EnableHints = true);
-        ComponentCondition<IdyllicDreamPlayerCastCounter>(id + 0x351, 6.6f, p => p.NumCasts == 8, "Reenactment 2")
+        ComponentCondition<IdyllicDreamArena>(id + 0x350u, 4.3f, static comp => comp.State == 0, "Platforms disappear")
+            .ExecOnExit<IdyllicDreamManaBurstPlayer>(static comp => comp.Risky = true);
+        ComponentCondition<IdyllicDreamPlayerCastCounter>(id + 0x351, 6.6f, static comp => comp.NumCasts == 8, "Reenactment 2")
             .DeactivateOnExit<IdyllicDreamPlayerCastCounter>()
             .DeactivateOnExit<IdyllicDreamManaBurstPlayer>()
             .DeactivateOnExit<IdyllicDreamHeavySlamPlayer>()
             .DeactivateOnExit<IdyllicDreamStaging>()
-            .ExecOnExit<IdyllicDreamPowerGusherSnakingKick>(k =>
+            .ExecOnExit<IdyllicDreamPowerGusherSnakingKick>(static comp =>
             {
-                k.Visible = true;
-                k.Reset();
+                comp.Visible = true;
+                comp.Reset();
             });
 
-        ComponentCondition<IdyllicDreamPowerGusherSnakingKick>(id + 0x352, 4.8f, k => k.NumCasts > 0, "Stored AOE")
+        ComponentCondition<IdyllicDreamPowerGusherSnakingKick>(id + 0x352u, 4.8f, static comp => comp.NumCasts > 0, "Stored AOE")
             .DeactivateOnExit<IdyllicDreamPowerGusherSnakingKick>();
 
-        Cast(id + 0x400, (uint)AID.IdyllicDream, 1, 5, "Raidwide")
+        Cast(id + 0x400u, AID.IdyllicDream, 1f, 5f, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide)
             .ActivateOnEnter<IdyllicDreamRaidwide>()
             .DeactivateOnExit<IdyllicDreamRaidwide>()
@@ -323,15 +315,15 @@ class M12S2LindwurmStates : StateMachineBuilder
 
     void ArcadianHell(uint id, float delay)
     {
-        Cast(id, (uint)AID.ReplicationHell, delay, 5)
+        Cast(id, AID.ReplicationHell, delay, 5f)
             .ActivateOnEnter<ArcadianHell5x>()
             .ActivateOnEnter<ArcadianHell9x>();
 
-        Cast(id + 0x10, (uint)AID.ArcadianHellRaidwide, 8.5f, 5, "Raidwide x5")
+        Cast(id + 0x10u, AID.ArcadianHellRaidwide, 8.5f, 5f, "Raidwide x5")
             .SetHint(StateMachine.StateHint.Raidwide);
-        Cast(id + 0x20, (uint)AID.ArcadianHellRaidwide, 11.3f, 5, "Raidwide x9")
+        Cast(id + 0x20u, AID.ArcadianHellRaidwide, 11.3f, 5f, "Raidwide x9")
             .SetHint(StateMachine.StateHint.Raidwide);
 
-        Cast(id + 0x100, (uint)AID.ArcadianHellEnrage, 12.9f, 10, "Enrage");
+        Cast(id + 0x100u, AID.ArcadianHellEnrage, 12.9f, 10f, "Enrage");
     }
 }

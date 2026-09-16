@@ -4,7 +4,6 @@ using Dalamud.Interface.Utility.Raii;
 namespace BossMod;
 
 // a 'simple' bitmap editor utility
-[SkipLocalsInit]
 public class UIBitmapEditor
 {
     private readonly List<Bitmap> _bitmaps; // undo-redo stack; this is not terribly efficient, but oh well

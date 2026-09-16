@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P10SPandaemonium;
 
-class Silkspit(BossModule module) : Components.UniformStackSpread(module, default, 7f)
+sealed class Silkspit(BossModule module) : Components.UniformStackSpread(module, default, 7f)
 {
     private readonly List<Actor> _pillars = module.Enemies((uint)OID.Pillar);
 

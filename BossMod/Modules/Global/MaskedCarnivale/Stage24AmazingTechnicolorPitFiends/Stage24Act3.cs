@@ -69,7 +69,7 @@ sealed class BoneShaker(BossModule module) : Components.RaidwideCast(module, (ui
 
 sealed class Hints2(BossModule module) : BossComponent(module)
 {
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var magi = Module.Enemies((uint)OID.ArenaMagus);
         var count = magi.Count;
@@ -87,20 +87,11 @@ sealed class Hints2(BossModule module) : BossComponent(module)
     }
 }
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"{Module.PrimaryActor.Name} spawns two adds when casting Boneshaker. These should be a\npriority or they will explode and wipe you. To kill them without touching\nthe electric field use a ranged physical attack such as Fire Angon.\nYou can start the Final Sting combination at about 50% health left.\n(Off-guard->Bristle->Moonflute->Final Sting)");
-    }
-}
-
 sealed class Stage24Act3States : StateMachineBuilder
 {
     public Stage24Act3States(BossModule module) : base(module)
     {
         TrivialPhase()
-            .DeactivateOnEnter<Hints>()
             .ActivateOnEnter<PageTear>()
             .ActivateOnEnter<MagicHammer>()
             .ActivateOnEnter<VacuumBlade>()
@@ -111,12 +102,16 @@ sealed class Stage24Act3States : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 634, NameID = 8125, SortOrder = 3)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 634u, NameID = 8125u, SortOrder = 3)]
 public sealed class Stage24Act3 : BossModule
 {
     public Stage24Act3(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {
-        ActivateComponent<Hints>();
+        _prePullHints =
+        [
+            $"{PrimaryActor.Name} spawns two adds when casting Boneshaker. These should be a priority or they will explode and wipe you. To kill them without touching the electric field use a ranged physical attack such as Fire Angon.",
+            "You can start the Final Sting combination at about 50% health left. (Off-guard->Bristle->Moonflute->Final Sting)"
+        ];
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
@@ -138,4 +133,8 @@ public sealed class Stage24Act3 : BossModule
             };
         }
     }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

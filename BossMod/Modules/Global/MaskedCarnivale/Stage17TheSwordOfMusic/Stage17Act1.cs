@@ -16,27 +16,20 @@ public enum AID : uint
 sealed class TheHand(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheHand, new AOEShapeCone(8f, 60f.Degrees()));
 sealed class Shred(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Shred, new AOEShapeRect(6f, 2f));
 
-sealed class Hints2(BossModule module) : BossComponent(module)
+sealed class Hints(Stage17Act1 module) : BossComponent(module)
 {
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
-        if (!Module.PrimaryActor.IsDead)
-            hints.Add($"{Module.PrimaryActor.Name} counters magical damage!");
-        var rightClaws = Module.Enemies((uint)OID.RightClaw);
-        var count = rightClaws.Count;
-        if (count == 0)
-            return;
-        var claw = rightClaws[0];
-        if (!claw.IsDead)
-            hints.Add($"{claw.Name} counters physical damage!");
-    }
-}
+        var primary = Module.PrimaryActor;
+        if (!primary.IsDeadOrDestroyed)
+        {
+            hints.Add($"{primary.Name} counters magical damage!");
+        }
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"The {Module.PrimaryActor.Name} counters magical attacks, the {Module.Enemies((uint)OID.RightClaw)[0].Name} counters physical\nattacks. If you have healing spells you can just tank the counter damage\nand kill them however you like anyway. All opponents in this stage are\nweak to lightning.\nThe Ram's Voice and Ultravibration combo can be used in Act 2.");
+        if (module.RightClaw is Actor rightclaw && !rightclaw.IsDeadOrDestroyed)
+        {
+            hints.Add($"{rightclaw.Name} counters physical damage!");
+        }
     }
 }
 
@@ -45,29 +38,41 @@ sealed class Stage17Act1States : StateMachineBuilder
     public Stage17Act1States(BossModule module) : base(module)
     {
         TrivialPhase()
-            .DeactivateOnEnter<Hints>()
+            .ActivateOnEnter<Hints>()
             .ActivateOnEnter<Shred>()
             .ActivateOnEnter<TheHand>()
-            .ActivateOnEnter<Hints2>()
             .Raw.Update = () => AllDeadOrDestroyed(Stage17Act1.Hands);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 627, NameID = 8115, SortOrder = 1)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 627u, NameID = 8115u, SortOrder = 1)]
 public sealed class Stage17Act1 : BossModule
 {
     public Stage17Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {
-        ActivateComponent<Hints>();
+        _prePullHints =
+        [
+            $"The {PrimaryActor.Name} counters magical attacks, the other claw counters physical attacks.",
+            "If you have healing spells you can just tank the counter damage and kill them however you like anyway.",
+            "All opponents in this stage are weak to lightning. The Ram's Voice and Ultravibration combo can be used in act 2."
+        ];
     }
+
+    public Actor? RightClaw;
+
     public static readonly uint[] Hands = [(uint)OID.Boss, (uint)OID.RightClaw];
 
     protected override bool CheckPull() => IsAnyActorInCombat(Hands);
 
+    protected override void UpdatePreModuleActivation()
+    {
+        RightClaw ??= GetActor((uint)OID.RightClaw);
+    }
+
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies((uint)OID.RightClaw));
+        Arena.Actor(RightClaw);
     }
 
     // protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -83,4 +88,8 @@ public sealed class Stage17Act1 : BossModule
     //         };
     //     }
     // }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P6SHegemone;
 
-class ChorosIxou(BossModule module) : Components.GenericAOEs(module)
+sealed class ChorosIxou(BossModule module) : Components.GenericAOEs(module)
 {
     public bool FirstDone;
     public bool SecondDone;

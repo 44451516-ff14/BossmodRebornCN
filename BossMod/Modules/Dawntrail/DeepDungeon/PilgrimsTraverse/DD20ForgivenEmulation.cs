@@ -1,4 +1,4 @@
-namespace BossMod.Endwalker.DeepDungeon.PilgrimsTraverse.DD20ForgivenEmulation;
+namespace BossMod.Dawntrail.DeepDungeon.PilgrimsTraverse.DD20ForgivenEmulation;
 
 public enum OID : uint
 {
@@ -35,10 +35,8 @@ public enum IconID : uint
     BareRootPlanting = 23 // player->self
 }
 
-[SkipLocalsInit]
 sealed class DenseBareRootPlanting(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.DensePlanting, (uint)AID.BareRootPlanting], 6f);
 
-[SkipLocalsInit]
 sealed class Touchdown(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Touchdown, 10f)
 {
     private readonly Burst _aoe = module.FindComponent<Burst>()!;
@@ -68,7 +66,6 @@ sealed class Touchdown(BossModule module) : Components.SimpleKnockbacks(module, 
     }
 }
 
-[SkipLocalsInit]
 sealed class Burst(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = [with(4)];
@@ -124,7 +121,6 @@ sealed class Burst(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class BareRootPlantingBait(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
     private readonly AOEShapeCircle circle = new(6f);
@@ -168,7 +164,6 @@ sealed class BareRootPlantingBait(BossModule module) : Components.GenericBaitAwa
     }
 }
 
-[SkipLocalsInit]
 sealed class WoodsEmbrace(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(2)];
@@ -228,7 +223,6 @@ sealed class WoodsEmbrace(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class DD20ForgivenEmulationStates : StateMachineBuilder
 {
     public DD20ForgivenEmulationStates(BossModule module) : base(module)
@@ -242,24 +236,7 @@ sealed class DD20ForgivenEmulationStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
-StatesType = typeof(DD20ForgivenEmulationStates),
-ConfigType = null,
-ObjectIDType = typeof(OID),
-ActionIDType = typeof(AID),
-StatusIDType = typeof(SID),
-TetherIDType = null,
-IconIDType = typeof(IconID),
-PrimaryActorOID = (uint)OID.ForgivenEmulation,
-Contributors = "The Combat Reborn Team (Malediktus)",
-Expansion = BossModuleInfo.Expansion.Dawntrail,
-Category = BossModuleInfo.Category.DeepDungeon,
-GroupType = BossModuleInfo.GroupType.CFC,
-GroupID = 1033u,
-NameID = 13973u,
-SortOrder = 1,
-PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.ForgivenEmulation, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1033u, NameID = 13973u)]
 public sealed class DD20ForgivenEmulation(WorldState ws, Actor primary) : BossModule(ws, primary, arenaCenter, new ArenaBoundsCustom([new Polygon(arenaCenter, 14.709f, 72)]))
 {
     private static readonly WPos arenaCenter = new(-300f, -300f);

@@ -91,7 +91,7 @@ sealed class LetsDanceRemix(BossModule module) : Components.GenericAOEs(module)
         return aoes[..max];
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var count = _aoes.Count;
         if (count > 0)

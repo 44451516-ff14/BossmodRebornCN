@@ -221,7 +221,6 @@ sealed class Acclaim(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class CE213QuarriedAwayStates : StateMachineBuilder
 {
     public CE213QuarriedAwayStates(BossModule module) : base(module)
@@ -238,24 +237,7 @@ sealed class CE213QuarriedAwayStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
-    StatesType = typeof(CE213QuarriedAwayStates),
-    ConfigType = null, // replace null with typeof(AlabasterBladeConfig) if applicable
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID),
-    StatusIDType = typeof(SID),
-    TetherIDType = null, // replace null with typeof(TetherID) if applicable
-    IconIDType = null, // replace null with typeof(IconID) if applicable
-    PrimaryActorOID = (uint)OID.AlabasterBlade,
-    Contributors = "Equilius",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.Foray,
-    GroupType = BossModuleInfo.GroupType.CriticalEngagement,
-    GroupID = 1093u,
-    NameID = 51u,
-    SortOrder = 3,
-    PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.AlabasterBlade, Contributors = "Equilius", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 1093u, NameID = 51u)]
 public sealed class CE213QuarriedAway : BossModule
 {
     public CE213QuarriedAway(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

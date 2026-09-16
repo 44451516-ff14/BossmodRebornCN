@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P11SThemis;
 
-class DarkAndLight(BossModule module) : BossComponent(module)
+sealed class DarkAndLight(BossModule module) : BossComponent(module)
 {
     public enum TetherType { None, Near, Far }
 

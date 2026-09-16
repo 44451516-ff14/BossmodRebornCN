@@ -1,4 +1,4 @@
-﻿namespace BossMod.Modules.Dawntrail.Dungeon.D13TheClyteum;
+﻿namespace BossMod.Dawntrail.Dungeon.D13TheClyteum.D133Malphas;
 
 public enum OID : uint
 {
@@ -35,7 +35,6 @@ public enum AID : uint
     WrathfulWire = 48928, // Helper->player, 5.0s cast, range 5 circle
 }
 
-[SkipLocalsInit]
 sealed class RubbishDisposal(BossModule module) : Components.RaidwideCast(module, (uint)AID.RubbishDisposal);
 
 sealed class VoidDark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidDark, new AOEShapeCone(30f, 90f.Degrees()));
@@ -45,7 +44,7 @@ sealed class Goekinesis(BossModule module) : Components.SimpleAOEs(module, (uint
 //MetallicMiasma and CastOffHalo could *probably* be subtler -- look at adding a riskyWithSecondLeft value so that we're not pre-moving on the 15s casts?
 sealed class MetallicMiasma(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.MetallicMiasma1, (uint)AID.MetallicMiasma3], new AOEShapeCone(60f, 15f.Degrees()));
 
-sealed class CastOffHalo(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.CastOffHalo1, (uint)AID.CastOffHalo3], new AOEShapeCircle(7f));
+sealed class CastOffHalo(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.CastOffHalo1, (uint)AID.CastOffHalo3], 7f);
 
 sealed class ShadowPlay(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.ShadowPlay, 6f);
 
@@ -58,7 +57,7 @@ sealed class StringUp(BossModule module) : Components.StayMove(module)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (caster.OID == (uint)OID.Malphas && spell.Action.ID == (uint)AID.StringUp)
+        if (spell.Action.ID == (uint)AID.StringUp)
         {
             foreach (var (slot, _) in Raid.WithSlot(false, true, true))
             {
@@ -66,14 +65,12 @@ sealed class StringUp(BossModule module) : Components.StayMove(module)
             }
         }
     }
+
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (caster.OID == (uint)OID.Malphas && spell.Action.ID == (uint)AID.StringUp)
+        if (spell.Action.ID == (uint)AID.StringUp)
         {
-            foreach (var (slot, _) in Raid.WithSlot(false, true, true))
-            {
-                PlayerStates[slot] = default;
-            }
+            Array.Clear(PlayerStates);
         }
     }
 }
@@ -95,22 +92,5 @@ sealed class D133MalphasStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
-StatesType = typeof(D133MalphasStates),
-ConfigType = null, // replace null with typeof(MalphasConfig) if applicable
-ObjectIDType = typeof(OID),
-ActionIDType = null, // replace null with typeof(AID) if applicable
-StatusIDType = null, // replace null with typeof(SID) if applicable
-TetherIDType = null, // replace null with typeof(TetherID) if applicable
-IconIDType = null, // replace null with typeof(IconID) if applicable
-PrimaryActorOID = (uint)OID.Malphas,
-Contributors = "HerStolenLight",
-Expansion = BossModuleInfo.Expansion.Dawntrail,
-Category = BossModuleInfo.Category.Dungeon,
-GroupType = BossModuleInfo.GroupType.CFC,
-GroupID = 1011u,
-NameID = 14758u,
-SortOrder = 3,
-PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.Malphas, Contributors = "HerStolenLight", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1011u, NameID = 14758u, SortOrder = 3)]
 public sealed class D133Malphas(WorldState ws, Actor primary) : BossModule(ws, primary, new(760f, -803f), new ArenaBoundsCircle(20f));

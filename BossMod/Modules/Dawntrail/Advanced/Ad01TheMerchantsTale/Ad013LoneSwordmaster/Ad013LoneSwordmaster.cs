@@ -585,22 +585,6 @@ sealed class SilentEight(BossModule module) : Components.GenericBaitAway(module)
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Contributed,
-StatesType = typeof(Ad013LoneSwordmasterStates),
-ConfigType = null, // replace null with typeof(LoneSwordmasterConfig) if applicable
-ObjectIDType = typeof(OID),
-ActionIDType = typeof(AID),
-StatusIDType = typeof(SID),
-TetherIDType = typeof(TetherID),
-IconIDType = typeof(IconID),
-PrimaryActorOID = (uint)OID.LoneSwordmaster,
-Contributors = "",
-Expansion = BossModuleInfo.Expansion.Dawntrail,
-Category = BossModuleInfo.Category.VariantCriterion,
-GroupType = BossModuleInfo.GroupType.CFC,
-GroupID = 1084u,
-NameID = 14323u,
-SortOrder = 3,
-PlanLevel = 0)]
-[SkipLocalsInit]
-public sealed class LoneSwordmaster(WorldState ws, Actor primary) : BossModule(ws, primary, new(170f, -815f), new ArenaBoundsSquare(20f));
+[ModuleInfo(BossModuleInfo.Maturity.Contributed, PrimaryActorOID = (uint)OID.LoneSwordmaster, Contributors = "", Category = BossModuleInfo.Category.VariantCriterion,
+GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1084u, NameID = 14323u, SortOrder = 3)]
+public sealed class Ad013LoneSwordmaster(WorldState ws, Actor primary) : BossModule(ws, primary, new(170f, -815f), new ArenaBoundsSquare(20f));

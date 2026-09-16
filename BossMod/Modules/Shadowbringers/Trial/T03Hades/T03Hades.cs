@@ -266,7 +266,6 @@ sealed class NetherBlast(BossModule module) : Components.BaitAwayTethers(module,
 
 sealed class LastPhaseRaidwides(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.LifeInCaptivity, (uint)AID.BlackCauldron, (uint)AID.TheDarkDevours, (uint)AID.ChorusOfTheLost]);
 
-[SkipLocalsInit]
 sealed class HadesStates : StateMachineBuilder
 {
     public HadesStates(BossModule module) : base(module)
@@ -318,7 +317,6 @@ sealed class HadesStates : StateMachineBuilder
     NameID = 8352u,
     SortOrder = 1,
     PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class Hades(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsCircle(20f))
 {
     protected override void DrawEnemies(int pcSlot, Actor pc)

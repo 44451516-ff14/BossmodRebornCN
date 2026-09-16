@@ -26,7 +26,6 @@ sealed class ColdStare(BossModule module) : Components.SimpleAOEs(module, (uint)
 sealed class SeeNoEvil(BossModule module) : Components.CastGaze(module, (uint)AID.SeeNoEvil);
 sealed class SinisterSight(BossModule module) : Components.CastGaze(module, (uint)AID.SinisterSight);
 
-[SkipLocalsInit]
 sealed class EyeToEyeStates : StateMachineBuilder
 {
     public EyeToEyeStates(BossModule module) : base(module)
@@ -57,5 +56,4 @@ sealed class EyeToEyeStates : StateMachineBuilder
     NameID = 2075u,
     SortOrder = 4,
     PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class EyeToEye(WorldState ws, Actor primary) : OpenWorldFate(ws, primary);

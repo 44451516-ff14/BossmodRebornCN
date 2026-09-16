@@ -9,7 +9,7 @@ class P2Fireball(BossModule module) : BossComponent(module)
 
     public const float Radius = 4;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (Target == null)
             hints.Add($"Next fireball in ~{(NextAt - WorldState.CurrentTime).TotalSeconds:f1}s");
@@ -43,7 +43,7 @@ class P2Conflagrate(BossModule module) : BossComponent(module)
     public DateTime FettersAt { get; private set; }
     public DateTime NextAt { get; private set; } = module.WorldState.FutureTime(29);
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (Target == null)
             hints.Add($"Next conflagrate in ~{(NextAt - WorldState.CurrentTime).TotalSeconds:f1}s");

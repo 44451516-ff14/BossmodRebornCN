@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P2SHippokampos;
 
-class OminousBubbling(BossModule module) : Components.CastCounter(module, (uint)AID.OminousBubblingAOE)
+sealed class OminousBubbling(BossModule module) : Components.CastCounter(module, (uint)AID.OminousBubblingAOE)
 {
     private const float _radius = 6;
 
@@ -19,7 +19,7 @@ class OminousBubbling(BossModule module) : Components.CastCounter(module, (uint)
         {
             if (player.Role == Role.Healer)
             {
-                Arena.Actor(player, Colors.Danger);
+                Arena.Actor(player, Colors.Danger, drawWorld: true);
                 Arena.ZoneCircleOutline(player.Position, _radius, Colors.Danger);
             }
             else

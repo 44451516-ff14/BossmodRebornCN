@@ -3,7 +3,7 @@ namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRS6TrinityAvowed;
 sealed class ElementalImpact(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(4)];
-    private static readonly AOEShapeCircle circle = new(20f);
+    private readonly AOEShapeCircle circle = new(20f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

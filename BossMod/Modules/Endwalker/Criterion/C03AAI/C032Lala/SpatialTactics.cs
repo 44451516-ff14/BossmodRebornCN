@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C03AAI.C032Lala;
 
-class SpatialTactics(BossModule module) : Components.GenericAOEs(module)
+sealed class SpatialTactics(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly ArcaneArray? _array = module.FindComponent<ArcaneArray>();
     private readonly List<Actor> _fonts = [];

@@ -1,6 +1,5 @@
 namespace BossMod.Dawntrail.Quantum.Q1FinalVerse;
 
-[SkipLocalsInit]
 sealed class ScourgingBlaze(BossModule module) : Components.Exaflare(module, 5f)
 {
     private readonly List<(WDir, WPos)> crystals = [with(12)];

@@ -1,12 +1,12 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex6Golbez;
 
-class AzdajasShadow(BossModule module) : BossComponent(module)
+sealed class AzdajasShadow(BossModule module) : BossComponent(module)
 {
     public enum Mechanic { Unknown, CircleStack, DonutSpread }
 
     public Mechanic CurMechanic;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (CurMechanic != Mechanic.Unknown)
             hints.Add($"Next mechanic: {(CurMechanic == Mechanic.CircleStack ? "out -> stack" : "in -> spread")}");
@@ -14,10 +14,10 @@ class AzdajasShadow(BossModule module) : BossComponent(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        var mechanic = (AID)spell.Action.ID switch
+        var mechanic = spell.Action.ID switch
         {
-            AID.AzdajasShadowCircleStack => Mechanic.CircleStack,
-            AID.AzdajasShadowDonutSpread => Mechanic.DonutSpread,
+            (uint)AID.AzdajasShadowCircleStack => Mechanic.CircleStack,
+            (uint)AID.AzdajasShadowDonutSpread => Mechanic.DonutSpread,
             _ => Mechanic.Unknown
         };
         if (mechanic != Mechanic.Unknown)
@@ -25,11 +25,11 @@ class AzdajasShadow(BossModule module) : BossComponent(module)
     }
 }
 
-class FlamesOfEventide(BossModule module) : Components.GenericBaitAway(module, (uint)AID.FlamesOfEventide)
+sealed class FlamesOfEventide(BossModule module) : Components.GenericBaitAway(module, (uint)AID.FlamesOfEventide)
 {
     private readonly int[] _playerStacks = new int[PartyState.MaxPartySize];
 
-    private static readonly AOEShapeRect _shape = new(50, 3);
+    private readonly AOEShapeRect _shape = new(50f, 3f);
 
     public override void Update()
     {
@@ -59,7 +59,7 @@ class FlamesOfEventide(BossModule module) : Components.GenericBaitAway(module, (
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        if ((SID)status.ID == SID.FlamesOfEventide && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
+        if (status.ID == (uint)SID.FlamesOfEventide && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {
             _playerStacks[slot] = status.Extra;
             if (status.Extra >= 2)
@@ -69,7 +69,7 @@ class FlamesOfEventide(BossModule module) : Components.GenericBaitAway(module, (
 
     public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
-        if ((SID)status.ID == SID.FlamesOfEventide && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
+        if (status.ID == (uint)SID.FlamesOfEventide && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {
             _playerStacks[slot] = 0;
             ForbiddenPlayers.Clear(slot);

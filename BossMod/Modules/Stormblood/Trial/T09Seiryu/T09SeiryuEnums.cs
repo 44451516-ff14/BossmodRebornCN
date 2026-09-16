@@ -51,9 +51,9 @@ public enum AID : uint
 
     FortuneBladeSigil = 14342, // Helper->self, 6.5s cast, range 50+R width 4 rect
 
-    GreatTyphoon28 = 14352, // Helper->self, 3.0s cast, range ?-28 donut, outside of arena
-    GreatTyphoon34 = 14353, // Helper->self, 3.0s cast, range ?-34 donut, outside of arena
-    GreatTyphoon40 = 14354, // Helper->self, 3.0s cast, range ?-40 donut, outside of arena
+    GreatTyphoon1 = 14352, // Helper->self, 3.0s cast, range 20-28 donut, outside of arena
+    GreatTyphoon2 = 14353, // Helper->self, 3.0s cast, range 28-34 donut, outside of arena
+    GreatTyphoon3 = 14354, // Helper->self, 3.0s cast, range 34-40 donut, outside of arena
     InfirmSoul = 14333, // Seiryu->player, 5.0s cast, range 4 circle, tankbuster
 
     KanaboVisual1 = 14316, // IwaNoShiki->location, no cast, ???

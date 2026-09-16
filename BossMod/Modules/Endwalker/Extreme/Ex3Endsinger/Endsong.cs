@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex3Endsigner;
 
-class Endsong(BossModule module) : BossComponent(module)
+sealed class Endsong(BossModule module) : BossComponent(module)
 {
     private readonly List<Actor> _active = [];
 
-    private static readonly AOEShapeCircle _aoe = new(15f);
+    private readonly AOEShapeCircle _aoe = new(15f);
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {

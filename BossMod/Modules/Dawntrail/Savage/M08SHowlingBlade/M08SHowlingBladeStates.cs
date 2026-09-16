@@ -67,9 +67,9 @@ sealed class M08SHowlingBladeStates : StateMachineBuilder
 
     private void ExtraplanarPursuit(uint id, float delay, bool last = false)
     {
-        Cast(id, (uint)AID.ExtraplanarPursuitVisual, delay, 1.6f)
+        Cast(id, AID.ExtraplanarPursuitVisual, delay, 1.6f)
             .ActivateOnEnter<ExtraplanarPursuit>();
-        var cond = ComponentCondition<ExtraplanarPursuit>(id + 0x10u, 2.4f, comp => comp.NumCasts != 0, "Raidwide")
+        var cond = ComponentCondition<ExtraplanarPursuit>(id + 0x10u, 2.4f, static comp => comp.NumCasts != 0, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide)
             .DeactivateOnExit<ExtraplanarPursuit>();
         if (last)
@@ -81,7 +81,7 @@ sealed class M08SHowlingBladeStates : StateMachineBuilder
 
     private void GreatDivide(uint id, float delay)
     {
-        Cast(id, (uint)AID.GreatDivide, delay, 5f, "Shared tankbuster")
+        Cast(id, AID.GreatDivide, delay, 5f, "Shared tankbuster")
             .ActivateOnEnter<GreatDivide>()
             .DeactivateOnExit<GreatDivide>()
             .SetHint(StateMachine.StateHint.Tankbuster);
@@ -89,21 +89,21 @@ sealed class M08SHowlingBladeStates : StateMachineBuilder
 
     private void TrackingTremors(uint id, float delay)
     {
-        ComponentCondition<TrackingTremors>(id, delay, comp => comp.CastCounter != 0, "Stack x8 starts")
+        ComponentCondition<TrackingTremors>(id, delay, static comp => comp.CastCounter != 0, "Stack x8 starts")
             .ActivateOnEnter<TrackingTremors>();
-        ComponentCondition<TrackingTremors>(id + 0x10u, 7.5f, comp => comp.Stacks.Count == 0, "Stack finishes")
+        ComponentCondition<TrackingTremors>(id + 0x10u, 7.5f, static comp => comp.Stacks.Count == 0, "Stack finishes")
             .SetHint(StateMachine.StateHint.Raidwide)
             .DeactivateOnExit<TrackingTremors>();
     }
 
     private void WindfangStonefang1(uint id, float delay)
     {
-        CastStartMulti(id, [(uint)AID.WindfangCross1, (uint)AID.WindfangCross2, (uint)AID.StonefangCross1, (uint)AID.StonefangCross2], delay, "Wind-/Stonefang 1")
+        CastStartMulti(id, [AID.WindfangCross1, AID.WindfangCross2, AID.StonefangCross1, AID.StonefangCross2], delay, "Wind-/Stonefang 1")
             .ActivateOnEnter<StonefangBait>()
             .ActivateOnEnter<WindfangBait>()
             .ActivateOnEnter<WindfangStonefang>()
-            .ExecOnEnter<WindfangStonefang>(comp => comp.Draw = true);
-        ComponentCondition<WindfangStonefang>(id + 0x10u, 6f, comp => comp.NumCasts != 0, "Baits + cross + circle OR donut")
+            .ExecOnEnter<WindfangStonefang>(static comp => comp.Draw = true);
+        ComponentCondition<WindfangStonefang>(id + 0x10u, 6f, static comp => comp.NumCasts != 0, "Baits + cross + circle OR donut")
             .DeactivateOnExit<StonefangBait>()
             .DeactivateOnExit<WindfangBait>()
             .DeactivateOnExit<WindfangStonefang>();
@@ -111,17 +111,17 @@ sealed class M08SHowlingBladeStates : StateMachineBuilder
 
     private void WolvesReign(uint id, float delay)
     {
-        CastStartMulti(id, [(uint)AID.RevolutionaryReignVisual1, (uint)AID.RevolutionaryReignVisual2, (uint)AID.EminentReignVisual1, (uint)AID.EminentReignVisual2], delay, "Wolvesreign")
+        CastStartMulti(id, [AID.RevolutionaryReignVisual1, AID.RevolutionaryReignVisual2, AID.EminentReignVisual1, AID.EminentReignVisual2], delay, "Wolvesreign")
             .ActivateOnExit<WolvesReignConeCircle>()
             .ActivateOnExit<WolvesReignRect>()
             .ActivateOnEnter<WolvesReignCircle>();
-        ComponentCondition<WolvesReignCircle>(id + 0x10u, 7f, comp => comp.NumCasts == 4, "Circles resolve")
+        ComponentCondition<WolvesReignCircle>(id + 0x10u, 7f, static comp => comp.NumCasts == 4, "Circles resolve")
             .DeactivateOnExit<WolvesReignCircle>()
             .ActivateOnExit<ReignsEnd>()
             .ActivateOnExit<SovereignScar>();
-        ComponentCondition<WolvesReignRect>(id + 0x20u, 2.5f, comp => comp.NumCasts != 0, "Line AOE")
+        ComponentCondition<WolvesReignRect>(id + 0x20u, 2.5f, static comp => comp.NumCasts != 0, "Line AOE")
             .DeactivateOnExit<WolvesReignRect>();
-        ComponentCondition<WolvesReignConeCircle>(id + 0x30u, 3.1f, comp => comp.NumCasts != 0, "Baits resolve + cone OR circle", 2f)
+        ComponentCondition<WolvesReignConeCircle>(id + 0x30u, 3.1f, static comp => comp.NumCasts != 0, "Baits resolve + cone OR circle", 2f)
             .DeactivateOnExit<WolvesReignConeCircle>()
             .DeactivateOnExit<ReignsEnd>()
             .DeactivateOnExit<SovereignScar>();
@@ -129,131 +129,131 @@ sealed class M08SHowlingBladeStates : StateMachineBuilder
 
     private void MillennialDecay(uint id, float delay)
     {
-        Cast(id, (uint)AID.MillennialDecay, delay, 5f, "Raidwide")
+        Cast(id, AID.MillennialDecay, delay, 5f, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide)
             .ActivateOnExit<BreathOfDecay>()
             .ActivateOnExit<AeroIII>()
             .ActivateOnExit<Gust>();
-        ComponentCondition<AeroIII>(id + 0x10u, 10.6f, comp => comp.NumCasts != 0, "Knockback 1");
-        ComponentCondition<BreathOfDecay>(id + 0x20u, 1.5f, comp => comp.NumCasts != 0, "Line AOE 1");
-        ComponentCondition<Gust>(id + 0x30u, 0.4f, comp => comp.NumFinishedSpreads == 4, "Spreads 1 resolve");
-        ComponentCondition<BreathOfDecay>(id + 0x40u, 1.5f, comp => comp.NumCasts == 2, "Line AOE 2");
-        ComponentCondition<BreathOfDecay>(id + 0x50u, 2f, comp => comp.NumCasts == 3, "Line AOE 3");
-        ComponentCondition<Gust>(id + 0x60u, 1.5f, comp => comp.NumFinishedSpreads == 8, "Spreads 2 resolve")
+        ComponentCondition<AeroIII>(id + 0x10u, 10.6f, static comp => comp.NumCasts != 0, "Knockback 1");
+        ComponentCondition<BreathOfDecay>(id + 0x20u, 1.5f, static comp => comp.NumCasts != 0, "Line AOE 1");
+        ComponentCondition<Gust>(id + 0x30u, 0.4f, static comp => comp.NumFinishedSpreads == 4, "Spreads 1 resolve");
+        ComponentCondition<BreathOfDecay>(id + 0x40u, 1.5f, static comp => comp.NumCasts == 2, "Line AOE 2");
+        ComponentCondition<BreathOfDecay>(id + 0x50u, 2f, static comp => comp.NumCasts == 3, "Line AOE 3");
+        ComponentCondition<Gust>(id + 0x60u, 1.5f, static comp => comp.NumFinishedSpreads == 8, "Spreads 2 resolve")
             .DeactivateOnExit<Gust>();
-        ComponentCondition<BreathOfDecay>(id + 0x70u, 0.5f, comp => comp.NumCasts == 4, "Line AOE 4");
-        ComponentCondition<BreathOfDecay>(id + 0x80u, 2f, comp => comp.NumCasts == 5, "Line AOE 5")
+        ComponentCondition<BreathOfDecay>(id + 0x70u, 0.5f, static comp => comp.NumCasts == 4, "Line AOE 4");
+        ComponentCondition<BreathOfDecay>(id + 0x80u, 2f, static comp => comp.NumCasts == 5, "Line AOE 5")
             .ActivateOnExit<ProwlingGale>()
             .ActivateOnExit<WindsOfDecayBait>()
             .ActivateOnExit<WindsOfDecayTether>()
             .DeactivateOnExit<BreathOfDecay>();
-        ComponentCondition<AeroIII>(id + 0x90u, 6.2f, comp => comp.NumCasts == 2, "Knockback 2")
+        ComponentCondition<AeroIII>(id + 0x90u, 6.2f, static comp => comp.NumCasts == 2, "Knockback 2")
             .DeactivateOnExit<AeroIII>();
-        ComponentCondition<ProwlingGale>(id + 0xA0u, 2.3f, comp => comp.NumCasts != 0, "Towers resolve")
+        ComponentCondition<ProwlingGale>(id + 0xA0u, 2.3f, static comp => comp.NumCasts != 0, "Towers resolve")
             .DeactivateOnExit<ProwlingGale>();
-        ComponentCondition<WindsOfDecayBait>(id + 0xB0u, 0.2f, comp => comp.NumCasts != 0, "Baits resolve")
+        ComponentCondition<WindsOfDecayBait>(id + 0xB0u, 0.2f, static comp => comp.NumCasts != 0, "Baits resolve")
             .DeactivateOnExit<WindsOfDecayTether>()
             .DeactivateOnExit<WindsOfDecayBait>();
     }
 
     private void TerrestrialTitans(uint id, float delay)
     {
-        ComponentCondition<TerrestrialTitans>(id, delay, comp => comp.NumCasts != 0, "Circle AOEs + pillars spawn")
+        ComponentCondition<TerrestrialTitans>(id, delay, static comp => comp.NumCasts != 0, "Circle AOEs + pillars spawn")
             .ActivateOnEnter<TerrestrialTitans>()
             .ActivateOnEnter<ArenaChanges>()
             .ActivateOnEnter<Towerfall>()
             .DeactivateOnExit<TerrestrialTitans>();
-        ComponentCondition<TitanicPursuit>(id + 0x10u, 7.1f, comp => comp.NumCasts != 0, "Raidwide")
+        ComponentCondition<TitanicPursuit>(id + 0x10u, 7.1f, static comp => comp.NumCasts != 0, "Raidwide")
             .ActivateOnEnter<TitanicPursuit>()
             .ActivateOnEnter<FangedCrossing>()
             .SetHint(StateMachine.StateHint.Raidwide)
             .DeactivateOnExit<TitanicPursuit>();
-        ComponentCondition<Towerfall>(id + 0x20u, 7.6f, comp => comp.NumCasts != 0, "Line AOEs + pillars disappear")
+        ComponentCondition<Towerfall>(id + 0x20u, 7.6f, static comp => comp.NumCasts != 0, "Line AOEs + pillars disappear")
             .DeactivateOnExit<ArenaChanges>()
             .DeactivateOnExit<Towerfall>();
-        ComponentCondition<FangedCrossing>(id + 0x30u, 0.2f, comp => comp.NumCasts != 0, "Cross AOEs")
+        ComponentCondition<FangedCrossing>(id + 0x30u, 0.2f, static comp => comp.NumCasts != 0, "Cross AOEs")
             .DeactivateOnExit<FangedCrossing>();
     }
 
     private void TacticalPack(uint id, float delay)
     {
-        Cast(id, (uint)AID.TacticalPack, delay, 3f, "Tactical Pack")
+        Cast(id, AID.TacticalPack, delay, 3f, "Tactical Pack")
             .ActivateOnExit<Adds>()
             .ActivateOnExit<ArenaChanges>();
         Targetable(id + 0x10u, false, 2f, "Boss untargetable");
-        ComponentCondition<HowlingHavoc>(id + 0x20u, 7.3f, comp => comp.NumCasts != 0, "Raidwide")
+        ComponentCondition<HowlingHavoc>(id + 0x20u, 7.3f, static comp => comp.NumCasts != 0, "Raidwide")
             .ActivateOnEnter<HowlingHavoc>()
             .DeactivateOnExit<HowlingHavoc>()
             .SetHint(StateMachine.StateHint.Raidwide);
-        ComponentCondition<Adds>(id + 0x30u, 0.5f, comp => comp.Windpack != default, "Debuff assignment + donut arena", 3f)
+        ComponentCondition<Adds>(id + 0x30u, 0.5f, static comp => comp.Windpack != default, "Debuff assignment + donut arena", 3f)
             .ActivateOnEnter<EarthWindborneEnd>()
             .ActivateOnExit<StalkingStoneWind>()
             .ActivateOnExit<AlphaWindStone>();
-        ComponentCondition<StalkingStoneWind>(id + 0x40u, 9.7f, comp => comp.NumCasts != 0, "Baits and Line stacks 1");
-        ComponentCondition<StalkingStoneWind>(id + 0x50u, 14.1f, comp => comp.NumCasts > 2, "Baits and Line stacks 2");
-        ComponentCondition<StalkingStoneWind>(id + 0x60u, 14.2f, comp => comp.NumCasts > 4, "Baits and Line stacks 3")
+        ComponentCondition<StalkingStoneWind>(id + 0x40u, 9.7f, static comp => comp.NumCasts != 0, "Baits and Line stacks 1");
+        ComponentCondition<StalkingStoneWind>(id + 0x50u, 14.1f, static comp => comp.NumCasts > 2, "Baits and Line stacks 2");
+        ComponentCondition<StalkingStoneWind>(id + 0x60u, 14.2f, static comp => comp.NumCasts > 4, "Baits and Line stacks 3")
             .DeactivateOnExit<StalkingStoneWind>()
             .DeactivateOnExit<AlphaWindStone>();
-        ComponentCondition<RavenousSaber>(id + 0x70u, 28.3f, comp => comp.NumCasts != 0, "Raidwides x5 starts", 10f)  // note: time varies a lot depending on how fast phase gets completed
+        ComponentCondition<RavenousSaber>(id + 0x70u, 28.3f, static comp => comp.NumCasts != 0, "Raidwides x5 starts", 10f)  // note: time varies a lot depending on how fast phase gets completed
             .DeactivateOnExit<ArenaChanges>()
             .SetHint(StateMachine.StateHint.DowntimeEnd)
             .SetHint(StateMachine.StateHint.Raidwide)
             .DeactivateOnExit<EarthWindborneEnd>()
             .DeactivateOnExit<Adds>()
             .ActivateOnEnter<RavenousSaber>();
-        ComponentCondition<RavenousSaber>(id + 0x80u, 3.9f, comp => comp.NumCasts == 5, "Raidwides finish")
+        ComponentCondition<RavenousSaber>(id + 0x80u, 3.9f, static comp => comp.NumCasts == 5, "Raidwides finish")
             .SetHint(StateMachine.StateHint.Raidwide)
             .DeactivateOnExit<RavenousSaber>();
     }
 
     private void TerrestrialRage(uint id, float delay)
     {
-        Cast(id, (uint)AID.TerrestrialRage, delay, 3f, "Terrestial Rage")
+        Cast(id, AID.TerrestrialRage, delay, 3f, "Terrestial Rage")
             .ActivateOnExit<FangedCharge>()
             .ActivateOnExit<HeavensearthSuspendedStone>();
-        ComponentCondition<FangedCharge>(id + 0x10u, 7f, comp => comp.NumCasts != 0, "Line AOEs 1");
-        ComponentCondition<HeavensearthSuspendedStone>(id + 0x20u, 1.3f, comp => comp.NumFinishedSpreads == 4, "Spreads + Stack 1 resolve");
-        ComponentCondition<FangedCharge>(id + 0x30u, 1.2f, comp => comp.NumCasts > 2, "Line AOEs 2")
+        ComponentCondition<FangedCharge>(id + 0x10u, 7f, static comp => comp.NumCasts != 0, "Line AOEs 1");
+        ComponentCondition<HeavensearthSuspendedStone>(id + 0x20u, 1.3f, static comp => comp.NumFinishedSpreads == 4, "Spreads + Stack 1 resolve");
+        ComponentCondition<FangedCharge>(id + 0x30u, 1.2f, static comp => comp.NumCasts > 2, "Line AOEs 2")
             .DeactivateOnExit<FangedCharge>()
             .ActivateOnExit<RoaringWind>()
             .ActivateOnExit<Shadowchase>();
-        ComponentCondition<HeavensearthSuspendedStone>(id + 0x40u, 5.5f, comp => comp.NumFinishedSpreads == 8, "Spreads + Stack 2 resolve")
+        ComponentCondition<HeavensearthSuspendedStone>(id + 0x40u, 5.5f, static comp => comp.NumFinishedSpreads == 8, "Spreads + Stack 2 resolve")
             .DeactivateOnExit<HeavensearthSuspendedStone>();
-        ComponentCondition<Shadowchase>(id + 0x50u, 0.4f, comp => comp.NumCasts != 0, "Line AOEs 3")
-            .ExecOnExit<RoaringWind>(comp => comp.Draw = true)
+        ComponentCondition<Shadowchase>(id + 0x50u, 0.4f, static comp => comp.NumCasts != 0, "Line AOEs 3")
+            .ExecOnExit<RoaringWind>(static comp => comp.Draw = true)
             .DeactivateOnExit<Shadowchase>();
     }
 
     private void WolvesReign3(uint id, float delay)
     {
-        CastStartMulti(id, [(uint)AID.RevolutionaryReignVisual1, (uint)AID.RevolutionaryReignVisual2, (uint)AID.EminentReignVisual1, (uint)AID.EminentReignVisual2], delay, "Wolvesreign");
-        ComponentCondition<RoaringWind>(id + 0x10u, 0.5f, comp => comp.NumCasts != 0, "Line AOEs 1")
+        CastStartMulti(id, [AID.RevolutionaryReignVisual1, AID.RevolutionaryReignVisual2, AID.EminentReignVisual1, AID.EminentReignVisual2], delay, "Wolvesreign");
+        ComponentCondition<RoaringWind>(id + 0x10u, 0.5f, static comp => comp.NumCasts != 0, "Line AOEs 1")
             .ActivateOnExit<WolvesReignConeCircle>()
             .ActivateOnExit<WolvesReignRect>()
             .ActivateOnExit<WolvesReignCircle>()
             .ActivateOnExit<WealOfStone>()
             .DeactivateOnExit<RoaringWind>();
-        ComponentCondition<WolvesReignCircle>(id + 0x20u, 6.5f, comp => comp.NumCasts == 4, "Circles resolve")
+        ComponentCondition<WolvesReignCircle>(id + 0x20u, 6.5f, static comp => comp.NumCasts == 4, "Circles resolve")
             .DeactivateOnExit<WolvesReignCircle>()
             .ActivateOnExit<ReignsEnd>()
             .ActivateOnExit<SovereignScar>();
-        ComponentCondition<WolvesReignRect>(id + 0x30u, 2.5f, comp => comp.NumCasts != 0, "Line AOE")
+        ComponentCondition<WolvesReignRect>(id + 0x30u, 2.5f, static comp => comp.NumCasts != 0, "Line AOE")
             .DeactivateOnExit<WolvesReignRect>();
-        ComponentCondition<WolvesReignConeCircle>(id + 0x40u, 3.1f, comp => comp.NumCasts != 0, "Baits resolve + cone OR circle")
+        ComponentCondition<WolvesReignConeCircle>(id + 0x40u, 3.1f, static comp => comp.NumCasts != 0, "Baits resolve + cone OR circle")
             .DeactivateOnExit<WolvesReignConeCircle>()
             .DeactivateOnExit<ReignsEnd>()
             .DeactivateOnExit<SovereignScar>()
-            .ExecOnExit<WealOfStone>(comp => comp.Draw = true);
-        ComponentCondition<WealOfStone>(id + 0x50u, 2.9f, comp => comp.NumCasts != 0, "Line AOEs 2")
+            .ExecOnExit<WealOfStone>(static comp => comp.Draw = true);
+        ComponentCondition<WealOfStone>(id + 0x50u, 2.9f, static comp => comp.NumCasts != 0, "Line AOEs 2")
             .DeactivateOnExit<WealOfStone>();
     }
 
     private void BeckonMoonlight(uint id, float delay)
     {
-        Cast(id, (uint)AID.BeckonMoonlight, delay, 3f, "Beckon Moonlight")
+        Cast(id, AID.BeckonMoonlight, delay, 3f, "Beckon Moonlight")
             .ActivateOnExit<MoonbeamsBite>()
             .ActivateOnExit<HeavensearthSuspendedStone>();
-        ComponentCondition<HeavensearthSuspendedStone>(id + 0x10u, 12.7f, comp => comp.NumFinishedSpreads == 4, "Spreads + Stack 1 resolve");
+        ComponentCondition<HeavensearthSuspendedStone>(id + 0x10u, 12.7f, static comp => comp.NumFinishedSpreads == 4, "Spreads + Stack 1 resolve");
         for (var i = 1; i <= 4; ++i)
         {
             var offset = id + 0x20u + (uint)((i - 1) * 0x10u);
@@ -267,22 +267,22 @@ sealed class M08SHowlingBladeStates : StateMachineBuilder
                     .ActivateOnEnter<WealOfStone>();
             }
         }
-        ComponentCondition<HeavensearthSuspendedStone>(id + 0x60u, 1f, comp => comp.NumFinishedSpreads == 8, "Spreads + Stack 2 resolve")
+        ComponentCondition<HeavensearthSuspendedStone>(id + 0x60u, 1f, static comp => comp.NumFinishedSpreads == 8, "Spreads + Stack 2 resolve")
             .DeactivateOnEnter<MoonbeamsBite>()
             .DeactivateOnExit<HeavensearthSuspendedStone>()
-            .ExecOnExit<WealOfStone>(comp => comp.Draw = true);
+            .ExecOnExit<WealOfStone>(static comp => comp.Draw = true);
     }
 
     private void WindfangStonefang2(uint id, float delay)
     {
-        CastStartMulti(id, [(uint)AID.WindfangCross1, (uint)AID.WindfangCross2, (uint)AID.StonefangCross1, (uint)AID.StonefangCross2], delay, "Wind-/Stonefang 2")
+        CastStartMulti(id, [AID.WindfangCross1, AID.WindfangCross2, AID.StonefangCross1, AID.StonefangCross2], delay, "Wind-/Stonefang 2")
             .ActivateOnEnter<WindfangStonefang>();
-        ComponentCondition<WealOfStone>(id + 0x10u, 1.1f, comp => comp.NumCasts == 4, "Line AOEs")
-            .ExecOnExit<WindfangStonefang>(comp => comp.Draw = true)
+        ComponentCondition<WealOfStone>(id + 0x10u, 1.1f, static comp => comp.NumCasts == 4, "Line AOEs")
+            .ExecOnExit<WindfangStonefang>(static comp => comp.Draw = true)
             .ActivateOnExit<StonefangBait>()
             .ActivateOnExit<WindfangBait>()
             .DeactivateOnExit<WealOfStone>();
-        ComponentCondition<WindfangStonefang>(id + 0x20u, 4.9f, comp => comp.NumCasts != 0, "Baits + cross + circle OR donut")
+        ComponentCondition<WindfangStonefang>(id + 0x20u, 4.9f, static comp => comp.NumCasts != 0, "Baits + cross + circle OR donut")
             .DeactivateOnExit<StonefangBait>()
             .DeactivateOnExit<WindfangBait>()
             .DeactivateOnExit<WindfangStonefang>();
@@ -290,7 +290,7 @@ sealed class M08SHowlingBladeStates : StateMachineBuilder
 
     private void QuakeIII(uint id, float delay)
     {
-        ComponentCondition<QuakeIII>(id, delay, comp => comp.NumCasts != 0, "Light party stacks")
+        ComponentCondition<QuakeIII>(id, delay, static comp => comp.NumCasts != 0, "Light party stacks")
             .SetHint(StateMachine.StateHint.Raidwide)
             .ActivateOnEnter<QuakeIII>()
             .DeactivateOnExit<QuakeIII>();
@@ -298,7 +298,7 @@ sealed class M08SHowlingBladeStates : StateMachineBuilder
 
     private void UltraviolentRay(uint id, float delay)
     {
-        ComponentCondition<GleamingBeam>(id, delay, comp => comp.NumCasts == 5, "Defamations + Line AOEs")
+        ComponentCondition<GleamingBeam>(id, delay, static comp => comp.NumCasts == 5, "Defamations + Line AOEs")
             .ActivateOnEnter<UltraviolentRay>()
             .ActivateOnEnter<GleamingBeam>()
             .DeactivateOnExit<UltraviolentRay>()
@@ -307,7 +307,7 @@ sealed class M08SHowlingBladeStates : StateMachineBuilder
 
     private void Twinbite(uint id, float delay)
     {
-        ComponentCondition<Twinbite>(id, delay, comp => comp.NumCasts != 0, "Tankbusters")
+        ComponentCondition<Twinbite>(id, delay, static comp => comp.NumCasts != 0, "Tankbusters")
             .SetHint(StateMachine.StateHint.Tankbuster)
             .ActivateOnEnter<Twinbite>()
             .DeactivateOnExit<Twinbite>();
@@ -315,26 +315,26 @@ sealed class M08SHowlingBladeStates : StateMachineBuilder
 
     private void HerosBlow(uint id, float delay)
     {
-        ComponentCondition<HerosBlow>(id, delay, comp => comp.NumCasts != 0, "Cone + circle OR donut AOE")
+        ComponentCondition<HerosBlow>(id, delay, static comp => comp.NumCasts != 0, "Cone + circle OR donut AOE")
             .ActivateOnEnter<HerosBlow>()
             .DeactivateOnExit<HerosBlow>();
     }
 
     private void Mooncleaver1(uint id, float delay)
     {
-        ComponentCondition<Mooncleaver1>(id, delay, comp => comp.NumCasts != 0, "Destroy a platform")
+        ComponentCondition<Mooncleaver1>(id, delay, static comp => comp.NumCasts != 0, "Destroy a platform")
             .ActivateOnEnter<Mooncleaver1>()
             .DeactivateOnExit<Mooncleaver1>();
     }
 
     private void ElementalPurge(uint id, float delay)
     {
-        ComponentCondition<HuntersHarvestBait>(id, delay, comp => comp.Bind != default, "Bind main tank")
+        ComponentCondition<HuntersHarvestBait>(id, delay, static comp => comp.Bind != default, "Bind main tank")
             .ActivateOnEnter<HuntersHarvest>()
             .ActivateOnEnter<HuntersHarvestBait>()
             .ActivateOnEnter<AerotemporalBlast>()
             .ActivateOnEnter<GeotemporalBlast>();
-        ComponentCondition<GeotemporalBlast>(id + 0x10u, 5.2f, comp => comp.NumCasts != 0, "Stack + baited tankbusters")
+        ComponentCondition<GeotemporalBlast>(id + 0x10u, 5.2f, static comp => comp.NumCasts != 0, "Stack + baited tankbusters")
             .DeactivateOnExit<GeotemporalBlast>()
             .DeactivateOnExit<HuntersHarvestBait>()
             .DeactivateOnExit<AerotemporalBlast>()
@@ -343,7 +343,7 @@ sealed class M08SHowlingBladeStates : StateMachineBuilder
 
     private void ProwlingGaleP2(uint id, float delay)
     {
-        ComponentCondition<ProwlingGaleP2>(id, delay, comp => comp.NumCasts != 0, "Towers resolve")
+        ComponentCondition<ProwlingGaleP2>(id, delay, static comp => comp.NumCasts != 0, "Towers resolve")
             .ActivateOnEnter<ProwlingGaleP2>()
             .DeactivateOnExit<ProwlingGaleP2>();
     }
@@ -373,7 +373,7 @@ sealed class M08SHowlingBladeStates : StateMachineBuilder
                 .DeactivateOnExit<TwofoldTempestRect>();
             }
         }
-        ComponentCondition<ArenaChanges>(id + 0x40u, 5.9f, comp => comp.Repaired, "Repair broken platform");
+        ComponentCondition<ArenaChanges>(id + 0x40u, 5.9f, static comp => comp.Repaired, "Repair broken platform");
     }
 
     private void ChampionsCircuit(uint id, float delay)
@@ -403,11 +403,11 @@ sealed class M08SHowlingBladeStates : StateMachineBuilder
 
     private void RiseOfTheHuntersBlade(uint id, float delay)
     {
-        ActorCast(id, _module.BossP2, (uint)AID.RiseOfTheHuntersBlade, delay, 7f, true, "Rise of the Hunter's Blade")
+        ActorCast(id, _module.BossP2, AID.RiseOfTheHuntersBlade, delay, 7f, true, "Rise of the Hunter's Blade")
             .ActivateOnEnter<LamentOfTheCloseDistant>();
-        ActorCast(id + 0x10u, _module.BossP2, (uint)AID.LoneWolfsLament, 2.2f, 3f, true, "Lone Wolf's Lament");
-        ComponentCondition<LamentOfTheCloseDistant>(id + 0x20u, 0.8f, comp => comp.TethersAssigned, "Tethers assigned");
-        ComponentCondition<ProwlingGaleLast>(id + 0x30u, 18.2f, comp => comp.NumCasts != 0, "Towers resolve")
+        ActorCast(id + 0x10u, _module.BossP2, AID.LoneWolfsLament, 2.2f, 3f, true, "Lone Wolf's Lament");
+        ComponentCondition<LamentOfTheCloseDistant>(id + 0x20u, 0.8f, static comp => comp.TethersAssigned, "Tethers assigned");
+        ComponentCondition<ProwlingGaleLast>(id + 0x30u, 18.2f, static comp => comp.NumCasts != 0, "Towers resolve")
             .ActivateOnEnter<ProwlingGaleLast>()
             .DeactivateOnExit<ProwlingGaleLast>();
     }
@@ -429,7 +429,7 @@ sealed class M08SHowlingBladeStates : StateMachineBuilder
                 .ActivateOnEnter<Mooncleaver2>()
                 .DeactivateOnEnter<LamentOfTheCloseDistant>();
             }
-            ComponentCondition<HowlingEight>(cast8Id, 6f, comp => comp.Towers.Count == 0, $"Tower {casts} cast 8")
+            ComponentCondition<HowlingEight>(cast8Id, 6f, static comp => comp.Towers.Count == 0, $"Tower {casts} cast 8")
                 .SetHint(StateMachine.StateHint.Raidwide);
             if (i < 4)
                 ComponentCondition<Mooncleaver2>(platformId, 4.4f, comp => comp.NumCasts == casts, "Destroy platform");

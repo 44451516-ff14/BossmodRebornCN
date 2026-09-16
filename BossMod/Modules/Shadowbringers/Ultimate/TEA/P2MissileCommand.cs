@@ -1,9 +1,7 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-[SkipLocalsInit]
 sealed class P2EarthMissileBaited(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.EarthMissileBaited, m => m.Enemies((uint)OID.VoidzoneEarthMissileBaited).Where(z => z.EventState != 7), 0.9d);
 
-[SkipLocalsInit]
 sealed class P2EarthMissileIce(BossModule module) : Components.VoidzoneAtCastTarget(module, 10f, (uint)AID.EarthMissileIce, Voidzones, 0.8d) // TODO: verify larger radius...
 {
     private static IEnumerable<Actor> Voidzones(BossModule m)
@@ -23,7 +21,6 @@ sealed class P2EarthMissileIce(BossModule module) : Components.VoidzoneAtCastTar
 
 // note: we use a single spread/stack component for both enumerations and ice missile spreads, since they happen at the same time
 // TODO: add hint for spread target to stay close to tornado...
-[SkipLocalsInit]
 sealed class P2Enumeration(BossModule module) : Components.UniformStackSpread(module, 5f, 6f, 3, 3, true, false) // TODO: verify enumeration radius
 {
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
@@ -54,7 +51,6 @@ sealed class P2Enumeration(BossModule module) : Components.UniformStackSpread(mo
     }
 }
 
-[SkipLocalsInit]
 sealed class P2HiddenMinefield(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HiddenMinefield, 5f)
 {
     private readonly List<WPos> _mines = [];

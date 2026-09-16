@@ -235,23 +235,24 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
 
     private async Task<NavigationDecision> BuildNavigationDecision(Actor player, Actor master, Targeting targeting)
     {
+        var hints = autorot.Hints;
         if (_config.ForbidMovement || _config.ForbidAIMovementMounted && player.MountId != default
-            || autorot.Hints.ImminentSpecialMode.mode is AIHints.SpecialMode.NoMovement or AIHints.SpecialMode.Pyretic && autorot.Hints.ImminentSpecialMode.activation <= WorldState.FutureTime(1d))
+            || hints.ImminentSpecialMode.mode is AIHints.SpecialMode.NoMovement or AIHints.SpecialMode.Pyretic && hints.ImminentSpecialMode.activation <= WorldState.FutureTime(1d))
         {
             return new() { LeewaySeconds = float.MaxValue };
         }
 
-        if (autorot.Hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Freezing && autorot.Hints.ImminentSpecialMode.activation <= WorldState.FutureTime(2.1d))
+        if (hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Freezing && hints.ImminentSpecialMode.activation <= WorldState.FutureTime(2.1d))
         {
             var randomO1 = random.NextSingle() * 2f - 1f;
             var randomO2 = random.NextSingle() * 2f - 1f;
             var pos = player.Position;
-            autorot.Hints.ForcedMovement = new WPos(pos.X * randomO1, pos.Z * randomO2).ToVec3();
+            hints.ForcedMovement = new WPos(pos.X * randomO1, pos.Z * randomO2).ToVec3();
             return new() { LeewaySeconds = float.MaxValue };
         }
 
         Actor? forceDestination = null;
-        var interactTarget = autorot.Hints.InteractWithTarget;
+        var interactTarget = hints.InteractWithTarget;
         if (interactTarget != null)
         {
             forceDestination = interactTarget;
@@ -262,9 +263,9 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
         }
 
         _followMaster = interactTarget == null && (_config.FollowDuringCombat || !master.InCombat || (_masterPrevPos - _masterMovementStart).LengthSq() > 100f) && (_config.FollowDuringActiveBossModule || autorot.Bossmods.ActiveModule?.StateMachine.ActiveState == null) && (_config.FollowOutOfCombat || master.InCombat);
-        if (forceDestination != null && forceDestination != master && autorot.Hints.PathfindMapBounds.Contains(forceDestination.Position - autorot.Hints.PathfindMapCenter))
+        if (forceDestination != null && forceDestination != master && hints.PathfindMapBounds.Contains(forceDestination.Position - hints.PathfindMapCenter))
         {
-            autorot.Hints.GoalZones.Add(AIHints.GoalProximity(forceDestination, 3.5f, 100f));
+            hints.GoalZones.Add(AIHints.GoalProximity(forceDestination, 3.5f, 100f));
         }
         if (_followMaster)
         {
@@ -275,8 +276,8 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
             }
             else if (_config.FollowTarget && target != null && AIPreset == null)
             {
-                var positional = _config.FollowRSRDesiredPositional && autorot.Hints.RSRDesiredPositional != Positional.Any
-                    ? autorot.Hints.RSRDesiredPositional
+                var positional = _config.FollowRSRDesiredPositional && hints.RSRDesiredPositional != Positional.Any
+                    ? hints.RSRDesiredPositional
                     : _config.DesiredPositional;
                 var mindist = _config.MinDistance;
                 var maxdist = _config.MaxDistanceToTarget;
@@ -285,7 +286,7 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
                     positional = Positional.Any;
                 }
 
-                autorot.Hints.GoalZones.Add(AIHints.GoalSingleTarget(master, positional, positional != Positional.Any ? 2.6f : maxdist));
+                hints.GoalZones.Add(AIHints.GoalSingleTarget(master, positional, positional != Positional.Any ? 2.6f : maxdist));
 
                 if (mindist != default && target.InstanceID != player.InstanceID && interactTarget == null)
                 {
@@ -293,7 +294,7 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
                     var maxAdj = hitboxradius + maxdist;
                     var min = hitboxradius + mindist;
                     var max = maxAdj > min ? maxAdj : min + 1f;
-                    autorot.Hints.GoalZones.Add(AIHints.GoalDonut(target.Position, min, max, 2f));
+                    hints.GoalZones.Add(AIHints.GoalDonut(target.Position, min, max, 2f));
                 }
             }
             return await Task.Run(() => NavigationDecision.Build(_naviCtx, WorldState.CurrentTime, autorot.Hints, player, autorot.Bossmods.WorldState.Client.MoveSpeed, forbiddenZoneCushion: _config.PreferredDistance)).ConfigureAwait(false);
@@ -428,11 +429,11 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
 
     private bool TargetIsForbidden(ulong actorId)
     {
-        var priorityTargets = autorot.Hints.PriorityTargetsSpan;
-        var len = priorityTargets.Length;
+        var forbiddenTargets = autorot.Hints.ForbiddenTargetsSpan;
+        var len = forbiddenTargets.Length;
         for (var i = 0; i < len; ++i)
         {
-            var e = priorityTargets[i];
+            var e = forbiddenTargets[i];
             if (e.Actor.InstanceID == actorId)
             {
                 return true;

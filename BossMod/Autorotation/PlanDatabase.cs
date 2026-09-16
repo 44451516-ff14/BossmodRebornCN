@@ -58,18 +58,17 @@ public sealed class PlanDatabase
                 var payload = json.RootElement.GetProperty("载荷");
                 foreach (var enc in payload.EnumerateObject())
                 {
-                    var encType = Type.GetType(enc.Name);
-                    var encInfo = encType != null ? BossModuleRegistry.FindByType(encType) : null;
+                    var encInfo = BossModuleRegistry.FindByTypeName(enc.Name);
                     if (encInfo == null)
                     {
                         Service.Log($"Error while deserializing plan database: failed to find encounter {enc.Name}");
                         continue;
                     }
 
-                    var encData = Plans[encType!] = [];
+                    var encData = Plans[encInfo.ModuleType] = [];
                     foreach (var cls in enc.Value.EnumerateObject())
                     {
-                        var job = Enum.Parse<Class>(cls.Name);
+                        var job = GeneratedEnumMetadata.Parse<Class>(cls.Name);
                         var planList = encData[job] = new();
                         planList.SelectedIndex = cls.Value.GetProperty(nameof(PlanList.SelectedIndex)).GetInt32();
                         foreach (var planRef in cls.Value.GetProperty(nameof(PlanList.Plans)).EnumerateArray())
@@ -83,7 +82,7 @@ public sealed class PlanDatabase
                                 else if (planList.SelectedIndex > planList.Plans.Count)
                                     --planList.SelectedIndex;
                             }
-                            else if (plan.Encounter != encType || plan.Class != job)
+                            else if (plan.Encounter != encInfo.ModuleType || plan.Class != job)
                             {
                                 Service.Log($"Error while deserializing plan database: plan '{planGuid}' expected for {job} {enc.Name}, but is actually for {plan.Class} {plan.Encounter.FullName}");
                                 foundPlans[planGuid] = plan; // add back, so that it's added to proper bucket later

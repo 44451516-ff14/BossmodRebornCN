@@ -12,6 +12,7 @@ public sealed class WHM(RotationModuleManager manager, Actor player) : Castxan<A
         public Track<AOEStrategy> AOE;
         [Track("Presence of Mind", Action = AID.PresenceOfMind)]
         public Track<OffensiveStrategy> Buffs;
+        [Track(Action = AID.Assize)]
         public Track<AssizeStrategy> Assize;
 
         [Track(InternalName = "Afflatus Misery")]
@@ -44,6 +45,12 @@ public sealed class WHM(RotationModuleManager manager, Actor player) : Castxan<A
     {
         return new RotationModuleDefinition("xan WHM", "White Mage", "标准循环 (xan)|治疗", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.WHM, Class.CNJ), 100)
             .WithStrategies<Strategy>();
+    }
+
+    public enum GCDPriority
+    {
+        None = 0,
+        Filler = 2
     }
 
     public uint Lily;
@@ -90,7 +97,7 @@ public sealed class WHM(RotationModuleManager manager, Actor player) : Castxan<A
         GoalZoneCombined(strategy, approach ? 19.5f : 25, Hints.GoalAOECircle(8), AID.Holy, 3);
 
         if (!CanFitGCD(TargetDotLeft, 1))
-            PushGCD(AID.Aero, BestDotTarget);
+            PushGCD(AID.Aero, BestDotTarget, GCDPriority.Filler, useOnDyingTarget: false);
 
         if (BloodLily == 3 && NumRangedAOETargets > 0)
         {
@@ -116,7 +123,7 @@ public sealed class WHM(RotationModuleManager manager, Actor player) : Castxan<A
         if (Unlocked(AID.AfflatusMisery) && Lily == 3)
             PushGCD(AID.AfflatusSolace, Player);
 
-        PushGCD(AID.Stone, primaryTarget);
+        PushGCD(AID.Stone, primaryTarget, GCDPriority.Filler, useOnDyingTarget: false);
 
         if (!Player.InCombat)
             return;

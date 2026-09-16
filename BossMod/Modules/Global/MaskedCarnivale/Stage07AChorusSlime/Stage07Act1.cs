@@ -34,40 +34,26 @@ sealed class SlimeExplosion(BossModule module) : Components.GenericStackSpread(m
     }
 }
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add("For this stage the spells Sticky Tongue and Snort are recommended.\nUse them to pull or push Slimes close to Ice Sprites.\nThen hit the slime from a distance with anything but fire spells to set of an explosion.");
-    }
-}
-
-sealed class Hints2(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"Hit the {Module.PrimaryActor.Name} from a safe distance to win this act.");
-    }
-}
-
 sealed class Stage07Act1States : StateMachineBuilder
 {
     public Stage07Act1States(BossModule module) : base(module)
     {
         TrivialPhase()
-            .DeactivateOnEnter<Hints>()
-            .ActivateOnEnter<Hints2>()
             .Raw.Update = () => AllDeadOrDestroyed(Stage07Act1.Trash);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 617, NameID = 8094, SortOrder = 1)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 617u, NameID = 8094u, SortOrder = 1)]
 public sealed class Stage07Act1 : BossModule
 {
     public Stage07Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {
-        ActivateComponent<Hints>();
         ActivateComponent<SlimeExplosion>();
+        _prePullHints =
+        [
+            $"For this stage the spells Sticky Tongue and Snort are recommended. Use them to pull or push Slimes close to Ice Sprites. Then hit the slime from a distance with anything but fire spells to set of an explosion.",
+            $"Hit the {PrimaryActor.Name} from a safe distance to win this act."
+        ];
     }
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.Sprite];
 
@@ -78,4 +64,8 @@ public sealed class Stage07Act1 : BossModule
         Arena.Actor(PrimaryActor);
         Arena.Actors(Enemies((uint)OID.Sprite));
     }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

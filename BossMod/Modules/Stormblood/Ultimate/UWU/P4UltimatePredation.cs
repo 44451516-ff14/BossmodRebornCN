@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UWU;
 
 // select best safespot for all predation patterns
-class P4UltimatePredation(BossModule module) : BossComponent(module)
+sealed class P4UltimatePredation(BossModule module) : BossComponent(module)
 {
     public enum State { Inactive, Predicted, First, Second, Done }
 

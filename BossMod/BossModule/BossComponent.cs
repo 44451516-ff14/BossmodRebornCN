@@ -3,7 +3,6 @@
 // different encounter mechanics can be split into independent components
 // individual components should be activated and deactivated when needed (typically by state machine transitions)
 // components can also have sub-components; typically these are created immediately by constructor
-[SkipLocalsInit]
 public class BossComponent(BossModule module)
 {
     public readonly BossModule Module = module;
@@ -38,7 +37,7 @@ public class BossComponent(BossModule module)
     public virtual void Update() { } // called every frame - it is a good place to update any cached values
     public virtual void AddHints(int slot, Actor actor, TextHints hints) { } // gather any relevant pieces of advice for specified raid member
     public virtual void AddMovementHints(int slot, Actor actor, MovementHints movementHints) { } // gather movement hints for specified raid member
-    public virtual void AddGlobalHints(GlobalHints hints) { } // gather any relevant pieces of advice for whole raid
+    public virtual void AddGlobalHints(Actor actor, GlobalHints hints) { } // gather any relevant pieces of advice for whole raid
     public virtual void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) { } // gather AI hints for specified raid member
     public virtual PlayerPriority CalcPriority(int pcSlot, Actor pc, int playerSlot, Actor player, ref uint customColor) => PlayerPriority.Irrelevant; // determine how particular party member should be drawn; if custom color is left untouched, standard color is selected
     public virtual void DrawArenaBackground(int pcSlot, Actor pc) { } // called at the beginning of arena draw, good place to draw aoe zones
@@ -76,12 +75,19 @@ public class BossComponent(BossModule module)
     protected WorldState WorldState => Module.WorldState;
     protected PartyState Raid => Module.Raid;
     protected void ReportError(string message) => Module.ReportError(this, message);
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected bool ArenaProjectionLayerApplies(Actor actor, int? mechanicLayer, bool restrictToLayer)
+    protected bool ArenaProjectionLayerApplies(Actor actor, int? mechanicLayer, bool? restrictToLayer)
         => Module.MechanicAppliesToArenaProjectionLayer(actor, mechanicLayer, restrictToLayer);
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected bool ArenaProjectionLayerParticipantApplies(Actor actor, int? mechanicLayer, bool restrictToLayer)
+    protected bool ArenaProjectionLayerParticipantApplies(Actor actor, int? mechanicLayer, bool? restrictToLayer)
         => Module.ActorMatchesArenaProjectionLayer(actor, mechanicLayer, restrictToLayer);
+
+    // All-layer mechanics ignore an authored floor when clipping forbidden zones/obstacles.
+    // Both boolean values preserve the existing explicit-floor AI geometry.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected static int? ArenaProjectionLayerForAI(int? mechanicLayer, bool? restrictToLayer)
+        => restrictToLayer.HasValue ? mechanicLayer : null;
 
     // utility to try to determine who has the highest enmity in the party
     // this is useful for a lot of savage mechanics, but we only get this information if the player is currently targeting the relevant enemy (:/), so we allow fallback behavior of returning players in order tank -> dps -> healer -> (other)

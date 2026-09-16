@@ -57,7 +57,7 @@ sealed class AbsoluteConviction(BossModule module) : Components.CastCounter(modu
 
 sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeDonut donut = new(21f, 24f);
+    private readonly AOEShapeDonut donut = new(21f, 24f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -66,10 +66,8 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 91u, NameID = 3632u, PlanLevel = 60)]
-public sealed class Ex3Thordan(WorldState ws, Actor primary) : BossModule(ws, primary, default, startingArena)
+public sealed class Ex3Thordan(WorldState ws, Actor primary) : BossModule(ws, primary, default, new ArenaBoundsCustom([new Polygon(default, 23.5f, 48)]))
 {
-    private static readonly ArenaBoundsCustom startingArena = new([new Polygon(default, 23.5f, 48)]);
-    public static readonly ArenaBoundsCustom DefaultBounds = new([new Polygon(default, 21.052f, 40)]);
     private Actor? _bossAdelphel;
     public Actor? BossAdelphel() => _bossAdelphel;
     private Actor? _bossJanlenoux;

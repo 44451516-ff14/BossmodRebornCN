@@ -375,17 +375,17 @@ public sealed class ColumnPlayerGaugeSAM : ColumnPlayerGauge
     private int GetSenCount(SenFlags sen)
     {
         var senCount = 0;
-        if (sen.HasFlag(SenFlags.Setsu))
+        if ((sen & SenFlags.Setsu) != 0)
         {
             ++senCount;
         }
 
-        if (sen.HasFlag(SenFlags.Getsu))
+        if ((sen & SenFlags.Getsu) != 0)
         {
             ++senCount;
         }
 
-        if (sen.HasFlag(SenFlags.Ka))
+        if ((sen & SenFlags.Ka) != 0)
         {
             ++senCount;
         }

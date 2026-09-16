@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex2Hydaelyn;
 
 // component for intermission adds (crystals & echoes)
-class IntermissionAdds(BossModule module) : BossComponent(module)
+sealed class IntermissionAdds(BossModule module) : BossComponent(module)
 {
     private readonly HashSet<ulong> _activeCrystals = [];
 
@@ -27,7 +27,7 @@ class IntermissionAdds(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.IncreaseConviction)
+        if (spell.Action.ID == (uint)AID.IncreaseConviction)
             _activeCrystals.Add(caster.InstanceID);
     }
 }

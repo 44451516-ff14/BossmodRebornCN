@@ -1,4 +1,4 @@
-namespace BossMod.Endwalker.DeepDungeon.PilgrimsTraverse.DD50Ogbunabali;
+namespace BossMod.Dawntrail.DeepDungeon.PilgrimsTraverse.DD50Ogbunabali;
 
 public enum OID : uint
 {
@@ -34,7 +34,6 @@ public enum IconID : uint
     PitAmbush = 640 // player->self
 }
 
-[SkipLocalsInit]
 sealed class Quicksand(BossModule module) : Components.GenericAOEs(module, warningText: "GTFO from quicksand!")
 {
     private AOEInstance[] _aoe = [];
@@ -186,7 +185,6 @@ sealed class Quicksand(BossModule module) : Components.GenericAOEs(module, warni
     }
 }
 
-[SkipLocalsInit]
 sealed class WindraiserArena(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance[] _aoe = [];
@@ -223,7 +221,6 @@ sealed class WindraiserArena(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class BitingWindKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.BitingWind, 20f)
 {
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
@@ -253,10 +250,8 @@ sealed class BitingWindKB(BossModule module) : Components.SimpleKnockbacks(modul
     public override void AddHints(int slot, Actor actor, TextHints hints) { } // hint handled by quicksand component
 }
 
-[SkipLocalsInit]
 sealed class FallingRock(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FallingRock, 5f);
 
-[SkipLocalsInit]
 sealed class PitAmbush(BossModule module) : Components.StandardChasingAOEs(module, 5f, (uint)AID.PitAmbushFirst, default, 5f, 2.1d, 4, true, (uint)IconID.PitAmbush)
 {
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -274,7 +269,6 @@ sealed class PitAmbush(BossModule module) : Components.StandardChasingAOEs(modul
     }
 }
 
-[SkipLocalsInit]
 sealed class DD50OgbunabaliStates : StateMachineBuilder
 {
     public DD50OgbunabaliStates(BossModule module) : base(module)
@@ -288,24 +282,7 @@ sealed class DD50OgbunabaliStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
-StatesType = typeof(DD50OgbunabaliStates),
-ConfigType = null,
-ObjectIDType = typeof(OID),
-ActionIDType = typeof(AID),
-StatusIDType = typeof(SID),
-TetherIDType = null,
-IconIDType = typeof(IconID),
-PrimaryActorOID = (uint)OID.Ogbunabali,
-Contributors = "The Combat Reborn Team (Malediktus)",
-Expansion = BossModuleInfo.Expansion.Dawntrail,
-Category = BossModuleInfo.Category.DeepDungeon,
-GroupType = BossModuleInfo.GroupType.CFC,
-GroupID = 1036u,
-NameID = 14263u,
-SortOrder = 1,
-PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.Ogbunabali, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1036u, NameID = 14263u)]
 public sealed class DD50Ogbunabali : BossModule
 {
     public DD50Ogbunabali(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

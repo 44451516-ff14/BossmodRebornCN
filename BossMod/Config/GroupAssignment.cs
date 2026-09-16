@@ -19,6 +19,7 @@ public sealed class GroupPresetAttribute(string name, int[] preset) : Attribute
 public class GroupAssignment
 {
     public int[] Assignments = Utils.MakeArray((int)PartyRolesConfig.Assignment.Unassigned, -1); // assignment -> group id
+    private static readonly PartyRolesConfig _config = Service.Config.Get<PartyRolesConfig>();
 
     public int this[PartyRolesConfig.Assignment r]
     {
@@ -30,19 +31,23 @@ public class GroupAssignment
 
     // if these role->group assignments are valid and passed actor->role assignments are valid for passed raid, enumerate slot/group pairs
     // if anything is invalid, enumerable is empty
-    public IEnumerable<(int slot, int group)> Resolve(PartyState party, PartyRolesConfig actorAssignments)
+    public List<(int slot, int group)> Resolve(PartyState party, PartyRolesConfig actorAssignments)
     {
         if (Validate())
         {
             var roleToSlot = actorAssignments.SlotsPerAssignment(party);
-            if (roleToSlot.Length == Assignments.Length)
+            var len = Assignments.Length;
+            if (roleToSlot.Length == len)
             {
-                for (var role = 0; role < Assignments.Length; ++role)
+                var list = new List<(int, int)>(8);
+                for (var role = 0; role < len; ++role)
                 {
-                    yield return (roleToSlot[role], Assignments[role]);
+                    list.Add((roleToSlot[role], Assignments[role]));
                 }
+                return list;
             }
         }
+        return [];
     }
 
     // build slot mask for members of specified group; returns 0 if resolve fails
@@ -61,8 +66,8 @@ public class GroupAssignment
     }
 
     // shortcuts using global config
-    public IEnumerable<(int slot, int group)> Resolve(PartyState party) => Resolve(party, Service.Config.Get<PartyRolesConfig>());
-    public BitMask BuildGroupMask(int group, PartyState party) => BuildGroupMask(group, party, Service.Config.Get<PartyRolesConfig>());
+    public List<(int slot, int group)> Resolve(PartyState party) => Resolve(party, _config);
+    public BitMask BuildGroupMask(int group, PartyState party) => BuildGroupMask(group, party, _config);
 }
 
 // assignments to two light parties with THMR split

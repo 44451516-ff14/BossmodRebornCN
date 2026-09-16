@@ -1,6 +1,6 @@
 ﻿namespace BossMod.RealmReborn.Extreme.Ex1Ultima;
 
-class Freefire(BossModule module) : Components.GenericAOEs(module, (uint)AID.Freefire)
+sealed class Freefire(BossModule module) : Components.GenericAOEs(module, (uint)AID.Freefire)
 {
     private readonly List<Actor> _casters = [];
     private DateTime _resolve;

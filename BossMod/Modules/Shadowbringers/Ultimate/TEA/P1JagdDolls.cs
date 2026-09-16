@@ -1,6 +1,5 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-[SkipLocalsInit]
 sealed class P1JagdDolls(BossModule module) : BossComponent(module)
 {
     public int NumExhausts;
@@ -104,7 +103,7 @@ sealed class P1JagdDolls(BossModule module) : BossComponent(module)
         if (pairs.Count == 0)
             return;
 
-        var rages = Module.Enemies((uint)OID.LiquidRage).ToList();
+        var rages = Module.Enemies((uint)OID.LiquidRage);
         var ragesPos = rages.Select(r => r.Position).Aggregate((a, b) => new WPos(a.X + b.X, a.Z + b.Z));
         var average = new WPos(ragesPos.X / 3f, ragesPos.Z / 3f);
         var south = rages.MinBy(r => r.DistanceToPoint(average));

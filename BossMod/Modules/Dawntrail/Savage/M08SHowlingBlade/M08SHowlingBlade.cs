@@ -9,9 +9,13 @@ sealed class RavenousSaber(BossModule module) : Components.CastCounterMulti(modu
 sealed class Mooncleaver1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mooncleaver1, 8f);
 sealed class ProwlingGaleP2(BossModule module) : Components.CastTowers(module, (uint)AID.ProwlingGaleP2, 2f, 2, 2);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1026, NameID = 13843, PlanLevel = 100)]
-public sealed class M08SHowlingBlade(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingArena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1026u, NameID = 13843u, PlanLevel = 100)]
+public sealed class M08SHowlingBlade : BossModule
 {
+    public M08SHowlingBlade(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private M08SHowlingBlade(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
     private Actor? _bossP2;
     public Actor? BossP2() => _bossP2;
 
@@ -29,8 +33,11 @@ public sealed class M08SHowlingBlade(WorldState ws, Actor primary) : BossModule(
         Arena.Actor(_bossP2);
     }
 
-    public static readonly WPos ArenaCenter = new(100f, 100f);
-    public static readonly Polygon[] StartingArenaPolygon = [new(ArenaCenter, 12f, 40)];
-    public static readonly ArenaBoundsCustom StartingArena = new(StartingArenaPolygon, MapResolution: 0.25f);
-    public static readonly ArenaBoundsCustom DonutArena = new(StartingArenaPolygon, [new Polygon(ArenaCenter, 8f, 40)]);
+    public static Polygon[] GetStartingArenaPolygon() => [new(new(100f, 100f), 12f, 40)];
+
+    public static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom(GetStartingArenaPolygon(), MapResolution: 0.25f) { Y = 0f, BorderY = 0f };
+        return (arena.Center, arena);
+    }
 }

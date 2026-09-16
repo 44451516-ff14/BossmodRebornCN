@@ -1,6 +1,5 @@
 namespace BossMod.Shadowbringers.Alliance.A32HanselGretel;
 
-[SkipLocalsInit]
 sealed class StrongerTogether(BossModule module) : BossComponent(module)
 {
     private readonly A32HanselGretel bossmod = (A32HanselGretel)module;
@@ -22,7 +21,7 @@ sealed class StrongerTogether(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (strongerTogether)
         {

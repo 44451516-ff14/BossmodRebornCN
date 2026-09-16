@@ -78,6 +78,7 @@ public sealed class FRUConfig() : ConfigNode()
     public GroupAssignmentUnique P4CrystallizeTimeAssignments = new() { Assignments = [3, 2, 1, 0, 4, 5, 6, 7] };
 
     // ai-only settings
+    [SectionStart("AI-only settings")]
     [PropertyDisplay("P1 Cyclonic Break (proteans): bait clock spots (supports should be near dd to resolve pairs)", tooltip: "Only used by AI")]
     [GroupDetails(["N", "NE", "E", "SE", "S", "SW", "W", "NW"])]
     [GroupPreset("Default", [0, 4, 6, 2, 5, 3, 7, 1])]

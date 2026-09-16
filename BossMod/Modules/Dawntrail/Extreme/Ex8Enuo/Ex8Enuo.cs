@@ -1,4 +1,4 @@
-﻿namespace BossMod.Modules.Dawntrail.Extreme.Ex8Enuo;
+﻿namespace BossMod.Dawntrail.Extreme.Ex8Enuo;
 
 sealed class Meteorain(BossModule module) : Components.RaidwideCast(module, (uint)AID.Meteorain);
 
@@ -20,7 +20,7 @@ sealed class VacuumAOE(BossModule module) : Components.Voidzone(module, 7f, Find
         {
             var z = enemies[i];
             // These appear at the start of the mechanic at Arena.Center and zoom out to their final locations, we only care about showing them while they're standing still and not in the Center. They die after exploding.
-            if (z.Renderflags == 0 && !z.Position.AlmostEqual(module.Arena.Center, 2f) && z.LastFrameMovement == new WDir(0f, 0f))
+            if (z.Renderflags == 0 && !z.Position.AlmostEqual(module.Arena.Center, 2f) && z.LastFrameMovement == default)
             {
                 vacs[index++] = z;
             }
@@ -118,24 +118,7 @@ sealed class ArenaChanges(BossModule module) : BossComponent(module)
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Contributed,
-StatesType = typeof(Ex8EnuoStates),
-ConfigType = null, // replace null with typeof(EnuoConfig) if applicable
-ObjectIDType = typeof(OID),
-ActionIDType = typeof(AID), // replace null with typeof(AID) if applicable
-StatusIDType = typeof(SID), // replace null with typeof(SID) if applicable
-TetherIDType = typeof(TetherID), // replace null with typeof(TetherID) if applicable
-IconIDType = typeof(IconID), // replace null with typeof(IconID) if applicable
-PrimaryActorOID = (uint)OID.Enuo,
-Contributors = "HerStolenLight",
-Expansion = BossModuleInfo.Expansion.Dawntrail,
-Category = BossModuleInfo.Category.Extreme,
-GroupType = BossModuleInfo.GroupType.CFC,
-GroupID = 1116u,
-NameID = 14749u,
-SortOrder = 1,
-PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.Contributed, PrimaryActorOID = (uint)OID.Enuo, Contributors = "HerStolenLight", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1116u, NameID = 14749u, PlanLevel = 0)]
 public sealed class Ex8Enuo(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsCircle(20f))
 {
     private Actor? _castingadd;

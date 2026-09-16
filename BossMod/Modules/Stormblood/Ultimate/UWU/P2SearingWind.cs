@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UWU;
 
-class P2SearingWind(BossModule module) : Components.UniformStackSpread(module, default, 14f, includeDeadTargets: true)
+sealed class P2SearingWind(BossModule module) : Components.UniformStackSpread(module, default, 14f, includeDeadTargets: true)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

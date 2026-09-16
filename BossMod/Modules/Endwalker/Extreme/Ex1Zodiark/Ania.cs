@@ -1,11 +1,11 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex1Zodiark;
 
 // state related to ania mechanic
-class Ania(BossModule module) : BossComponent(module)
+sealed class Ania(BossModule module) : BossComponent(module)
 {
     private Actor? _target;
 
-    private const float _aoeRadius = 3;
+    private const float _aoeRadius = 3f;
 
     public bool Done => _target == null;
 
@@ -38,24 +38,31 @@ class Ania(BossModule module) : BossComponent(module)
         Arena.ZoneCircleOutline(_target.Position, _aoeRadius, Colors.Danger);
         if (pc == _target)
         {
-            foreach (var a in Raid.WithoutSlot(false, true, true).Exclude(pc))
-                Arena.Actor(a, a.Position.InCircle(_target.Position, _aoeRadius) ? Colors.PlayerInteresting : Colors.PlayerGeneric);
+            foreach (var a in Raid.WithoutSlot(false, true, true))
+            {
+                if (a == pc)
+                {
+                    continue;
+                }
+                var isinaoe = a.Position.InCircle(_target.Position, _aoeRadius);
+                Arena.Actor(a, isinaoe ? Colors.PlayerInteresting : Colors.PlayerGeneric, drawWorld: isinaoe ? true : null);
+            }
         }
         else
         {
-            Arena.Actor(_target, Colors.Danger);
+            Arena.Actor(_target, Colors.Danger, drawWorld: true);
         }
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.AniaAOE)
+        if (spell.Action.ID == (uint)AID.AniaAOE)
             _target = WorldState.Actors.Find(spell.TargetID);
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.AniaAOE)
+        if (spell.Action.ID == (uint)AID.AniaAOE)
             _target = null;
     }
 }

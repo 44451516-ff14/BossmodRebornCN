@@ -1,6 +1,6 @@
 ﻿namespace BossMod.RealmReborn.Extreme.Ex1Ultima;
 
-class ViscousAetheroplasm(BossModule module) : Components.Cleave(module, (uint)AID.ViscousAetheroplasm, new AOEShapeCircle(2), originAtTarget: true)
+sealed class ViscousAetheroplasm(BossModule module) : Components.Cleave(module, (uint)AID.ViscousAetheroplasm, new AOEShapeCircle(2f), originAtTarget: true)
 {
     public bool NeedTankSwap;
     private readonly int[] _stacks = new int[PartyState.MaxPartySize];
@@ -21,13 +21,13 @@ class ViscousAetheroplasm(BossModule module) : Components.Cleave(module, (uint)A
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        if ((SID)status.ID == SID.ViscousAetheroplasm)
+        if (status.ID == (uint)SID.ViscousAetheroplasm)
             UpdateStacks(actor, status.Extra);
     }
 
     public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
-        if ((SID)status.ID == SID.ViscousAetheroplasm)
+        if (status.ID == (uint)SID.ViscousAetheroplasm)
             UpdateStacks(actor, 0);
     }
 

@@ -97,10 +97,16 @@ sealed class PillarOfShamash(BossModule module) : Components.SimpleAOEGroupsByTi
 (uint)AID.PillarOfShamashCone3], new AOEShapeCone(70f, 10f.Degrees()), expectedNumCasters: 9);
 sealed class UltimatePseudoterror(BossModule module) : Components.SimpleAOEs(module, (uint)AID.UltimatePseudoterror, new AOEShapeDonut(15f, 70f));
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.TheDalriada, GroupID = 778, NameID = 10007, SortOrder = 6)]
-public sealed class DAL4DiabloArmament(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, DefaultArena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.TheDalriada, GroupID = 778u, NameID = 10007u, SortOrder = 6)]
+public sealed class DAL4DiabloArmament : BossModule
 {
-    public static readonly WPos ArenaCenter = new(-720f, -760f);
-    public static readonly ArenaBoundsCustom DefaultArena = new([new Polygon(ArenaCenter, 29.5f, 48)]);
-    public static readonly ArenaBoundsCircle SmallArena = new(17f); // this is a pulsing donut aoe
+    public DAL4DiabloArmament(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private DAL4DiabloArmament(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    public static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(-720f, -760f), 29.5f, 48)]);
+        return (arena.Center, arena);
+    }
 }

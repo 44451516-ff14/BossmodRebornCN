@@ -41,16 +41,12 @@ public enum SID : uint
     Burst = 2536 // none->PoisonCloud, extra=0x21E
 }
 
-[SkipLocalsInit]
 sealed class ThunderclapConcerto(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ThunderclapConcerto1, (uint)AID.ThunderclapConcerto2], new AOEShapeCone(40f, 150f.Degrees()));
 
-[SkipLocalsInit]
 sealed class ThunderIVBioII(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.ThunderIV, (uint)AID.BioII]);
 
-[SkipLocalsInit]
 sealed class Shockbolt(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Shockbolt);
 
-[SkipLocalsInit]
 sealed class ThunderIII(BossModule module) : Components.UniformStackSpread(module, 6f, default, 4, 4)
 {
     private int numCasts;
@@ -89,7 +85,6 @@ sealed class ThunderIII(BossModule module) : Components.UniformStackSpread(modul
     }
 }
 
-[SkipLocalsInit]
 sealed class GallopingThunder(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(5)];
@@ -122,7 +117,6 @@ sealed class GallopingThunder(BossModule module) : Components.GenericAOEs(module
     }
 }
 
-[SkipLocalsInit]
 sealed class Burst(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(8)];
@@ -169,10 +163,8 @@ sealed class Burst(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class Thunder(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Thunder, 5f);
 
-[SkipLocalsInit]
 sealed class D122AmdusiasStates : StateMachineBuilder
 {
     public D122AmdusiasStates(BossModule module) : base(module)
@@ -205,7 +197,6 @@ GroupID = 1064u,
 NameID = 14271u,
 SortOrder = 2,
 PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class D122Amdusias : BossModule
 {
     public D122Amdusias(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

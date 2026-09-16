@@ -9,7 +9,7 @@ sealed class EngravementOfSouls2Lines(BossModule module) : BossComponent(module)
     private BitMask _lightCamp;
     private BitMask _darkCamp;
 
-    private static readonly AOEShapeRect _shape = new(100f, 3f);
+    private readonly AOEShapeRect _shape = new(100f, 3f);
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {

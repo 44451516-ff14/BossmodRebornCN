@@ -35,7 +35,7 @@ class DeathSentence(BossModule module) : Components.CastCounter(module, (uint)AI
     public bool TankedByOT { get; private set; }
     public PartyRolesConfig.Assignment TankRole => TankedByOT ? PartyRolesConfig.Assignment.OT : PartyRolesConfig.Assignment.MT;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         hints.Add($"Next death sentence in ~{(NextCastStart - WorldState.CurrentTime).TotalSeconds:f1}s");
     }

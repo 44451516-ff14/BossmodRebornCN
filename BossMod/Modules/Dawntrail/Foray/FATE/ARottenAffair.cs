@@ -45,7 +45,6 @@ sealed class ShortswordAndSorcery(BossModule module) : Components.SimpleAOEGroup
 sealed class LongswordAndSorcery(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.LongswordAndSorcery, (uint)AID.LongswordAndSorcery1],
     new AOEShapeDonut(10.0f, 25.0f));
 
-[SkipLocalsInit]
 sealed class ARottenAffairStates : StateMachineBuilder
 {
     public ARottenAffairStates(BossModule module) : base(module)
@@ -77,5 +76,4 @@ sealed class ARottenAffairStates : StateMachineBuilder
     NameID = 2081u,
     SortOrder = 10,
     PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class ARottenAffair(WorldState ws, Actor primary) : OpenWorldFate(ws, primary);

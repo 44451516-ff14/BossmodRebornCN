@@ -1,16 +1,16 @@
 ﻿namespace BossMod.Endwalker.Savage.P3SPhoinix;
 
 // state related to fledgling flight & death toll mechanics
-class FledglingFlight(BossModule module) : BossComponent(module)
+sealed class FledglingFlight(BossModule module) : BossComponent(module)
 {
-    public bool PlacementDone { get; private set; }
-    public bool CastsDone { get; private set; }
+    public bool PlacementDone;
+    public bool CastsDone;
     private readonly List<(Actor, Angle)> _sources = []; // actor + rotation
     private readonly int[] _playerDeathTollStacks = new int[8];
     private readonly int[] _playerAOECount = new int[8];
 
-    private static readonly Angle _coneHalfAngle = 45.Degrees();
-    private const float _eyePlacementOffset = 10;
+    private static readonly Angle _coneHalfAngle = 45f.Degrees();
+    private const float _eyePlacementOffset = 10f;
 
     public override void Update()
     {
@@ -52,7 +52,10 @@ class FledglingFlight(BossModule module) : BossComponent(module)
 
         // draw all players
         foreach ((var i, var player) in Raid.WithSlot(false, true, true))
-            Arena.Actor(player, _playerAOECount[i] != _playerDeathTollStacks[i] ? Colors.PlayerInteresting : Colors.PlayerGeneric);
+        {
+            var indanger = _playerAOECount[i] != _playerDeathTollStacks[i];
+            Arena.Actor(player, indanger ? Colors.PlayerInteresting : Colors.PlayerGeneric, drawWorld: indanger ? true : null);
+        }
 
         var eyePos = GetEyePlacementPosition(pcSlot, pc);
         if (eyePos != null)
@@ -69,7 +72,7 @@ class FledglingFlight(BossModule module) : BossComponent(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.AshenEye)
+        if (spell.Action.ID == (uint)AID.AshenEye)
         {
             if (!PlacementDone)
             {
@@ -82,7 +85,7 @@ class FledglingFlight(BossModule module) : BossComponent(module)
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.AshenEye)
+        if (spell.Action.ID == (uint)AID.AshenEye)
         {
             _sources.RemoveAll(x => x.Item1 == caster);
             CastsDone = _sources.Count == 0;
@@ -91,7 +94,7 @@ class FledglingFlight(BossModule module) : BossComponent(module)
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
-        if (iconID is >= 296 and <= 299)
+        if (iconID is >= 296u and <= 299u)
         {
             if (PlacementDone)
             {
@@ -101,10 +104,10 @@ class FledglingFlight(BossModule module) : BossComponent(module)
 
             var dir = iconID switch
             {
-                296 => 90.Degrees(), // E
-                297 => 270.Degrees(), // W
-                298 => 0.Degrees(), // S
-                299 => 180.Degrees(), // N
+                296u => 90.Degrees(), // E
+                297u => 270.Degrees(), // W
+                298u => default, // S
+                299u => 180.Degrees(), // N
                 _ => 0.Degrees()
             };
             _sources.Add((actor, dir));

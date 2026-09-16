@@ -80,7 +80,7 @@ sealed class EraseGravity(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_aoes.Count != 0)
         {

@@ -1,6 +1,5 @@
 ﻿using Dalamud.Game.ClientState.Objects.Types;
 using System.Globalization;
-using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace BossMod;
@@ -19,26 +18,6 @@ public static partial class Utils
         => obj.ObjectKind == Dalamud.Game.ClientState.Objects.Enums.ObjectKind.BattleNpc ? $"{obj.ObjectKind}/{(Dalamud.Game.ClientState.Objects.Enums.BattleNpcSubKind)obj.SubKind}"
         : obj.SubKind == 0 ? $"{obj.ObjectKind}"
         : $"{obj.ObjectKind}/{obj.SubKind}";
-
-    public static string ShowObject<T>(T obj)
-    {
-        var sb = new StringBuilder(typeof(T).Name);
-        sb.Append(" {");
-        var first = true;
-        foreach (var f in typeof(T).GetFields())
-        {
-            if (!first)
-            {
-                sb.Append(',');
-            }
-
-            var v = f.GetValue(obj);
-            sb.Append($" {f.Name} = {v}");
-            first = false;
-        }
-        sb.Append(" }");
-        return sb.ToString();
-    }
 
     public static Vector2 XY(this Vector4 v) => v.AsVector2();
     public static Vector3 XYZ(this Vector4 v) => v.AsVector3();
@@ -304,32 +283,6 @@ public static partial class Utils
     // bounds-checking access
     public static T? BoundSafeAt<T>(this T[] array, int index, T? outOfBounds = default) => index >= 0 && index < array.Length ? array[index] : outOfBounds;
     public static T? BoundSafeAt<T>(this List<T> array, int index, T? outOfBounds = default) => index >= 0 && index < array.Count ? array[index] : outOfBounds;
-
-    // get all types defined in specified assembly
-    public static IEnumerable<Type?> GetAllTypes(Assembly asm)
-    {
-        try
-        {
-            return asm.DefinedTypes;
-        }
-        catch (ReflectionTypeLoadException e)
-        {
-            return e.Types;
-        }
-    }
-
-    // get all types derived from specified type in specified assembly
-    public static IEnumerable<Type> GetDerivedTypes<Base>(Assembly asm)
-    {
-        var b = typeof(Base);
-        foreach (var t in GetAllTypes(asm))
-        {
-            if (t?.IsSubclassOf(b) ?? false)
-            {
-                yield return t!;
-            }
-        }
-    }
 
     // generate valid identifier name from human-readable string
     public static string StringToIdentifier(string v)

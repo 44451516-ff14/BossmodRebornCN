@@ -1,6 +1,5 @@
 ﻿namespace BossMod.Dawntrail.Advanced.Ad01TheMerchantsTale.Ad012DaryaTheSeamaid;
 
-[SkipLocalsInit]
 sealed class Ad012DaryaTheSeamaidStates : StateMachineBuilder
 {
     public Ad012DaryaTheSeamaidStates(BossModule module) : base(module)

@@ -5,7 +5,7 @@ sealed class StampedingThunder(BossModule module) : Components.GenericAOEs(modul
     public AOEInstance[] AOE = [];
     public bool SmallArena;
 
-    private static readonly AOEShapeRect _shape = new(40f, 15f);
+    private readonly AOEShapeRect _shape = new(40f, 15f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOE;
 
@@ -25,8 +25,9 @@ sealed class StampedingThunder(BossModule module) : Components.GenericAOEs(modul
             case (uint)AID.StampedingThunderFinish:
                 ++NumCasts;
                 AOE = [];
-                Arena.Bounds = M04SWickedThunder.IonClusterBounds;
-                Arena.Center = new(M04SWickedThunder.P1DefaultCenter.X + 3f * (M04SWickedThunder.P1DefaultCenter.X - caster.PosRot.X), M04SWickedThunder.P1DefaultCenter.Z);
+                Arena.Bounds = new ArenaBoundsRect(5f, 20f);
+                var angle = (int)caster.Rotation.Deg;
+                Arena.Center = new(angle > 0f ? 85f : 115f, 100f);
                 SmallArena = true;
                 break;
         }
@@ -36,8 +37,8 @@ sealed class StampedingThunder(BossModule module) : Components.GenericAOEs(modul
     {
         if (index == 0x00 && state is 0x00400004u or 0x00800004u)
         {
-            Arena.Bounds = M04SWickedThunder.P1DefaultBounds;
-            Arena.Center = M04SWickedThunder.P1DefaultCenter;
+            Arena.Bounds = new ArenaBoundsSquare(20f);
+            Arena.Center = new(100f, 100f);
             SmallArena = false;
         }
     }
@@ -50,7 +51,7 @@ sealed class ElectronStream(BossModule module) : Components.GenericAOEs(module)
     private BitMask _positron;
     private BitMask _negatron;
 
-    private static readonly AOEShapeRect _shape = new(40f, 5f);
+    private readonly AOEShapeRect _shape = new(40f, 5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -126,9 +127,9 @@ sealed class ElectronStreamCurrent(BossModule module) : Components.GenericAOEs(m
     private readonly uint[] _status = new uint[PartyState.MaxPartySize];
     private DateTime _activation;
 
-    private static readonly AOEShapeCircle _shapeCircle = new(2f);
-    private static readonly AOEShapeDonut _shapeDonut = new(10f, 25f);
-    private static readonly AOEShapeCone _shapeBait = new(50f, 12.5f.Degrees());
+    private readonly AOEShapeCircle _shapeCircle = new(2f);
+    private readonly AOEShapeDonut _shapeDonut = new(10f, 25f);
+    private readonly AOEShapeCone _shapeBait = new(50f, 12.5f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

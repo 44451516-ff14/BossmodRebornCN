@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C03AAI.C033Statice;
 
-class RingARingOExplosions(BossModule module) : Components.GenericAOEs(module)
+sealed class RingARingOExplosions(BossModule module) : Components.GenericAOEs(module)
 {
     public List<Actor> ActiveBombs = [];
     private readonly List<Actor> _bombs = [];

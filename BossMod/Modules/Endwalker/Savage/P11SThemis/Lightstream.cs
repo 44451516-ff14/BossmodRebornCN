@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Endwalker.Savage.P11SThemis;
 
-class Lightstream(BossModule module) : Components.GenericAOEs(module)
+sealed class Lightstream(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(7)];
 
-    private static readonly AOEShapeRect _shape = new(50f, 5f);
+    private readonly AOEShapeRect _shape = new(50f, 5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

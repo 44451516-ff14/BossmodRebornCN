@@ -1,10 +1,7 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-[SkipLocalsInit]
-sealed class P2PlasmaShield(BossModule module) : Components.DirectionalParry(module, [(uint)OID.PlasmaShield], forbiddenPriority: AIHints.Enemy.PriorityInvincible)
+sealed class P2PlasmaShield(TEA module) : Components.DirectionalParry(module, [(uint)OID.PlasmaShield], forbiddenPriority: AIHints.Enemy.PriorityInvincible)
 {
-    private readonly TEA bossmod = (TEA)module;
-
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.PlasmaShield)
@@ -20,7 +17,7 @@ sealed class P2PlasmaShield(BossModule module) : Components.DirectionalParry(mod
                 continue;
 
             // ranged, healers, and CC tank should prioritize shield, others should attack BJ
-            if (actor.Class.GetRole() is Role.Ranged or Role.Healer || bossmod.CruiseChaser()?.TargetID == actor.InstanceID)
+            if (actor.Class.GetRole() is Role.Ranged or Role.Healer || module.CruiseChaser()?.TargetID == actor.InstanceID)
                 e.Priority = 1;
         }
 

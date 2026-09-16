@@ -4,10 +4,8 @@ namespace BossMod;
 // by far the most common state has a single transition to a neighbouring state, and by far the most common transition is spell cast/finish by boss
 // some bosses have multiple "phases"; when phase condition is triggered, initial state of the next phase is activated
 // typical phase condition is boss reaching specific hp %
-[SkipLocalsInit]
 public sealed class StateMachine(List<StateMachine.Phase> phases)
 {
-    [Flags]
     public enum StateHint
     {
         None = 0,
@@ -25,7 +23,6 @@ public sealed class StateMachine(List<StateMachine.Phase> phases)
         VulnerableEnd = 1 << 11, // at state end vulnerability phase ends
     }
 
-    [Flags]
     public enum PhaseHint
     {
         None = 0,
@@ -157,7 +154,7 @@ public sealed class StateMachine(List<StateMachine.Phase> phases)
         }
 
         var stateIndex = 0;
-        while (start.EndHint.HasFlag(StateHint.GroupWithNext) && start.NextStates?.Length == 1)
+        while ((start.EndHint & StateHint.GroupWithNext) != 0 && start.NextStates?.Length == 1)
         {
             start = start.NextStates[0];
             ++stateIndex;
@@ -202,7 +199,7 @@ public sealed class StateMachine(List<StateMachine.Phase> phases)
         while (next != null)
         {
             time = time.AddSeconds(next.Duration);
-            if (next.EndHint.HasFlag(flag))
+            if ((next.EndHint & flag) != 0)
             {
                 return time;
             }
@@ -215,14 +212,14 @@ public sealed class StateMachine(List<StateMachine.Phase> phases)
     private (string, State?) BuildComplexStateNameAndDuration(State start, float timeActive, bool writeTime)
     {
         var res = new StringBuilder(start.Name);
-        var timeLeft = Math.Max(0, start.Duration - timeActive);
+        var timeLeft = Math.Max(0f, start.Duration - timeActive);
         if (writeTime && res.Length > 0)
         {
             res.Append($" in {timeLeft:f1}s");
             timeLeft = 0;
         }
 
-        while (start.EndHint.HasFlag(StateHint.GroupWithNext) && start.NextStates?.Length == 1)
+        while ((start.EndHint & StateHint.GroupWithNext) != 0 && start.NextStates?.Length == 1)
         {
             start = start.NextStates[0];
             timeLeft += Math.Max(0, start.Duration);

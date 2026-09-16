@@ -77,13 +77,16 @@ public abstract class ColumnStateMachine(Timeline timeline, StateMachineTree tre
         // draw node itself
         var showNode = true;
         showNode &= DrawUnnamedNodes || node.State.Name.Length > 0;
-        showNode &= !DrawTankbusterNodesOnly || node.State.EndHint.HasFlag(StateMachine.StateHint.Tankbuster);
-        showNode &= !DrawRaidwideNodesOnly || node.State.EndHint.HasFlag(StateMachine.StateHint.Raidwide);
+        var isTankbuster = (node.State.EndHint & StateMachine.StateHint.Tankbuster) != 0;
+        var isRaidwide = (node.State.EndHint & StateMachine.StateHint.Raidwide) != 0;
+
+        showNode &= !DrawTankbusterNodesOnly || isTankbuster;
+        showNode &= !DrawRaidwideNodesOnly || isRaidwide;
+
         if (showNode)
         {
-            var nodeColor = node.State.EndHint.HasFlag(StateMachine.StateHint.Raidwide)
-                ? (node.State.EndHint.HasFlag(StateMachine.StateHint.Tankbuster) ? Colors.TextColor6 : Colors.TextColor14)
-                : (node.State.EndHint.HasFlag(StateMachine.StateHint.Tankbuster) ? Colors.TextColor3 : Colors.TextColor1);
+            var nodeColor = isRaidwide ? (isTankbuster ? Colors.TextColor6 : Colors.TextColor14) : (isTankbuster ? Colors.TextColor3 : Colors.TextColor1);
+
             drawlist.AddCircleFilled(nodeScreenPos, _nodeRadius, nodeColor);
 
             var nodeText = TextDisplay switch

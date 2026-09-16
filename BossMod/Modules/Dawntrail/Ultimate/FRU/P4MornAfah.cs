@@ -21,7 +21,7 @@ sealed class P4MornAfah(BossModule module) : Components.UniformStackSpread(modul
 
 sealed class P4MornAfahHPCheck(BossModule module) : BossComponent(module)
 {
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var usurpers = Module.Enemies((uint)OID.UsurperOfFrostP4);
         var oracles = Module.Enemies((uint)OID.OracleOfDarknessP4);

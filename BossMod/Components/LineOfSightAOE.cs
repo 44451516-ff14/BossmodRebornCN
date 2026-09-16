@@ -1,9 +1,10 @@
 ﻿namespace BossMod.Components;
 
 // generic component that shows line-of-sight cones for arbitrary origin and blocking shapes
-[SkipLocalsInit]
-public abstract class GenericLineOfSightAOE(BossModule module, uint aid, float maxRange, bool blockersImpassable = false, bool rect = false, bool safeInsideHitbox = true) : GenericAOEs(module, aid, "Hide behind obstacle!")
+public abstract class GenericLineOfSightAOE(BossModule module, uint aid, float maxRange, bool blockersImpassable = false, bool rect = false, bool safeInsideHitbox = true, int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false) : GenericAOEs(module, aid, "Hide behind obstacle!")
 {
+    public int? ArenaProjectionLayer = arenaProjectionLayer;
+    public bool? RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
     public DateTime NextExplosion;
     public readonly bool BlockersImpassable = blockersImpassable;
     public readonly bool SafeInsideHitbox = safeInsideHitbox;
@@ -49,7 +50,7 @@ public abstract class GenericLineOfSightAOE(BossModule module, uint aid, float m
         for (var i = 0; i < len; ++i)
         {
             ref readonly var c = ref aoes[i];
-            if (c.Risky && !c.Check(actor.Position))
+            if (c.Risky && ArenaProjectionLayerParticipantApplies(actor, c.ArenaProjectionLayer, c.RestrictToArenaProjectionLayer) && !c.Check(actor.Position))
             {
                 if (Origin != null && ((WPos)Origin - actor.Position).LengthSq() < MaxRange * MaxRange)
                 {
@@ -102,11 +103,13 @@ public abstract class GenericLineOfSightAOE(BossModule module, uint aid, float m
                     differenceShapes.Add(new Circle(b.Center, !SafeInsideHitbox ? b.Radius : b.Radius + 0.5f));
                 }
             }
-            if (unionShapes.Count != 0)
+            if (unionShapes.Count != 0 || RestrictToArenaProjectionLayer == true && Module.Bounds is ArenaBoundsCustom custom && custom.IsValidProjectionLayer(ArenaProjectionLayer))
             {
                 var origin = Arena.Center;
                 var shape = new AOEShapeCustom(origin, [.. unionShapes], [.. differenceShapes], invertForbiddenZone: true);
-                Safezones.Add(new(shape, origin, default, activation, Colors.SafeFromAOE, shapeDistance: shape.Distance(origin, default)));
+                // No blockers on this floor means no cover, even if other floors have obstacles.
+                var distance = unionShapes.Count != 0 ? shape.Distance(origin, default) : new SDCircle(Origin.Value, MaxRange);
+                Safezones.Add(new(shape, origin, default, activation, Colors.SafeFromAOE, shapeDistance: distance, arenaProjectionLayer: ArenaProjectionLayer, restrictToArenaProjectionLayer: RestrictToArenaProjectionLayer));
             }
         }
     }
@@ -121,7 +124,6 @@ public abstract class GenericLineOfSightAOE(BossModule module, uint aid, float m
 }
 
 // simple line-of-sight aoe that happens at the end of the cast
-[SkipLocalsInit]
 public abstract class CastLineOfSightAOE : GenericLineOfSightAOE
 {
     public readonly List<Actor> Casters = [];
@@ -150,7 +152,7 @@ public abstract class CastLineOfSightAOE : GenericLineOfSightAOE
         }
     }
 
-    protected CastLineOfSightAOE(BossModule module, uint aid, float maxRange, bool blockersImpassable = false, bool rect = false, bool safeInsideHitbox = true) : base(module, aid, maxRange, blockersImpassable, rect, safeInsideHitbox) => Refresh();
+    protected CastLineOfSightAOE(BossModule module, uint aid, float maxRange, bool blockersImpassable = false, bool rect = false, bool safeInsideHitbox = true, int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false) : base(module, aid, maxRange, blockersImpassable, rect, safeInsideHitbox, arenaProjectionLayer, restrictToArenaProjectionLayer) => Refresh();
 
     public abstract ReadOnlySpan<Actor> BlockerActors();
 
@@ -183,20 +185,24 @@ public abstract class CastLineOfSightAOE : GenericLineOfSightAOE
         WPos? position = caster != null ? caster.CastInfo!.LocXZ : null;
         var blockers = BlockerActors();
         var len = blockers.Length;
-        var blockerData = new (WPos, float)[len];
+        var blockerData = new List<(WPos, float)>(len);
 
         for (var i = 0; i < len; ++i)
         {
             ref readonly var b = ref blockers[i];
-            blockerData[i] = (b.Position, b.HitboxRadius);
+            if (ArenaProjectionLayerParticipantApplies(b, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+            {
+                blockerData.Add((b.Position, b.HitboxRadius));
+            }
         }
         Modify(position, blockerData, Module.CastFinishAt(caster?.CastInfo));
     }
 }
 
-[SkipLocalsInit]
-public abstract class CastLineOfSightAOEComplex(BossModule module, uint aid, RelSimplifiedComplexPolygon blockerShape, int maxCasts = int.MaxValue, double riskyWithSecondsLeft = default, float maxRange = default) : GenericAOEs(module, aid)
+public abstract class CastLineOfSightAOEComplex(BossModule module, uint aid, RelSimplifiedComplexPolygon blockerShape, int maxCasts = int.MaxValue, double riskyWithSecondsLeft = default, float maxRange = default, int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false) : GenericAOEs(module, aid)
 {
+    public int? ArenaProjectionLayer = arenaProjectionLayer;
+    public bool? RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
     public readonly RelSimplifiedComplexPolygon BlockerShape = blockerShape;
     public int MaxCasts = maxCasts; // used for staggered aoes, when showing all active would be pointless
     public uint Color; // can be customized if needed
@@ -245,7 +251,7 @@ public abstract class CastLineOfSightAOEComplex(BossModule module, uint aid, Rel
             BlockerShape.VerifyPolygonIndexExistance();
             var shape = new AOEShapeCustom(center, [new PolygonCustomRel(BlockerShape.Visibility(pos - center))],
             MaxRange != default ? [new DonutV(pos, MaxRange, 1000f, 64)] : null);
-            AOEs.Add(new(shape, center, default, Module.CastFinishAt(spell), actorID: caster.InstanceID, shapeDistance: shape.Distance(center, default)));
+            AOEs.Add(new(shape, center, default, Module.CastFinishAt(spell), actorID: caster.InstanceID, shapeDistance: shape.Distance(center, default), arenaProjectionLayer: ArenaProjectionLayer, restrictToArenaProjectionLayer: RestrictToArenaProjectionLayer));
         }
     }
 

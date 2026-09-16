@@ -1,4 +1,4 @@
-namespace BossMod.DawnTrail.Raid.M10NDaringDevils;
+namespace BossMod.Dawntrail.Raid.M10NDaringDevils;
 
 sealed class CutbackBlazeBait(BossModule module) : Components.BaitAwayIcon(
     module,

@@ -551,7 +551,7 @@ sealed class AbilityInfo : CommonEnumInfo
     {
         UITree.NodeProperties map(KeyValuePair<ActionID, ActionData> kv)
         {
-            var name = kv.Key.Type == ActionType.Spell ? _aidType?.GetEnumName(kv.Key.ID) : null;
+            var name = kv.Key.Type == ActionType.Spell ? _aidType?.GeneratedEnumName(kv.Key.ID) : null;
             return new($"{kv.Key:X} ({name})", false, name == null ? Colors.TextColor2 : Colors.TextColor1);
         }
         foreach (var (aid, data) in tree.Nodes(_data, map))
@@ -702,7 +702,7 @@ sealed class AbilityInfo : CommonEnumInfo
             var missingPairs = new List<(string, string)>();
             foreach (var kv in _data)
             {
-                if (kv.Key.Type != ActionType.Spell || _aidType?.GetEnumName(kv.Key.ID) == null)
+                if (kv.Key.Type != ActionType.Spell || _aidType?.GeneratedEnumName(kv.Key.ID) == null)
                 {
                     missingPairs.Add(EnumMemberString(kv.Key, kv.Value));
                 }
@@ -815,7 +815,7 @@ sealed class AbilityInfo : CommonEnumInfo
     private (string Name, string Value) EnumMemberString(ActionID aid, ActionData data)
     {
         var ldata = aid.Type == ActionType.Spell ? Service.LuminaRow<Lumina.Excel.Sheets.Action>(aid.ID) : null;
-        var name = aid.Type != ActionType.Spell ? $"// {aid}" : _aidType?.GetEnumName(aid.ID) ?? $"_{Utils.StringToIdentifier(ldata?.ActionCategory.ValueNullable?.Name.ToString() ?? "")}_{Utils.StringToIdentifier(ldata?.Name.ToString() ?? $"Ability{aid.ID}")}";
+        var name = aid.Type != ActionType.Spell ? $"// {aid}" : _aidType?.GeneratedEnumName(aid.ID) ?? $"_{Utils.StringToIdentifier(ldata?.ActionCategory.ValueNullable?.Name.ToString() ?? "")}_{Utils.StringToIdentifier(ldata?.Name.ToString() ?? $"Ability{aid.ID}")}";
         return (name, $"{aid.ID}, // {OIDListString(data.CasterOIDs)}->{JoinStrings(ActionTargetStrings(data))}, {CastTimeString(data, ldata)}, {(ldata != null ? DescribeShape(ldata.Value) : "????")}");
     }
 

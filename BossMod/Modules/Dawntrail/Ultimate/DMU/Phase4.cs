@@ -645,7 +645,7 @@ sealed class CursedShriek(BossModule module) : Components.GenericGaze(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (eyes.Count == 0)
         {

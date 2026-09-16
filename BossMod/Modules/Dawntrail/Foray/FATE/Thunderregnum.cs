@@ -44,7 +44,6 @@ sealed class ThunderboltPuddle : Components.SimpleAOEGroups
     }
 }
 
-[SkipLocalsInit]
 sealed class ThunderregnumStates : StateMachineBuilder
 {
     public ThunderregnumStates(BossModule module) : base(module)
@@ -57,22 +56,6 @@ sealed class ThunderregnumStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Contributed,
-    StatesType = typeof(ThunderregnumStates),
-    ConfigType = null, // replace null with typeof(CrescereginaConfig) if applicable
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID), // replace null with typeof(AID) if applicable
-    StatusIDType = null, // replace null with typeof(SID) if applicable
-    TetherIDType = null, // replace null with typeof(TetherID) if applicable
-    IconIDType = null, // replace null with typeof(IconID) if applicable
-    PrimaryActorOID = (uint)OID.Cresceregina,
-    Contributors = "Equilius",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.Foray,
-    GroupType = BossModuleInfo.GroupType.ForayFATE,
-    GroupID = 1093u,
-    NameID = 2084u,
-    SortOrder = 13,
-    PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.Contributed, PrimaryActorOID = (uint)OID.Cresceregina, Contributors = "Equilius", GroupType = BossModuleInfo.GroupType.ForayFATE,
+    GroupID = 1093u, NameID = 2084u, SortOrder = 13)]
 public sealed class Thunderregnum(WorldState ws, Actor primary) : OpenWorldFate(ws, primary);

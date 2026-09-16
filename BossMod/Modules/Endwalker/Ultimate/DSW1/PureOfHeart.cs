@@ -2,7 +2,7 @@
 
 sealed class PureOfHeartBrightwing(BossModule module) : Components.GenericBaitAway(module)
 {
-    private static readonly AOEShapeCone _shape = new(18f, 15f.Degrees()); // TODO: verify angle
+    private readonly AOEShapeCone _shape = new(18f, 15f.Degrees()); // TODO: verify angle
     private readonly DSW1 bossmod = (DSW1)module;
 
     public override void Update()
@@ -34,7 +34,7 @@ sealed class PureOfHeartSkyblindBait(BossModule module) : BossComponent(module)
 {
     private BitMask _baiters;
 
-    private const float _radius = 3;
+    private const float _radius = 3f;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {

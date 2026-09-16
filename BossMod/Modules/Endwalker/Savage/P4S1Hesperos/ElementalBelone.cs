@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Savage.P4S1Hesperos;
 
 // state related to elemental belone mechanic (3 of 4 corners exploding)
-class ElementalBelone : BossComponent
+sealed class ElementalBelone : BossComponent
 {
     public bool Visible;
     private readonly SettingTheScene.Element _safeElement;
@@ -25,7 +25,7 @@ class ElementalBelone : BossComponent
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         hints.Add($"Safe square: {_safeElement}");
     }
@@ -50,12 +50,12 @@ class ElementalBelone : BossComponent
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.PeriaktoiDangerAcid:
-            case AID.PeriaktoiDangerLava:
-            case AID.PeriaktoiDangerWell:
-            case AID.PeriaktoiDangerLevinstrike:
+            case (uint)AID.PeriaktoiDangerAcid:
+            case (uint)AID.PeriaktoiDangerLava:
+            case (uint)AID.PeriaktoiDangerWell:
+            case (uint)AID.PeriaktoiDangerLevinstrike:
                 _imminentExplodingCorners.Add(caster.Position);
                 break;
         }

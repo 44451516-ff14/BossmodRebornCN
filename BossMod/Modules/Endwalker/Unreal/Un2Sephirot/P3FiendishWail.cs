@@ -1,13 +1,13 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un2Sephirot;
 
-class P3FiendishWail(BossModule module) : Components.CastCounter(module, (uint)AID.FiendishWailAOE)
+sealed class P3FiendishWail(BossModule module) : Components.CastCounter(module, (uint)AID.FiendishWailAOE)
 {
     private BitMask _physResistMask;
     private readonly List<Actor> _towers = [];
 
     public bool Active => _towers.Count > 0;
 
-    private const float _radius = 5;
+    private const float _radius = 5f;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -30,7 +30,7 @@ class P3FiendishWail(BossModule module) : Components.CastCounter(module, (uint)A
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        if ((SID)status.ID == SID.ForceAgainstMight)
+        if (status.ID == (uint)SID.ForceAgainstMight)
             _physResistMask.Set(Raid.FindSlot(actor.InstanceID));
     }
 

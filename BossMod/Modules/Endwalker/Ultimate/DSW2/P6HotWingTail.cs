@@ -4,8 +4,8 @@ sealed class P6HotWingTail(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
 
-    private static readonly AOEShapeRect _shapeWing = new(50f, 10.5f);
-    private static readonly AOEShapeRect _shapeTail = new(50f, 8f);
+    private readonly AOEShapeRect _shapeWing = new(50f, 10.5f);
+    private readonly AOEShapeRect _shapeTail = new(50f, 8f);
 
     public int NumAOEs => _aoes.Count; // 0 if not started, 1 if tail, 2 if wings
 

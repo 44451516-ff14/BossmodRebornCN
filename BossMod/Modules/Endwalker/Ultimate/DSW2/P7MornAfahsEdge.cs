@@ -6,7 +6,7 @@ sealed class P7MornAfahsEdge(BossModule module) : Components.GenericTowers(modul
     {
         if (spell.Action.ID is (uint)AID.MornAfahsEdgeFirst1 or (uint)AID.MornAfahsEdgeFirst2 or (uint)AID.MornAfahsEdgeFirst3)
         {
-            Towers.Add(new(spell.LocXZ, 4));
+            Towers.Add(new(spell.LocXZ, 4f));
         }
     }
 

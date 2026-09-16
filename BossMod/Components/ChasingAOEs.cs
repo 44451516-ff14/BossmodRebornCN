@@ -1,14 +1,14 @@
 namespace BossMod.Components;
 
 // generic 'chasing AOE' component - these are AOEs that follow the target for a set amount of casts
-
-[SkipLocalsInit]
 public class GenericChasingAOEs(BossModule module, float moveDistance, uint aid = default, string warningText = "GTFO from chasing aoe!") : GenericAOEs(module, aid, warningText)
 {
     private readonly float MoveDistance = moveDistance;
 
-    public sealed class Chaser(AOEShape shape, Actor target, WPos prevPos, float moveDist, int numRemaining, DateTime nextActivation, double secondsBetweenActivations)
+    public sealed class Chaser(AOEShape shape, Actor target, WPos prevPos, float moveDist, int numRemaining, DateTime nextActivation, double secondsBetweenActivations, int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = true)
     {
+        public int? ArenaProjectionLayer = arenaProjectionLayer;
+        public bool? RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
         public AOEShape Shape = shape;
         public Actor Target = target;
         public WPos PrevPos = prevPos;
@@ -16,6 +16,10 @@ public class GenericChasingAOEs(BossModule module, float moveDistance, uint aid 
         public int NumRemaining = numRemaining;
         public DateTime NextActivation = nextActivation;
         public double SecondsBetweenActivations = secondsBetweenActivations;
+
+        // Null keeps the target-following default; explicit IDs and all-layer mode take precedence.
+        public int? ResolveArenaProjectionLayer(BossModule module)
+            => module.ResolveTargetArenaProjectionLayer(Target, ArenaProjectionLayer, RestrictToArenaProjectionLayer);
 
         public WPos PredictedPosition()
         {
@@ -34,7 +38,8 @@ public class GenericChasingAOEs(BossModule module, float moveDistance, uint aid 
         var count = Chasers.Count;
         for (var i = 0; i < count; ++i)
         {
-            if (Chasers[i].Target == actor)
+            var chaser = Chasers[i];
+            if (actor != null && chaser.Target == actor && ArenaProjectionLayerParticipantApplies(actor, chaser.ResolveArenaProjectionLayer(Module), chaser.RestrictToArenaProjectionLayer))
             {
                 return true;
             }
@@ -56,7 +61,7 @@ public class GenericChasingAOEs(BossModule module, float moveDistance, uint aid 
             var c = Chasers[i];
             var pos = c.PredictedPosition();
             var off = pos - c.PrevPos;
-            aoes[i] = new(c.Shape, pos, off.LengthSq() > 0f ? Angle.FromDirection(off) : default, c.NextActivation);
+            aoes[i] = new(c.Shape, pos, off.LengthSq() > 0f ? Angle.FromDirection(off) : default, c.NextActivation, arenaProjectionLayer: c.ResolveArenaProjectionLayer(Module), restrictToArenaProjectionLayer: c.RestrictToArenaProjectionLayer);
         }
         return aoes;
     }
@@ -67,7 +72,8 @@ public class GenericChasingAOEs(BossModule module, float moveDistance, uint aid 
         for (var i = 0; i < count; ++i)
         {
             var c = Chasers[i];
-            if (c.Target == player)
+            if (c.Target == player && ArenaProjectionLayerApplies(pc, c.ResolveArenaProjectionLayer(Module), c.RestrictToArenaProjectionLayer)
+                && ArenaProjectionLayerParticipantApplies(player, c.ResolveArenaProjectionLayer(Module), c.RestrictToArenaProjectionLayer))
             {
                 return PlayerPriority.Interesting;
             }
@@ -75,8 +81,8 @@ public class GenericChasingAOEs(BossModule module, float moveDistance, uint aid 
         return PlayerPriority.Irrelevant;
     }
 
-    // return false if chaser was not found
-    public bool Advance(WPos pos, float moveDistance, DateTime currentTime, bool removeWhenFinished = true)
+    // Return false if no chaser matched. Pass the event's physical layer to distinguish overlapping sequences.
+    public bool Advance(WPos pos, float moveDistance, DateTime currentTime, bool removeWhenFinished = true, int? arenaProjectionLayer = null)
     {
         ++NumCasts;
         Chaser? c = null;
@@ -86,6 +92,11 @@ public class GenericChasingAOEs(BossModule module, float moveDistance, uint aid 
         for (var i = 0; i < count; ++i)
         {
             var chaser = Chasers[i];
+            var layer = chaser.ResolveArenaProjectionLayer(Module);
+            if (arenaProjectionLayer.HasValue && layer.HasValue && layer != arenaProjectionLayer)
+            {
+                continue;
+            }
             var predicted = chaser.PredictedPosition();
             var distSq = (predicted - pos).LengthSq();
 
@@ -116,39 +127,43 @@ public class GenericChasingAOEs(BossModule module, float moveDistance, uint aid 
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (Chasers.Count > 0)
-        {
-            AddForbiddenZones(actor, hints, true);
-            AddForbiddenZones(actor, hints, false);
-        }
-    }
-
-    private void AddForbiddenZones(Actor actor, AIHints hints, bool isTarget)
-    {
-        // sort of a hack to prevent the AI from getting "stuck" inside the AOE because all paths to safety have equal distance
         var count = Chasers.Count;
-        var circle = (AOEShapeCircle)Chasers[0].Shape;
-        var radius = circle.Radius;
         for (var i = 0; i < count; ++i)
         {
             var c = Chasers[i];
-            if (c.Target == actor == isTarget)
+            if (!ArenaProjectionLayerApplies(actor, c.ResolveArenaProjectionLayer(Module), c.RestrictToArenaProjectionLayer))
             {
-                var radiusAdj = isTarget ? MoveDistance + radius : radius + 1f;
-                var predicted = c.PredictedPosition();
-                var position = isTarget ? predicted - radius * actor.Rotation.ToDirection() : predicted;
-                hints.AddForbiddenZone(new SDCircle(position, radiusAdj), c.NextActivation);
+                continue;
             }
+
+            var predicted = c.PredictedPosition();
+            ShapeDistance distance;
+            if (c.Shape is AOEShapeCircle circle)
+            {
+                // Offset the target's circle to avoid equal-distance paths trapping it inside the AOE.
+                var isTarget = c.Target == actor && ArenaProjectionLayerParticipantApplies(actor, c.ResolveArenaProjectionLayer(Module), c.RestrictToArenaProjectionLayer);
+                var radius = circle.Radius;
+                var radiusAdj = isTarget ? MoveDistance + radius : radius + 1f;
+                var position = isTarget ? predicted - radius * actor.Rotation.ToDirection() : predicted;
+                distance = new SDCircle(position, radiusAdj);
+            }
+            else
+            {
+                var offset = predicted - c.PrevPos;
+                distance = c.Shape.Distance(predicted, offset.LengthSq() > 0f ? Angle.FromDirection(offset) : default);
+            }
+            hints.AddForbiddenZone(distance, c.NextActivation, arenaProjectionLayer: ArenaProjectionLayerForAI(c.ResolveArenaProjectionLayer(Module), c.RestrictToArenaProjectionLayer));
         }
     }
 }
 
 // standard chasing aoe; first cast is long - assume it is baited on the nearest allowed target; successive casts are instant
-[SkipLocalsInit]
-public class StandardChasingAOEs(BossModule module, AOEShape shape, uint actionFirst, uint actionRest, float moveDistance, double secondsBetweenActivations, int maxCasts, bool resetTargets = false, uint icon = default, double activationDelay = 5.1d) : GenericChasingAOEs(module, moveDistance)
+public class StandardChasingAOEs(BossModule module, AOEShape shape, uint actionFirst, uint actionRest, float moveDistance, double secondsBetweenActivations, int maxCasts, bool resetTargets = false, uint icon = default, double activationDelay = 5.1d, int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = true) : GenericChasingAOEs(module, moveDistance)
 {
-    public StandardChasingAOEs(BossModule module, float radius, uint actionFirst, uint actionRest, float moveDistance, double secondsBetweenActivations, int maxCasts, bool resetTargets = false, uint icon = default, double activationDelay = 5.1d)
-    : this(module, new AOEShapeCircle(radius), actionFirst, actionRest, moveDistance, secondsBetweenActivations, maxCasts, resetTargets, icon, activationDelay) { }
+    public int? ArenaProjectionLayer = arenaProjectionLayer;
+    public bool? RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
+    public StandardChasingAOEs(BossModule module, float radius, uint actionFirst, uint actionRest, float moveDistance, double secondsBetweenActivations, int maxCasts, bool resetTargets = false, uint icon = default, double activationDelay = 5.1d, int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = true)
+    : this(module, new AOEShapeCircle(radius), actionFirst, actionRest, moveDistance, secondsBetweenActivations, maxCasts, resetTargets, icon, activationDelay, arenaProjectionLayer, restrictToArenaProjectionLayer) { }
 
     public readonly AOEShape Shape = shape;
     public readonly uint ActionFirst = actionFirst;
@@ -182,7 +197,10 @@ public class StandardChasingAOEs(BossModule module, AOEShape shape, uint actionF
         for (var i = 0; i < count; ++i)
         {
             var c = Chasers[i];
-            Arena.AddLine(c.PrevPos, c.Target.Position);
+            using (Arena.WorldProjectionLayer(c.ResolveArenaProjectionLayer(Module), c.RestrictToArenaProjectionLayer))
+            {
+                Arena.AddLine(c.PrevPos, c.Target.Position);
+            }
         }
     }
 
@@ -198,6 +216,10 @@ public class StandardChasingAOEs(BossModule module, AOEShape shape, uint actionF
             for (var i = 0; i < count; ++i)
             {
                 var t = Targets[i];
+                if (!ArenaProjectionLayerParticipantApplies(t, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+                {
+                    continue;
+                }
                 var distanceSq = (t.Position - pos).LengthSq();
                 if (distanceSq < minDistance)
                 {
@@ -209,7 +231,7 @@ public class StandardChasingAOEs(BossModule module, AOEShape shape, uint actionF
             {
                 Targets.Remove(target);
                 TargetsMask.Clear(Raid.FindSlot(target.InstanceID));
-                Chasers.Add(new(Shape, target, pos, 0, MaxCasts, Module.CastFinishAt(spell), SecondsBetweenActivations)); // initial cast does not move anywhere
+                Chasers.Add(new(Shape, target, pos, 0, MaxCasts, Module.CastFinishAt(spell), SecondsBetweenActivations, arenaProjectionLayer: ArenaProjectionLayer, restrictToArenaProjectionLayer: RestrictToArenaProjectionLayer)); // initial cast does not move anywhere
             }
         }
     }
@@ -219,7 +241,7 @@ public class StandardChasingAOEs(BossModule module, AOEShape shape, uint actionF
         if (spell.Action.ID is var id && id == ActionFirst || id == ActionRest)
         {
             var pos = spell.MainTargetID == caster.InstanceID ? caster.Position.Quantized() : WorldState.Actors.Find(spell.MainTargetID)?.Position ?? spell.TargetXZ;
-            Advance(pos, MoveDistance, WorldState.CurrentTime);
+            Advance(pos, MoveDistance, WorldState.CurrentTime, arenaProjectionLayer: ArenaProjectionLayerForAI(ArenaProjectionLayer, RestrictToArenaProjectionLayer));
             if (Chasers.Count == 0 && ResetTargets)
             {
                 Targets.Clear();

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex2Hydaelyn;
 
-class Parhelion(BossModule module) : BossComponent(module)
+sealed class Parhelion(BossModule module) : BossComponent(module)
 {
     private readonly List<Actor> _completedParhelions = [];
     private bool _subparhelions;
@@ -21,13 +21,13 @@ class Parhelion(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.BeaconParhelion:
+            case (uint)AID.BeaconParhelion:
                 _completedParhelions.Add(caster);
                 _subparhelions = _completedParhelions.Count >= 15;
                 break;
-            case AID.BeaconSubparhelion:
+            case (uint)AID.BeaconSubparhelion:
                 _completedParhelions.Remove(caster);
                 break;
         }

@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation.xan;
+﻿namespace BossMod.Autorotation;
 
 public sealed class TrackPartyHealth(WorldState World)
 {
@@ -54,6 +54,7 @@ public sealed class TrackPartyHealth(WorldState World)
         1836, // Superbolide
         2685, // Catharsis of Corundum
         (uint)WAR.SID.BloodwhettingDefenseLong,
+        3902, // Vigilant
 
         // everything called "HP Recovery Down"
         2852,
@@ -64,17 +65,22 @@ public sealed class TrackPartyHealth(WorldState World)
         // Accretion, triggers earth raidwide when healing target to full, let players handle it manually
         1604
     ];
+
+    private static readonly uint[] DoomStatuses = [
+        1769
+    ];
+
     private float StatusDuration(DateTime expireAt) => Math.Max((float)(expireAt - World.CurrentTime).TotalSeconds, 0.0f);
 
     private PartyHealthState CalculatePartyHealthState(Func<Actor, bool> filter)
     {
         var count = 0;
-        float meanPred = 0;
-        float meanPred2 = 0;
+        var meanPred = 0f;
+        var meanPred2 = 0f;
         var minPred = float.MaxValue;
         var minSlotPred = -1;
-        float meanCur = 0;
-        float meanCur2 = 0;
+        var meanCur = 0f;
+        var meanCur2 = 0f;
         var minCur = float.MaxValue;
         var minSlotCur = -1;
 
@@ -154,7 +160,7 @@ public sealed class TrackPartyHealth(WorldState World)
     {
         // copied from veyn's HealerActions in EW bossmod - i am a thief
         BitMask esunas = default;
-        foreach (var caster in World.Party.WithoutSlot(excludeAlliance: true).Where(a => a.CastInfo?.IsSpell(BossMod.WHM.AID.Esuna) ?? false))
+        foreach (var caster in World.Party.WithoutSlot(excludeAlliance: true).Where(a => a.CastInfo?.IsSpell(WHM.AID.Esuna) == true))
             esunas.Set(World.Party.FindSlot(caster.CastInfo!.TargetID));
 
         _haveRealPartyMembers = false;
@@ -207,7 +213,7 @@ public sealed class TrackPartyHealth(WorldState World)
                 if (NoHealStatuses.Contains(s.ID))
                     state.NoHealStatusRemaining = StatusDuration(s.ExpireAt);
 
-                if (s.ID == 1769)
+                if (DoomStatuses.Contains(s.ID))
                     state.DoomRemaining = StatusDuration(s.ExpireAt);
             }
 

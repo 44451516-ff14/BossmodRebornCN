@@ -4,7 +4,6 @@ using static BossMod.AIHints;
 
 namespace BossMod.Autorotation.xan;
 
-[Flags]
 public enum SmnFlags
 {
     None = 0,
@@ -76,7 +75,7 @@ public sealed class SMN(RotationModuleManager manager, Actor player) : Castxan<A
     public float RefulgentLux;
     public bool CrimsonStrikeReady;
 
-    public int Aetherflow => TranceFlags.HasFlag(SmnFlags.Aetherflow2) ? 2 : TranceFlags.HasFlag(SmnFlags.Aetherflow) ? 1 : 0;
+    public int Aetherflow => (TranceFlags & SmnFlags.Aetherflow2) != 0 ? 2 : (TranceFlags & SmnFlags.Aetherflow) != 0 ? 1 : 0;
 
     public int NumAOETargets;
     public int NumMeleeTargets;
@@ -91,10 +90,10 @@ public sealed class SMN(RotationModuleManager manager, Actor player) : Castxan<A
         {
             if (SummonLeft > 0 && AttunementType == AttunementType.None)
             {
-                if (TranceFlags.HasFlag(SmnFlags.SolarBahamut))
+                if ((TranceFlags & SmnFlags.SolarBahamut) != 0)
                     return Trance.Lightwyrm;
 
-                if (TranceFlags.HasFlag(SmnFlags.Phoenix))
+                if ((TranceFlags & SmnFlags.Phoenix) != 0)
                     return Trance.Phoenix;
 
                 if (Unlocked(AID.DreadwyrmTrance))
@@ -190,10 +189,10 @@ public sealed class SMN(RotationModuleManager manager, Actor player) : Castxan<A
     {
         get
         {
-            if (TranceFlags.HasFlag(SmnFlags.SolarBahamut))
+            if ((TranceFlags & SmnFlags.SolarBahamut) != 0)
                 return AID.SummonSolarBahamut;
 
-            if (TranceFlags.HasFlag(SmnFlags.Phoenix))
+            if ((TranceFlags & SmnFlags.Phoenix) != 0)
                 return AID.SummonPhoenix;
 
             if (Unlocked(AID.SummonBahamut))
@@ -255,7 +254,7 @@ public sealed class SMN(RotationModuleManager manager, Actor player) : Castxan<A
 
         if (CrimsonStrikeReady)
         {
-            Hints.GoalZones.Add(AIHints.GoalSingleTarget(primaryTarget.Actor, 3));
+            Hints.GoalZones.Add(Hints.GoalSingleTarget(primaryTarget.Actor, Player, World.Actors, 3f));
             PushGCD(AID.CrimsonStrike, BestMeleeTarget);
         }
 
@@ -284,13 +283,13 @@ public sealed class SMN(RotationModuleManager manager, Actor player) : Castxan<A
                     PushGCD(BestAethercharge, primaryTarget);
             }
 
-            if (TranceFlags.HasFlag(SmnFlags.Topaz))
+            if ((TranceFlags & SmnFlags.Topaz) != 0)
                 PushGCD(AID.SummonTopaz, Unlocked(TraitID.TopazSummoningMastery) ? BestAOETarget : primaryTarget);
 
-            if (TranceFlags.HasFlag(SmnFlags.Emerald))
+            if ((TranceFlags & SmnFlags.Emerald) != 0)
                 PushGCD(AID.SummonEmerald, Unlocked(TraitID.EmeraldSummoningMastery) ? BestAOETarget : primaryTarget);
 
-            if (TranceFlags.HasFlag(SmnFlags.Ruby))
+            if ((TranceFlags & SmnFlags.Ruby) != 0)
                 PushGCD(AID.SummonRuby, Unlocked(TraitID.RubySummoningMastery) ? BestAOETarget : primaryTarget);
         }
 

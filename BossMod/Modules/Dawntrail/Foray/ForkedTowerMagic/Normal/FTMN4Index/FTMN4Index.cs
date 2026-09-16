@@ -8,18 +8,21 @@ sealed class ArenaChange(BossModule module) : BossComponent(module)
         {
             switch (state)
             {
-                case 0x00020001:
-                    Arena.Bounds = Index.OmniElementsBounds;
-                    Arena.Center = Index.OmniElementsCenter;
+                case 0x00020001u:
+                    var arenaFull = FTMN4Index.BuildFullArena();
+                    Arena.Bounds = arenaFull.arena;
+                    Arena.Center = arenaFull.center;
                     break;
-                case 0x00080004:
-                    Arena.Bounds = Index.InitialBounds;
-                    Arena.Center = Index.InitialCenter;
+                case 0x00080004u:
+                    var arenaInitial = FTMN4Index.BuildInitialArena();
+                    Arena.Bounds = arenaInitial.arena;
+                    Arena.Center = arenaInitial.center;
                     break;
             }
         }
     }
 }
+
 sealed class OmniElementPanels(BossModule module) : BossComponent(module)
 {
     // spawns elemental panels with rotation 0, 60, 120
@@ -52,8 +55,9 @@ sealed class OmniElementPanels(BossModule module) : BossComponent(module)
 sealed class Flare(BossModule module) : Components.RaidwideCast(module, (uint)AID.Flare);
 sealed class Bombs(BossModule module) : Components.Adds(module, (uint)OID.SummonedBomb, 2)
 {
-    private readonly IndexConfig _config = Service.Config.Get<IndexConfig>();
-    public override void AddGlobalHints(GlobalHints hints)
+    private readonly FTMN4IndexConfig _config = Service.Config.Get<FTMN4IndexConfig>();
+
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (ActiveActors.Count != 0)
         {
@@ -96,21 +100,24 @@ sealed class Bombs(BossModule module) : Components.Adds(module, (uint)OID.Summon
 }
 sealed class Aim(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Aim, 11f)
 {
+    private Shockwave? shockwave;
+    private Predict? predict;
     // resolves after shockwave and predict; ignore until predict AOEs are gone
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        var knockbacks = Module.FindComponent<Shockwave>();
-        var predict = Module.FindComponent<Predict>();
-        if (knockbacks?.ActiveKnockbacks(slot, actor).Length == 0 && predict?.ActiveAOEs(slot, actor).Length == 0)
+        shockwave ??= Module.FindComponent<Shockwave>();
+        predict ??= Module.FindComponent<Predict>();
+        if (shockwave?.ActiveKnockbacks(slot, actor).Length == 0 && predict?.ActiveAOEs(slot, actor).Length == 0)
         {
             base.AddHints(slot, actor, hints);
         }
     }
+
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var knockbacks = Module.FindComponent<Shockwave>();
-        var predict = Module.FindComponent<Predict>();
-        if (knockbacks?.ActiveKnockbacks(slot, actor).Length == 0 && predict?.ActiveAOEs(slot, actor).Length == 0)
+        shockwave ??= Module.FindComponent<Shockwave>();
+        predict ??= Module.FindComponent<Predict>();
+        if (shockwave?.ActiveKnockbacks(slot, actor).Length == 0 && predict?.ActiveAOEs(slot, actor).Length == 0)
         {
             base.AddAIHints(slot, actor, assignment, hints);
         }
@@ -118,21 +125,24 @@ sealed class Aim(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Ai
 }
 sealed class RomeosBallad(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RomeosBallad, 15f)
 {
+    private Shockwave? shockwave;
+    private Predict? predict;
     // resolves after shockwave and predict; ignore until predict AOEs are gone
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        var knockbacks = Module.FindComponent<Shockwave>();
-        var predict = Module.FindComponent<Predict>();
-        if (knockbacks?.ActiveKnockbacks(slot, actor).Length == 0 && predict?.ActiveAOEs(slot, actor).Length == 0)
+        shockwave ??= Module.FindComponent<Shockwave>();
+        predict ??= Module.FindComponent<Predict>();
+        if (shockwave?.ActiveKnockbacks(slot, actor).Length == 0 && predict?.ActiveAOEs(slot, actor).Length == 0)
         {
             base.AddHints(slot, actor, hints);
         }
     }
+
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var knockbacks = Module.FindComponent<Shockwave>();
-        var predict = Module.FindComponent<Predict>();
-        if (knockbacks?.ActiveKnockbacks(slot, actor).Length == 0 && predict?.ActiveAOEs(slot, actor).Length == 0)
+        shockwave ??= Module.FindComponent<Shockwave>();
+        predict ??= Module.FindComponent<Predict>();
+        if (shockwave?.ActiveKnockbacks(slot, actor).Length == 0 && predict?.ActiveAOEs(slot, actor).Length == 0)
         {
             base.AddAIHints(slot, actor, assignment, hints);
         }
@@ -590,53 +600,38 @@ sealed class Predict(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
-    StatesType = typeof(IndexStates),
-    ConfigType = typeof(IndexConfig),
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID),
-    StatusIDType = typeof(SID),
-    TetherIDType = typeof(TetherID),
-    IconIDType = typeof(IconID),
-    PrimaryActorOID = (uint)OID.Index,
-    Contributors = "gynorhino",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.Foray,
-    GroupType = BossModuleInfo.GroupType.TheForkedTowerMagic,
-    GroupID = 1093u,
-    NameID = 14717u,
-    SortOrder = 4,
-    PlanLevel = 0)]
-[SkipLocalsInit]
-public sealed class Index(WorldState ws, Actor primary) : BossModule(ws, primary, InitialCenter, InitialBounds)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.Index, Contributors = "gynorhino", GroupType = BossModuleInfo.GroupType.TheForkedTowerMagicNormal, GroupID = 1093u, NameID = 14717u)]
+public sealed class FTMN4Index : BossModule
 {
+    public FTMN4Index(WorldState ws, Actor primary) : this(ws, primary, BuildInitialArena()) { }
+
+    private FTMN4Index(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
     // points using material id 0x00007004
-    private static readonly WPos[] _arenaInitialPos = [
-        new(7.50198f, -615.00610f),new(7.49990f, -600.00012f),new(-7.50010f, -600.00012f),new(-7.50079f, -600.00067f),
-        new(-7.50276f, -615.00580f),new(-15.00425f, -628.00012f),new(-27.99880f, -635.50494f),new(-20.49879f, -648.49530f),
-        new(-7.50275f, -640.99445f),new(7.50200f, -640.99408f),new(20.49863f, -648.49530f),new(27.99863f, -635.50494f),
-        new(15.00408f, -628.00012f),new(15.00408f, -628.00012f)];
+    public static (WPos center, ArenaBoundsCustom arena) BuildInitialArena()
+    {
+        WPos[] arenaInitialPos = [new(7.50198f, -615.00610f), new(7.49990f, -600.00012f), new(-7.50010f, -600.00012f), new(-7.50079f, -600.00067f),
+        new(-7.50276f, -615.00580f), new(-15.00425f, -628.00012f), new(-27.99880f, -635.50494f), new(-20.49879f, -648.49530f),
+        new(-7.50275f, -640.99445f), new(7.50200f, -640.99408f), new(20.49863f, -648.49530f), new(27.99863f, -635.50494f),
+        new(15.00408f, -628.00012f), new(15.00408f, -628.00012f)];
+        var arena = new ArenaBoundsCustom([new PolygonCustom(arenaInitialPos)], GetInnerHexagon(), Offset: -1f) { Y = -683.9f, WorldProjectionHeight = 0f, BorderY = -684f };
+        return (arena.Center, arena);
+    }
 
-    private static readonly WPos[] _arenaFullPos = [
-        new(27.99862f, -620.49530f),new(20.49862f, -607.50494f),new(7.50198f, -615.00610f),new(7.49990f, -600.00012f),
-        new(-7.50010f, -600.00012f),new(-7.50079f, -600.00067f),new(-7.50276f, -615.00580f),new(-20.49881f, -607.50494f),
-        new(-27.99881f, -620.49530f),new(-15.00425f, -628.00012f),new(-27.99880f, -635.50494f),new(-20.49879f, -648.49530f),
-        new(-7.50275f, -640.99445f),new(-7.50076f, -656.00049f),new(0.73911f, -656.00031f),new(7.49962f, -656.00043f),
-        new(7.49992f, -656.00012f),new(7.50200f, -640.99408f),new(20.49863f, -648.49530f),new(27.99863f, -635.50494f),
-        new(15.00408f, -628.00012f),new(15.00408f, -628.00012f)];
+    public static (WPos center, ArenaBoundsCustom arena) BuildFullArena()
+    {
+        WPos[] arenaFullPos = [new(27.99862f, -620.4953f), new(20.49862f, -607.50494f), new(7.50198f, -615.00610f), new(7.4999f, -600.00012f),
+        new(-7.5001f, -600.00012f), new(-7.50079f, -600.00067f), new(-7.50276f, -615.00580f), new(-20.49881f, -607.50494f),
+        new(-27.99881f, -620.49530f), new(-15.00425f, -628.00012f), new(-27.99880f, -635.50494f), new(-20.49879f, -648.49530f),
+        new(-7.50275f, -640.99445f), new(-7.50076f, -656.00049f), new(0.73911f, -656.00031f), new(7.49962f, -656.00043f),
+        new(7.49992f, -656.00012f), new(7.502f, -640.99408f), new(20.49863f, -648.49530f), new(27.99863f, -635.50494f),
+        new(15.00408f, -628.00012f), new(15.00408f, -628.00012f)];
+        var arena = new ArenaBoundsCustom([new PolygonCustom(arenaFullPos)], GetInnerHexagon(), Offset: -1f) { Y = -683.9f, WorldProjectionHeight = 0f, BorderY = -684f };
+        return (arena.Center, arena);
+    }
 
-    //private static readonly WPos[] _innerHexPos = [new(-2.88752f, -623.00104f), new(0.62856f, -623.00043f), new(2.88607f, -623.00067f), new(5.77356f, -628.00012f), new(2.88633f, -633.00024f), new(-2.88692f, -633.00024f), new(-5.77374f, -628.00012f)];
-    private static readonly WPos[] _innerHexPos = [new(-3f, -623f), new(3f, -623f), new(6f, -628f), new(3f, -633f), new(-3f, -633f), new(-6f, -628f)];
-
-    private static readonly PolygonCustom[] _arenaInitial = [new(_arenaInitialPos)];
-    private static readonly PolygonCustom[] _arenaFull = [new(_arenaFullPos)];
-    private static readonly PolygonCustom[] _innerHex = [new(_innerHexPos)];
-
-    public static WPos InitialCenter = new(0f, -624.25f);
-    public static readonly ArenaBoundsCustom InitialBounds = new(_arenaInitial, _innerHex, Offset: -1f);
-
-    public static WPos OmniElementsCenter = new(0f, -628f);
-    public static readonly ArenaBoundsCustom OmniElementsBounds = new(_arenaFull, _innerHex, Offset: -1f);
+    public static PolygonCustom[] GetInnerHexagon() => [new PolygonCustom([new(-2.88752f, -623.00104f), new(0.62856f, -623.00043f), new(2.88607f, -623.00067f), new(5.77356f, -628.00012f),
+        new(2.88633f, -633.00024f), new(-2.88692f, -633.00024f), new(-5.77374f, -628.00012f)])];
 
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 28f);
 }

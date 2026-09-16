@@ -1,7 +1,6 @@
 ﻿namespace BossMod;
 
 // 2d vector that represents world-space direction on XZ plane
-[SkipLocalsInit]
 public readonly struct WDir(float x, float z)
 {
     public readonly float X = x;
@@ -28,8 +27,8 @@ public readonly struct WDir(float x, float z)
 
     public readonly WDir Abs() => new(Math.Abs(X), Math.Abs(Z));
     public readonly WDir Sign() => new(Math.Sign(X), Math.Sign(Z));
-    public readonly WDir OrthoL() => new(Z, -X); // CCW, same length
-    public readonly WDir OrthoR() => new(-Z, X); // CW, same length
+    public readonly WDir OrthoL() => new(Z, -X); // CCW, same length (equals .Rotate(90f.Degrees()))
+    public readonly WDir OrthoR() => new(-Z, X); // CW, same length (equals .Rotate(-90f.Degrees()))
     public readonly WDir MirrorX() => new(-X, Z);
     public readonly WDir MirrorZ() => new(X, -Z);
     public static float Dot(WDir a, WDir b) => a.X * b.X + a.Z * b.Z;
@@ -80,7 +79,6 @@ public readonly struct WDir(float x, float z)
 }
 
 // 2d vector that represents world-space position on XZ plane
-[SkipLocalsInit]
 public readonly struct WPos(float x, float z)
 {
     public readonly float X = x;
@@ -128,7 +126,7 @@ public readonly struct WPos(float x, float z)
 
     public static WPos RotateAroundOrigin(float rotateByDegrees, WPos origin, WPos point)
     {
-        var (sin, cos) = ((float, float))Math.SinCos(rotateByDegrees * Angle.DegToRad);
+        var (sin, cos) = MathF.SinCos(rotateByDegrees * Angle.DegToRad);
         var originX = origin.X;
         var originZ = origin.Z;
         var deltaX = point.X - originX;

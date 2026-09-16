@@ -1,17 +1,17 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex2Hydaelyn;
 
 // component for second lightwave (3 waves, 5 crystals) + hero's glory mechanics
-class Lightwave2(BossModule module) : LightwaveCommon(module)
+sealed class Lightwave2(BossModule module) : LightwaveCommon(module)
 {
     private WPos _safeCrystal;
     private Vector4? _safeCrystalOrigin;
 
-    private static readonly WPos _crystalCenter = new(100f, 101f);
-    private static readonly WPos _crystalTL = new(90f, 92f);
-    private static readonly WPos _crystalTR = new(110f, 92f);
-    private static readonly WPos _crystalBL = new(90f, 110f);
-    private static readonly WPos _crystalBR = new(110f, 110f);
-    private static readonly AOEShapeCone _gloryAOE = new(40f, 90f.Degrees());
+    private readonly WPos _crystalCenter = new(100f, 101f);
+    private readonly WPos _crystalTL = new(90f, 92f);
+    private readonly WPos _crystalTR = new(110f, 92f);
+    private readonly WPos _crystalBL = new(90f, 110f);
+    private readonly WPos _crystalBR = new(110f, 110f);
+    private readonly AOEShapeCone _gloryAOE = new(40f, 90f.Degrees());
 
     public override void Update()
     {

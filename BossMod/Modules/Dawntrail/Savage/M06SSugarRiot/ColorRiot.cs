@@ -21,7 +21,7 @@ sealed class ColorRiot(BossModule module) : Components.GenericBaitAway(module, d
             CurrentBaits.Add(new(Module.PrimaryActor, furthest, circle, activation));
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (warmClose != null)
             hints.Add($"Proximity tankbusters");

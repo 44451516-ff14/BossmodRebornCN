@@ -2,7 +2,6 @@
 
 namespace BossMod.Pathfinding;
 
-[SkipLocalsInit]
 public sealed class ThetaStar
 {
     public enum Score

@@ -1,17 +1,17 @@
 ﻿namespace BossMod.RealmReborn.Extreme.Ex4Ifrit;
 
-class Incinerate(BossModule module) : Components.Cleave(module, (uint)AID.Incinerate, CleaveShape)
+sealed class Incinerate(BossModule module) : Components.Cleave(module, (uint)AID.Incinerate, CleaveShape)
 {
     public static readonly AOEShapeCone CleaveShape = new(21f, 60f.Degrees());
 }
 
-class RadiantPlume(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RadiantPlumeAOE, 8f);
+sealed class RadiantPlume(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RadiantPlumeAOE, 8f);
 
 // TODO: consider showing next charge before its cast starts...
-class CrimsonCyclone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CrimsonCyclone, new AOEShapeRect(49f, 9f));
+sealed class CrimsonCyclone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CrimsonCyclone, new AOEShapeRect(49f, 9f));
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 63, NameID = 1185)]
-public class Ex4Ifrit : BossModule
+[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 63u, NameID = 1185u)]
+public sealed class Ex4Ifrit : BossModule
 {
     public readonly List<Actor> SmallNails;
     public readonly List<Actor> LargeNails;

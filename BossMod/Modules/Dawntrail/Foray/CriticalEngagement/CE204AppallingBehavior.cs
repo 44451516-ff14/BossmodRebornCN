@@ -279,7 +279,6 @@ sealed class Roulette(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class CE204AppallingBehaviorStates : StateMachineBuilder
 {
     public CE204AppallingBehaviorStates(BossModule module) : base(module)
@@ -296,24 +295,7 @@ sealed class CE204AppallingBehaviorStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Contributed,
-    StatesType = typeof(CE204AppallingBehaviorStates),
-    ConfigType = null, // replace null with typeof(PallmagiaConfig) if applicable
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID),
-    StatusIDType = null, // replace null with typeof(SID) if applicable
-    TetherIDType = typeof(TetherID),
-    IconIDType = null, // replace null with typeof(IconID) if applicable
-    PrimaryActorOID = (uint)OID.Pallmagia,
-    Contributors = "Gynorhino",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.Foray,
-    GroupType = BossModuleInfo.GroupType.CriticalEngagement,
-    GroupID = 1093u,
-    NameID = 59u,
-    SortOrder = 11,
-    PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.Contributed, PrimaryActorOID = (uint)OID.Pallmagia, Contributors = "Gynorhino", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 1093u, NameID = 59u)]
 public sealed class CE204AppallingBehavior(WorldState ws, Actor primary) : BossModule(ws, primary, new WPos(807f, -562f).Quantized(), new ArenaBoundsCircle(20f))
 {
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 20f);

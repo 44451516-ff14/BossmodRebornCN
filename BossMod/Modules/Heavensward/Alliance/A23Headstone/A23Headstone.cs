@@ -5,7 +5,6 @@ class FlaringEpigraph(BossModule module) : Components.RaidwideCast(module, (uint
 class BigBurst(BossModule module) : Components.RaidwideCast(module, (uint)AID.BigBurst);
 
 [ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "The Combat Reborn Team", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 168, NameID = 4868)]
-[SkipLocalsInit]
 public sealed class A23Headstone : BossModule
 {
     public A23Headstone(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

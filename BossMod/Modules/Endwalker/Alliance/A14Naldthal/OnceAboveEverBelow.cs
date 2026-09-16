@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Alliance.A14Naldthal;
 
-class OnceAboveEverBelow(BossModule module) : Components.Exaflare(module, 6f)
+sealed class OnceAboveEverBelow(BossModule module) : Components.Exaflare(module, 6f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

@@ -173,7 +173,7 @@ sealed class Aetherblight(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var count = Hints.Count;
         if (count > 0)

@@ -1,36 +1,94 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UCOB;
 
-class P2Cauterize(BossModule module) : Components.GenericAOEs(module)
+sealed class P2Cauterize(BossModule module) : Components.GenericAOEs(module)
 {
-    public int[] BaitOrder = new int[PartyState.MaxPartySize];
+    public struct Assignment(int order, DateTime deadline)
+    {
+        public int Order = order;
+        public DateTime Deadline = deadline;
+    }
+
+    public Assignment[] BaitOrder = new Assignment[PartyState.MaxPartySize];
     public int NumBaitsAssigned;
+    private int _numHypernovas;
     public List<AOEInstance> Casters = [];
     private readonly List<(Actor actor, int position)> _dragons = []; // position 0 is N, then CW
+    private readonly PositionComparer _comparer = new();
 
-    private static readonly AOEShapeRect _shape = new(52f, 10f);
+    private readonly AOEShapeRect _shape = new(52f, 10f);
+
+    public static readonly WPos[] StandardBaits = [
+        new(18.149f, -9.531f),
+        new(8, 18.874f),
+        new(-17.667f, 10.398f)
+    ];
+
+    public WPos[] CurrentBaits = [];
+    private readonly ArenaBoundsSquare pathfindHugBorderBounds = new(21f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(Casters);
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (BaitOrder[slot] >= NextBaitOrder)
-            hints.Add($"Bait {BaitOrder[slot]}", false);
+        if (BaitOrder[slot].Order >= NextBaitOrder)
+        {
+            hints.Add($"Bait {BaitOrder[slot].Order}", false);
+        }
         base.AddHints(slot, actor, hints);
+    }
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        base.AddAIHints(slot, actor, assignment, hints);
+
+        var boSlot = BaitOrder[slot];
+        var bo = boSlot.Order;
+
+        if (bo >= NextBaitOrder)
+        {
+            var b = CurrentBaits[bo - 1];
+            var act = boSlot.Deadline;
+            if (_numHypernovas >= Math.Min(4, bo * 2 - 1))
+            {
+                hints.PathfindMapBounds = pathfindHugBorderBounds;
+
+                hints.AddForbiddenZone(new SDPrecisePosition(b, new(0f, 1f), 0.5f, actor.Position, 0.1f), act);
+            }
+            else
+            {
+                hints.AddForbiddenZone(new SDInvertedDonut(b, 5f, 7f), act.AddSeconds(-1d));
+            }
+        }
+        else if (bo == 0)
+        {
+            // non-baiters should move further away from any active dragons to give the baiters room, in case the next mechanic is spread
+            var count = Casters.Count;
+            var aoes = CollectionsMarshal.AsSpan(Casters);
+            for (var i = 0; i < count; ++i)
+            {
+                ref var aoe = ref aoes[i];
+                hints.AddForbiddenZone(new SDRect(aoe.Origin, aoe.Rotation, 52f, 0f, 13f), aoe.Activation);
+            }
+        }
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        if (BaitOrder[pcSlot] >= NextBaitOrder)
+        var boSlot = BaitOrder[pcSlot];
+        var order = boSlot.Order;
+        if (order >= NextBaitOrder)
         {
-            var order = DragonsForOrder(BaitOrder[pcSlot]);
-            var len = order.Length;
+            var dragons = DragonsForOrder(order);
+            var len = dragons.Length;
             for (var i = 0; i < len; ++i)
             {
-                var d = order[i];
-                Arena.Actor(d, Colors.Object, true);
-                _shape.Outline(Arena, d.Position, Angle.FromDirection(pc.Position - d.Position));
+                var d = dragons[i];
+                var pos = d.Position;
+                Arena.ActorInsideBounds(pos, d.Rotation, Colors.Object);
+                _shape.Outline(Arena, pos, Angle.FromDirection(pc.Position - pos));
             }
-            // TODO: safe spots
+
+            Arena.ZoneCircleOutline(CurrentBaits[order - 1], 0.5f, Colors.Safe);
         }
     }
 
@@ -44,9 +102,15 @@ class P2Cauterize(BossModule module) : Components.GenericAOEs(module)
             if (_dragons.Count == 5)
             {
                 // sort by direction
-                _dragons.Sort(static (a, b) => a.position.CompareTo(b.position));
+                RefSort.Sort(CollectionsMarshal.AsSpan(_dragons), _comparer);
             }
         }
+    }
+
+    private readonly struct PositionComparer : IRefComparer<(Actor, int position)>
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int Compare(ref (Actor, int position) a, ref (Actor, int position) b) => a.position.CompareTo(b.position);
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -61,8 +125,21 @@ class P2Cauterize(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID is (uint)AID.Cauterize1 or (uint)AID.Cauterize2 or (uint)AID.Cauterize3 or (uint)AID.Cauterize4 or (uint)AID.Cauterize5)
         {
-            Casters.RemoveAt(0);
+            if (Casters.Count != 0)
+            {
+                Casters.RemoveAt(0);
+            }
             ++NumCasts;
+        }
+    }
+
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        base.OnEventCast(caster, spell);
+
+        if (spell.Action.ID == (uint)AID.Hypernova)
+        {
+            ++_numHypernovas;
         }
     }
 
@@ -70,7 +147,38 @@ class P2Cauterize(BossModule module) : Components.GenericAOEs(module)
     {
         if (iconID is (uint)IconID.Cauterize && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {
-            BaitOrder[slot] = ++NumBaitsAssigned;
+            BaitOrder[slot] = new(++NumBaitsAssigned, WorldState.FutureTime(7.2d));
+
+            if (NumBaitsAssigned == 1)
+            {
+                var count = _dragons.Count;
+                var center = Arena.Center;
+                var countD = 0;
+                var dir = 112.5f.Degrees();
+                var halfangle = 90f.Degrees();
+                for (var i = 0; i < count; ++i)
+                {
+                    if (_dragons[i].actor.Position.InCone(center, dir, halfangle))
+                    {
+                        ++countD;
+                    }
+                }
+                if (countD == 1)
+                {
+                    // cursed pattern: second dragon is true S; flipping standard baits horizontally will resolve the mechanic hopefully without killing anyone
+                    CurrentBaits = [StandardBaits[2], StandardBaits[1], StandardBaits[0]];
+
+                    for (var i = 0; i < 3; ++i)
+                    {
+                        ref var b = ref CurrentBaits[i];
+                        b = new(-b.X, b.Z);
+                    }
+                }
+                else
+                {
+                    CurrentBaits = StandardBaits;
+                }
+            }
         }
     }
 
@@ -85,7 +193,9 @@ class P2Cauterize(BossModule module) : Components.GenericAOEs(module)
     private Actor[] DragonsForOrder(int order)
     {
         if (_dragons.Count != 5)
+        {
             return [];
+        }
         return order switch
         {
             1 => [
@@ -102,7 +212,7 @@ class P2Cauterize(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class P2Hypernova(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.Hypernova, GetVoidzones, 1.4f)
+sealed class P2Hypernova(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.Hypernova, GetVoidzones, 1.4f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {

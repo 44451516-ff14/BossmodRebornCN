@@ -1,22 +1,13 @@
 namespace BossMod.Shadowbringers.Foray.CastrumLacusLitore.CLL4Dawon;
 
-sealed class NaturesPulse(BossModule module) : Components.ConcentricAOEs(module, _shapes)
+sealed class NaturesPulse(BossModule module) : Components.ConcentricAOEs(module, [new AOEShapeCircle(10f), new AOEShapeDonut(10f, 20f), new AOEShapeDonut(20f, 30f)])
 {
-    private static readonly AOEShape[] _shapes = [new AOEShapeCircle(10f), new AOEShapeDonut(10f, 20f), new AOEShapeDonut(20f, 30f)];
-    private readonly ArenaChange _arena = module.FindComponent<ArenaChange>()!;
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        if (!_arena.IsDawonArena)
-            return base.ActiveAOEs(slot, actor);
-        else
-            return [];
-    }
-
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.NaturesPulse1)
-            AddSequence(spell.LocXZ, Module.CastFinishAt(spell));
+        {
+            AddSequence(spell.LocXZ, Module.CastFinishAt(spell), arenaProjectionLayer: 1, restrictToArenaProjectionLayer: true);
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -31,6 +22,14 @@ sealed class NaturesPulse(BossModule module) : Components.ConcentricAOEs(module,
                 _ => -1
             };
             AdvanceSequence(order, spell.LocXZ, WorldState.FutureTime(1.5d));
+        }
+    }
+
+    public override void OnActorUntargetable(Actor actor)
+    {
+        if (actor.OID == (uint)OID.LyonTheBeastKing)
+        {
+            Sequences.Clear();
         }
     }
 }

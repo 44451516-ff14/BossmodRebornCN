@@ -1,8 +1,9 @@
 ﻿namespace BossMod.Components;
 
-[SkipLocalsInit]
-public class StackTogether(BossModule module, uint iconId, float activationDelay, float radius = 3f) : BossComponent(module)
+public class StackTogether(BossModule module, uint iconId, float activationDelay, float radius = 3f, int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false) : BossComponent(module)
 {
+    public int? ArenaProjectionLayer = arenaProjectionLayer;
+    public bool? RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
     public readonly List<Actor> Targets = [];
     public DateTime Activation;
     public readonly uint Icon = iconId;
@@ -36,6 +37,11 @@ public class StackTogether(BossModule module, uint iconId, float activationDelay
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
+        if (!ArenaProjectionLayerParticipantApplies(actor, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+        {
+            return;
+        }
+
         var count = Targets.Count;
         if (count == 0)
         {
@@ -48,6 +54,10 @@ public class StackTogether(BossModule module, uint iconId, float activationDelay
         for (var i = 0; i < count; ++i)
         {
             var target = Targets[i];
+            if (!ArenaProjectionLayerParticipantApplies(target, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+            {
+                continue;
+            }
 
             if (target == actor)
             {
@@ -72,6 +82,12 @@ public class StackTogether(BossModule module, uint iconId, float activationDelay
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
+        using var projection = Arena.WorldProjectionLayer(ArenaProjectionLayer, RestrictToArenaProjectionLayer);
+        if (!ArenaProjectionLayerParticipantApplies(pc, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+        {
+            return;
+        }
+
         var count = Targets.Count;
         if (count == 0)
         {
@@ -84,6 +100,10 @@ public class StackTogether(BossModule module, uint iconId, float activationDelay
         for (var i = 0; i < count; ++i)
         {
             var target = Targets[i];
+            if (!ArenaProjectionLayerParticipantApplies(target, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+            {
+                continue;
+            }
 
             if (target == pc)
             {
@@ -108,6 +128,11 @@ public class StackTogether(BossModule module, uint iconId, float activationDelay
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
+        if (!ArenaProjectionLayerParticipantApplies(actor, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+        {
+            return;
+        }
+
         var count = Targets.Count;
         if (count == 0)
         {
@@ -118,6 +143,10 @@ public class StackTogether(BossModule module, uint iconId, float activationDelay
         for (var i = 0; i < count; ++i)
         {
             var target = Targets[i];
+            if (!ArenaProjectionLayerParticipantApplies(target, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+            {
+                continue;
+            }
 
             if (target == actor)
             {
@@ -128,9 +157,9 @@ public class StackTogether(BossModule module, uint iconId, float activationDelay
                 forbidden.Add(new SDInvertedCircle(target.Position, Radius));
             }
         }
-        if (actorFound)
+        if (actorFound && forbidden.Count != 0)
         {
-            hints.AddForbiddenZone(new SDIntersection([.. forbidden]), Activation);
+            hints.AddForbiddenZone(new SDIntersection([.. forbidden]), Activation, arenaProjectionLayer: ArenaProjectionLayerForAI(ArenaProjectionLayer, RestrictToArenaProjectionLayer));
         }
     }
 }

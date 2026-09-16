@@ -3,10 +3,10 @@ using Dalamud.Interface.Utility.Raii;
 
 namespace BossMod;
 
-[SkipLocalsInit]
-public sealed class UITabs
+public sealed class UITabs(string id)
 {
     private readonly List<(string Name, Action Tab)> _tabs = [];
+    private readonly string _id = id;
     private string _forceSelect = "";
 
     public void Add(string name, Action tab)
@@ -16,7 +16,8 @@ public sealed class UITabs
             throw new ArgumentException($"Tab '{name}' has empty or duplicate name");
         }
 
-        for (var ti = 0; ti < _tabs.Count; ++ti)
+        var count = _tabs.Count;
+        for (var ti = 0; ti < count; ++ti)
         {
             if (_tabs[ti].Name == name)
             {
@@ -31,6 +32,8 @@ public sealed class UITabs
 
     public void Draw()
     {
+        using var id = ImRaii.PushId(_id);
+
         using var tabs = ImRaii.TabBar("Tabs");
         if (!tabs)
         {
@@ -41,12 +44,15 @@ public sealed class UITabs
         for (var i = 0; i < count; ++i)
         {
             var t = _tabs[i];
+
             using var tab = ImRaii.TabItem(t.Name, t.Name == _forceSelect ? ImGuiTabItemFlags.SetSelected : ImGuiTabItemFlags.None);
+
             if (tab)
             {
                 t.Tab();
             }
         }
+
         _forceSelect = "";
     }
 }

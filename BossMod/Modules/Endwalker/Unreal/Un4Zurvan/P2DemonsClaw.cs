@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un4Zurvan;
 
-class P2DemonsClawKnockback(BossModule module) : Components.GenericKnockback(module, (uint)AID.DemonsClaw)
+sealed class P2DemonsClawKnockback(BossModule module) : Components.GenericKnockback(module, (uint)AID.DemonsClaw)
 {
     private Actor? _caster;
 
@@ -24,13 +24,13 @@ class P2DemonsClawKnockback(BossModule module) : Components.GenericKnockback(mod
     }
 }
 
-class P2DemonsClawWaveCannon(BossModule module) : Components.GenericWildCharge(module, 5f, (uint)AID.WaveCannonShared)
+sealed class P2DemonsClawWaveCannon(BossModule module) : Components.GenericWildCharge(module, 5f, (uint)AID.WaveCannonShared)
 {
     public Actor? Target;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == WatchedAction)
+        if (spell.Action.ID is var id && id == WatchedAction)
         {
             Source = caster;
             foreach (var (slot, player) in Raid.WithSlot(false, true, true))
@@ -38,7 +38,7 @@ class P2DemonsClawWaveCannon(BossModule module) : Components.GenericWildCharge(m
                 PlayerRoles[slot] = player == Target ? PlayerRole.Target : PlayerRole.Share;
             }
         }
-        else if ((AID)spell.Action.ID == AID.DemonsClaw)
+        else if (id == (uint)AID.DemonsClaw)
         {
             Target = WorldState.Actors.Find(spell.TargetID);
         }

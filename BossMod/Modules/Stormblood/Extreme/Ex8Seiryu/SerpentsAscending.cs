@@ -8,7 +8,7 @@ sealed class SerpentAscending(BossModule module) : Components.GenericTowers(modu
     {
         if (actor.OID == (uint)OID.Tower)
         {
-            Towers.Add(new(actor.Position.Quantized(), 3f, activation: WorldState.FutureTime(7.8d), forbiddenSoakers: forbidden));
+            Towers.Add(new(actor.Position.Quantized(), 3f, activation: WorldState.FutureTime(7.8d), forbiddenSoakers: forbidden, restrictToArenaProjectionLayer: null));
         }
     }
 

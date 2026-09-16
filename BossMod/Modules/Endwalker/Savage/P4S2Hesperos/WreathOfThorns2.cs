@@ -3,7 +3,7 @@
 // state related to act 2 wreath of thorns
 // note: there should be four tethered helpers on activation
 // note: we assume that (1) dark targets soak all towers, (2) first fire to be broken is tank-healer pair (since their debuff is slightly shorter)
-class WreathOfThorns2(BossModule module) : BossComponent(module)
+sealed class WreathOfThorns2(BossModule module) : BossComponent(module)
 {
     public enum State { DarkDesign, FirstSet, SecondSet, Done }
 

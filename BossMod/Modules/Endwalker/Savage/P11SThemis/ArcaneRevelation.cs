@@ -1,14 +1,14 @@
 ﻿namespace BossMod.Endwalker.Savage.P11SThemis;
 
 // mirrors & spheres
-class ArcaneRevelation(BossModule module) : Components.GenericAOEs(module)
+sealed class ArcaneRevelation(BossModule module) : Components.GenericAOEs(module)
 {
     private uint _activeMirrors;
     private uint _activeSpheres;
     private readonly List<AOEInstance> _aoes = [];
 
-    private static readonly AOEShapeRect _shapeMirror = new(50f, 5f);
-    private static readonly AOEShapeCircle _shapeSphere = new(15f);
+    private readonly AOEShapeRect _shapeMirror = new(50f, 5f);
+    private readonly AOEShapeCircle _shapeSphere = new(15f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -52,7 +52,7 @@ class ArcaneRevelation(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class DismissalOverruling(BossModule module) : Components.GenericKnockback(module)
+sealed class DismissalOverruling(BossModule module) : Components.GenericKnockback(module)
 {
     private Actor? _source;
 
@@ -79,5 +79,5 @@ class DismissalOverruling(BossModule module) : Components.GenericKnockback(modul
     }
 }
 
-class InnerLight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.InnerLight, 13f);
-class OuterDark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OuterDark, new AOEShapeDonut(8f, 50f));
+sealed class InnerLight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.InnerLight, 13f);
+sealed class OuterDark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OuterDark, new AOEShapeDonut(8f, 50f));

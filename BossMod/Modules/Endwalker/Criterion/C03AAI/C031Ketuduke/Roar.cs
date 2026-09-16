@@ -1,13 +1,13 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C03AAI.C031Ketuduke;
 
-class Roar(BossModule module) : Components.GenericBaitAway(module)
+sealed class Roar(BossModule module) : Components.GenericBaitAway(module)
 {
     public bool Active;
     private BitMask _playerBubbles;
     private readonly List<(Actor actor, bool bubble)> _snakes = [];
     private bool _highlightSnakes;
 
-    private static readonly AOEShapeCone _shape = new(60f, 90f.Degrees());
+    private readonly AOEShapeCone _shape = new(60f, 90f.Degrees());
 
     public override void Update()
     {

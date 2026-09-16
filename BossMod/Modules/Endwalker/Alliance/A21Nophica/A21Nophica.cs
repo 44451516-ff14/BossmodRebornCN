@@ -2,7 +2,7 @@
 
 sealed class ArenaBounds(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeDonut donut = new(28f, 34f);
+    private readonly AOEShapeDonut donut = new(28f, 34f);
     private AOEInstance[] _aoe = [];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
@@ -18,12 +18,12 @@ sealed class ArenaBounds(BossModule module) : Components.GenericAOEs(module)
                     break;
                 case 0x00200010u:
                 case 0x00020001u:
-                    Arena.Bounds = A21Nophica.SmallerBounds;
+                    Arena.Bounds = new ArenaBoundsCircle(28f);
                     _aoe = [];
                     break;
                 case 0x00080004u:
                 case 0x00400004u:
-                    Arena.Bounds = A21Nophica.DefaultBounds;
+                    Arena.Bounds = new ArenaBoundsCircle(34f);
                     break;
             }
         }
@@ -39,8 +39,4 @@ sealed class Furrow(BossModule module) : Components.StackWithCastTargets(module,
 sealed class HeavensEarth(BossModule module) : Components.BaitAwayCast(module, (uint)AID.HeavensEarthAOE, 5f);
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 911u, NameID = 12065u, PlanLevel = 90)]
-public sealed class A21Nophica(WorldState ws, Actor primary) : BossModule(ws, primary, new(default, -238f), DefaultBounds)
-{
-    public static readonly ArenaBoundsCircle DefaultBounds = new(34f);
-    public static readonly ArenaBoundsCircle SmallerBounds = new(28f);
-}
+public sealed class A21Nophica(WorldState ws, Actor primary) : BossModule(ws, primary, new(0f, -238f), new ArenaBoundsCircle(34f));

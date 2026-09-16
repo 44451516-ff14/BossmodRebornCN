@@ -1,16 +1,14 @@
 ﻿namespace BossMod.Endwalker.Savage.P3SPhoinix;
 
-class HeatOfCondemnation(BossModule module) : Components.TankbusterTether(module, (uint)AID.HeatOfCondemnationAOE, (uint)TetherID.HeatOfCondemnation, 6);
-class TrailOfCondemnationAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TrailOfCondemnationAOE, new AOEShapeRect(40, 7.5f));
-class SearingBreeze(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SearingBreezeAOE, 6);
+sealed class HeatOfCondemnation(BossModule module) : Components.TankbusterTether(module, (uint)AID.HeatOfCondemnationAOE, (uint)TetherID.HeatOfCondemnation, 6f);
+sealed class TrailOfCondemnationAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TrailOfCondemnationAOE, new AOEShapeRect(40f, 7.5f));
+sealed class SearingBreeze(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SearingBreezeAOE, 6f);
 
-abstract class Cinderwing(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(60, 90.Degrees()));
-class LeftCinderwing(BossModule module) : Cinderwing(module, (uint)AID.LeftCinderwing);
-class RightCinderwing(BossModule module) : Cinderwing(module, (uint)AID.RightCinderwing);
+sealed class Cinderwing(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.LeftCinderwing, (uint)AID.RightCinderwing], new AOEShapeCone(60f, 90f.Degrees()));
 
-class DevouringBrand(BossModule module) : Components.GenericAOEs(module)
+sealed class DevouringBrand(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCross cross = new(40, 5);
+    private readonly AOEShapeCross cross = new(40f, 5f);
     private AOEInstance[] _aoe = [];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
@@ -32,7 +30,7 @@ class DevouringBrand(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class SunBirdLarge(BossModule module) : Components.Adds(module, (uint)OID.SunbirdLarge)
+sealed class SunBirdLarge(BossModule module) : Components.Adds(module, (uint)OID.SunbirdLarge)
 {
     public int FinishedTethers;
     public override void Update()
@@ -43,8 +41,8 @@ class SunBirdLarge(BossModule module) : Components.Adds(module, (uint)OID.Sunbir
     }
 }
 
-class SunBirdSmall(BossModule module) : Components.Adds(module, (uint)OID.SunbirdSmall);
-class DarkenedFireAdd(BossModule module) : Components.Adds(module, (uint)OID.DarkenedFire);
+sealed class SunBirdSmall(BossModule module) : Components.Adds(module, (uint)OID.SunbirdSmall);
+sealed class DarkenedFireAdd(BossModule module) : Components.Adds(module, (uint)OID.DarkenedFire);
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 807u, NameID = 10720u, PlanLevel = 90)]
-public class P3S(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsCircle(20f));
+public sealed class P3S(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsCircle(20f));

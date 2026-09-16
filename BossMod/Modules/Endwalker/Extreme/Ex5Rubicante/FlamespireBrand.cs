@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex5Rubicante;
 
-class Welts(BossModule module) : Components.GenericStackSpread(module, true)
+sealed class Welts(BossModule module) : Components.GenericStackSpread(module, true)
 {
     public enum Mechanic { StackFlare, Spreads, Done }
 
@@ -38,13 +38,13 @@ class Welts(BossModule module) : Components.GenericStackSpread(module, true)
     }
 }
 
-class Flamerake(BossModule module) : Components.GenericAOEs(module)
+sealed class Flamerake(BossModule module) : Components.GenericAOEs(module)
 {
     private Angle _offset;
     private DateTime _activation;
 
-    private static readonly AOEShapeCross _first = new(20f, 6f);
-    private static readonly AOEShapeRect _rest = new(8f, 20f);
+    private readonly AOEShapeCross _first = new(20f, 6f);
+    private readonly AOEShapeRect _rest = new(8f, 20f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -107,13 +107,13 @@ class Flamerake(BossModule module) : Components.GenericAOEs(module)
             switch (state)
             {
                 // 00080004 when rotation ends
-                case 0x00010001:
-                case 0x00100010:
+                case 0x00010001u:
+                case 0x00100010u:
                     _offset = 45f.Degrees();
                     _activation = act;
                     break;
-                case 0x00200020:
-                case 0x00800080:
+                case 0x00200020u:
+                case 0x00800080u:
                     _offset = default;
                     _activation = act;
                     break;

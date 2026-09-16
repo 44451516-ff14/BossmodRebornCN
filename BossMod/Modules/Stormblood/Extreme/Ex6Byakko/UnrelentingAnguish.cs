@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Stormblood.Extreme.Ex6Byakko;
 
-class UnrelentingAnguish(BossModule module) : Components.Voidzone(module, 2f, GetVoidzones, 2f)
+sealed class UnrelentingAnguish(BossModule module) : Components.Voidzone(module, 2f, GetVoidzones, 2f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -21,7 +21,7 @@ class UnrelentingAnguish(BossModule module) : Components.Voidzone(module, 2f, Ge
     }
 }
 
-class OminousWind(BossModule module) : BossComponent(module)
+sealed class OminousWind(BossModule module) : BossComponent(module)
 {
     public BitMask Targets;
 
@@ -85,9 +85,9 @@ class OminousWind(BossModule module) : BossComponent(module)
     }
 }
 
-class GaleForce(BossModule module) : Components.BaitAwayIcon(module, 6f, (uint)IconID.Bombogenesis, (uint)AID.GaleForce, 8.1f);
+sealed class GaleForce(BossModule module) : Components.BaitAwayIcon(module, 6f, (uint)IconID.Bombogenesis, (uint)AID.GaleForce, 8.1f);
 
-class VacuumClaw(BossModule module) : Components.Voidzone(module, 12f, GetVoidzones)
+sealed class VacuumClaw(BossModule module) : Components.Voidzone(module, 12f, GetVoidzones)
 {
     public bool Active = true;
 

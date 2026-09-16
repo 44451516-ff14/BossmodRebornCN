@@ -68,7 +68,7 @@ class TrashSpawning(BossModule module) : BossComponent(module)
     }
 
     // Add hint if active ripples exist
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (ActiveRipples.Any())
         {

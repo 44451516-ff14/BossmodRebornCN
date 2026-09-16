@@ -5,7 +5,6 @@ namespace BossMod;
 
 // base for boss modules - provides all the common features, so that look is standardized
 // by default, module activates (transitions to phase 0) whenever "primary" actor becomes both targetable and in combat (this is how we detect 'pull') - though this can be overridden if needed
-[SkipLocalsInit]
 public abstract class BossModule : IDisposable
 {
     public readonly WorldState WorldState;
@@ -26,6 +25,10 @@ public abstract class BossModule : IDisposable
     public PartyState Raid => WorldState.Party;
     public WPos Center => Arena.Center;
     public ArenaBounds Bounds => Arena.Bounds;
+
+    // Optional notes shown in a separate window while this encounter is loaded but not yet pulled.
+    // Override this in an encounter module to opt in; each entry is rendered as a separate bullet.
+    public virtual string[] PrePullHints => [];
 
     // per-oid enemy lists; filled on first request
     public readonly Dictionary<uint, List<Actor>> RelevantEnemies = []; // key = actor OID
@@ -104,7 +107,10 @@ public abstract class BossModule : IDisposable
             ReportError(null, $"State {StateMachine.ActiveState?.ID:X}: Activating a component of type {typeof(T)} when another of the same type is already active; old one is deactivated automatically");
             DeactivateComponent<T>();
         }
-        var comp = New<T>.Create(this);
+        if (!GeneratedRegistries.TryCreateBossComponent<T>(this, out var comp))
+        {
+            throw new InvalidOperationException($"Boss component {typeof(T).FullName} was not registered by BossMod.SourceGen");
+        }
         Components.Add(comp);
 
         // execute callbacks for existing state
@@ -180,7 +186,7 @@ public abstract class BossModule : IDisposable
         Arena = new(center, bounds);
         OnlyLoadIfTargetable = onlyLoadIfTargetable;
         Info = BossModuleRegistry.FindByOID(primary.OID);
-        StateMachine = Info != null ? ((StateMachineBuilder)Activator.CreateInstance(Info.StatesType, this)!).Build() : new([]);
+        StateMachine = Info?.StateMachineFactory(this) ?? new([]);
 
         _subscriptions = new
         (
@@ -232,6 +238,11 @@ public abstract class BossModule : IDisposable
 
     public void Update()
     {
+        if (StateMachine.ActiveState == null)
+        {
+            UpdatePreModuleActivation();
+        }
+
         if (StateMachine.ActivePhaseIndex < 0 && CheckPull())
         {
             StateMachine.Start(WorldState.CurrentTime);
@@ -240,10 +251,7 @@ public abstract class BossModule : IDisposable
         if (StateMachine.ActiveState != null)
         {
             StateMachine.Update(WorldState.CurrentTime);
-        }
 
-        if (StateMachine.ActiveState != null)
-        {
             UpdateModule();
             var count = Components.Count;
             for (var i = 0; i < count; ++i)
@@ -271,7 +279,7 @@ public abstract class BossModule : IDisposable
 
             if (WindowConfig.ShowGlobalHints)
             {
-                DrawGlobalHints(CalculateGlobalHints());
+                DrawGlobalHints(CalculateGlobalHints(pc));
             }
 
             if (WindowConfig.ShowPlayerHints)
@@ -356,7 +364,7 @@ public abstract class BossModule : IDisposable
         }
         // draw enemies & player
         DrawEnemies(pcSlot, pc);
-        Arena.Actor(pc, Colors.PC, true);
+        Arena.Actor(pc, Colors.PC, true, drawWorld: WindowConfig.ShowActorTrianglesIn3DWorld);
     }
 
     public BossComponent.TextHints CalculateHintsForRaidMember(int slot, Actor actor)
@@ -398,28 +406,40 @@ public abstract class BossModule : IDisposable
         return resolved;
     }
 
-    // A restriction is meaningful only for a valid explicitly authored layer. Null/invalid IDs keep
-    // normal behavior. Grouped physical floors form one 2D/hint/AI visibility domain, allowing remote
-    // teleporter destinations to remain visible and rasterized on their shared map.
-    public bool MechanicAppliesToArenaProjectionLayer(Actor actor, int? mechanicLayer, bool restrictToLayer)
+    // Targeted mechanics follow their target's current floor unless an explicit floor overrides it.
+    // A null restriction flag always wins and keeps all-layer mechanics independent of the target.
+    public int? ResolveTargetArenaProjectionLayer(Actor? target, int? mechanicLayer = null, bool? restrictToLayer = true)
+        => !restrictToLayer.HasValue ? null : mechanicLayer ?? (target != null ? ResolveArenaProjectionLayer(target) : null);
+
+    // True restricts to a valid explicitly authored layer. False keeps unrestricted legacy
+    // behavior; null explicitly applies the mechanic to all layers. Null/invalid IDs keep normal
+    // behavior. Grouped physical floors form one 2D/AI visibility domain, allowing remote teleporter
+    // destinations to remain visible and rasterized on their shared map.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool MechanicAppliesToArenaProjectionLayer(Actor actor, int? mechanicLayer, bool? restrictToLayer)
     {
-        if (!restrictToLayer || Bounds is not ArenaBoundsCustom custom || !custom.IsValidProjectionLayer(mechanicLayer))
+        if (restrictToLayer != true || Bounds is not ArenaBoundsCustom custom || !custom.IsValidProjectionLayer(mechanicLayer))
         {
             return true;
         }
         return custom.ProjectionLayersShare2DGroup(ResolveArenaProjectionLayer(actor), mechanicLayer);
     }
 
-    // Participant selection/counting remains tied to the exact physical floor. This prevents actors
-    // on another island in the same 2D group from becoming bait targets, stack members or tower soakers.
-    public bool ActorMatchesArenaProjectionLayer(Actor actor, int? mechanicLayer, bool restrictToLayer)
+    // With restriction enabled, participant selection/counting stays tied to the exact physical
+    // floor. False/null allow participants on any floor, including other islands in a shared group.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool ActorMatchesArenaProjectionLayer(Actor actor, int? mechanicLayer, bool? restrictToLayer)
     {
-        if (!restrictToLayer || Bounds is not ArenaBoundsCustom custom || !custom.IsValidProjectionLayer(mechanicLayer))
+        if (restrictToLayer != true || Bounds is not ArenaBoundsCustom custom || !custom.IsValidProjectionLayer(mechanicLayer))
         {
             return true;
         }
         return ResolveArenaProjectionLayer(actor) == mechanicLayer;
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool ActorsMatchArenaProjectionLayer(Actor first, Actor second)
+        => ResolveArenaProjectionLayer(first) == ResolveArenaProjectionLayer(second);
 
     public BossComponent.MovementHints CalculateMovementHintsForRaidMember(int slot, Actor actor)
     {
@@ -433,13 +453,13 @@ public abstract class BossModule : IDisposable
         return hints;
     }
 
-    public BossComponent.GlobalHints CalculateGlobalHints()
+    public BossComponent.GlobalHints CalculateGlobalHints(Actor actor)
     {
         BossComponent.GlobalHints hints = [];
         var count = Components.Count;
         for (var i = 0; i < count; ++i)
         {
-            Components[i].AddGlobalHints(hints);
+            Components[i].AddGlobalHints(actor, hints);
         }
 
         return hints;
@@ -498,6 +518,7 @@ public abstract class BossModule : IDisposable
     public virtual bool ShouldPrioritizeAllEnemies => false;
 
     protected virtual void UpdateModule() { }
+    protected virtual void UpdatePreModuleActivation() { }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal Actor? GetActor(uint enemy)
@@ -752,7 +773,7 @@ public abstract class BossModule : IDisposable
                 }
             }
 
-            Arena.Actor(player, color);
+            Arena.Actor(player, color, drawWorld: WindowConfig.ShowActorTrianglesIn3DWorld);
         }
     }
 

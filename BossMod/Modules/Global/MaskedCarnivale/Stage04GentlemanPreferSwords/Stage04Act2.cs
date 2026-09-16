@@ -21,22 +21,6 @@ sealed class GrandStrike(BossModule module) : Components.SimpleAOEs(module, (uin
 sealed class MagitekRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekRay, 6f);
 sealed class MagitekField(BossModule module) : Components.CastInterruptHint(module, (uint)AID.MagitekField);
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"{Module.PrimaryActor.Name} is weak to lightning spells.\nDuring the fight he will spawn 6 beetles.\nIf available use the Ram's Voice + Ultravibration combo for the instant kill.");
-    }
-}
-
-sealed class Hints2(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"{Module.PrimaryActor.Name} is weak against lightning spells and can be frozen.");
-    }
-}
-
 sealed class Stage04Act2States : StateMachineBuilder
 {
     public Stage04Act2States(BossModule module) : base(module)
@@ -44,18 +28,21 @@ sealed class Stage04Act2States : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<MagitekField>()
             .ActivateOnEnter<MagitekRay>()
-            .ActivateOnEnter<GrandStrike>()
-            .ActivateOnEnter<Hints2>()
-            .DeactivateOnEnter<Hints>();
+            .ActivateOnEnter<GrandStrike>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 614, NameID = 8087, SortOrder = 2)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 614U, NameID = 8087U, SortOrder = 2)]
 public sealed class Stage04Act2 : BossModule
 {
     public Stage04Act2(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {
-        ActivateComponent<Hints>();
+        var name = PrimaryActor.Name;
+        _prePullHints =
+        [
+            $"{name} is weak to lightning spells. During the fight he will spawn 6 beetles. If available you CAN use the Ram's Voice + Ultravibration combo for the instant kill.",
+            $"{name} is weak against lightning spells and can be frozen."
+        ];
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
@@ -77,4 +64,8 @@ public sealed class Stage04Act2 : BossModule
             };
         }
     }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

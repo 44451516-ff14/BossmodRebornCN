@@ -203,9 +203,38 @@ sealed class Explosion(BossModule module) : Components.GenericAOEs(module)
 
 sealed class Hints(BossModule module) : BossComponent(module)
 {
-    public override void AddGlobalHints(GlobalHints hints)
+    private bool shieldActive;
+    private bool isBound;
+
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        if (Module.PrimaryActor.FindStatus((uint)SID.MagitekField) != null)
+        switch (status.ID)
+        {
+            case (uint)SID.MagitekField:
+                shieldActive = true;
+                break;
+            case (uint)SID.Bind:
+                isBound = true;
+                break;
+        }
+    }
+
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
+    {
+        switch (status.ID)
+        {
+            case (uint)SID.MagitekField:
+                shieldActive = false;
+                break;
+            case (uint)SID.Bind:
+                isBound = false;
+                break;
+        }
+    }
+
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
+    {
+        if (shieldActive)
         {
             hints.Add($"{Module.PrimaryActor.Name} will reflect all magic damage!");
         }
@@ -213,7 +242,7 @@ sealed class Hints(BossModule module) : BossComponent(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (actor.FindStatus((uint)SID.Bind) != null)
+        if (isBound)
         {
             hints.Add("You were bound! Cleanse it with Exuviation.");
         }
@@ -242,10 +271,11 @@ sealed class Stage30Act3States : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 699, NameID = 9245, SortOrder = 3)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 699u, NameID = 9245u, SortOrder = 3)]
 public sealed class Stage30Act3(WorldState ws, Actor primary) : BossModule(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
 {
-    private static readonly uint[] clones = [(uint)OID.SiegfriedCloneIce, (uint)OID.SiegfriedCloneWind, (uint)OID.SiegfriedCloneFire];
+    private readonly uint[] clones = [(uint)OID.SiegfriedCloneIce, (uint)OID.SiegfriedCloneWind, (uint)OID.SiegfriedCloneFire];
+
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);

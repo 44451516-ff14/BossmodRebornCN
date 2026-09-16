@@ -11,7 +11,6 @@ namespace BossMod.Pathfinding;
 // - goal and danger are mutually exclusive, 'danger' overriding 'goal' state
 // typically we try to find a path to goal with highest priority; if that fails, try lower priorities; if no paths can be found (e.g. we're currently inside an imminent aoe) we find direct path to closest safe pixel
 
-[SkipLocalsInit]
 public sealed class Map
 {
     public readonly struct TeleEdge(int destIndex, float useTime, float notBeforeG)

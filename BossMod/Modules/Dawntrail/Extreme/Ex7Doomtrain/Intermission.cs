@@ -77,7 +77,6 @@ sealed class AetherocharAetherosote(BossModule module) : Components.IconStackSpr
     }
 }
 
-[SkipLocalsInit]
 sealed class AetherialRay(BossModule module) : Components.BaitAwayIcon(module, shape: new AOEShapeCone(50f, 22.5f.Degrees()), iconID: (uint)IconID.AetherialRay, aid: (uint)AID.AetherialRay, activationDelay: 7.6d, centerAtTarget: false, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster)
 {
     public override Actor? BaitSource(Actor target) => Module.Enemies((uint)OID.GhostTrain).First();

@@ -51,14 +51,6 @@ sealed class DarkVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(m
 
 sealed class Dark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Dark, 5f);
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"{Module.PrimaryActor.Name} summons a total of 6 adds during the fight, one of each element.\nHealer mimikry can be helpful if you have trouble surviving.");
-    }
-}
-
 sealed class Stage09States : StateMachineBuilder
 {
     public Stage09States(BossModule module) : base(module)
@@ -66,17 +58,19 @@ sealed class Stage09States : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<Dark>()
             .ActivateOnEnter<DarkVoidzone>()
-            .ActivateOnEnter<GoldenTongue>()
-            .DeactivateOnEnter<Hints>();
+            .ActivateOnEnter<GoldenTongue>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 619, NameID = 8099)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 619u, NameID = 8099u)]
 public sealed class Stage09 : BossModule
 {
     public Stage09(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {
-        ActivateComponent<Hints>();
+        _prePullHints =
+        [
+           $"{PrimaryActor.Name} summons a total of 6 adds during the fight, one of each element. Healer mimikry can be helpful if you have trouble surviving."
+        ];
     }
     private static readonly uint[] adds = [(uint)OID.Licorice, (uint)OID.Flan, (uint)OID.Pudding, (uint)OID.Marshmallow, (uint)OID.Bavarois, (uint)OID.Gelato];
 
@@ -99,4 +93,8 @@ public sealed class Stage09 : BossModule
         Arena.Actor(PrimaryActor);
         Arena.Actors(this, adds, Colors.Object);
     }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

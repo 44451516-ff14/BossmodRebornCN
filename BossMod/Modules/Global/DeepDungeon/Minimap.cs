@@ -28,7 +28,6 @@ public sealed class Minimap(DeepDungeonState state, Angle playerRotation, int cu
         Votive = 63988
     }
 
-    [Flags]
     enum RoomChest
     {
         None = 0,
@@ -147,43 +146,45 @@ public sealed class Minimap(DeepDungeonState state, Angle playerRotation, int cu
                 ImGui.Image(mapTex.Handle, sizes.RoomHighlight, new Vector2(0.2424f, 0.4571f), new Vector2(0.4848f, 0.6857f));
             }
 
-            if (State.Rooms[i].HasFlag(RoomFlags.Home))
+            var room = State.Rooms[i];
+            if ((room & RoomFlags.Home) != 0)
             {
                 ImGui.SetCursorPos(pos + (sizes.Room - sizes.HomeIcon) * 0.5f);
                 ImGui.Image(mapTex.Handle, sizes.HomeIcon, new Vector2(0.4848f, 0.4571f), new Vector2(0.7272f, 0.6657f));
             }
 
-            if (State.Rooms[i].HasFlag(RoomFlags.Passage))
+            if ((room & RoomFlags.Passage) != 0)
             {
                 ImGui.SetCursorPos(pos + sizes.PoIPadding);
                 ImGui.Image(passageTex.Handle, sizes.PointOfInterest);
             }
 
-            if (State.Rooms[i].HasFlag(RoomFlags.Return))
+            if ((room & RoomFlags.Return) != 0)
             {
                 ImGui.SetCursorPos(pos + sizes.PoIPadding);
                 ImGui.Image(returnTex.Handle, sizes.PointOfInterest);
             }
 
-            if (((ushort)State.Rooms[i] & 0x100) != 0)
+            if (((ushort)room & 0x100) != 0)
             {
                 ImGui.SetCursorPos(pos + sizes.PoIPadding);
                 ImGui.Image(votiveTex.Handle, sizes.PointOfInterest);
             }
 
-            if (chests[i].HasFlag(RoomChest.Bronze))
+            var chest = chests[i];
+            if ((chest & RoomChest.Bronze) != 0)
             {
                 ImGui.SetCursorPos(pos + sizes.TreasurePadding);
                 ImGui.Image(bronzeTex.Handle, sizes.Treasure);
             }
 
-            if (chests[i].HasFlag(RoomChest.Silver))
+            if ((chest & RoomChest.Silver) != 0)
             {
                 ImGui.SetCursorPos(pos + sizes.TreasurePadding + new Vector2(sizes.TreasureAdjustX, 0));
                 ImGui.Image(silverTex.Handle, sizes.Treasure);
             }
 
-            if (chests[i].HasFlag(RoomChest.Gold))
+            if ((chest & RoomChest.Gold) != 0)
             {
                 ImGui.SetCursorPos(pos + sizes.TreasurePadding + new Vector2(sizes.TreasureAdjustX * 2, 0));
                 ImGui.Image(goldTex.Handle, sizes.Treasure);
@@ -205,10 +206,14 @@ public sealed class Minimap(DeepDungeonState state, Angle playerRotation, int cu
                     ImGui.SetTooltip(i == CurrentDestination ? "Click to clear destination" : "Click to set destination");
                 }
                 if (ImGui.IsItemClicked())
+                {
                     dest = i == CurrentDestination ? 0 : i;
+                }
             }
             if (i % 5 < 4)
+            {
                 ImGui.SameLine();
+            }
         }
 
         return dest;

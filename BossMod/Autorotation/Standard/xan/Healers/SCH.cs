@@ -36,6 +36,12 @@ public sealed class SCH(RotationModuleManager manager, Actor player) : Castxan<A
         return new RotationModuleDefinition("xan SCH", "Scholar", "标准循环 (xan)|治疗", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.SCH), 100).WithStrategies<Strategy>();
     }
 
+    public enum GCDPriority
+    {
+        None = 0,
+        Filler = 2
+    }
+
     public int Aetherflow;
     public int FairyGauge;
     public float SeraphTimer;
@@ -106,10 +112,10 @@ public sealed class SCH(RotationModuleManager manager, Actor player) : Castxan<A
         }
 
         if (!CanFitGCD(TargetDotLeft, 1))
-            PushGCD(AID.Bio1, BestDotTarget);
+            PushGCD(AID.Bio1, BestDotTarget, GCDPriority.Filler, useOnDyingTarget: false);
 
         if (RaidBuffsLeft > 0 && !CanFitGCD(RaidBuffsLeft, 1))
-            PushGCD(AID.Bio1, BestDotTarget);
+            PushGCD(AID.Bio1, BestDotTarget, GCDPriority.Filler, useOnDyingTarget: false);
 
         // for about 8 levels starting at 46, art of war (aoe) is our best single target action
         var rangeToTarget = Unlocked(AID.ArtOfWar1) && !Unlocked(AID.Broil1) ? 5 : 25;
@@ -121,10 +127,10 @@ public sealed class SCH(RotationModuleManager manager, Actor player) : Castxan<A
         if (NumAOETargets >= needAOETargets)
             PushGCD(AID.ArtOfWar1, Player);
 
-        PushGCD(AID.Ruin1, primaryTarget);
+        PushGCD(AID.Ruin1, primaryTarget, GCDPriority.Filler, useOnDyingTarget: false);
 
         // instant cast - fallback for movement
-        PushGCD(AID.Ruin2, primaryTarget);
+        PushGCD(AID.Ruin2, primaryTarget, GCDPriority.Filler, useOnDyingTarget: false);
     }
 
     private void OGCD(Strategy strategy, Enemy? primaryTarget)
@@ -132,13 +138,15 @@ public sealed class SCH(RotationModuleManager manager, Actor player) : Castxan<A
         if (primaryTarget == null || !Player.InCombat)
             return;
 
-        if (strategy.Buffs != OffensiveStrategy.Delay)
+        switch (strategy.Buffs.Value)
         {
-            //if (Eos != null)
-            //    PushOGCD(AID.Dissipation, Player);
-
-            if (RaidBuffsLeft > 15 || RaidBuffsIn > 1000)
+            case OffensiveStrategy.Automatic:
+                if (RaidBuffsLeft > 15 || RaidBuffsIn > 1000)
+                    PushOGCD(AID.ChainStratagem, primaryTarget);
+                break;
+            case OffensiveStrategy.Force:
                 PushOGCD(AID.ChainStratagem, primaryTarget);
+                break;
         }
 
         if (Aetherflow == 0)

@@ -61,14 +61,6 @@ sealed class Pyretic(BossModule module) : Components.StayMove(module)
     }
 }
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"For this act Exuviation and Diamondback are mandatory.\nBringing Flying Sardine, lightning and wind spells is higly recommended.");
-    }
-}
-
 sealed class Stage29Act1States : StateMachineBuilder
 {
     public Stage29Act1States(BossModule module) : base(module)
@@ -83,16 +75,18 @@ sealed class Stage29Act1States : StateMachineBuilder
             .ActivateOnEnter<FlareStar>()
             .ActivateOnEnter<FireBlast>()
             .ActivateOnEnter<Pyretic>()
-            .ActivateOnEnter<PyreticHint>()
-            .DeactivateOnEnter<Hints>();
+            .ActivateOnEnter<PyreticHint>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 698, NameID = 9239, SortOrder = 1)]
-public sealed class Stage29Act1 : BossModule
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 698u, NameID = 9239u, SortOrder = 1)]
+public sealed class Stage29Act1(WorldState ws, Actor primary) : BossModule(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
 {
-    public Stage29Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
-    {
-        ActivateComponent<Hints>();
-    }
+    private readonly string[] _prePullHints =
+    [
+        "For this act Exuviation and Diamondback are mandatory.",
+        "Bringing Flying Sardine, lightning and wind spells is higly recommended."
+    ];
+
+    public override string[] PrePullHints => _prePullHints;
 }

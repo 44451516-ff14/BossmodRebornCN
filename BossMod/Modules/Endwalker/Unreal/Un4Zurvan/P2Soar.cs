@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un4Zurvan;
 
-class P2SoarTwinSpirit(BossModule module) : Components.GenericAOEs(module)
+sealed class P2SoarTwinSpirit(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<(Actor caster, AOEInstance aoe)> _pending = [];
 
@@ -44,7 +44,7 @@ class P2SoarTwinSpirit(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class P2SoarFlamingHalberd(BossModule module) : Components.UniformStackSpread(module, default, 12f)
+sealed class P2SoarFlamingHalberd(BossModule module) : Components.UniformStackSpread(module, default, 12f)
 {
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
@@ -59,7 +59,7 @@ class P2SoarFlamingHalberd(BossModule module) : Components.UniformStackSpread(mo
     }
 }
 
-class P2SoarFlamingHalberdVoidzone(BossModule module) : Components.Voidzone(module, 8f, GetVoidzones)
+sealed class P2SoarFlamingHalberdVoidzone(BossModule module) : Components.Voidzone(module, 8f, GetVoidzones)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -80,7 +80,7 @@ class P2SoarFlamingHalberdVoidzone(BossModule module) : Components.Voidzone(modu
     }
 }
 
-class P2SoarDemonicDiveCoolFlame(BossModule module) : Components.UniformStackSpread(module, 7f, 8f, 7)
+sealed class P2SoarDemonicDiveCoolFlame(BossModule module) : Components.UniformStackSpread(module, 7f, 8f, 7)
 {
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {

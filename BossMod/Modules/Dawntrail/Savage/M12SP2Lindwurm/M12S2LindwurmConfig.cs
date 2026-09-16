@@ -269,7 +269,7 @@ public static class WurmExtensions
             => typeof(Clockspot)
                 .GetEnumValues()
                 .Cast<Clockspot>()
-                .MinBy(c => MathF.Abs(c.Angle.Rad - input.Rad));
+                .MinBy(c => Math.Abs(c.Angle.Rad - input.Rad));
     }
 
     extension(Replication2Role r)

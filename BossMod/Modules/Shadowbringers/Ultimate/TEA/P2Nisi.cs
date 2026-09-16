@@ -1,6 +1,5 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-[SkipLocalsInit]
 sealed class P2Nisi : BossComponent
 {
     public enum Nisi { None, Alpha, Beta, Gamma, Delta }

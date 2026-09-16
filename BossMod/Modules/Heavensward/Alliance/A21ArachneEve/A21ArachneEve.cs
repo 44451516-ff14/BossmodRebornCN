@@ -10,7 +10,6 @@ class TheWidowsEmbrace(BossModule module) : Components.SimpleKnockbacks(module, 
 class TheWidowsKiss(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.TheWidowsKiss, 4, kind: Kind.TowardsOrigin, stopAtWall: true);
 
 [ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "The Combat Reborn Team", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 168, NameID = 4871)]
-[SkipLocalsInit]
 public sealed class A21ArachneEve : BossModule
 {
     public A21ArachneEve(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

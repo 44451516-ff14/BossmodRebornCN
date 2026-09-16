@@ -259,7 +259,6 @@ sealed class NaughtGrows(BossModule module) : Components.SimpleAOEs(module, (uin
 
 sealed class DimensionZero(BossModule module) : Components.LineStack(module, iconID: (uint)IconID.DimensionZeroIcon, (uint)AID.DimensionZeroRect, 0d, 60f, 4f, 8);
 
-[SkipLocalsInit]
 sealed class EnuoStates : StateMachineBuilder
 {
     public EnuoStates(BossModule module) : base(module)
@@ -317,5 +316,4 @@ GroupID = 1115u,
 NameID = 14749u,
 SortOrder = 1,
 PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class Enuo(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsCircle(20f));

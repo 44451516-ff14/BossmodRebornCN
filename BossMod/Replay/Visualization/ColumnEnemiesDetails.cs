@@ -42,7 +42,7 @@ public sealed class ColumnEnemiesDetails : Timeline.ColumnGroup
     public void DrawConfig(UITree tree)
     {
         var moduleInfo = BossModuleRegistry.FindByOID(_encounter.OID);
-        foreach (var n in tree.Nodes(_data, d => new($"{d.OID:X} ({moduleInfo?.ObjectIDType?.GetEnumName(d.OID)})")))
+        foreach (var n in tree.Nodes(_data, d => new($"{d.OID:X} ({moduleInfo?.ObjectIDType?.GeneratedEnumName(d.OID)})")))
         {
             for (var i = 0; i < n.Columns.Count; ++i)
             {

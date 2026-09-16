@@ -5,7 +5,6 @@ namespace BossMod;
 
 // a complex polygon that is a single simple-polygon exterior minus 0 or more simple-polygon holes; all edges are assumed to be non intersecting
 // hole-starts list contains starting index of each hole
-[SkipLocalsInit]
 public sealed class RelPolygonWithHoles(List<WDir> vertices, List<int> holeStarts)
 {
     // constructor for simple polygon

@@ -32,7 +32,7 @@ sealed class Ex3TitanAIRotation(RotationModuleManager manager, Actor player) : A
     };
 }
 
-class Ex3TitanAI(BossModule module) : BossComponent(module)
+sealed class Ex3TitanAI(BossModule module) : BossComponent(module)
 {
     public bool KillNextBomb;
     private readonly GraniteGaol? _rockThrow = module.FindComponent<GraniteGaol>();
@@ -49,15 +49,15 @@ class Ex3TitanAI(BossModule module) : BossComponent(module)
         foreach (var e in hints.PotentialTargets)
         {
             e.StayAtLongRange = true;
-            switch ((OID)e.Actor.OID)
+            switch (e.Actor.OID)
             {
-                case OID.Boss:
-                case OID.TitansHeart:
+                case (uint)OID.Boss:
+                case (uint)OID.TitansHeart:
                     e.Priority = 1;
                     e.AttackStrength = 0.25f;
                     e.DesiredPosition = Arena.Center - new WDir(0, Arena.Bounds.Radius - 6);
-                    e.DesiredRotation = 180.Degrees();
-                    e.TankDistance = 0;
+                    e.DesiredRotation = 180f.Degrees();
+                    e.TankDistance = 0f;
                     if (actor.Role == Role.Tank)
                     {
                         // note on tank swaps
@@ -70,17 +70,17 @@ class Ex3TitanAI(BossModule module) : BossComponent(module)
                         e.PreferProvoking = e.ShouldBeTanked = isCurrentTank != needTankSwap;
                     }
                     break;
-                case OID.GraniteGaoler:
+                case (uint)OID.GraniteGaoler:
                     e.Priority = 2;
-                    e.DesiredPosition = Arena.Center + (Arena.Bounds.Radius - 4) * 30.Degrees().ToDirection(); // move them away from boss, healer gaol spots and upheaval knockback spots
+                    e.DesiredPosition = Arena.Center + (Arena.Bounds.Radius - 4f) * 30f.Degrees().ToDirection(); // move them away from boss, healer gaol spots and upheaval knockback spots
                     e.ShouldBeTanked = Module.PrimaryActor.TargetID != actor.InstanceID && actor.Role == Role.Tank;
                     break;
-                case OID.BombBoulder:
-                    e.Priority = KillNextBomb && e.Actor.Position.AlmostEqual(Arena.Center, 1) ? 3 : 0; // kill center bomb when needed
+                case (uint)OID.BombBoulder:
+                    e.Priority = KillNextBomb && e.Actor.Position.AlmostEqual(Arena.Center, 1f) ? 3 : 0; // kill center bomb when needed
                     e.ShouldBeTanked = false;
                     break;
-                case OID.GraniteGaol:
-                    e.Priority = e.Actor.Position.InCircle(Module.PrimaryActor.Position, 5) ? 5 : 4; // prefer killing gaol under boss first
+                case (uint)OID.GraniteGaol:
+                    e.Priority = e.Actor.Position.InCircle(Module.PrimaryActor.Position, 5f) ? 5 : 4; // prefer killing gaol under boss first
                     e.AttackStrength = 0;
                     e.ShouldBeTanked = false;
                     break;
@@ -109,14 +109,14 @@ class Ex3TitanAI(BossModule module) : BossComponent(module)
     private WPos? StackPosition()
     {
         var boss = Module.PrimaryActor;
-        var res = boss.Position + 3 * (boss.Rotation + 135.Degrees()).ToDirection();
+        var res = boss.Position + 3 * (boss.Rotation + 135f.Degrees()).ToDirection();
         if (Arena.InBounds(res))
             return res;
-        res = boss.Position + 3 * (boss.Rotation - 135.Degrees()).ToDirection();
+        res = boss.Position + 3 * (boss.Rotation - 135f.Degrees()).ToDirection();
         if (Arena.InBounds(res))
             return res;
         return null;
     }
 
-    private int TankVulnStacks() => WorldState.Actors.Find(Module.PrimaryActor.TargetID)?.FindStatus(SID.PhysicalVulnerabilityUp)?.Extra ?? 0;
+    private int TankVulnStacks() => WorldState.Actors.Find(Module.PrimaryActor.TargetID)?.FindStatus((uint)SID.PhysicalVulnerabilityUp)?.Extra ?? 0;
 }

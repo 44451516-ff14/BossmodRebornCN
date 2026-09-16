@@ -163,7 +163,7 @@ sealed class HolyIV(BossModule module) : Components.GenericStackSpread(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (numTargets > 9)
         {

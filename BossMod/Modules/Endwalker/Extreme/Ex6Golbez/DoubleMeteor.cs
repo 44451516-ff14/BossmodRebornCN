@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex6Golbez;
 
-class DragonsDescent(BossModule module) : Components.GenericKnockback(module, (uint)AID.DragonsDescent)
+sealed class DragonsDescent(BossModule module) : Components.GenericKnockback(module, (uint)AID.DragonsDescent)
 {
     private Actor? _source;
     private DateTime _activation;
@@ -22,7 +22,7 @@ class DragonsDescent(BossModule module) : Components.GenericKnockback(module, (u
     }
 }
 
-class DoubleMeteor(BossModule module) : Components.UniformStackSpread(module, default, 15f) // TODO: verify falloff
+sealed class DoubleMeteor(BossModule module) : Components.UniformStackSpread(module, default, 15f) // TODO: verify falloff
 {
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
@@ -37,7 +37,7 @@ class DoubleMeteor(BossModule module) : Components.UniformStackSpread(module, de
     }
 }
 
-class Explosion(BossModule module) : BossComponent(module)
+sealed class Explosion(BossModule module) : BossComponent(module)
 {
     public bool Done;
     private BitMask _forbidden;
@@ -98,9 +98,9 @@ class Explosion(BossModule module) : BossComponent(module)
     }
 }
 
-class Cauterize(BossModule module) : Components.GenericBaitAway(module, (uint)AID.Cauterize)
+sealed class Cauterize(BossModule module) : Components.GenericBaitAway(module, (uint)AID.Cauterize)
 {
-    private static readonly AOEShapeRect rect = new(50f, 6f);
+    private readonly AOEShapeRect rect = new(50f, 6f);
 
     public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {

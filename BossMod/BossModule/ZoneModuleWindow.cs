@@ -3,7 +3,6 @@ using Dalamud.Utility;
 
 namespace BossMod;
 
-[SkipLocalsInit]
 public sealed class ZoneModuleWindow : UIWindow
 {
     private static readonly ZoneModuleConfig config = Service.Config.Get<ZoneModuleConfig>();

@@ -29,19 +29,17 @@ public enum SID : uint
     ExplosionTimer = 2056, // none->LongDeadExplorer, extra=0x26B
 }
 
-sealed class DarkII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DarkII, new AOEShapeRect(50.0f, 25.0f));
+sealed class DarkII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DarkII, new AOEShapeRect(50f, 25f));
 sealed class DarkFlare(BossModule module) : Components.RaidwideCast(module, (uint)AID.DarkFlareCast);
-sealed class Necrosurge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Necrosurge, new AOEShapeRect(70.0f, 6.0f));
+sealed class Necrosurge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Necrosurge, new AOEShapeRect(70f, 6f));
 
-sealed class LongDeadExplorer(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LongDeadExplorerExplosion, new AOEShapeCircle(8.0f),
-    riskyWithSecondsLeft: 4.0f)
+sealed class LongDeadExplorer(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LongDeadExplorerExplosion, 8f, riskyWithSecondsLeft: 4d)
 {
-
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
         if (actor.OID == (uint)OID.LongDeadExplorer && id == 4564)
         {
-            Casters.Add(new(Shape, actor.Position, actor.Rotation, WorldState.FutureTime(7.1f), actorID: actor.InstanceID));
+            Casters.Add(new(Shape, actor.Position, actor.Rotation, WorldState.FutureTime(7.1d), actorID: actor.InstanceID));
         }
     }
 
@@ -56,7 +54,7 @@ sealed class LongDeadExplorer(BossModule module) : Components.SimpleAOEs(module,
         }
 
         var aoes = CollectionsMarshal.AsSpan(Casters);
-        var deadline = aoes[0].Activation.AddSeconds(1.0f);
+        var deadline = aoes[0].Activation.AddSeconds(1d);
 
         var index = 0;
         while (index < count)
@@ -87,8 +85,7 @@ sealed class LongDeadExplorer(BossModule module) : Components.SimpleAOEs(module,
     }
 }
 
-sealed class LongDeadPirate(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LongDeadPirateExplosion, new AOEShapeCross(80.0f, 3.5f), 4,
-    riskyWithSecondsLeft: 5.0f)
+sealed class LongDeadPirate(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LongDeadPirateExplosion, new AOEShapeCross(80f, 3.5f), 4, 5d)
 {
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
@@ -102,7 +99,6 @@ sealed class LongDeadPirate(BossModule module) : Components.SimpleAOEs(module, (
     public override void OnCastStarted(Actor caster, ActorCastInfo spell) { }
 }
 
-[SkipLocalsInit]
 sealed class CE206DarkArtistryStates : StateMachineBuilder
 {
     public CE206DarkArtistryStates(BossModule module) : base(module)
@@ -116,24 +112,7 @@ sealed class CE206DarkArtistryStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
-    StatesType = typeof(CE206DarkArtistryStates),
-    ConfigType = null, // replace null with typeof(PhantomNecromancerConfig) if applicable
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID),
-    StatusIDType = typeof(SID),
-    TetherIDType = null, // replace null with typeof(TetherID) if applicable
-    IconIDType = null, // replace null with typeof(IconID) if applicable
-    PrimaryActorOID = (uint)OID.PhantomNecromancer,
-    Contributors = "Equilius",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.Foray,
-    GroupType = BossModuleInfo.GroupType.CriticalEngagement,
-    GroupID = 1093u,
-    NameID = 57u,
-    SortOrder = 9,
-    PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.PhantomNecromancer, Contributors = "Equilius", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 1093u, NameID = 57u)]
 public sealed class CE206DarkArtistry(WorldState ws, Actor primary) : BossModule(ws, primary, new(224f, -860f), new ArenaBoundsSquare(20f))
 {
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InSquare(Arena.Center, 20f);

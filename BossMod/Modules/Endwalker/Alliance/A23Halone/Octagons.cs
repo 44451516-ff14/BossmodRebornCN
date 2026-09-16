@@ -4,7 +4,7 @@ namespace BossMod.Endwalker.Alliance.A23Halone;
 // NW (Octagon3): Alliance A
 // NE (Octagon1): Alliance C
 // S (Octagon2): Alliance B
-class Octagons(BossModule module) : Components.GenericAOEs(module)
+sealed class Octagons(BossModule module) : Components.GenericAOEs(module)
 {
     private const float InnerRadius = 11.125f; // radii adjusted for hitbox radius
     private const float OuterRadius = 13.45f;

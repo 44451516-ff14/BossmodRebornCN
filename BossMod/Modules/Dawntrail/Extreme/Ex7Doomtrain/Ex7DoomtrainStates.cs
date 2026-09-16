@@ -1,6 +1,5 @@
 namespace BossMod.Dawntrail.Extreme.Ex7Doomtrain;
 
-[SkipLocalsInit]
 sealed class Ex7DoomtrainStates : StateMachineBuilder
 {
     public Ex7DoomtrainStates(BossModule module) : base(module)
@@ -25,7 +24,7 @@ sealed class Ex7DoomtrainStates : StateMachineBuilder
 
     private void Car1(uint id, float delay)
     {
-        CastMulti(id, [(uint)AID.DeadMansOverdraughtSpread, (uint)AID.DeadMansOverdraughtStack], delay, 4f, "Select spread/stack")
+        CastMulti(id, [AID.DeadMansOverdraughtSpread, AID.DeadMansOverdraughtStack], delay, 4f, "Select spread/stack")
             .ActivateOnEnter<DeadMansOverdraught>();
         ComponentCondition<DeadMansExpress>(id + 0x10u, 8.1f, static comp => comp.NumCasts != 0, "Knockback")
             .ActivateOnEnter<PlasmaBeam>()
@@ -36,7 +35,7 @@ sealed class Ex7DoomtrainStates : StateMachineBuilder
         ComponentCondition<PlasmaBeam>(id + 0x20u, 2f, static comp => comp.NumCasts != 0, "Line AOEs")
             .DeactivateOnExit<PlasmaBeam>();
         ComponentCondition<DeadMansOverdraught>(id + 0x30u, 3.1f, static comp => comp.Counter == 1u, "Spread/stack resolves");
-        CastMulti(id + 0x40u, [(uint)AID.DeadMansOverdraughtSpread, (uint)AID.DeadMansOverdraughtStack], 2f, 4f, "Select spread/stack");
+        CastMulti(id + 0x40u, [AID.DeadMansOverdraughtSpread, AID.DeadMansOverdraughtStack], 2f, 4f, "Select spread/stack");
         ComponentCondition<DeadMansWindpipe>(id + 0x50u, 8.1f, static comp => comp.NumCasts != 0, "Pull")
             .ActivateOnEnter<DeadMansBlastpipe>()
             .ExecOnEnter<DeadMansOverdraught>(static comp => comp.AddStackSpread(5.1d))
@@ -59,7 +58,7 @@ sealed class Ex7DoomtrainStates : StateMachineBuilder
 
     private void Car2(uint id, float delay)
     {
-        CastMulti(id, [(uint)AID.DeadMansOverdraughtSpread, (uint)AID.DeadMansOverdraughtStack], delay, 4f, "Select spread/stack 1")
+        CastMulti(id, [AID.DeadMansOverdraughtSpread, AID.DeadMansOverdraughtStack], delay, 4f, "Select spread/stack 1")
             .ActivateOnEnter<DeadMansOverdraught>();
         ComponentCondition<ElectrayLong>(id + 0x10u, 14.3f, static comp => comp.NumCasts != 0, "Line AOEs 1")
             .ActivateOnEnter<ElectrayShort>()
@@ -72,7 +71,7 @@ sealed class Ex7DoomtrainStates : StateMachineBuilder
             .ExecOnExit<ElectrayLong>(static comp => comp.NumCasts = 0)
             .ExecOnExit<DeadMansOverdraught>(static comp => comp.AddStackSpread(5.9d));
         ComponentCondition<DeadMansOverdraught>(id + 0x20u, 5.9f, static comp => comp.Counter == 1u, "Spread/stack resolves 1");
-        CastMulti(id + 0x40u, [(uint)AID.DeadMansOverdraughtSpread, (uint)AID.DeadMansOverdraughtStack], 2f, 4f, "Select spread/stack 2")
+        CastMulti(id + 0x40u, [AID.DeadMansOverdraughtSpread, AID.DeadMansOverdraughtStack], 2f, 4f, "Select spread/stack 2")
             .ActivateOnExit<LightningBurst>();
         ComponentCondition<ElectrayLong>(id + 0x30u, 4.6f, static comp => comp.NumCasts != 0, "Line AOEs 2")
             .ExecOnExit<ElectrayLong>(static comp => comp.NumCasts = 0);
@@ -103,14 +102,13 @@ sealed class Ex7DoomtrainStates : StateMachineBuilder
             .SetHint(StateMachine.StateHint.DowntimeEnd);
         ComponentCondition<LightningBurst>(id + 0x10u, 2.6f, static comp => comp.NumCasts != 0, "Tankbusters")
             .DeactivateOnExit<LightningBurst>();
-        Cast(id + 0x10u, (uint)AID.RunawayTrainVisual1, 8.5f, 5f, "Runaway Train Phase Transition");
+        Cast(id + 0x10u, AID.RunawayTrainVisual1, 8.5f, 5f, "Runaway Train Phase Transition");
         Targetable(id + 0x20u, false, 0.2f, "Boss untargetable")
             .SetHint(StateMachine.StateHint.DowntimeStart);
     }
 
     private void Intermission(uint id, float delay)
     {
-
         var Aether = Module.Enemies((uint)OID.Aether);
         // If I'm reading this correctly, this blocks the state until Aether is dead, and then we can transition back once Doomtrain is targetable?
         Condition(id + 0x10u, 120, () => Aether.Any(e => e.IsDead), "Aether down", 10000, 1) // note that time is arbitrary (What?)

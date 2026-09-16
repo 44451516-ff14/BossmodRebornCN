@@ -1,9 +1,8 @@
 ﻿namespace BossMod.Dawntrail.Foray.ForkedTowerMagic.Normal.FTMN4Index;
 
-[SkipLocalsInit]
-sealed class IndexStates : StateMachineBuilder
+sealed class FTMN4IndexStates : StateMachineBuilder
 {
-    public IndexStates(BossModule module) : base(module)
+    public FTMN4IndexStates(BossModule module) : base(module)
     {
         TrivialPhase()
             .ActivateOnEnter<ArenaChange>()

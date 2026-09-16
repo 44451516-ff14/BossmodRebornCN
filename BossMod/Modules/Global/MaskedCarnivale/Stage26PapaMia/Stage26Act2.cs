@@ -103,17 +103,38 @@ sealed class BodyBlow(BossModule module) : Components.SingleTargetCast(module, (
 
 sealed class Hints(BossModule module) : BossComponent(module)
 {
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"{Module.PrimaryActor.Name} will cast Raw Instinct, which causes all his hits to crit.\nUse Eerie Soundwave to dispel it.\n{Module.PrimaryActor.Name} is weak against earth and strong against lightning attacks.");
-    }
-}
+    private bool isBuffed;
+    private bool isElectrocuted;
 
-sealed class Hints2(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        if (Module.PrimaryActor.FindStatus((uint)SID.CriticalStrikes) != null)
+        switch (status.ID)
+        {
+            case (uint)SID.CriticalStrikes:
+                isBuffed = true;
+                break;
+            case (uint)SID.Electrocution:
+                isElectrocuted = true;
+                break;
+        }
+    }
+
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
+    {
+        switch (status.ID)
+        {
+            case (uint)SID.CriticalStrikes:
+                isBuffed = false;
+                break;
+            case (uint)SID.Electrocution:
+                isElectrocuted = false;
+                break;
+        }
+    }
+
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
+    {
+        if (isBuffed)
         {
             hints.Add($"Dispel {Module.PrimaryActor.Name} with Eerie Soundwave!");
         }
@@ -121,7 +142,7 @@ sealed class Hints2(BossModule module) : BossComponent(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (actor.FindStatus((uint)SID.Electrocution) != null)
+        if (isElectrocuted)
         {
             hints.Add("Electrocution on you! Cleanse it with Exuviation.");
         }
@@ -139,16 +160,24 @@ sealed class Stage26Act2States : StateMachineBuilder
             .ActivateOnEnter<BodyBlow>()
             .ActivateOnEnter<Thunderhead>()
             .ActivateOnEnter<DadJoke>()
-            .ActivateOnEnter<Hints2>()
-            .DeactivateOnEnter<Hints>();
+            .ActivateOnEnter<Hints>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 695, NameID = 9231, SortOrder = 2)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 695u, NameID = 9231u, SortOrder = 2)]
 public sealed class Stage26Act2 : BossModule
 {
     public Stage26Act2(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {
-        ActivateComponent<Hints>();
+        var name = PrimaryActor.Name;
+        _prePullHints =
+        [
+            $"{name} will cast Raw Instinct, which causes all his hits to crit. Use Eerie Soundwave to dispel it.",
+            $"{name} is weak against earth and strong against lightning attacks."
+        ];
     }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

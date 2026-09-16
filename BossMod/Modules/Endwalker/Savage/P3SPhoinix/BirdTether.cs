@@ -2,7 +2,7 @@
 
 // state related to large bird tethers
 // TODO: simplify and make more robust, e.g. in case something goes wrong and bird dies without tether update
-class BirdTether(BossModule module) : BossComponent(module)
+sealed class BirdTether(BossModule module) : BossComponent(module)
 {
     public int NumFinishedChains { get; private set; }
     private readonly (Actor?, Actor?, int)[] _chains = new (Actor?, Actor?, int)[4]; // actor1, actor2, num-charges
@@ -108,7 +108,10 @@ class BirdTether(BossModule module) : BossComponent(module)
         // draw all birds and all players
         var birdsLarge = Module.Enemies((uint)OID.SunbirdLarge);
         foreach ((var i, var player) in Raid.WithSlot(false, true, true))
-            Arena.Actor(player, _playersInAOE[i] ? Colors.PlayerInteresting : Colors.PlayerGeneric);
+        {
+            var indanger = _playersInAOE[i];
+            Arena.Actor(player, indanger ? Colors.PlayerInteresting : Colors.PlayerGeneric, drawWorld: indanger ? true : null);
+        }
 
         // draw chains containing player
         foreach ((var bird, (var p1, var p2, var numCharges)) in birdsLarge.Zip(_chains))

@@ -1,4 +1,4 @@
-namespace BossMod.Endwalker.DeepDungeon.PilgrimsTraverse.DD70ForgivenZeal;
+namespace BossMod.Dawntrail.DeepDungeon.PilgrimsTraverse.DD70ForgivenZeal;
 
 public enum OID : uint
 {
@@ -49,7 +49,6 @@ public enum AID : uint
     OctupleSwipe4 = 43433 // ForgivenZeal->self, no cast, range 40 90-degree cone
 }
 
-[SkipLocalsInit]
 sealed class BrutalHalo(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = [with(8)];
@@ -107,7 +106,6 @@ sealed class BrutalHalo(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class OctupleSwipe(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(8)];
@@ -154,7 +152,6 @@ sealed class OctupleSwipe(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class ZealousGlower : Components.SimpleAOEGroups
 {
     public ZealousGlower(BossModule module) : base(module, [(uint)AID.ZealousGlower1, (uint)AID.ZealousGlower2,(uint)AID.ZealousGlower3, (uint)AID.ZealousGlower4,
@@ -164,7 +161,6 @@ sealed class ZealousGlower : Components.SimpleAOEGroups
     }
 }
 
-[SkipLocalsInit]
 sealed class ArdorousEye : Components.SimpleAOEGroups
 {
     public ArdorousEye(BossModule module) : base(module, [(uint)AID.ArdorousEye1, (uint)AID.ArdorousEye2,(uint)AID.ArdorousEye3, (uint)AID.ArdorousEye4,
@@ -174,7 +170,6 @@ sealed class ArdorousEye : Components.SimpleAOEGroups
     }
 }
 
-[SkipLocalsInit]
 sealed class DisorientingGroan(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.DisorientingGroan, 7f)
 {
     private readonly BrutalHalo _aoe = module.FindComponent<BrutalHalo>()!;
@@ -189,10 +184,8 @@ sealed class DisorientingGroan(BossModule module) : Components.SimpleKnockbacks(
     }
 }
 
-[SkipLocalsInit]
 sealed class TwothousandMinaSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TwothousandMinaSwing, 8f);
 
-[SkipLocalsInit]
 sealed class DD70ForgivenZealStates : StateMachineBuilder
 {
     public DD70ForgivenZealStates(BossModule module) : base(module)
@@ -207,24 +200,7 @@ sealed class DD70ForgivenZealStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
-StatesType = typeof(DD70ForgivenZealStates),
-ConfigType = null,
-ObjectIDType = typeof(OID),
-ActionIDType = typeof(AID),
-StatusIDType = null,
-TetherIDType = null,
-IconIDType = null,
-PrimaryActorOID = (uint)OID.ForgivenZeal,
-Contributors = "The Combat Reborn Team (Malediktus)",
-Expansion = BossModuleInfo.Expansion.Dawntrail,
-Category = BossModuleInfo.Category.DeepDungeon,
-GroupType = BossModuleInfo.GroupType.CFC,
-GroupID = 1038u,
-NameID = 13971u,
-SortOrder = 1,
-PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.ForgivenZeal, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1038u, NameID = 13971u)]
 public sealed class DD70ForgivenZeal(WorldState ws, Actor primary) : BossModule(ws, primary, arenaCenter, new ArenaBoundsCustom([new Polygon(arenaCenter, 10.0015f, 72)]))
 {
     private static readonly WPos arenaCenter = new(-300f, -300f);

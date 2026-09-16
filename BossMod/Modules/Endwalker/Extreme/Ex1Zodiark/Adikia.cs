@@ -1,11 +1,11 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex1Zodiark;
 
 // state related to adikia mechanic
-class Adikia(BossModule module) : BossComponent(module)
+sealed class Adikia(BossModule module) : BossComponent(module)
 {
     private readonly List<Actor> _casters = [];
 
-    private static readonly AOEShapeCircle _shape = new(21);
+    private static readonly AOEShapeCircle _shape = new(21f);
 
     public bool Done => _casters.Count == 0;
 
@@ -23,13 +23,13 @@ class Adikia(BossModule module) : BossComponent(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID is AID.AdikiaL or AID.AdikiaR)
+        if (spell.Action.ID is (uint)AID.AdikiaL or (uint)AID.AdikiaR)
             _casters.Add(caster);
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID is AID.AdikiaL or AID.AdikiaR)
+        if (spell.Action.ID is (uint)AID.AdikiaL or (uint)AID.AdikiaR)
             _casters.Remove(caster);
     }
 }

@@ -1,12 +1,12 @@
 ﻿namespace BossMod.RealmReborn.Extreme.Ex1Ultima;
 
-class MistralSongVulcanBurst(BossModule module) : Components.GenericAOEs(module, (uint)AID.MistralSong)
+sealed class MistralSongVulcanBurst(BossModule module) : Components.GenericAOEs(module, (uint)AID.MistralSong)
 {
     public bool Active;
     private Actor? _garuda; // non-null while mechanic is active
     private DateTime _resolve;
     private bool _burstImminent;
-    private static readonly AOEShapeCone _shape = new(23.4f, 75f.Degrees());
+    private readonly AOEShapeCone _shape = new(23.4f, 75f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

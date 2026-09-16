@@ -186,7 +186,7 @@ sealed class AIExperiment(RotationModuleManager manager, Actor player) : AIRotat
         if (thunder?.SmallArena != true)
             return Player.Position;
 
-        var offset = module.Arena.Bounds == M04SWickedThunder.IonClusterBounds && module.Arena.Center == new WPos(115, 100) ? 1 : -1;
+        var offset = module.Arena.Center == new WPos(115f, 100f) ? 1f : -1f;
         return module.Center + new WDir(offset * 10.4f, -6.2f);
     }
 }

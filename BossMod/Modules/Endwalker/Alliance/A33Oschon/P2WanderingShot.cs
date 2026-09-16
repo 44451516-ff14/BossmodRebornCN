@@ -3,7 +3,7 @@ namespace BossMod.Endwalker.Alliance.A33Oschon;
 sealed class P2WanderingShot(BossModule module) : Components.GenericAOEs(module, (uint)AID.GreatWhirlwind)
 {
     private AOEInstance[] _aoe = [];
-    private static readonly AOEShapeCircle _shape = new(23f);
+    private readonly AOEShapeCircle _shape = new(23f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 

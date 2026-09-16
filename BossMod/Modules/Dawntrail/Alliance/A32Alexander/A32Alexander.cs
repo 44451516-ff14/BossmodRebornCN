@@ -116,7 +116,7 @@ class Electrify(BossModule module) : Components.GenericAOEs(module)
 }
 sealed class DivineBolt(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeRect(60f, 3f), (uint)IconID.DivineBolt, (uint)AID.DivineBolt1, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 
-[ModuleInfo(BossModuleInfo.Maturity.Contributed, Contributors = "The Combat Reborn Team, HerStolenLight, Some logic borrowed from Xan", PrimaryActorOID = (uint)OID.AlexanderResurrected, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1117u, NameID = 14529u, Category = BossModuleInfo.Category.Alliance, Expansion = BossModuleInfo.Expansion.Dawntrail, SortOrder = 3)]
+[ModuleInfo(BossModuleInfo.Maturity.Contributed, Contributors = "The Combat Reborn Team, HerStolenLight, Xan", PrimaryActorOID = (uint)OID.AlexanderResurrected, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1117u, NameID = 14529u)]
 public sealed class A32Alexander(WorldState ws, Actor primary) : BossModule(ws, primary, new(0f, 360f), new ArenaBoundsSquare(25f))
 {
     public override bool ShouldPrioritizeAllEnemies => true;

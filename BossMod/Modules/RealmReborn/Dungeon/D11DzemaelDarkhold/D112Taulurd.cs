@@ -17,13 +17,10 @@ public enum AID : uint
     Boulderdash = 45576 // DeepvoidSlave->player, no cast, single-target
 }
 
-[SkipLocalsInit]
 sealed class DoubleSmash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DoubleSmash, new AOEShapeCone(8f, 60f.Degrees()));
 
-[SkipLocalsInit]
 sealed class Firewater(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Firewater, 5f);
 
-[SkipLocalsInit]
 sealed class D112TaulurdStates : StateMachineBuilder
 {
     public D112TaulurdStates(BossModule module) : base(module)
@@ -51,7 +48,6 @@ GroupID = 13u,
 NameID = 1415u,
 SortOrder = 2,
 PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class D112Taulurd : BossModule
 {
     public D112Taulurd(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

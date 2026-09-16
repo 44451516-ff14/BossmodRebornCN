@@ -29,7 +29,6 @@ sealed class Bombination(BossModule module)
 
 sealed class SailorAdds(BossModule module) : Components.Adds(module, (uint)OID.ZombieSailor);
 
-[SkipLocalsInit]
 sealed class TyrantStates : StateMachineBuilder
 {
     public TyrantStates(BossModule module) : base(module)
@@ -60,7 +59,6 @@ sealed class TyrantStates : StateMachineBuilder
     SortOrder = 3,
     PlanLevel = 0)]
 // (0, 140, 0) for hyperborea
-[SkipLocalsInit]
 public sealed class D173Tyrant : BossModule
 {
     public D173Tyrant(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

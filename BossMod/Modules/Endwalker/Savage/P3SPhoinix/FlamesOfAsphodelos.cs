@@ -1,9 +1,9 @@
 ﻿namespace BossMod.Endwalker.Savage.P3SPhoinix;
 
 // state related to flames of asphodelos mechanic
-class FlamesOfAsphodelos(BossModule module) : Components.GenericAOEs(module)
+sealed class FlamesOfAsphodelos(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCone cone = new(60f, 30f.Degrees());
+    private readonly AOEShapeCone cone = new(60f, 30f.Degrees());
     private readonly List<AOEInstance> _aoes = [];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

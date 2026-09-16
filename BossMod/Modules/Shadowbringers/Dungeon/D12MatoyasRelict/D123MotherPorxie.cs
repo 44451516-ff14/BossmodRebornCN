@@ -49,13 +49,13 @@ public enum IconID : uint
     Spreadmarker = 169 // player
 }
 
-class TenderLoin(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.TenderLoinVisual, (uint)AID.TenderLoin, 0.8f);
-class MincedMeat(BossModule module) : Components.SingleTargetCastDelay(module, (uint)AID.MincedMeatVisual, (uint)AID.MincedMeat, 0.9f);
-class OpenFlame(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, (uint)AID.OpenFlame, 5f, 6.7f);
-class MeatMallet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MeatMallet, 30f);
-class BarbequeCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BarbequeCircle, 5f);
-class BarbequeRect(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BarbequeRect, new AOEShapeRect(50f, 2.5f));
-class Buffet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Buffet, new AOEShapeRect(40f, 3f));
+sealed class TenderLoin(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.TenderLoinVisual, (uint)AID.TenderLoin, 0.8f);
+sealed class MincedMeat(BossModule module) : Components.SingleTargetCastDelay(module, (uint)AID.MincedMeatVisual, (uint)AID.MincedMeat, 0.9f);
+sealed class OpenFlame(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, (uint)AID.OpenFlame, 5f, 6.7f);
+sealed class MeatMallet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MeatMallet, 30f);
+sealed class BarbequeCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BarbequeCircle, 5f);
+sealed class BarbequeRect(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BarbequeRect, new AOEShapeRect(50f, 2.5f));
+sealed class Buffet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Buffet, new AOEShapeRect(40f, 3f));
 
 sealed class MediumRearNeerDoneWell(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.MediumRear1, (uint)AID.MediumRear2, (uint)AID.NeerDoneWell], new AOEShapeDonut(5f, 40f))
 {
@@ -71,16 +71,19 @@ sealed class MediumRearNeerDoneWell(BossModule module) : Components.SimpleAOEGro
     }
 }
 
-class HuffAndPuff1(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.HuffAndPuff1, 15f, true, stopAtWall: true, kind: Kind.DirForward)
+sealed class HuffAndPuff1(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.HuffAndPuff1, 15f, true, stopAtWall: true, kind: Kind.DirForward)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (Casters.Count != 0)
-            hints.AddForbiddenZone(new SDInvertedCircle(Casters.Ref(0).Origin, 5f));
+        {
+            ref readonly var kb = ref Casters.Ref(0);
+            hints.AddForbiddenZone(new SDInvertedCircle(kb.Origin, 5f));
+        }
     }
 }
 
-class HuffAndPuff2(BossModule module) : Components.GenericKnockback(module, stopAtWall: true)
+sealed class HuffAndPuff2(BossModule module) : Components.GenericKnockback(module, stopAtWall: true)
 {
     private Knockback[] _kbCache = [];
     public Knockback[] KB = [];
@@ -128,9 +131,9 @@ class HuffAndPuff2(BossModule module) : Components.GenericKnockback(module, stop
     }
 }
 
-class Barbeque(BossModule module) : Components.GenericAOEs(module)
+sealed class Barbeque(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeRect rect = new(10f, 20f);
+    private readonly AOEShapeRect rect = new(10f, 20f);
     private AOEInstance[] _aoe = [];
     private bool imminent;
 
@@ -176,7 +179,7 @@ class Barbeque(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (imminent)
         {
@@ -185,7 +188,7 @@ class Barbeque(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class D123MotherPorxieStates : StateMachineBuilder
+sealed class D123MotherPorxieStates : StateMachineBuilder
 {
     public D123MotherPorxieStates(BossModule module) : base(module)
     {
@@ -205,7 +208,7 @@ class D123MotherPorxieStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 746u, NameID = 9741u)]
-public class D123MotherPorxie(WorldState ws, Actor primary) : BossModule(ws, primary, default, new ArenaBoundsSquare(19.5f))
+public sealed class D123MotherPorxie(WorldState ws, Actor primary) : BossModule(ws, primary, default, new ArenaBoundsSquare(19.5f))
 {
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

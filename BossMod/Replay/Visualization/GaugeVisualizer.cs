@@ -217,16 +217,18 @@ internal sealed class GaugeVisualizer
         ImGui.SetCursorPos(origin + Scale(100, 11));
         ImGui.Image(wrap.Handle, Scale(46, 30), new Vector2(0.2767f, 0.6018f), new Vector2(0.3883f, 0.7345f));
 
-        if (gauge.Nadi.HasFlag(NadiFlags.Lunar))
+        if ((gauge.Nadi & NadiFlags.Lunar) != 0)
         {
             ImGui.SetCursorPos(origin + Scale(98, 9));
-            ImGui.Image(Tint("mnk_purple", "ui/uld/JobHudMNK0_hr1.tex", [60, -20, 255]).Handle, Scale(30, 30), new Vector2(0.4612f, 0.6018f), new Vector2(0.3883f, 0.7345f));
+            ImGui.Image(Tint("mnk_purple", "ui/uld/JobHudMNK0_hr1.tex", [60, -20, 255]).Handle, Scale(30, 30), new Vector2(0.4612f, 0.6018f), new Vector2(0.3883f, 0.7345f)
+            );
         }
 
-        if (gauge.Nadi.HasFlag(NadiFlags.Solar))
+        if ((gauge.Nadi & NadiFlags.Solar) != 0)
         {
             ImGui.SetCursorPos(origin + Scale(118, 9));
-            ImGui.Image(Tint("mnk_yellow", "ui/uld/JobHudMNK0_hr1.tex", [100, 50, -40]).Handle, Scale(30, 30), new Vector2(0.3883f, 0.6018f), new Vector2(0.4612f, 0.7345f));
+            ImGui.Image(Tint("mnk_yellow", "ui/uld/JobHudMNK0_hr1.tex", [100, 50, -40]).Handle, Scale(30, 30), new Vector2(0.3883f, 0.6018f), new Vector2(0.4612f, 0.7345f)
+            );
         }
 
         // balls

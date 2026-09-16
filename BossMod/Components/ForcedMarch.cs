@@ -4,9 +4,10 @@
 // these mechanics typically feature 'march left/right/forward/backward' debuffs, which rotate player and apply 'forced march' on expiration
 // if there are several active march debuffs, we assume they are chained together
 
-[SkipLocalsInit]
-public class GenericForcedMarch(BossModule module, float activationLimit = float.MaxValue, bool stopAfterWall = false, bool stopAtWall = false) : BossComponent(module)
+public class GenericForcedMarch(BossModule module, float activationLimit = float.MaxValue, bool stopAfterWall = false, bool stopAtWall = false, int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false) : BossComponent(module)
 {
+    public int? ArenaProjectionLayer = arenaProjectionLayer;
+    public bool? RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
     public sealed class PlayerState
     {
         public List<(Angle dir, float duration, DateTime activation)> PendingMoves = [];
@@ -46,6 +47,7 @@ public class GenericForcedMarch(BossModule module, float activationLimit = float
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
+        using var projection = Arena.WorldProjectionLayer(ArenaProjectionLayer, RestrictToArenaProjectionLayer);
         var movements = ForcedMovements(pc);
         var count = movements.Count;
         for (var i = 0; i < count; ++i)
@@ -63,7 +65,7 @@ public class GenericForcedMarch(BossModule module, float activationLimit = float
         moves.Sort(static (a, b) => a.activation.CompareTo(b.activation));
     }
 
-    public bool HasForcedMovements(Actor player) => State.GetValueOrDefault(player.InstanceID)?.Active(Module) ?? false;
+    public bool HasForcedMovements(Actor player) => ArenaProjectionLayerParticipantApplies(player, ArenaProjectionLayer, RestrictToArenaProjectionLayer) && (State.GetValueOrDefault(player.InstanceID)?.Active(Module) ?? false);
 
     public void ActivateForcedMovement(Actor player, DateTime expiration)
     {
@@ -80,7 +82,7 @@ public class GenericForcedMarch(BossModule module, float activationLimit = float
     public List<(WPos from, WPos to, Angle dir)> ForcedMovements(Actor player)
     {
         var state = State.GetValueOrDefault(player.InstanceID);
-        if (state == null)
+        if (state == null || !ArenaProjectionLayerParticipantApplies(player, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
         {
             return [];
         }
@@ -144,8 +146,7 @@ public class GenericForcedMarch(BossModule module, float activationLimit = float
 }
 
 // typical forced march is driven by statuses
-[SkipLocalsInit]
-public class StatusDrivenForcedMarch(BossModule module, float duration, uint statusForward, uint statusBackward, uint statusLeft, uint statusRight, uint statusForced = 1257u, uint statusForcedNPCs = 3629u, float activationLimit = float.MaxValue, bool stopAfterWall = false, bool stopAtWall = false) : GenericForcedMarch(module, activationLimit, stopAfterWall, stopAtWall)
+public class StatusDrivenForcedMarch(BossModule module, float duration, uint statusForward, uint statusBackward, uint statusLeft, uint statusRight, uint statusForced = 1257u, uint statusForcedNPCs = 3629u, float activationLimit = float.MaxValue, bool stopAfterWall = false, bool stopAtWall = false, int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false) : GenericForcedMarch(module, activationLimit, stopAfterWall, stopAtWall, arenaProjectionLayer, restrictToArenaProjectionLayer)
 {
     public float Duration = duration;
     public readonly uint[] Statuses = [statusForward, statusLeft, statusBackward, statusRight, statusForced, statusForcedNPCs]; // 5 elements: fwd, left, back, right, forced, forcedNPCs
@@ -188,8 +189,7 @@ public class StatusDrivenForcedMarch(BossModule module, float duration, uint sta
 }
 
 // action driven forced march
-[SkipLocalsInit]
-public class ActionDrivenForcedMarch(BossModule module, uint aid, float duration, Angle rotation, float actioneffectdelay, uint statusForced = 5174u, uint statusForcedNPCs = 3629u, float activationLimit = float.MaxValue) : GenericForcedMarch(module, activationLimit)
+public class ActionDrivenForcedMarch(BossModule module, uint aid, float duration, Angle rotation, float actioneffectdelay, uint statusForced = 5174u, uint statusForcedNPCs = 3629u, float activationLimit = float.MaxValue, int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false) : GenericForcedMarch(module, activationLimit, arenaProjectionLayer: arenaProjectionLayer, restrictToArenaProjectionLayer: restrictToArenaProjectionLayer)
 {
     public readonly float Duration = duration;
     public readonly float Actioneffectdelay = actioneffectdelay;

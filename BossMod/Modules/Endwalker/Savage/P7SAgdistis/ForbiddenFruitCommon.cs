@@ -3,7 +3,7 @@
 // common parts of various forbidden fruit / harvest mechanics
 // platform id's: 0 = W, 1 = S, 2 = E
 // TODO: show knockback for bird tethers, something for bull/minotaur tethers...
-class ForbiddenFruitCommon(BossModule module, uint watchedAction) : Components.GenericAOEs(module, watchedAction)
+abstract class ForbiddenFruitCommon(BossModule module, uint watchedAction) : Components.GenericAOEs(module, watchedAction)
 {
     public int NumAssignedTethers;
     public bool MinotaursBaited;
@@ -13,11 +13,11 @@ class ForbiddenFruitCommon(BossModule module, uint watchedAction) : Components.G
     private readonly List<(Actor, AOEShape)> _activeAOEs = [];
     private BitMatrix _tetherClips; // [i,j] is set if i is tethered and clips j
 
-    protected static readonly BitMask ValidPlatformsMask = new(7);
-    protected static readonly AOEShapeCircle ShapeBullUntethered = new(10f);
-    protected static readonly AOEShapeRect ShapeRect = new(60f, 4f);
-    protected static readonly AOEShapeCone ShapeMinotaurUntethered = new(60f, 45f.Degrees());
-    protected static readonly AOEShapeCone ShapeMinotaurTethered = new(60f, 22.5f.Degrees());
+    protected readonly BitMask ValidPlatformsMask = new(7);
+    protected readonly AOEShapeCircle ShapeBullUntethered = new(10f);
+    protected readonly AOEShapeRect ShapeRect = new(60f, 4f);
+    protected readonly AOEShapeCone ShapeMinotaurUntethered = new(60f, 45f.Degrees());
+    protected readonly AOEShapeCone ShapeMinotaurTethered = new(60f, 22.5f.Degrees());
 
     public bool CastsActive => _activeAOEs.Count > 0;
 

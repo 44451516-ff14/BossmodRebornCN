@@ -1,28 +1,11 @@
 ﻿namespace BossMod.Endwalker.Savage.P9SKokytos;
 
-class GluttonysAugur(BossModule module) : Components.CastCounter(module, (uint)AID.GluttonysAugurAOE);
-class SoulSurge(BossModule module) : Components.CastCounter(module, (uint)AID.SoulSurge);
-class BeastlyFury(BossModule module) : Components.CastCounter(module, (uint)AID.BeastlyFuryAOE);
+sealed class GluttonysAugur(BossModule module) : Components.CastCounter(module, (uint)AID.GluttonysAugurAOE);
+sealed class SoulSurge(BossModule module) : Components.CastCounter(module, (uint)AID.SoulSurge);
+sealed class BeastlyFury(BossModule module) : Components.CastCounter(module, (uint)AID.BeastlyFuryAOE);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 937, NameID = 12369, PlanLevel = 90)]
-public class P9SKokytos(WorldState ws, Actor primary) : BossModule(ws, primary, center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 937u, NameID = 12369u, PlanLevel = 90)]
+public sealed class P9SKokytos(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsCircle(20f))
 {
-    public static readonly WPos center = new(100, 100);
-    private const int rectWidth = 8;
-    private const int rectHeight = 2;
-
-    private static readonly Circle[] union = [new(center, 20)];
-    private static readonly Rectangle[] difference0 = [new(new(100, 119.5f), rectWidth, rectHeight), new(new(80.5f, 100), rectHeight, rectWidth),
-    new(new(119.5f, 100), rectHeight, rectWidth), new(new(100, 80.5f), rectWidth, rectHeight)];
-    private static readonly Rectangle[] difference45 = [RotatedRectangle(new WPos(100, 119.5f), -45.Degrees()),
-    RotatedRectangle(new WPos(80.5f, 100), -135.Degrees()), RotatedRectangle(new WPos(119.5f, 100), 45.Degrees()),
-    RotatedRectangle(new WPos(100, 80.5f), 135.Degrees())];
-    public static readonly ArenaBounds arena = new ArenaBoundsCustom(union);
-    public static readonly ArenaBounds arenaUplift0 = new ArenaBoundsCustom(union, difference0);
-    public static readonly ArenaBounds arenaUplift45 = new ArenaBoundsCustom(union, difference45);
-    private static Rectangle RotatedRectangle(WPos position, Angle rotation)
-    {
-        var rotatedPosition = WPos.RotateAroundOrigin(45, center, position);
-        return new(rotatedPosition, rectWidth, rectHeight, rotation);
-    }
+    public static Circle[] GetDefaultCircle() => [new(new(100f, 100f), 20f)];
 }

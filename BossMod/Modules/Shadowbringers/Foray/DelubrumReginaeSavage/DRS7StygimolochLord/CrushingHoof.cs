@@ -3,7 +3,7 @@
 sealed class CrushingHoof(BossModule module) : Components.GenericAOEs(module, (uint)AID.CrushingHoofAOE)
 {
     private AOEInstance[] _aoe = [];
-    private static readonly AOEShapeCircle circle = new(25f);
+    private readonly AOEShapeCircle circle = new(25f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 

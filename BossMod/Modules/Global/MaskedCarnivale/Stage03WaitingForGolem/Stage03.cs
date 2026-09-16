@@ -38,22 +38,6 @@ sealed class EarthenHeart(BossModule module) : Components.VoidzoneAtCastTarget(m
 }
 sealed class Obliterate(BossModule module) : Components.CastInterruptHint(module, (uint)AID.Obliterate);
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"{Module.PrimaryActor.Name} is weak against water based spells.\nFlying Sardine is recommended to interrupt raidwide.");
-    }
-}
-
-sealed class Hints2(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"{Module.PrimaryActor.Name} is weak against water based spells.\nEarth based spells are useless against {Module.PrimaryActor.Name}.");
-    }
-}
-
 sealed class Stage03States : StateMachineBuilder
 {
     public Stage03States(BossModule module) : base(module)
@@ -61,17 +45,23 @@ sealed class Stage03States : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<BoulderClap>()
             .ActivateOnEnter<EarthenHeart>()
-            .ActivateOnEnter<Obliterate>()
-            .ActivateOnEnter<Hints2>()
-            .DeactivateOnEnter<Hints>();
+            .ActivateOnEnter<Obliterate>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 613, NameID = 8084)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 613u, NameID = 8084u)]
 public sealed class Stage03 : BossModule
 {
     public Stage03(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {
-        ActivateComponent<Hints>();
+        var name = PrimaryActor.Name;
+        _prePullHints =
+        [
+            $"{name} is weak against water based spells. Earth based spells are useless against {name}. Flying Sardine is recommended to interrupt raidwide."
+        ];
     }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

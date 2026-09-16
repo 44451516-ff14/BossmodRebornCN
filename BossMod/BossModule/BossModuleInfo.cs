@@ -1,6 +1,5 @@
 ﻿namespace BossMod;
 
-[SkipLocalsInit]
 public static class BossModuleInfo
 {
     public enum Maturity
@@ -58,8 +57,7 @@ public static class BossModuleInfo
         GoldSaucer,
         HallOfTheNovice,
         Quantum,
-        Advanced,
-
+        CrucibleOfTheUnbroken,
         Count
     }
 
@@ -73,7 +71,8 @@ public static class BossModuleInfo
         CastrumLacusLitore, // group id is ContentFinderCondition row
         TheDalriada, // group id is ContentFinderCondition row
         TheForkedTowerBlood, // group id is ContentFinderCondition row
-        TheForkedTowerMagic, // group id is ContentFinderCondition row
+        TheForkedTowerMagicNormal, // group id is ContentFinderCondition row
+        TheForkedTowerMagicExtreme, // group id is ContentFinderCondition row
         ForayFATE, // group id is Fate row
         Quest, // group id is Quest row
         Fate, // group id is Fate row
@@ -82,6 +81,7 @@ public static class BossModuleInfo
         BozjaDuel, // group id is ContentFinderCondition row, name id is DynamicEvent row
         EurekaNM, // group id is ContentFinderCondition row, name id is Fate row
         GoldSaucer, // group id is GoldSaucerTextData row
+        CrucibleOfTheUnbroken
     }
 
     public enum HuntRank : uint { B, A, S, SS }
@@ -101,7 +101,6 @@ public static class BossModuleInfo
 
 // attribute that allows customizing boss module's metadata; it is optional, each field has some defaults that are fine in most cases
 [AttributeUsage(AttributeTargets.Class, Inherited = false)]
-[SkipLocalsInit]
 public sealed class ModuleInfoAttribute(BossModuleInfo.Maturity maturity) : Attribute
 {
     public Type? StatesType { get; set; } // default: ns.xxxStates

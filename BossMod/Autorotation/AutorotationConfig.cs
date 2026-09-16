@@ -17,6 +17,7 @@ public sealed class AutorotationConfig : ConfigNode
     }
 
     [PropertyDisplay("在服务器信息栏显示当前预设")]
+    [PropertyRadio]
     public DtrStatus ShowDTR = DtrStatus.None;
 
     [PropertyDisplay("隐藏VBM默认预设方案", tooltip: "如果你已创建自定义预设方案且不再需要内置默认预设，勾选此选项将使其不再显示在自动旋转和预设编辑窗口中。")]

@@ -1,4 +1,4 @@
-﻿namespace BossMod.Modules.Dawntrail.Extreme.Ex8Enuo;
+﻿namespace BossMod.Dawntrail.Extreme.Ex8Enuo;
 
 sealed class LoomingShadowAdd(BossModule module) : Components.Adds(module, (uint)OID.LoomingShadow);
 
@@ -10,7 +10,7 @@ sealed class BeaconAdd(BossModule module) : Components.Adds(module, (uint)OID.Be
 
 sealed class LoomingEmptinessKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.LoomingEmptinessKnockback, 20f);
 
-sealed class LoomingEmptinessKillZone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LoomingEmptinessKillzone, new AOEShapeCircle(8f));
+sealed class LoomingEmptinessKillZone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LoomingEmptinessKillzone, 8f);
 
 sealed class EmptyShadowTower(BossModule module) : Components.CastTowers(module, (uint)AID.EmptyShadow, 7f)
 {
@@ -51,7 +51,7 @@ sealed class VoidalTurbulanceCone(BossModule module) : Components.BaitAwayIcon(m
         {
             return null;
         }
-        return enemies.First();
+        return enemies[0];
     }
 }
 sealed class DemonEye(BossModule module) : Components.CastGaze(module, (uint)AID.DemonEyeCastbar);

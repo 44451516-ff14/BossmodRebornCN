@@ -1,9 +1,9 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un3Sophia;
 
-class Tilt(BossModule module) : Components.GenericKnockback(module, (uint)AID.QuasarTilt)
+abstract class Tilt(BossModule module) : Components.GenericKnockback(module, (uint)AID.QuasarTilt)
 {
-    public const float DistanceShort = 28;
-    public const float DistanceLong = 37;
+    public const float DistanceShort = 28f;
+    public const float DistanceLong = 37f;
 
     public float Distance;
     public Angle Direction;
@@ -24,7 +24,7 @@ class Tilt(BossModule module) : Components.GenericKnockback(module, (uint)AID.Qu
     }
 }
 
-class ScalesOfWisdom(BossModule module) : Tilt(module)
+sealed class ScalesOfWisdom(BossModule module) : Tilt(module)
 {
     public bool RaidwideDone;
 
@@ -44,7 +44,7 @@ class ScalesOfWisdom(BossModule module) : Tilt(module)
                 {
                     // prepare for second tilt
                     Distance = DistanceShort;
-                    Direction = 90.Degrees();
+                    Direction = 90f.Degrees();
                     Activation = WorldState.FutureTime(4.9d);
                 }
                 break;
@@ -55,17 +55,17 @@ class ScalesOfWisdom(BossModule module) : Tilt(module)
     }
 }
 
-class Quasar(BossModule module) : Tilt(module)
+sealed class Quasar(BossModule module) : Tilt(module)
 {
     public int WeightLeft;
     public int WeightRight;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        var weight = (AID)spell.Action.ID switch
+        var weight = spell.Action.ID switch
         {
-            AID.QuasarLight => 1,
-            AID.QuasarHeavy => 3,
+            (uint)AID.QuasarLight => 1,
+            (uint)AID.QuasarHeavy => 3,
             _ => 0
         };
         if (weight != 0)
@@ -81,8 +81,8 @@ class Quasar(BossModule module) : Tilt(module)
                 1 or -1 => DistanceShort,
                 _ => DistanceLong
             };
-            Direction = (WeightLeft > WeightRight ? -90 : 90).Degrees();
-            Activation = Module.CastFinishAt(spell, 0.7f);
+            Direction = (WeightLeft > WeightRight ? -90f : 90f).Degrees();
+            Activation = Module.CastFinishAt(spell, 0.7d);
         }
     }
 }

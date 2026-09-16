@@ -1,16 +1,14 @@
-﻿namespace BossMod.Modules.Dawntrail.Raid.M09NVampFatale;
+﻿namespace BossMod.Dawntrail.Raid.M09NVampFatale;
 
 public enum OID : uint
 {
     VampFatale = 0x4ADC,
-    Helper = 0x233C,
-    Actor1ea1a1 = 0x1EA1A1, // R2.000, x1, EventObj type
-    Exit = 0x1E850B, // R0.500, x1, EventObj type
     VampetteFatale = 0x4C2E, // R1.200, x0 (spawn during fight)
     Coffinmaker = 0x4ADD, // R10.000, x0 (spawn during fight)
     FatalFlail = 0x4ADE, // R3.000, x0 (spawn during fight)
     Neckbiter = 0x4AE5, // R3.000, x0 (spawn during fight)
     Coffinmaker1 = 0x4AE6, // R1.000, x0 (spawn during fight)
+    Helper = 0x233C
 }
 public enum AID : uint
 {

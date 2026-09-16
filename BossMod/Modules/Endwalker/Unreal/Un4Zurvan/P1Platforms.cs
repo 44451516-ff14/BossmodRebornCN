@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un4Zurvan;
 
-class P1Platforms(BossModule module) : Components.GenericAOEs(module)
+sealed class P1Platforms(BossModule module) : Components.GenericAOEs(module)
 {
     public List<AOEInstance> ForbiddenPlatforms = [];
 
@@ -20,10 +20,10 @@ class P1Platforms(BossModule module) : Components.GenericAOEs(module)
 
         switch (state)
         {
-            case 0x00040008:
+            case 0x00040008u:
                 ForbiddenPlatforms.Add(new(new AOEShapeCone(20f, 45f.Degrees()), Arena.Center, dir, WorldState.FutureTime(5d)));
                 break;
-            case 0x00100020:
+            case 0x00100020u:
                 ++NumCasts;
                 break;
         }

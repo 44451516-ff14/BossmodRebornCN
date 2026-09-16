@@ -115,22 +115,26 @@ public sealed class SmartRotationTweak(WorldState ws, AIHints hints)
 
         if (preferredDirection != null)
         {
-            var coneMin = -preferredHalfWidth.Rad;
-            var coneMax = +preferredHalfWidth.Rad;
+            var rad = preferredHalfWidth.Rad;
+            var coneMin = -rad;
+            var coneMax = rad;
             var intersection = _forbidden.Intersect(coneMin, coneMax);
-            if (intersection.count == 0)
+            var count = intersection.count;
+            if (count == 0)
             {
                 return midpoint; // entire frontal cone is safe, rotate to preferred
             }
 
             // find widest safe range in a cone around preferred direction
-            var best = initBest(coneMin, Math.Max(_forbidden[intersection.first].Min, coneMin));
-            for (var i = 1; i < intersection.count; ++i)
+            var first = intersection.first;
+            var best = initBest(coneMin, Math.Max(_forbidden[first].Min, coneMin));
+
+            for (var i = 1; i < count; ++i)
             {
-                updateBest(ref best, _forbidden[intersection.first + i - 1].Max, _forbidden[intersection.first + i].Min);
+                updateBest(ref best, _forbidden[first + i - 1].Max, _forbidden[first + i].Min);
             }
 
-            updateBest(ref best, Math.Min(_forbidden[intersection.first + intersection.count - 1].Max, coneMax), coneMax);
+            updateBest(ref best, Math.Min(_forbidden[first + count - 1].Max, coneMax), coneMax);
 
             if (best.width >= _minWindow.Rad)
             {
@@ -141,7 +145,8 @@ public sealed class SmartRotationTweak(WorldState ws, AIHints hints)
         // find widest safe range in the whole circle
         {
             var best = initBest(_forbidden[^1].Max, _forbidden[0].Min + Angle.DoublePI);
-            for (var i = 1; i < _forbidden.Count; ++i)
+            var countF = _forbidden.Count;
+            for (var i = 1; i < countF; ++i)
             {
                 updateBest(ref best, _forbidden[i - 1].Max, _forbidden[i].Min);
             }

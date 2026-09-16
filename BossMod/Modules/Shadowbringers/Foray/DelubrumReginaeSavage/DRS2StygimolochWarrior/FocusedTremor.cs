@@ -30,7 +30,7 @@ sealed class FlailingStrike(BossModule module) : Components.GenericRotatingAOE(m
     {
         if (spell.Action.ID == (uint)AID.FlailingStrikeFirst)
         {
-            Sequences.Add(new(_shape, spell.LocXZ, spell.Rotation, 60f.Degrees(), Module.CastFinishAt(spell), 1.6f, 6, 3));
+            Sequences.Add(new(_shape, spell.LocXZ, spell.Rotation, 60f.Degrees(), Module.CastFinishAt(spell), 1.6d, 6, 3));
         }
     }
 

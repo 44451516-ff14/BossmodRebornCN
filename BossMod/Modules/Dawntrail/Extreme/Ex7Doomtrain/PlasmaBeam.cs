@@ -1,6 +1,5 @@
 namespace BossMod.Dawntrail.Extreme.Ex7Doomtrain;
 
-[SkipLocalsInit]
 sealed class PlasmaBeam(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(4)];

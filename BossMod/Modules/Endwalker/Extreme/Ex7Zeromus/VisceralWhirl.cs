@@ -1,12 +1,12 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex7Zeromus;
 
 // note: apparently there's a slight overlap between aoes in the center, which looks ugly, but at least that's the truth...
-class VisceralWhirl(BossModule module) : Components.GenericAOEs(module)
+sealed class VisceralWhirl(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
 
-    private static readonly AOEShapeRect _shapeNormal = new(29f, 14f);
-    private static readonly AOEShapeRect _shapeOffset = new(60f, 14f);
+    private readonly AOEShapeRect _shapeNormal = new(29f, 14f);
+    private readonly AOEShapeRect _shapeOffset = new(60f, 14f);
 
     public bool Active => _aoes.Count != 0;
 
@@ -36,9 +36,9 @@ class VisceralWhirl(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class MiasmicBlast(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MiasmicBlast, new AOEShapeCross(60f, 5f));
+sealed class MiasmicBlast(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MiasmicBlast, new AOEShapeCross(60f, 5f));
 
-class VoidBio(BossModule module) : Components.GenericAOEs(module)
+sealed class VoidBio(BossModule module) : Components.GenericAOEs(module)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -58,7 +58,7 @@ class VoidBio(BossModule module) : Components.GenericAOEs(module)
         return voidzones[..index];
     }
 
-    private static readonly AOEShapeCapsule _shape = new(2f, 3f); // TODO: verify explosion radius
+    private readonly AOEShapeCapsule _shape = new(2f, 3f); // TODO: verify explosion radius
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -69,7 +69,7 @@ class VoidBio(BossModule module) : Components.GenericAOEs(module)
         var aoes = new AOEInstance[count];
         for (var i = 0; i < count; ++i)
         {
-            ref readonly var vz = ref voidzones[i];
+            var vz = voidzones[i];
             aoes[i] = new(_shape, vz.Position);
         }
         return aoes;
@@ -95,7 +95,7 @@ class VoidBio(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class BondsOfDarkness(BossModule module) : BossComponent(module)
+sealed class BondsOfDarkness(BossModule module) : BossComponent(module)
 {
     public int NumTethers;
     private readonly int[] _partners = Utils.MakeArray(PartyState.MaxPartySize, -1);
@@ -146,7 +146,7 @@ class BondsOfDarkness(BossModule module) : BossComponent(module)
     }
 }
 
-class DarkDivides(BossModule module) : Components.UniformStackSpread(module, default, 5f)
+sealed class DarkDivides(BossModule module) : Components.UniformStackSpread(module, default, 5f)
 {
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {

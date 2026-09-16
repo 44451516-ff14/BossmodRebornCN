@@ -1,13 +1,10 @@
-using System.ComponentModel;
-
-namespace BossMod.DawnTrail.Raid.M10NDaringDevils;
+namespace BossMod.Dawntrail.Raid.M10NDaringDevils;
 
 // ---------
 // Constants
 // ---------
 static class InsaneAirData
 {
-
     public static readonly AOEShapeCone SnapCone = new(60f, 20f.Degrees()); // total 40 degrees
 }
 

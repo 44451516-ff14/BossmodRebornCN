@@ -4,7 +4,7 @@
 // TODO: consider generalizing...
 sealed class Glaukopis(BossModule module) : Components.GenericBaitAway(module)
 {
-    private static readonly AOEShapeRect _shape = new(60f, 2.5f);
+    private readonly AOEShapeRect _shape = new(60f, 2.5f);
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {

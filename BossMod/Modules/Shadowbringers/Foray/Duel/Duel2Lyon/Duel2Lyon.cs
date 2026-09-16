@@ -24,11 +24,18 @@ sealed class Duel2LyonStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.BozjaDuel, GroupID = 735, NameID = 8)] // bnpcname=9409
-public sealed class Duel2Lyon(WorldState ws, Actor primary) : BossModule(ws, primary, startingArena.Center, startingArena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.BozjaDuel, GroupID = 735u, NameID = 8u)] // bnpcname=9409
+public sealed class Duel2Lyon : BossModule
 {
-    private static readonly ArenaBoundsCustom startingArena = new([new Polygon(new(211f, 380f), 24.5f, 32)]);
-    public static readonly ArenaBoundsCircle DefaultArena = new(20f); // default arena got no extra collision, just a donut aoe
+    public Duel2Lyon(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private Duel2Lyon(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(211f, 380f), 24.5f, 32)]);
+        return (arena.Center, arena);
+    }
 
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 25f);
 }

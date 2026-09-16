@@ -85,24 +85,7 @@ class CrossCurrent(BossModule module) : Components.GenericAOEs(module, (uint)AID
     }
 }
 
-class AquaBall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AquaBall1, new AOEShapeCircle(5f));
+class AquaBall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AquaBall1, 5f);
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
-    StatesType = typeof(DaryaTheSeaMaidStates),
-    ConfigType = null, // replace null with typeof(DaryaTheSeaMaidConfig) if applicable
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID),
-    StatusIDType = typeof(SID),
-    TetherIDType = typeof(TetherID),
-    IconIDType = typeof(IconID),
-    PrimaryActorOID = (uint)OID.DaryaTheSeaMaid,
-    Contributors = "Equilius",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.VariantCriterion,
-    GroupType = BossModuleInfo.GroupType.CFC,
-    GroupID = 1079u,
-    NameID = 14291u,
-    SortOrder = 1,
-    PlanLevel = 0)]
-[SkipLocalsInit]
-public sealed class DaryaTheSeaMaid(WorldState ws, Actor primary) : BossModule(ws, primary, new(375f, 530f), new ArenaBoundsSquare(20));
+[ModuleInfo(BossModuleInfo.Maturity.WIP, PrimaryActorOID = (uint)OID.DaryaTheSeaMaid, Contributors = "Equilius", Category = BossModuleInfo.Category.VariantCriterion, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1079u, NameID = 14291u)]
+public sealed class C011DaryaTheSeaMaid(WorldState ws, Actor primary) : BossModule(ws, primary, new(375f, 530f), new ArenaBoundsSquare(20));

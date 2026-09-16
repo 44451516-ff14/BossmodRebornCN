@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UWU;
 
-class P2InfernalFetters(BossModule module) : BossComponent(module)
+sealed class P2InfernalFetters(BossModule module) : BossComponent(module)
 {
     public BitMask Fetters;
     private int _fettersStrength;

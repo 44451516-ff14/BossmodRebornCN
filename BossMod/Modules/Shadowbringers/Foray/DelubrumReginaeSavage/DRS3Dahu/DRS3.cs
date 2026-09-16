@@ -8,7 +8,7 @@ sealed class HuntersClaw(BossModule module) : Components.SimpleAOEs(module, (uin
 
 sealed class Burn(BossModule module) : Components.BaitAwayIcon(module, 30f, (uint)IconID.Burn, (uint)AID.Burn, 8.2f);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 761, NameID = 9751, PlanLevel = 80)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 761u, NameID = 9751u, PlanLevel = 80)]
 public class DRS3Dahu(WorldState ws, Actor primary) : Dahu(ws, primary)
 {
     protected override void DrawEnemies(int pcSlot, Actor pc)

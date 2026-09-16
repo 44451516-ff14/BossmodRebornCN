@@ -56,28 +56,18 @@ public enum SID : uint
     VortexBarrier = 3012, // Boss->Boss, extra=0x0
 }
 
-[SkipLocalsInit]
 sealed class EarthenFury(BossModule module) : Components.RaidwideCast(module, (uint)AID.EarthenFuryAOE);
-[SkipLocalsInit]
 sealed class Geocrush(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Geocrush, 25f); // TODO: verify falloff...
 
-[SkipLocalsInit]
 sealed class Landslide(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Landslide1, (uint)AID.Landslide2], new AOEShapeRect(40f, 3f));
 
-[SkipLocalsInit]
 sealed class WeightOfTheLand(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WeightOfTheLand, 6f);
-[SkipLocalsInit]
 sealed class AerialBlast(BossModule module) : Components.RaidwideCast(module, (uint)AID.AerialBlastAOE);
-[SkipLocalsInit]
 sealed class EyeOfTheStorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EyeOfTheStormAOE, new AOEShapeDonut(12.5f, 25f));
-[SkipLocalsInit]
 sealed class MistralShriek(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MistralShriek, 23f);
-[SkipLocalsInit]
 sealed class Hellfire(BossModule module) : Components.RaidwideCast(module, (uint)AID.HellfireAOE);
-[SkipLocalsInit]
 sealed class RadiantPlume(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RadiantPlumeAOE, 8f);
 
-[SkipLocalsInit]
 sealed class VulcanBurst(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.VulcanBurst, 15f, stopAtWall: true)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -89,7 +79,6 @@ sealed class VulcanBurst(BossModule module) : Components.SimpleKnockbacks(module
     }
 }
 
-[SkipLocalsInit]
 sealed class T04PortaDecumana1States : StateMachineBuilder
 {
     public T04PortaDecumana1States(BossModule module) : base(module)
@@ -109,7 +98,6 @@ sealed class T04PortaDecumana1States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 830u, NameID = 2137u, SortOrder = 1)]
-[SkipLocalsInit]
 public sealed class T04PortaDecumana1 : BossModule
 {
     public T04PortaDecumana1(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

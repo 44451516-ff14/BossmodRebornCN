@@ -2,7 +2,7 @@ namespace BossMod.Stormblood.Extreme.Ex7Suzaku;
 
 sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCircle circle = new(3.5f);
+    private readonly AOEShapeCircle circle = new(3.5f);
     private AOEInstance[] _aoe = [];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
@@ -19,7 +19,7 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     {
         if (state == 0x00040008u && actor.OID == (uint)OID.RapturousEchoPlatform)
         {
-            Arena.Bounds = Ex7Suzaku.Phase2Bounds;
+            Arena.Bounds = Ex7Suzaku.GetPhase2Bounds();
             _aoe = [];
         }
     }

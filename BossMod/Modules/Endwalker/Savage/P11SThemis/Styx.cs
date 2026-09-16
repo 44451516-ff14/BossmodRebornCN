@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P11SThemis;
 
-class Styx(BossModule module) : Components.UniformStackSpread(module, 6f, default, 8, 8)
+sealed class Styx(BossModule module) : Components.UniformStackSpread(module, 6f, default, 8, 8)
 {
     public int NumCasts;
 

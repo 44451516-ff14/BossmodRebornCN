@@ -1,6 +1,5 @@
 namespace BossMod.Dawntrail.Extreme.Ex7Doomtrain;
 
-[SkipLocalsInit]
 sealed class DeadMansExpress(BossModule module) : Components.GenericKnockback(module, (uint)AID.DeadMansExpress)
 {
     private Knockback[] _kb = [];
@@ -32,7 +31,6 @@ sealed class DeadMansExpress(BossModule module) : Components.GenericKnockback(mo
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos) => false;
 }
 
-[SkipLocalsInit]
 sealed class DeadMansBlastpipe(BossModule module) : Components.GenericAOEs(module)
 {
     public AOEInstance[] AOE = [];
@@ -61,7 +59,6 @@ sealed class DeadMansBlastpipe(BossModule module) : Components.GenericAOEs(modul
     }
 }
 
-[SkipLocalsInit]
 sealed class DeadMansWindpipe(BossModule module) : Components.GenericKnockback(module, (uint)AID.DeadMansWindpipe)
 {
     private Knockback[] _kb = [];

@@ -1,10 +1,10 @@
 ﻿namespace BossMod.RealmReborn.Extreme.Ex2Garuda;
 
-class EyeOfTheStorm(BossModule module) : Components.GenericAOEs(module, (uint)AID.EyeOfTheStorm)
+sealed class EyeOfTheStorm(BossModule module) : Components.GenericAOEs(module, (uint)AID.EyeOfTheStorm)
 {
     private Actor? _caster;
     private DateTime _nextCastAt;
-    private static readonly AOEShapeDonut _shape = new(12f, 25f); // TODO: verify inner radius
+    private readonly AOEShapeDonut _shape = new(12f, 25f); // TODO: verify inner radius
 
     public bool Active() => _caster?.CastInfo != null || _nextCastAt > WorldState.CurrentTime;
 

@@ -41,10 +41,8 @@ public enum AID : uint
     RubyReflection2 = 48285, // Helper->self, no cast, range 20 width 20 rect
 }
 
-[SkipLocalsInit]
 sealed class SonicHowl(BossModule module) : Components.RaidwideCast(module, (uint)AID.SonicHowl);
 
-[SkipLocalsInit]
 sealed class TailToClaw(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
@@ -96,7 +94,6 @@ sealed class TailToClaw(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[SkipLocalsInit]
 sealed class TopazRay(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.TopazRay1, (uint)AID.TopazRay2], 4f)
 {
     public readonly List<Actor> Actors = [with(10)];
@@ -181,7 +178,6 @@ sealed class TopazRay(BossModule module) : Components.SimpleAOEGroups(module, [(
     }
 }
 
-[SkipLocalsInit]
 sealed class RubyReflection : Components.GenericAOEs
 {
     public RubyReflection(BossModule module) : base(module)
@@ -285,7 +281,6 @@ sealed class RubyReflection : Components.GenericAOEs
     }
 }
 
-[SkipLocalsInit]
 sealed class SpinebreakingStampede(BossModule module) : Components.GenericKnockback(module)
 {
     private readonly List<Knockback> _kbs = [with(3)];
@@ -379,7 +374,6 @@ sealed class SpinebreakingStampede(BossModule module) : Components.GenericKnockb
     }
 }
 
-[SkipLocalsInit]
 sealed class CE201ABeastUnleashedStates : StateMachineBuilder
 {
     public CE201ABeastUnleashedStates(BossModule module) : base(module)
@@ -393,24 +387,7 @@ sealed class CE201ABeastUnleashedStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
-    StatesType = typeof(CE201ABeastUnleashedStates),
-    ConfigType = null, // replace null with typeof(ABeastUnleashedConfig) if applicable
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID),
-    StatusIDType = null, // replace null with typeof(SID) if applicable
-    TetherIDType = null, // replace null with typeof(TetherID) if applicable
-    IconIDType = null, // replace null with typeof(IconID) if applicable
-    PrimaryActorOID = (uint)OID.AtlasCarbuncle,
-    Contributors = "gynorhino",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.Foray,
-    GroupType = BossModuleInfo.GroupType.CriticalEngagement,
-    GroupID = 1093u,
-    NameID = 56u,
-    SortOrder = 8,
-    PlanLevel = 0)]
-[SkipLocalsInit]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.AtlasCarbuncle, Contributors = "gynorhino", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 1093u, NameID = 56u)]
 public sealed class CE201ABeastUnleashed(WorldState ws, Actor primary) : BossModule(ws, primary, new(238f, 352f), new ArenaBoundsSquare(20f))
 {
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InSquare(Arena.Center, 20f);

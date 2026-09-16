@@ -277,7 +277,7 @@ sealed class P2SanctityOfTheWard1Hints(BossModule module) : BossComponent(module
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (!_inited)
             return;

@@ -36,7 +36,7 @@ sealed class WingedTerror(BossModule module) : Components.SimpleAOEs(module, (ui
     public override bool KeepOnPhaseChange => true;
 }
 
-sealed class BalefulBreath(BossModule module) : Components.LineStack(module, (uint)IconID.BalefulBreath, (uint)AID.BalefulBreathAOERest, 8.2d, 70f, 3f, PartyState.MaxAllianceSize, PartyState.MaxAllianceSize, 3, false)
+sealed class BalefulBreath(BossModule module) : Components.LineStack(module, (uint)IconID.BalefulBreath, (uint)AID.BalefulBreathAOERest, 8.2d, 70f, 3f, PartyState.MaxAllianceSize, PartyState.MaxAllianceSize, 3, false, null)
 {
     public override bool KeepOnPhaseChange => true;
 }

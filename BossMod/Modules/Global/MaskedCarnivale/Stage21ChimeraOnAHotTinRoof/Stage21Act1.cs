@@ -15,22 +15,6 @@ public enum AID : uint
 sealed class Icefall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Icefall, 5f);
 sealed class VoidBlizzard(BossModule module) : Components.CastInterruptHint(module, (uint)AID.VoidBlizzard);
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add("The first act is fairly easy. Interrupt the Void Blizzards with Flying\nSardine and most of the danger is gone. The Imps are weak against fire spells.\nIn the 2nd act you can start the Final Sting combination at about 50%\nhealth left. (Off-guard->Bristle->Moonflute->Final Sting)");
-    }
-}
-
-sealed class Hints2(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add("The imps are weak to fire spells and strong against ice.\nInterrupt Void Blizzard with Flying Sardine.");
-    }
-}
-
 sealed class Stage21Act1States : StateMachineBuilder
 {
     public Stage21Act1States(BossModule module) : base(module)
@@ -38,24 +22,26 @@ sealed class Stage21Act1States : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<VoidBlizzard>()
             .ActivateOnEnter<Icefall>()
-            .ActivateOnEnter<Hints2>()
-            .DeactivateOnEnter<Hints>()
             .Raw.Update = () => AllDeadOrDestroyed((uint)OID.Boss);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 631, NameID = 8120, SortOrder = 1)]
-public sealed class Stage21Act1 : BossModule
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 631u, NameID = 8120u, SortOrder = 1)]
+public sealed class Stage21Act1(WorldState ws, Actor primary) : BossModule(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
 {
-    public Stage21Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
-    {
-        ActivateComponent<Hints>();
-    }
-
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actors(Enemies((uint)OID.Boss));
     }
 
     protected override bool CheckPull() => IsAnyActorInCombat((uint)OID.Boss);
+
+    private readonly string[] _prePullHints =
+    [
+        "The first act is fairly easy. Interrupt the Void Blizzards with Flying Sardine and most of the danger is gone.",
+        "The imps are weak to fire spells and strong against ice. Interrupt Void Blizzard with Flying Sardine.",
+        "In the 2nd act you can start the Final Sting combination at about 50% health left. (Off-guard->Bristle->Moonflute->Final Sting)"
+    ];
+
+    public override string[] PrePullHints => _prePullHints;
 }

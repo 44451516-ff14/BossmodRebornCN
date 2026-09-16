@@ -1,6 +1,5 @@
 ﻿namespace BossMod.Dawntrail.Foray.ForkedTowerMagic.Extreme.FTME3Necrophobia;
 
-[SkipLocalsInit]
 sealed class DigThreeGraves(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
@@ -168,7 +167,7 @@ sealed class DigThreeGraves(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         hints.Add(string.Join(" -> ", _elements));
     }
@@ -192,7 +191,6 @@ sealed class DigThreeGraves(BossModule module) : Components.GenericAOEs(module)
 #endif
 }
 
-[SkipLocalsInit]
 sealed class SeveredDarkCurrent(BossModule module) : Components.GenericAOEs(module)
 {
     // is it always N, NW, SW for rotation? does it aim towards a particular element 1st?

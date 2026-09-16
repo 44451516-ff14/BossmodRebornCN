@@ -1,4 +1,5 @@
 using Clipper2Lib;
+using System.Buffers;
 
 namespace BossMod;
 
@@ -11,7 +12,6 @@ public enum OperandType
 }
 
 // utility for simplifying and performing boolean operations on complex polygons
-[SkipLocalsInit]
 public sealed class PolygonClipper
 {
     public const float Scale = 1024f * 1024f; // note: we need at least 10 bits for integer part (-1024 to 1024 range); using 11 bits leaves 20 bits for fractional part; power-of-two scale should reduce rounding issues
@@ -32,12 +32,24 @@ public sealed class PolygonClipper
         public void AddContour(ReadOnlySpan<WDir> contour, bool isOpen = false)
         {
             var count = contour.Length;
-            Path64 path = [with(count)];
-            for (var i = 0; i < count; ++i)
+
+            Point64[]? rented = null;
+            var path = count <= 256 ? stackalloc Point64[count] : (rented = ArrayPool<Point64>.Shared.Rent(count)).AsSpan(0, count);
+            try
             {
-                path.Add(ConvertPoint(contour[i]));
+                for (var i = 0; i < count; ++i)
+                {
+                    path[i] = ConvertPoint(contour[i]);
+                }
+                _data.AddPath(path, PathType.Subject, isOpen);
             }
-            AddContour(path, isOpen);
+            finally
+            {
+                if (rented != null)
+                {
+                    ArrayPool<Point64>.Shared.Return(rented);
+                }
+            }
         }
 
         public void AddPolygon(RelPolygonWithHoles polygon)
@@ -61,8 +73,6 @@ public sealed class PolygonClipper
         }
 
         public void Assign(Clipper64 clipper, PathType role) => clipper.AddReuseableData(_data, role);
-
-        private void AddContour(Path64 contour, bool isOpen) => _data.AddPath(contour, PathType.Subject, isOpen);
     }
 
     private readonly Clipper64 _clipper = new() { PreserveCollinear = false };
@@ -108,17 +118,27 @@ public sealed class PolygonClipper
             }
 
             var extPolygon = exterior.Polygon;
-            var countExt = exterior.Polygon.Count;
-            var polygonPoints = new List<WDir>(countExt);
+            var pointCount = extPolygon.Count;
+            var holeCount = 0;
+            var countExt = exterior.Count;
             for (var j = 0; j < countExt; ++j)
             {
-                polygonPoints.Add(ConvertPoint(extPolygon[j]));
+                var hole = exterior[j].Polygon;
+                if (hole != null && hole.Count != 0)
+                {
+                    pointCount += hole.Count;
+                    ++holeCount;
+                }
             }
 
-            var poly = new RelPolygonWithHoles(polygonPoints);
+            var polygonPoints = new List<WDir>(pointCount);
+            CollectionsMarshal.SetCount(polygonPoints, pointCount);
+            var destination = CollectionsMarshal.AsSpan(polygonPoints);
+            CopyPath(extPolygon, destination);
+            var written = extPolygon.Count;
+            var poly = new RelPolygonWithHoles(polygonPoints, [with(holeCount)]);
             result.Parts.Add(poly);
-            var countExt2 = exterior.Count;
-            for (var j = 0; j < countExt2; ++j)
+            for (var j = 0; j < countExt; ++j)
             {
                 var interior = exterior[j];
                 if (interior.Polygon == null || interior.Polygon.Count == 0)
@@ -126,17 +146,21 @@ public sealed class PolygonClipper
                     continue;
                 }
 
-                var holePoints = new List<WDir>(interior.Polygon.Count);
                 var intPolygon = interior.Polygon;
-                var countInt = intPolygon.Count;
-                for (var k = 0; k < countInt; ++k)
-                {
-                    holePoints.Add(ConvertPoint(intPolygon[k]));
-                }
-
-                poly.AddHole(holePoints);
+                poly.HoleStarts.Add(written);
+                CopyPath(intPolygon, destination[written..]);
+                written += intPolygon.Count;
                 BuildResult(result, interior);
             }
+        }
+    }
+
+    private static void CopyPath(Path64 path, Span<WDir> destination)
+    {
+        var source = CollectionsMarshal.AsSpan(path);
+        for (var i = 0; i < source.Length; ++i)
+        {
+            destination[i] = ConvertPoint(source[i]);
         }
     }
 

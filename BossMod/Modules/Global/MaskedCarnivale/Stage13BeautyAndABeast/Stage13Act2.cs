@@ -35,14 +35,6 @@ sealed class CircleOfBlood(BossModule module) : Components.SimpleAOEs(module, (u
 sealed class BeguilingMist(BossModule module) : Components.CastInterruptHint(module, (uint)AID.BeguilingMist);
 sealed class BloodRain(BossModule module) : Components.RaidwideCast(module, (uint)AID.BloodRain, "Harmless raidwide unless you failed to kill succubus in time");
 
-class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"{Module.PrimaryActor.Name} will cast various AOEs and summons adds.\nInterrupt the adds with Flying Sardine and kill them fast.\nIf the add is still alive during the next Black Sabbath, you will be wiped.");
-    }
-}
-
 sealed class Stage13Act2States : StateMachineBuilder
 {
     public Stage13Act2States(BossModule module) : base(module)
@@ -55,17 +47,19 @@ sealed class Stage13Act2States : StateMachineBuilder
             .ActivateOnEnter<DarkSabbath>()
             .ActivateOnEnter<CircleOfBlood>()
             .ActivateOnEnter<BeguilingMist>()
-            .ActivateOnEnter<BloodRain>()
-            .DeactivateOnEnter<Hints>();
+            .ActivateOnEnter<BloodRain>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 623, NameID = 8107, SortOrder = 2)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 623u, NameID = 8107u, SortOrder = 2)]
 public sealed class Stage13Act2 : BossModule
 {
     public Stage13Act2(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {
-        ActivateComponent<Hints>();
+        _prePullHints =
+        [
+            $"{PrimaryActor.Name} will cast various AOEs and summons adds. Interrupt the adds with Flying Sardine and kill them fast. If the add is still alive during the next Black Sabbath, you will be wiped."
+        ];
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
@@ -73,4 +67,8 @@ public sealed class Stage13Act2 : BossModule
         Arena.Actor(PrimaryActor);
         Arena.Actors(Enemies((uint)OID.Succubus), Colors.Object);
     }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

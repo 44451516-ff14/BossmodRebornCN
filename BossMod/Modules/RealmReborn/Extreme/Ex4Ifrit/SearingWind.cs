@@ -4,7 +4,7 @@
 // however, sometimes (typically on phase switches) boss might cast new inferno howl while previous target still has debuff with large timer
 // in such case old target will not have any more searing winds cast on it, despite having debuff
 // TODO: verify whether searing wind on previous target can still be cast if inferno howl is in progress?
-class SearingWind(BossModule module) : Components.UniformStackSpread(module, default, 14f)
+sealed class SearingWind(BossModule module) : Components.UniformStackSpread(module, default, 14f)
 {
     public override bool KeepOnPhaseChange => true;
     private int _searingWindsLeft;

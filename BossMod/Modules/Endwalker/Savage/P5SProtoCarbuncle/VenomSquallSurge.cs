@@ -1,12 +1,12 @@
 ﻿namespace BossMod.Endwalker.Savage.P5SProtoCarbuncle;
 
-class VenomDrops(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VenomDrops, 5);
+sealed class VenomDrops(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VenomDrops, 5);
 
-class VenomSquallSurge(BossModule module) : BossComponent(module)
+sealed class VenomSquallSurge(BossModule module) : BossComponent(module)
 {
     public enum Mechanic { None, Rain, Drops, Pool }
 
-    public int Progress { get; private set; }
+    public int Progress;
     public bool _reverse;
 
     private const float _radius = 5;
@@ -26,7 +26,7 @@ class VenomSquallSurge(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         hints.Add(_reverse ? "Order: stack -> mid -> spread" : "Order: spread -> mid -> stack");
     }
@@ -53,12 +53,12 @@ class VenomSquallSurge(BossModule module) : BossComponent(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.VenomSurge:
+            case (uint)AID.VenomSurge:
                 _reverse = true;
                 break;
-            case AID.VenomDrops:
+            case (uint)AID.VenomDrops:
                 if (NextMechanic == Mechanic.Drops)
                     ++Progress;
                 break;
@@ -67,13 +67,13 @@ class VenomSquallSurge(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.VenomRain:
+            case (uint)AID.VenomRain:
                 if (NextMechanic == Mechanic.Rain)
                     ++Progress;
                 break;
-            case AID.VenomPool:
+            case (uint)AID.VenomPool:
                 if (NextMechanic == Mechanic.Pool)
                     ++Progress;
                 break;

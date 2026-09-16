@@ -83,6 +83,18 @@ internal sealed unsafe class WorldOverlayNode : IDisposable
         }
     }
 
+    // Changes the visible portion of the current backing texture without replacing the texture.
+    // This lets the renderer retain a capacity-sized allocation across window resizes.
+    public void SetDisplaySize(int width, int height)
+    {
+        if (_disposed || _part == null || _imageNode == null)
+        {
+            return;
+        }
+
+        SetImageSize(width, height);
+    }
+
     public void ReleaseTexture()
     {
         if (_asset != null)

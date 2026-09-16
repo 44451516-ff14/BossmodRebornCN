@@ -1,4 +1,4 @@
-﻿namespace BossMod.Foray.CriticalEngagement.CE202AcceptNoImitators;
+﻿namespace BossMod.Dawntrail.Foray.CriticalEngagement.CE202AcceptNoImitators;
 
 public enum OID : uint
 {
@@ -359,7 +359,6 @@ sealed class ShapeshiftingSupercell : Components.GenericRotatingAOE
     }
 }
 
-[SkipLocalsInit]
 sealed class CE202AcceptNoImitatorsStates : StateMachineBuilder
 {
     public CE202AcceptNoImitatorsStates(BossModule module) : base(module)
@@ -380,25 +379,8 @@ sealed class CE202AcceptNoImitatorsStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
-    StatesType = typeof(CE202AcceptNoImitatorsStates),
-    ConfigType = null, // replace null with typeof(MetamorphConfig) if applicable
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID),
-    StatusIDType = typeof(SID),
-    TetherIDType = null, // replace null with typeof(TetherID) if applicable
-    IconIDType = typeof(IconID),
-    PrimaryActorOID = (uint)OID.Metamorph,
-    Contributors = "Equilius",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.Foray,
-    GroupType = BossModuleInfo.GroupType.CriticalEngagement,
-    GroupID = 1093u,
-    NameID = 63u,
-    SortOrder = 15,
-    PlanLevel = 0)]
-[SkipLocalsInit]
-public sealed class CE202AcceptNoImitators(WorldState ws, Actor primary) : BossModule(ws, primary, new(500.000f, -310.000f), new ArenaBoundsCircle(25f))
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.Metamorph, Contributors = "Equilius", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 1093u, NameID = 63u)]
+public sealed class CE202AcceptNoImitators(WorldState ws, Actor primary) : BossModule(ws, primary, new(500f, -310f), new ArenaBoundsCircle(25f))
 {
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 25f);
 }

@@ -1,6 +1,5 @@
 namespace BossMod;
 
-[SkipLocalsInit]
 public sealed class SDIntersection : ShapeDistance // max distance func
 {
     private readonly ShapeDistance[] zones;
@@ -36,7 +35,6 @@ public sealed class SDIntersection : ShapeDistance // max distance func
     public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
 }
 
-[SkipLocalsInit]
 public sealed class SDUnion : ShapeDistance // min distance func
 {
     private readonly ShapeDistance[] zones;
@@ -83,7 +81,6 @@ public sealed class SDUnion : ShapeDistance // min distance func
     public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
 }
 
-[SkipLocalsInit]
 public sealed class SDInvertedUnion : ShapeDistance // -min distance func
 {
     private readonly ShapeDistance[] zones;
@@ -130,7 +127,6 @@ public sealed class SDInvertedUnion : ShapeDistance // -min distance func
     public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
 }
 
-[SkipLocalsInit]
 public sealed class SDInvertedUnionOffset : ShapeDistance // -min distance func
 {
     private readonly ShapeDistance[] zones;
@@ -180,7 +176,6 @@ public sealed class SDInvertedUnionOffset : ShapeDistance // -min distance func
 }
 
 // outside of a union of shapes, useful for preventing stacking spread markers
-[SkipLocalsInit]
 public sealed class SDOutsideOfUnion : ShapeDistance
 {
     private readonly ShapeDistance[] zones;

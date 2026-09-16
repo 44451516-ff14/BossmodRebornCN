@@ -58,7 +58,6 @@ sealed class Wallop(BossModule module) : Components.SimpleAOEs(module, (uint)AID
 
 sealed class ZombieSergeant(BossModule module) : Components.Adds(module, (uint)OID.ZombieStormSergeant);
 
-[SkipLocalsInit]
 sealed class D174SirenStates : StateMachineBuilder
 {
     public D174SirenStates(BossModule module) : base(module)
@@ -93,7 +92,6 @@ sealed class D174SirenStates : StateMachineBuilder
     NameID = 2265u,
     SortOrder = 4,
     PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class D174Siren : BossModule
 {
     public D174Siren(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

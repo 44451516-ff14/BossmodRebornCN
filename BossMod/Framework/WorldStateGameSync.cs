@@ -392,14 +392,14 @@ sealed class WorldStateGameSync : IDisposable
         var friendly = chr == null || ActionManager.ClassifyTarget(chr) != ActionManager.TargetCategory.Enemy;
         var isDead = obj->IsDead();
         var hasAggro = _playerEnmity.IndexOf(obj->EntityId) >= 0;
-        var target = chr != null ? SanitizedObjectID(chr->GetTargetId()) : 0; // note: when changing targets, we want to see changes immediately rather than wait for server response
+        var target = chr != null ? SanitizedObjectID(chr->GetTargetId()) : 0ul; // note: when changing targets, we want to see changes immediately rather than wait for server response
         var modelState = chr != null ? new ActorModelState(chr->Timeline.ModelState, chr->Timeline.AnimationState[0], chr->Timeline.AnimationState[1]) : default;
         var eventState = obj->EventState;
         var radius = obj->GetRadius();
         var mountId = chr != null ? chr->Mount.MountId : 0u;
         var forayInfoPtr = chr != null ? chr->GetForayInfo() : null;
         var forayInfo = forayInfoPtr == null ? default : new ActorForayInfo(forayInfoPtr->Level, forayInfoPtr->Element);
-        var isOpenTreasure = obj->ObjectKind == ObjectKind.Treasure && ((Treasure*)obj)->Flags.HasFlag(Treasure.TreasureFlags.Opened);
+        var isOpenTreasure = obj->ObjectKind == ObjectKind.Treasure && (((Treasure*)obj)->Flags & Treasure.TreasureFlags.Opened) != 0;
 
         // currently we don't care about Actors that are not targetable, not an enemy or more than 50 yalms away because the raycasting is stupidly expensive
         // targetable returns true even if the actor is not actually targetable due to being too far away
@@ -540,7 +540,7 @@ sealed class WorldStateGameSync : IDisposable
                 ref var s = ref sm->Status[i];
                 if (s.StatusId != default)
                 {
-                    var dur = Math.Min(MathF.Abs(s.RemainingTime), 100000f);
+                    var dur = Math.Min(Math.Abs(s.RemainingTime), 100000f);
                     ActorStatus curStatus = new(s.StatusId, s.Param, _ws.CurrentTime.AddSeconds(dur), SanitizedObjectID(s.SourceObject));
                     UpdateActorStatus(act, i, ref curStatus);
                 }
@@ -971,6 +971,8 @@ sealed class WorldStateGameSync : IDisposable
         {
             _ws.Execute(new ClientState.OpBlueMageSpellsChange([.. actionManager->BlueMageActions]));
         }
+        // CN FFXIVClientStructs 当前尚无 ActionManager.BeastmasterPets 字段，暂不同步 BST 号角数据。
+
         var levels = uiState->PlayerState.ClassJobLevels;
         if (!MemoryExtensions.SequenceEqual(_ws.Client.ClassJobLevels.AsSpan(), levels))
         {

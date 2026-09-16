@@ -1,6 +1,5 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-[SkipLocalsInit]
 abstract class LimitCut(BossModule module, double alphaDelay) : Components.GenericBaitAway(module)
 {
     private enum State { Teleport, Alpha, Blasty }
@@ -12,8 +11,8 @@ abstract class LimitCut(BossModule module, double alphaDelay) : Components.Gener
     private WPos _prevPos;
     private DateTime _nextHit;
 
-    private static readonly AOEShapeCone _shapeAlpha = new(30f, 45f.Degrees());
-    private static readonly AOEShapeRect _shapeBlasty = new(55f, 5f);
+    private readonly AOEShapeCone _shapeAlpha = new(30f, 45f.Degrees());
+    private readonly AOEShapeRect _shapeBlasty = new(55f, 5f);
 
     public override void Update()
     {

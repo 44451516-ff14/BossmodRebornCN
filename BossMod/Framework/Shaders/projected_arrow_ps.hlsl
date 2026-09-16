@@ -146,8 +146,9 @@ float4 main(PS_INPUT input) : SV_Target
     depthCoord = clamp(depthCoord, int2(0, 0), depthSize - int2(1, 1));
     float sceneDepth = SceneDepthTexture.Load(int3(depthCoord, 0));
     bool sceneDepthValid = sceneDepth > 0.0f;
+    bool referencePlaneProjection = input.projectionHeight <= 0.0f;
 
-    if (sceneDepthValid && SceneInfoParams.x > 0.5f)
+    if (!referencePlaneProjection && sceneDepthValid && SceneInfoParams.x > 0.5f)
     {
         float3 sceneInfo = SceneInfoTexture.Load(int3(depthCoord, 0)).rgb;
         clip(max(sceneInfo.r, max(sceneInfo.g, sceneInfo.b)) - SceneInfoParams.y);
@@ -156,7 +157,7 @@ float4 main(PS_INPUT input) : SV_Target
     // Defaults also keep FXC's conservative definite-assignment pass quiet across clip paths.
     float3 world = 0.0f;
     float aaLimit = 0.02f;
-    if (input.projectionHeight > 0.0f)
+    if (!referencePlaneProjection)
     {
         if (!sceneDepthValid)
             clip(-1.0f);

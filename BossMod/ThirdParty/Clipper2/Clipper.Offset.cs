@@ -26,7 +26,6 @@ public enum EndType
     Round
 }
 
-[SkipLocalsInit]
 public sealed class ClipperOffset
 {
     private sealed class Group
@@ -100,9 +99,10 @@ public sealed class ClipperOffset
     private const double arc_const = 0.002; // <-- 1/500
 
     private readonly List<Group> _groupList = [];
-    private Path64 pathOut = null!;
+    // Completed contours are copied into the cleanup engine immediately. Only
+    // this scratch path is reused; caller-visible results are owned by the caller.
+    private readonly Path64 pathOut = [];
     private readonly PathD _normals = [];
-    private readonly Paths64 _solution = [];
     private Paths64? _solutionPaths;
     private PolyTree64? _solutionTree;
     private Clipper64? _cleanupClipper;
@@ -166,7 +166,7 @@ public ClipperBase.ZCallback64? ZCallback;
     public void Clear()
     {
         _groupList.Clear();
-        _solution.Clear();
+        pathOut.Clear();
         _solutionPaths = null;
         _solutionTree = null;
     }
@@ -225,13 +225,13 @@ public ClipperBase.ZCallback64? ZCallback;
     {
         if (_groupList.Count == 0)
             return;
-        var solutionCapacity = CalcSolutionCapacity();
 
-        // make sure the offset delta is significant
-        if (Math.Abs(delta) < 0.5)
+        // Preserve the existing no-op ownership contract: flat results refer to
+        // the group's input copies, never to the reusable output scratch path.
+        if (Math.Abs(delta) < 0.5 && _solutionTree == null)
         {
-            var target = _solutionTree == null ? _solutionPaths! : _solution;
-            target.EnsureCapacity(solutionCapacity);
+            var target = _solutionPaths!;
+            target.EnsureCapacity(CalcSolutionCapacity());
             var groups = CollectionsMarshal.AsSpan(_groupList);
             var len = groups.Length;
             for (var i = 0; i < len; ++i)
@@ -243,46 +243,47 @@ public ClipperBase.ZCallback64? ZCallback;
                     target.Add(paths[j]);
                 }
             }
-            if (_solutionTree == null)
-            {
-                return;
-            }
-        }
-        else
-        {
-            _solution.EnsureCapacity(solutionCapacity);
-            _delta = delta;
-            _mitLimSqr = (MiterLimit <= 1 ?
-              2.0 : 2.0 / Clipper.Sqr(MiterLimit));
-
-            var groupSpan = CollectionsMarshal.AsSpan(_groupList);
-            var len = groupSpan.Length;
-            for (var i = 0; i < len; ++i)
-            {
-                DoGroupOffset(groupSpan[i]);
-            }
-        }
-
-        if (_groupList.Count == 0)
-        {
             return;
         }
 
-        var pathsReversed = CheckPathsReversed();
-        var fillRule = pathsReversed ? FillRule.Negative : FillRule.Positive;
-
-        // clean up self-intersections ...
         var c = _cleanupClipper ??= new Clipper64();
         c.Clear();
-        c.PreserveCollinear = PreserveCollinear;
-        c.ReverseSolution = ReverseSolution != pathsReversed;
-#if USINGZ
-  c.ZCallback = ZCB;
-#endif
         try
         {
-            c.AddSubject(_solution);
-            _solution.Clear();
+            var groups = CollectionsMarshal.AsSpan(_groupList);
+            var count = groups.Length;
+            if (Math.Abs(delta) < 0.5)
+            {
+                for (var i = 0; i < count; ++i)
+                {
+                    c.AddSubject(groups[i].inPaths);
+                }
+            }
+            else
+            {
+                _delta = delta;
+                _mitLimSqr = (MiterLimit <= 1 ?
+                  2.0 : 2.0 / Clipper.Sqr(MiterLimit));
+                for (var i = 0; i < count; ++i)
+                {
+                    DoGroupOffset(groups[i]);
+                }
+            }
+
+            if (_groupList.Count == 0)
+            {
+                return;
+            }
+
+            // Set these after offset callbacks, as before. The final union still
+            // receives every contour in its original submission order.
+            var pathsReversed = CheckPathsReversed();
+            var fillRule = pathsReversed ? FillRule.Negative : FillRule.Positive;
+            c.PreserveCollinear = PreserveCollinear;
+            c.ReverseSolution = ReverseSolution != pathsReversed;
+#if USINGZ
+            c.ZCallback = ZCB;
+#endif
             if (_solutionTree != null)
             {
                 c.Execute(ClipType.Union, fillRule, _solutionTree);
@@ -294,15 +295,30 @@ public ClipperBase.ZCallback64? ZCallback;
         }
         finally
         {
-            _solution.Clear();
+            // Also release partially submitted contours when a delta callback throws.
+            pathOut.Clear();
             c.Clear();
         }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void PrepareOutputPath(int capacity)
+    {
+        pathOut.Clear();
+        pathOut.EnsureCapacity(capacity);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void SubmitOutputPath()
+    {
+        var clipper = _cleanupClipper!;
+        clipper.EnsureAdditionalVertexCapacity(pathOut.Count);
+        clipper.AddPath(pathOut, PathType.Subject);
     }
 
     public void Execute(double delta, Paths64 solution)
     {
         solution.Clear();
-        _solution.Clear();
         _solutionPaths = solution;
         _solutionTree = null;
         try
@@ -320,7 +336,6 @@ public ClipperBase.ZCallback64? ZCallback;
         solutionTree.Clear();
         _solutionPaths = null;
         _solutionTree = solutionTree;
-        _solution.Clear();
         try
         {
             ExecuteInternal(delta);
@@ -632,7 +647,9 @@ public ClipperBase.ZCallback64? ZCallback;
 #endif
             for (var i = 1; i < steps; ++i) // ie 1 less than steps
             {
-                offsetVec = new PointD(offsetVecX * _stepCos - _stepSin * offsetVecY, offsetVecX * _stepSin + offsetVecY * _stepCos);
+                var nextX = offsetVecX * _stepCos - _stepSin * offsetVecY;
+                offsetVecY = offsetVecX * _stepSin + offsetVecY * _stepCos;
+                offsetVecX = nextX;
 #if USINGZ
                 output[i] = new Point64(ptX + offsetVecX, ptY + offsetVecY, pt.Z);
 #else
@@ -651,7 +668,9 @@ public ClipperBase.ZCallback64? ZCallback;
 #endif
         for (var i = 1; i < steps; ++i)
         {
-            offsetVec = new PointD(offsetVecX * _stepCos - _stepSin * offsetVecY, offsetVec.x * _stepSin + offsetVec.y * _stepCos);
+            var nextX = offsetVecX * _stepCos - _stepSin * offsetVecY;
+            offsetVecY = offsetVecX * _stepSin + offsetVecY * _stepCos;
+            offsetVecX = nextX;
 #if USINGZ
             pathOut.Add(new Point64(ptX + offsetVecX, ptY + offsetVecY, pt.Z));
 #else
@@ -829,7 +848,7 @@ public ClipperBase.ZCallback64? ZCallback;
     private void OffsetPolygon(Group group, Path64 path)
     {
         int cnt = path.Count, prev = cnt - 1;
-        pathOut = [with(EstimateOutputCapacity(cnt + 8, 1))];
+        PrepareOutputPath(EstimateOutputCapacity(cnt + 8, 1));
 
         if (DeltaCallback == null)
         {
@@ -847,7 +866,7 @@ public ClipperBase.ZCallback64? ZCallback;
                 OffsetPointCallback(group, path, i, ref prev);
             }
         }
-        _solution.Add(pathOut);
+        SubmitOutputPath();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -872,7 +891,7 @@ public ClipperBase.ZCallback64? ZCallback;
         }
         normals[0] = new PointD(-closingNormal.x, -closingNormal.y);
 
-        pathOut = [with(EstimateOutputCapacity(path.Count + 8, 1))];
+        PrepareOutputPath(EstimateOutputCapacity(path.Count + 8, 1));
         var points = CollectionsMarshal.AsSpan(path);
         normals = CollectionsMarshal.AsSpan(_normals);
         var prev = 0;
@@ -881,14 +900,14 @@ public ClipperBase.ZCallback64? ZCallback;
         {
             OffsetPointFixed(ref points[i], ref points[prev], ref normals[i], ref normals[prev], i, ref prev);
         }
-        _solution.Add(pathOut);
+        SubmitOutputPath();
     }
 
     private void OffsetOpenPath(Group group, Path64 path)
     {
         var sourceCount = path.Count;
         var capacity = sourceCount <= (int.MaxValue - 8) / 2 ? sourceCount * 2 + 8 : sourceCount;
-        pathOut = [with(EstimateOutputCapacity(capacity, 2))];
+        PrepareOutputPath(EstimateOutputCapacity(capacity, 2));
         var highI = path.Count - 1;
 
         if (DeltaCallback != null)
@@ -988,7 +1007,7 @@ public ClipperBase.ZCallback64? ZCallback;
             }
         }
 
-        _solution.Add(pathOut);
+        SubmitOutputPath();
     }
 
     private void DoGroupOffset(Group group)
@@ -1045,21 +1064,22 @@ public ClipperBase.ZCallback64? ZCallback;
                         if (group.endType == EndType.Round)
                         {
                             var steps = (int)Math.Ceiling(_stepsPerRad * DoublePI);
-                            pathOut = Clipper.Ellipse(pt, absDelta, absDelta, steps);
-#if USINGZ
-                            pathOut = InternalClipper.SetZ(pathOut, pt.Z);
-#endif
+                            Clipper.Ellipse(pt, absDelta, absDelta, steps, pathOut);
                         }
                         else
                         {
                             var d = (int)Math.Ceiling(_groupDelta);
                             var r = new Rect64(pt.X - d, pt.Y - d, pt.X + d, pt.Y + d);
-                            pathOut = r.AsPath();
-#if USINGZ
-                            pathOut = InternalClipper.SetZ(pathOut, pt.Z);
-#endif
+                            PrepareOutputPath(4);
+                            pathOut.Add(new Point64(r.left, r.top));
+                            pathOut.Add(new Point64(r.right, r.top));
+                            pathOut.Add(new Point64(r.right, r.bottom));
+                            pathOut.Add(new Point64(r.left, r.bottom));
                         }
-                        _solution.Add(pathOut);
+#if USINGZ
+                        InternalClipper.SetZ(pathOut, pt.Z);
+#endif
+                        SubmitOutputPath();
                         continue; // end of offsetting a single point
                     }
                 case 2 when group.endType == EndType.Joined:

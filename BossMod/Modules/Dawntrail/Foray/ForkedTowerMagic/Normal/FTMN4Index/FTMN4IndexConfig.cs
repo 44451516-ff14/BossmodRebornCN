@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Dawntrail.Foray.ForkedTowerMagic.Normal.FTMN4Index;
 
 [ConfigDisplay(Order = 0x174, Parent = typeof(DawntrailConfig))]
-public sealed class IndexConfig : ConfigNode
+public sealed class FTMN4IndexConfig : ConfigNode
 {
     [PropertyDisplay("Force AI to target closest add when spawned")]
     public bool ForceAddTargeting = false;

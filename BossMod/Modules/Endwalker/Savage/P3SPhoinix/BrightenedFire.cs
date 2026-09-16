@@ -2,11 +2,11 @@
 
 // state related to brightened fire mechanic
 // this helper relies on waymarks 1-4
-class BrightenedFire(BossModule module) : Components.CastCounter(module, (uint)AID.BrightenedFireAOE)
+sealed class BrightenedFire(BossModule module) : Components.CastCounter(module, (uint)AID.BrightenedFireAOE)
 {
     private readonly int[] _playerOrder = new int[8]; // 0 if unknown, 1-8 otherwise
 
-    private const float _aoeRange = 7;
+    private const float _aoeRange = 7f;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {

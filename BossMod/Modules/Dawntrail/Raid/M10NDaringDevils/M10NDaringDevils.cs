@@ -1,4 +1,4 @@
-namespace BossMod.DawnTrail.Raid.M10NDaringDevils;
+namespace BossMod.Dawntrail.Raid.M10NDaringDevils;
 
 // =========================
 // Core mechanic components
@@ -156,25 +156,10 @@ sealed class XtremeSpectacularRaidwide(BossModule module) : Components.RaidwideC
 // Module
 // =========================
 
-[ModuleInfo(
-    BossModuleInfo.Maturity.Contributed,
-    StatesType = typeof(M10NDaringDevilsStates),
-    ConfigType = null,
-    ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID),
-    StatusIDType = typeof(SID),
-    TetherIDType = typeof(TetherID),
-    IconIDType = typeof(IconID),
-    PrimaryActorOID = (uint)OID.RedHot,
-    Contributors = "JoeSparkx",
-    Expansion = BossModuleInfo.Expansion.Dawntrail,
-    Category = BossModuleInfo.Category.Raid,
-    GroupType = BossModuleInfo.GroupType.CFC,
-    GroupID = 1070u,
-    NameID = 14370u)]
+[ModuleInfo(BossModuleInfo.Maturity.Contributed, PrimaryActorOID = (uint)OID.RedHot, Contributors = "JoeSparkx", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1070u, NameID = 14370u)]
 public sealed class M10NDaringDevils(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsSquare(20f))
 {
-    public Actor? DeepBlue { get; private set; }
+    public Actor? DeepBlue;
 
     protected override void UpdateModule()
     {

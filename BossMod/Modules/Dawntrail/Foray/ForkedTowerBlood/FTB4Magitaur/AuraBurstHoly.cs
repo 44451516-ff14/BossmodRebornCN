@@ -28,7 +28,7 @@ sealed class AuraBurstHoly(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (isHoly is bool holy)
         {
@@ -237,7 +237,7 @@ sealed class ArcaneRecoil(BossModule module) : BossComponent(module)
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        Arena.Actors(targets, Colors.Vulnerable);
+        Arena.Actors(targets, Colors.Vulnerable, drawWorld: true);
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
@@ -297,7 +297,7 @@ sealed class ArcaneRecoil(BossModule module) : BossComponent(module)
 
 sealed class AuraBurstHolyRaidwide(BossModule module) : Components.RaidwideCastsDelay(module, [(uint)AID.AuraBurstVisual, (uint)AID.HolyVisual], [(uint)AID.AuraBurst, (uint)AID.Holy], 1d)
 {
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (Activation == default)
         {

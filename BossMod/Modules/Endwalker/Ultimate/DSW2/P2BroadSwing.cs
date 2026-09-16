@@ -4,7 +4,7 @@ sealed class P2BroadSwing(BossModule module) : Components.GenericAOEs(module, (u
 {
     private readonly List<AOEInstance> _aoes = [];
 
-    private static readonly AOEShapeCone _aoe = new(40f, 60f.Degrees());
+    private readonly AOEShapeCone _aoe = new(40f, 60f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

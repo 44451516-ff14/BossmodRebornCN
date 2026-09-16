@@ -1,4 +1,4 @@
-﻿namespace BossMod.Modules.Dawntrail.Extreme.Ex8Enuo;
+﻿namespace BossMod.Dawntrail.Extreme.Ex8Enuo;
 
 //TODO: This needs a way to move the source to the other side of the target.
 sealed class NaughtGrowsWildCharge(BossModule module) : Components.InverseWildCharge(module, 3f, 6f)

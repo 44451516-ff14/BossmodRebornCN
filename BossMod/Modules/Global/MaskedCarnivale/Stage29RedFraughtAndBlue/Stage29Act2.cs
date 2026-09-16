@@ -79,11 +79,11 @@ sealed class KnockbackPull(BossModule module) : Components.GenericKnockback(modu
     {
         void AddSource(Kind kind)
             => _kb = [new(spell.LocXZ, 6f, Module.CastFinishAt(spell), kind: kind)];
-        if (spell.Action.ID == (uint)AID.FerrofluidKB)
+        if (spell.Action.ID is var id && id == (uint)AID.FerrofluidKB)
         {
             AddSource(Kind.AwayFromOrigin);
         }
-        else if (spell.Action.ID == (uint)AID.FerrofluidAttract)
+        else if (id == (uint)AID.FerrofluidAttract)
         {
             AddSource(Kind.TowardsOrigin);
         }
@@ -103,8 +103,8 @@ sealed class FluidBall(BossModule module) : Components.SimpleAOEs(module, (uint)
 
 sealed class FluidConvectionDynamic(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeDonut donut = new(10f, 40f);
-    private static readonly AOEShapeCircle circle = new(6f);
+    private readonly AOEShapeDonut donut = new(10f, 40f);
+    private readonly AOEShapeCircle circle = new(6f);
     public AOEInstance[] AOE = [];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOE;
@@ -132,9 +132,27 @@ sealed class FluidConvectionDynamic(BossModule module) : Components.GenericAOEs(
     }
 }
 
-sealed class Hints2(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
-    public override void AddGlobalHints(GlobalHints hints)
+    private bool isDoomed;
+
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
+    {
+        if (status.ID == (uint)SID.Throttle)
+        {
+            isDoomed = true;
+        }
+    }
+
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
+    {
+        if (status.ID == (uint)SID.Throttle)
+        {
+            isDoomed = false;
+        }
+    }
+
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var leftHands = Module.Enemies((uint)OID.LeftHand);
         var countL = leftHands.Count;
@@ -153,22 +171,18 @@ sealed class Hints2(BossModule module) : BossComponent(module)
         {
             var right = rightHands[0];
             if (!right.IsDead)
+            {
                 hints.Add($"{right.Name} will do multiple raidwides, kill it fast!");
+            }
         }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (actor.FindStatus((uint)SID.Throttle) != null)
+        if (isDoomed)
+        {
             hints.Add("You were doomed! Cleanse it with Exuviation."); // it is called throttle, but works exactly like any cleansable doom
-    }
-}
-
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"{Module.PrimaryActor.Name} will cast Throttle on you which needs to be\ncleansed with Excuviation. It will also spawn two hands which need to be\nkilled asap. Focus the left hand first because it will drain all your MP.");
+        }
     }
 }
 
@@ -189,8 +203,7 @@ sealed class Stage29Act2States : StateMachineBuilder
             .ActivateOnEnter<KnockbackPull>()
             .ActivateOnEnter<FluidBall>()
             .ActivateOnEnter<Unwind>()
-            .ActivateOnEnter<Hints2>()
-            .DeactivateOnEnter<Hints>();
+            .ActivateOnEnter<Hints>();
     }
 }
 
@@ -199,7 +212,11 @@ public sealed class Stage29Act2 : BossModule
 {
     public Stage29Act2(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {
-        ActivateComponent<Hints>();
+        _prePullHints =
+        [
+            $"{PrimaryActor.Name} will cast Throttle on you which needs to be cleansed with Excuviation.",
+            "It will also spawn two hands which need to be killed asap. Focus the left hand first because it will drain all your MP."
+        ];
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
@@ -208,4 +225,8 @@ public sealed class Stage29Act2 : BossModule
         Arena.Actors(Enemies((uint)OID.LeftHand));
         Arena.Actors(Enemies((uint)OID.RightHand));
     }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

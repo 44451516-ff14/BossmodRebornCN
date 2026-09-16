@@ -8,8 +8,8 @@ abstract class PureFire(BossModule module, uint aid) : Components.SimpleAOEs(mod
 sealed class NPureFire(BossModule module) : PureFire(module, (uint)AID.NPureFireAOE);
 sealed class SPureFire(BossModule module) : PureFire(module, (uint)AID.SPureFireAOE);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.NBoss, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 878, NameID = 11393, SortOrder = 5, PlanLevel = 90)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.NBoss, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 878u, NameID = 11393u, SortOrder = 5, PlanLevel = 90)]
 public sealed class C013NShadowcaster(WorldState ws, Actor primary) : V1SildihnSubterrane.V14ZelessGah.VCZelessGah(ws, primary);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.SBoss, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 879, NameID = 11393, SortOrder = 5, PlanLevel = 90)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.SBoss, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 879u, NameID = 11393u, SortOrder = 5, PlanLevel = 90)]
 public sealed class C013SShadowcaster(WorldState ws, Actor primary) : V1SildihnSubterrane.V14ZelessGah.VCZelessGah(ws, primary);

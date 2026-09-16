@@ -1,22 +1,22 @@
 ﻿namespace BossMod.Endwalker.Savage.P12S2PallasAthena;
 
-class Gaiaochos(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GaiaochosTransition, new AOEShapeDonut(7f, 30f));
+sealed class Gaiaochos(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GaiaochosTransition, new AOEShapeDonut(7f, 30f));
 
 // TODO: we could show it earlier, casters do PATE 11D2 ~4s before starting cast
-class UltimaRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.UltimaRay, new AOEShapeRect(20f, 3f));
+sealed class UltimaRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.UltimaRay, new AOEShapeRect(20f, 3f));
 
-class MissingLink(BossModule module) : Components.Chains(module, (uint)TetherID.MissingLink, (uint)AID.MissingLink);
+sealed class MissingLink(BossModule module) : Components.Chains(module, (uint)TetherID.MissingLink, (uint)AID.MissingLink);
 
-class DemiParhelion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DemiParhelionAOE, new AOEShapeCircle(2f));
+sealed class DemiParhelion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DemiParhelionAOE, new AOEShapeCircle(2f));
 
-class Geocentrism(BossModule module) : Components.GenericAOEs(module)
+sealed class Geocentrism(BossModule module) : Components.GenericAOEs(module)
 {
     public int NumConcurrentAOEs;
     private readonly List<AOEInstance> _aoes = [];
 
-    private static readonly AOEShapeRect _shapeLine = new(20f, 2f);
-    private static readonly AOEShapeCircle _shapeCircle = new(2f);
-    private static readonly AOEShapeDonut _shapeDonut = new(3f, 7f);
+    private readonly AOEShapeRect _shapeLine = new(20f, 2f);
+    private readonly AOEShapeCircle _shapeCircle = new(2f);
+    private readonly AOEShapeDonut _shapeDonut = new(3f, 7f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -55,7 +55,7 @@ class Geocentrism(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class DivineExcoriation(BossModule module) : Components.UniformStackSpread(module, default, 1f)
+sealed class DivineExcoriation(BossModule module) : Components.UniformStackSpread(module, default, 1f)
 {
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
@@ -70,7 +70,7 @@ class DivineExcoriation(BossModule module) : Components.UniformStackSpread(modul
     }
 }
 
-class GaiaochosEnd(BossModule module) : BossComponent(module)
+sealed class GaiaochosEnd(BossModule module) : BossComponent(module)
 {
     public bool Finished;
 
@@ -83,7 +83,7 @@ class GaiaochosEnd(BossModule module) : BossComponent(module)
 }
 
 // TODO: assign pairs, draw wrong pairs as aoes
-class UltimaBlow(BossModule module) : Components.CastCounter(module, (uint)AID.UltimaBlow)
+sealed class UltimaBlow(BossModule module) : Components.CastCounter(module, (uint)AID.UltimaBlow)
 {
     private readonly List<(Actor source, Actor target)> _tethers = [];
     private BitMask _vulnerable;

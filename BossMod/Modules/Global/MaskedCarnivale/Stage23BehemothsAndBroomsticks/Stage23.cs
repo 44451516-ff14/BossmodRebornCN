@@ -27,14 +27,6 @@ sealed class Trounce(BossModule module) : Components.SimpleAOEs(module, (uint)AI
 sealed class Comet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Comet, 10f);
 sealed class EclipticMeteor(BossModule module) : Components.RaidwideCast(module, (uint)AID.EclipticMeteor, "Use Diamondback!");
 
-sealed class Hints(BossModule module) : BossComponent(module)
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        hints.Add($"The {Module.PrimaryActor.Name} will use Ecliptic Meteor.\nUse Diamondback to survive it.\nYou can start the Final Sting combination at about 40% health left.\n(Off-guard->Bristle->Moonflute->Final Sting)");
-    }
-}
-
 sealed class Stage23States : StateMachineBuilder
 {
     public Stage23States(BossModule module) : base(module)
@@ -44,16 +36,23 @@ sealed class Stage23States : StateMachineBuilder
             .ActivateOnEnter<Maelstrom>()
             .ActivateOnEnter<Trounce>()
             .ActivateOnEnter<Comet>()
-            .ActivateOnEnter<EclipticMeteor>()
-            .DeactivateOnEnter<Hints>();
+            .ActivateOnEnter<EclipticMeteor>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 633, NameID = 8124)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 633u, NameID = 8124u)]
 public sealed class Stage23 : BossModule
 {
     public Stage23(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {
-        ActivateComponent<Hints>();
+        _prePullHints =
+        [
+            $"The {PrimaryActor.Name} will use Ecliptic Meteor. Use Diamondback to survive it.",
+            "You can start the Final Sting combination at about 40% health left. (Off-guard->Bristle->Moonflute->Final Sting)"
+        ];
     }
+
+    private readonly string[] _prePullHints;
+
+    public override string[] PrePullHints => _prePullHints;
 }

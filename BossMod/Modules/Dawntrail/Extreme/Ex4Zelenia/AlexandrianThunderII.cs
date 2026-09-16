@@ -63,7 +63,7 @@ sealed class AlexandrianThunderII(BossModule module) : Components.GenericRotatin
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (NumCasts != 0)
             return;

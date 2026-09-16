@@ -1,6 +1,5 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-[SkipLocalsInit]
 abstract class P4ForcedMarchDebuffs(BossModule module) : BossComponent(module)
 {
     public enum Debuff { None, LightBeacon, LightFollow, DarkBeacon, DarkFollow }

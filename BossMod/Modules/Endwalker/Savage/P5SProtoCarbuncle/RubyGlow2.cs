@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Savage.P5SProtoCarbuncle;
 
 // note: we start showing magic aoe only after double rush resolve
-class RubyGlow2(BossModule module) : RubyGlowCommon(module, (uint)AID.DoubleRush)
+sealed class RubyGlow2(BossModule module) : RubyGlowCommon(module, (uint)AID.DoubleRush)
 {
     private string _hint = "";
 
@@ -28,7 +28,7 @@ class RubyGlow2(BossModule module) : RubyGlowCommon(module, (uint)AID.DoubleRush
         return aoes;
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_hint.Length > 0)
             hints.Add(_hint);

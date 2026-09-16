@@ -68,7 +68,7 @@ class AddEnrage(BossModule module) : BossComponent(module)
 {
     private DateTime _enrage;
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_enrage != default)
             hints.Add($"Enrage in {(_enrage - WorldState.CurrentTime).TotalSeconds:f1}s");

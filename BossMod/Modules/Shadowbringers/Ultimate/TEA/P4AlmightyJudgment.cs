@@ -1,7 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
 // note: sets are 2s apart, 8-9 casts per set
-[SkipLocalsInit]
 sealed class P4AlmightyJudgment(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(25)];

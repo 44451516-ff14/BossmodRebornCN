@@ -20,7 +20,7 @@ sealed class EnaeroEndeath(BossModule module) : Components.GenericKnockback(modu
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (_delayed != Kind.None)
         {

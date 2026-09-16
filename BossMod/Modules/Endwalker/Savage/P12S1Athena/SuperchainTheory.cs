@@ -16,10 +16,10 @@ abstract class SuperchainTheory(BossModule module) : BossComponent(module)
     public int NumCasts;
     private readonly List<Actor> _pendingTethers = []; // unfortunately, sometimes tether targets are created after tether events - recheck such tethers every frame
 
-    private static readonly AOEShapeCircle _shapeCircle = new(7f);
-    private static readonly AOEShapeDonut _shapeDonut = new(6f, 70f);
-    private static readonly AOEShapeCone _shapeSpread = new(100f, 15f.Degrees()); // TODO: verify angle
-    private static readonly AOEShapeCone _shapePair = new(100f, 20f.Degrees()); // TODO: verify angle
+    private readonly AOEShapeCircle _shapeCircle = new(7f);
+    private readonly AOEShapeDonut _shapeDonut = new(6f, 70f);
+    private readonly AOEShapeCone _shapeSpread = new(100f, 15f.Degrees()); // TODO: verify angle
+    private readonly AOEShapeCone _shapePair = new(100f, 20f.Degrees()); // TODO: verify angle
 
     public List<Chain> ImminentChains()
     {

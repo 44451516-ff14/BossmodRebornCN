@@ -358,8 +358,8 @@ public sealed class VeynWAR(RotationModuleManager manager, Actor player) : Rotat
             Hints.ActionsToExecute.Push(BozjaActionID.GetNormal(BozjaHolsterID.BannerHonoredSacrifice), Player, ActionQueue.Priority.Low + (int)OGCDPriority.LostBanner);
 
         // ai hints for positioning
-        var goalST = primaryTarget != null ? AIHints.GoalSingleTarget(primaryTarget, 3) : null;
-        var goalAOE = Hints.GoalAOECircle(3);
+        var goalST = primaryTarget != null ? Hints.GoalSingleTarget(primaryTarget, Player, World.Actors, 3f) : null;
+        var goalAOE = Hints.GoalAOECircle(3f);
         var goal = aoeStrategy switch
         {
             AOEStrategy.SingleTarget => goalST,
@@ -374,7 +374,7 @@ public sealed class VeynWAR(RotationModuleManager manager, Actor player) : Rotat
     {
         if (prio != GCDPriority.None)
         {
-            var delay = !Player.InCombat && World.Client.CountdownRemaining > 0 ? Math.Max(0, World.Client.CountdownRemaining.Value - EffectApplicationDelay(aid)) : 0;
+            var delay = !Player.InCombat && World.Client.CountdownRemaining > 0 ? Math.Max(0, World.Client.CountdownRemaining.Value - ApplicationDelay.Get((uint)aid)) : 0;
             Hints.ActionsToExecute.Push(ActionID.MakeSpell(aid), target, ActionQueue.Priority.High + (int)prio, delay: delay);
             if (prio > NextGCDPrio)
             {
@@ -391,34 +391,6 @@ public sealed class VeynWAR(RotationModuleManager manager, Actor player) : Rotat
             Hints.ActionsToExecute.Push(ActionID.MakeSpell(aid), target, float.IsNaN(prioOverride) ? basePrio + (int)prio : prioOverride);
         }
     }
-
-    // TODO: consider moving to class definitions and autogenerating?
-    private float EffectApplicationDelay(WAR.AID aid) => aid switch
-    {
-        WAR.AID.Bloodwhetting => 0.40f,
-        WAR.AID.Holmgang => 0.45f,
-        WAR.AID.MythrilTempest => 0.49f,
-        WAR.AID.HeavySwing => 0.53f,
-        WAR.AID.StormEye => 0.62f,
-        WAR.AID.Orogeny => 0.62f,
-        WAR.AID.Onslaught => 0.62f,
-        WAR.AID.Overpower => 0.62f,
-        WAR.AID.Upheaval => 0.62f,
-        WAR.AID.Maim => 0.62f,
-        WAR.AID.FellCleave => 0.62f,
-        WAR.AID.Equilibrium => 0.62f,
-        WAR.AID.ThrillOfBattle => 0.62f,
-        WAR.AID.Tomahawk => 0.71f,
-        WAR.AID.InnerChaos => 0.94f,
-        WAR.AID.PrimalRuination => 1.06f,
-        WAR.AID.PrimalWrath => 1.15f,
-        WAR.AID.PrimalRend => 1.16f,
-        WAR.AID.LandWaker => 1.34f,
-        WAR.AID.ChaoticCyclone => 1.43f,
-        WAR.AID.StormPath => 1.52f,
-        WAR.AID.Decimate => 1.83f,
-        _ => 0
-    };
 
     // all our aoes have the same shape (except for PR, but we don't really care about its aoe damage)
     private int NumTargetsHitByAOE() => Hints.NumPriorityTargetsInAOECircle(Player.Position, 5);

@@ -40,9 +40,9 @@ public enum AID : uint
 sealed class BambooSplits(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(8)];
-    private static readonly AOEShapeRect rect = new(28f, 2.5f);
-    private static readonly AOEShapeCircle circle = new(11f);
-    private static readonly AOEShapeCircle bamboospawn = new(3f);
+    private readonly AOEShapeRect rect = new(28f, 2.5f);
+    private readonly AOEShapeCircle circle = new(11f);
+    private readonly AOEShapeCircle bamboospawn = new(3f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -56,7 +56,7 @@ sealed class BambooSplits(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
-        if (state == 0x00010002)
+        if (state == 0x00010002u)
         {
             void AddAOE(AOEShape shape, Angle offset) => _aoes.Add(new(shape, actor.Position.Quantized(), actor.Rotation + offset, WorldState.FutureTime(7d)));
             switch (actor.OID)
@@ -119,13 +119,22 @@ sealed class TheSliceIsRightStates : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<BambooSplits>()
             .ActivateOnEnter<DaigoroGilJump>()
-            .Raw.Update = () => module.PrimaryActor.IsDeadOrDestroyed || !module.Arena.InBounds(module.Raid.Player()!.Position);
+            .Raw.Update = () => Module.PrimaryActor.IsDeadOrDestroyed || !Module.Arena.InBounds(Module.Raid.Player()!.Position);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.GoldSaucer, GroupID = 181, NameID = 9066)]
-public sealed class TheSliceIsRight(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.GoldSaucer, GroupID = 181u, NameID = 9066u)]
+public sealed class TheSliceIsRight : BossModule
 {
-    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(70.5f, -36f), 15f * CosPI.Pi28th, 28)]);
+    public TheSliceIsRight(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private TheSliceIsRight(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(70.56401f, -35.954f), 15.257507f, 28, 1.3f.Degrees())]) { WorldProjectionHeight = 0f, Y = -4.48f, BorderY = -4.48f };
+        return (arena.Center, arena);
+    }
+
     protected override bool CheckPull() => Arena.InBounds(Raid.Player()!.Position); // only activate module if player is taking part in the event
 }

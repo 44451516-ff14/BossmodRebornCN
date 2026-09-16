@@ -4,5 +4,5 @@ sealed class MaledictionOfAgony(BossModule module) : Components.CastCounter(modu
 sealed class BloodyWraith(BossModule module) : Components.Adds(module, (uint)OID.BloodyWraith);
 sealed class MistyWraith(BossModule module) : Components.Adds(module, (uint)OID.MistyWraith);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 761, NameID = 9755, PlanLevel = 80)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 761u, NameID = 9755u, PlanLevel = 80)]
 public class DRS5Phantom(WorldState ws, Actor primary) : Phantom(ws, primary);

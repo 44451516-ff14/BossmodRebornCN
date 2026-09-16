@@ -1,6 +1,5 @@
 namespace BossMod.Dawntrail.Extreme.Ex7Doomtrain;
 
-[SkipLocalsInit]
 sealed class ArenaChanges(BossModule module) : BossComponent(module)
 {
     public uint Car = 1u;

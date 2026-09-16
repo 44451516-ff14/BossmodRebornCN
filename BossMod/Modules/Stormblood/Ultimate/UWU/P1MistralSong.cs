@@ -2,7 +2,7 @@
 
 // TODO: this assumes everyone shares the cleave, OT is front; other strategies have people avoid it
 // TODO: verify width
-class P1MistralSongBoss(BossModule module) : Components.GenericWildCharge(module, 5, (uint)AID.MistralSongBoss, 40)
+sealed class P1MistralSongBoss(BossModule module) : Components.GenericWildCharge(module, 5, (uint)AID.MistralSongBoss, 40)
 {
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
@@ -19,7 +19,7 @@ class P1MistralSongBoss(BossModule module) : Components.GenericWildCharge(module
 // TODO: generalize wild-charge to support this
 // TODO: for adds version, there doesn't seem to be an indication of which sister targets which player - so we just guess... it doesn't matter for usual strat where targets stack
 // TODO: verify width
-class P1MistralSongAdds(BossModule module) : Components.CastCounter(module, (uint)AID.MistralSongAdds)
+sealed class P1MistralSongAdds(BossModule module) : Components.CastCounter(module, (uint)AID.MistralSongAdds)
 {
     private readonly UWUConfig _config = Service.Config.Get<UWUConfig>();
     private readonly List<Actor> _sisters = module.Enemies((uint)OID.GarudaSister);
@@ -72,4 +72,4 @@ class P1MistralSongAdds(BossModule module) : Components.CastCounter(module, (uin
     bool IsClosest(Actor actor) => ActiveAOEs().Any(aoe => Raid.WithoutSlot(false, true, true).InShape(_shape, aoe.origin, aoe.rotation).Closest(aoe.origin) == actor);
 }
 
-class P1GreatWhirlwind(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GreatWhirlwind, 8f);
+sealed class P1GreatWhirlwind(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GreatWhirlwind, 8f);

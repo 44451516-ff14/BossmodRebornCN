@@ -4,7 +4,7 @@ sealed class DominionSlash(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = [];
 
-    private static readonly AOEShapeCircle _shape = new(6f);
+    private readonly AOEShapeCircle _shape = new(6f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);
 

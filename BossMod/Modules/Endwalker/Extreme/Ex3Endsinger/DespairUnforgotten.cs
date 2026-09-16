@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex3Endsigner;
 
-class DespairUnforgotten(BossModule module) : BossComponent(module)
+sealed class DespairUnforgotten(BossModule module) : BossComponent(module)
 {
     private enum State { None, Donut, Spread, Flare, Stack }
 
-    public bool Done { get; private set; }
+    public bool Done;
     private readonly State[] _states = new State[PartyState.MaxPartySize * 4];
     private readonly int[] _doneCasts = new int[PartyState.MaxPartySize];
 
@@ -33,9 +33,9 @@ class DespairUnforgotten(BossModule module) : BossComponent(module)
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.RewindDespair:
+            case (uint)SID.RewindDespair:
                 var rings = status.Extra switch
                 {
                     0x17C => 1,
@@ -53,16 +53,16 @@ class DespairUnforgotten(BossModule module) : BossComponent(module)
                 if (slot >= 0)
                     _states[slot * 4 + 3] = _states[slot * 4 + 3 - rings];
                 break;
-            case SID.EchoesOfNausea:
+            case (uint)SID.EchoesOfNausea:
                 ModifyState(actor, State.Donut);
                 break;
-            case SID.EchoesOfBefoulment:
+            case (uint)SID.EchoesOfBefoulment:
                 ModifyState(actor, State.Spread);
                 break;
-            case SID.EchoesOfFuture:
+            case (uint)SID.EchoesOfFuture:
                 ModifyState(actor, State.Flare);
                 break;
-            case SID.EchoesOfBenevolence:
+            case (uint)SID.EchoesOfBenevolence:
                 ModifyState(actor, State.Stack);
                 break;
         }
@@ -70,12 +70,12 @@ class DespairUnforgotten(BossModule module) : BossComponent(module)
 
     public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.EchoesOfNausea:
-            case SID.EchoesOfBefoulment:
-            case SID.EchoesOfFuture:
-            case SID.EchoesOfBenevolence:
+            case (uint)SID.EchoesOfNausea:
+            case (uint)SID.EchoesOfBefoulment:
+            case (uint)SID.EchoesOfFuture:
+            case (uint)SID.EchoesOfBenevolence:
                 var slot = WorldState.Party.FindSlot(actor.InstanceID);
                 if (slot >= 0)
                     Done |= ++_doneCasts[slot] > 3;

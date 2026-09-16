@@ -1,6 +1,5 @@
 namespace BossMod.Heavensward.Alliance.A21ArachneEve;
 
-[SkipLocalsInit]
 sealed class Tremblor(BossModule module) : Components.ConcentricAOEs(module, [new AOEShapeCircle(10.5f), new AOEShapeDonut(10.5f, 20.5f), new AOEShapeDonut(20.5f, 30.5f)])
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)

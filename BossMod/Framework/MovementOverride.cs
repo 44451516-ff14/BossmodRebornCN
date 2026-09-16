@@ -36,7 +36,7 @@ public sealed unsafe class MovementOverride : IDisposable
     public WDir ActualMove; // actual movement direction, as of last input read
 
     private readonly IDalamudPluginInterface _dalamud;
-    private readonly ActionTweaksConfig _tweaksConfig = Service.Config.Get<ActionTweaksConfig>();
+    private static readonly ActionTweaksConfig _tweaksConfig = Service.Config.Get<ActionTweaksConfig>();
     private bool? _forcedControlState;
     public bool LegacyMode;
     private bool[]? _navmeshPathIsRunning;
@@ -50,7 +50,7 @@ public sealed unsafe class MovementOverride : IDisposable
         ActionTweaksConfig.ModifierKey.Ctrl => ImGui.GetIO().KeyCtrl,
         ActionTweaksConfig.ModifierKey.Alt => ImGui.GetIO().KeyAlt,
         ActionTweaksConfig.ModifierKey.Shift => ImGui.GetIO().KeyShift,
-        ActionTweaksConfig.ModifierKey.M12 => UIInputData.Instance()->UIFilteredCursorInputs.MouseButtonHeldFlags.HasFlag(MouseButtonFlags.LBUTTON | MouseButtonFlags.RBUTTON),
+        ActionTweaksConfig.ModifierKey.M12 => (MouseButtonFlags.LBUTTON | MouseButtonFlags.RBUTTON) is var buttons && (UIInputData.Instance()->UIFilteredCursorInputs.MouseButtonHeldFlags & buttons) == buttons,
         _ => false,
     };
 

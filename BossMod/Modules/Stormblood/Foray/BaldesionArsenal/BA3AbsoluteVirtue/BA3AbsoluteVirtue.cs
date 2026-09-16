@@ -9,11 +9,19 @@ sealed class AernsWynavExplosion(BossModule module) : Components.CastHint(module
 sealed class MeteorEnrageCounter(BossModule module) : Components.CastCounter(module, (uint)AID.MeteorEnrageRepeat);
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.BaldesionArsenal, GroupID = 639, NameID = 7976, PlanLevel = 70, SortOrder = 4)]
-public sealed class BA3AbsoluteVirtue(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class BA3AbsoluteVirtue : BossModule
 {
-    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-175, 314), 29.95f, 96), new Rectangle(new(-146f, 314f), 0.8f, 5.8f), new Rectangle(new(-175f, 285f), 6f, 1.05f)],
-    [new Rectangle(new(-144.4f, 314f), 0.8f, 5.8f), new Polygon(new(-144.85f, 306.75f), 1.5f, 8, 22.5f.Degrees()), new Polygon(new(-144.85f, 321.25f), 1.5f, 8, 22.5f.Degrees()),
-    new Rectangle(new(-206, 314), 1.525f, 20f)]);
+    public BA3AbsoluteVirtue(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private BA3AbsoluteVirtue(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(-175, 314), 29.95f, 96), new Rectangle(new(-146f, 314f), 0.8f, 5.8f), new Rectangle(new(-175f, 285f), 6f, 1.05f)],
+            [new Rectangle(new(-144.4f, 314f), 0.8f, 5.8f), new Polygon(new(-144.85f, 306.75f), 1.5f, 8, 22.5f.Degrees()), new Polygon(new(-144.85f, 321.25f), 1.5f, 8, 22.5f.Degrees()),
+            new Rectangle(new(-206, 314), 1.525f, 20f)]);
+        return (arena.Center, arena);
+    }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

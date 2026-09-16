@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UWU;
 
-class P4UltimateAnnihilation(BossModule module) : BossComponent(module)
+sealed class P4UltimateAnnihilation(BossModule module) : BossComponent(module)
 {
     private readonly List<Actor> _orbs = module.Enemies((uint)OID.Aetheroplasm);
 

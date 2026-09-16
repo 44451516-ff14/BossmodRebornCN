@@ -12,7 +12,6 @@ using BossMod.Shadowbringers.Trial.T04WarriorOfLightP1;
 
 namespace BossMod.Shadowbringers.Trial.T04WarriorOfLightP2;
 
-[SkipLocalsInit]
 sealed class T04WarriorOfLightP2States : StateMachineBuilder
 {
     public T04WarriorOfLightP2States(BossModule module) : base(module)
@@ -66,5 +65,4 @@ sealed class T04WarriorOfLightP2States : StateMachineBuilder
     SortOrder = 2,
     PlanLevel = 0)]
 
-[SkipLocalsInit]
 public sealed class T04WarriorOfLightP2(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsSquare(20f));

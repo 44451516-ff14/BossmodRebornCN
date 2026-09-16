@@ -1,13 +1,13 @@
 ﻿namespace BossMod.Endwalker.Savage.P10SPandaemonium;
 
-class Turrets(BossModule module) : Components.GenericKnockback(module, (uint)AID.PealOfCondemnation, 1, stopAfterWall: true)
+sealed class Turrets(BossModule module) : Components.GenericKnockback(module, (uint)AID.PealOfCondemnation, 1, stopAfterWall: true)
 {
     private readonly Actor?[] _turrets = new Actor?[8]; // pairs in order of activation
     private DateTime _activation;
     private BitMask _forbidden;
 
     private const float _distance = 17f;
-    private static readonly AOEShapeRect _shape = new(50f, 2.5f);
+    private readonly AOEShapeRect _shape = new(50f, 2.5f);
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {

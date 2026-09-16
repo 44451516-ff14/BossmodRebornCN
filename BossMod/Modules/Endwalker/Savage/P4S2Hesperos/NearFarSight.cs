@@ -1,11 +1,11 @@
 ﻿namespace BossMod.Endwalker.Savage.P4S2Hesperos;
 
 // state related to nearsight & farsight mechanics
-class NearFarSight : BossComponent
+sealed class NearFarSight : BossComponent
 {
     public enum State { Near, Far, Done }
 
-    public State CurState { get; private set; }
+    public State CurState;
     private BitMask _targets;
     private BitMask _inAOE;
 
@@ -62,12 +62,13 @@ class NearFarSight : BossComponent
         {
             if (_targets[i])
             {
-                Arena.Actor(player, Colors.Danger);
+                Arena.Actor(player, Colors.Danger, drawWorld: true);
                 Arena.ZoneCircleOutline(player.Position, _aoeRadius, Colors.Danger);
             }
             else
             {
-                Arena.Actor(player, _inAOE[i] ? Colors.PlayerInteresting : Colors.PlayerGeneric);
+                var isinAOE = _inAOE[i];
+                Arena.Actor(player, isinAOE ? Colors.PlayerInteresting : Colors.PlayerGeneric, drawWorld: isinAOE ? true : null);
             }
         }
     }

@@ -1,6 +1,5 @@
 ﻿namespace BossMod.Endwalker.Savage.P7SAgdistis;
 
-[SkipLocalsInit]
 sealed class Border(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance[] _aoe = [];

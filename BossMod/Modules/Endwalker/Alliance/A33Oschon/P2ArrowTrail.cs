@@ -1,6 +1,6 @@
 namespace BossMod.Endwalker.Alliance.A33Oschon;
 
-class P2ArrowTrail(BossModule module) : Components.Exaflare(module, new AOEShapeRect(10f, 5f))
+sealed class P2ArrowTrail(BossModule module) : Components.Exaflare(module, new AOEShapeRect(10f, 5f))
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

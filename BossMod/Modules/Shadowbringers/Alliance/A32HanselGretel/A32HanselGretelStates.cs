@@ -1,6 +1,5 @@
 ﻿namespace BossMod.Shadowbringers.Alliance.A32HanselGretel;
 
-[SkipLocalsInit]
 sealed class A32HanselGretelStates : StateMachineBuilder
 {
     public A32HanselGretelStates(A32HanselGretel module) : base(module)

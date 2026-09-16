@@ -130,7 +130,7 @@ sealed class VrilOrbs(BossModule module) : BossComponent(module)
         return filteredorbs;
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var orbs = GetOrbs(Module);
         var count = orbs.Count;

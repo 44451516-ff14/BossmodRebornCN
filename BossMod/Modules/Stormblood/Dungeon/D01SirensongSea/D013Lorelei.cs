@@ -19,7 +19,6 @@ public enum AID : uint
     VoidWaterIII = 8040 // Lorelei->location, 3.5s cast, range 8 circle
 }
 
-[SkipLocalsInit]
 sealed class VirginTearsArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly AOEShapeDonut donut = new(15.75f, 22f);
@@ -55,7 +54,6 @@ sealed class VirginTearsArenaChange(BossModule module) : Components.GenericAOEs(
     }
 }
 
-[SkipLocalsInit]
 sealed class MorbidAdvance(BossModule module) : Components.ActionDrivenForcedMarch(module, (uint)AID.MorbidAdvance, 3f, default, 1f)
 {
     private readonly Voidzone _aoe = module.FindComponent<Voidzone>()!;
@@ -110,7 +108,6 @@ sealed class MorbidAdvance(BossModule module) : Components.ActionDrivenForcedMar
     }
 }
 
-[SkipLocalsInit]
 sealed class MorbidRetreat(BossModule module) : Components.ActionDrivenForcedMarch(module, (uint)AID.MorbidRetreat, 3f, 180f.Degrees(), 1f)
 {
     private readonly Voidzone _aoe = module.FindComponent<Voidzone>()!;
@@ -165,11 +162,8 @@ sealed class MorbidRetreat(BossModule module) : Components.ActionDrivenForcedMar
     }
 }
 
-[SkipLocalsInit]
 sealed class SomberMelody(BossModule module) : Components.RaidwideCast(module, (uint)AID.SomberMelody);
-[SkipLocalsInit]
 sealed class VoidWaterIII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidWaterIII, 8f);
-[SkipLocalsInit]
 sealed class Voidzone(BossModule module) : Components.Voidzone(module, 7f, GetVoidzones)
 {
     private static Actor[] GetVoidzones(BossModule module)
@@ -191,7 +185,6 @@ sealed class Voidzone(BossModule module) : Components.Voidzone(module, 7f, GetVo
     }
 }
 
-[SkipLocalsInit]
 sealed class D013LoreleiStates : StateMachineBuilder
 {
     public D013LoreleiStates(BossModule module) : base(module)
@@ -223,7 +216,6 @@ GroupID = 238u,
 NameID = 6074u,
 SortOrder = 3,
 PlanLevel = 0)]
-[SkipLocalsInit]
 public sealed class D013Lorelei : BossModule
 {
     public D013Lorelei(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

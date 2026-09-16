@@ -132,7 +132,7 @@ public sealed class NormalMovement : RotationModule
         // forcing the player to move directly toward the arena center works fine in this basic case, but would be terrible for other content
         //   - hunt marks can be hundreds of units away
         //   - araid/foray bosses are often located on an isolated platform with a clientpath leading to it, so VBM would just run directly forward into the abyss
-        if (Bossmods.ActiveModule is { Info.Category: BossModuleInfo.Category.Dungeon, StateMachine.ActivePhase: not null } module && !module.Arena.InBounds(Player.Position))
+        if (Bossmods.ActiveModule is { Info.Category: BossModuleInfo.Category.Dungeon or BossModuleInfo.Category.VariantCriterion, StateMachine.ActivePhase: not null } module && !module.Arena.InBounds(Player.Position))
         {
             Hints.ForcedMovement = Player.DirectionTo(module.Arena.Center).ToVec3();
             return;
@@ -185,7 +185,23 @@ public sealed class NormalMovement : RotationModule
 
         // fallback so that we can automatically start some quest battles xddd (the RP rotation is a component on the module, which isn't active until we pull, so no goal zone)
         if (Hints.GoalZones.Count == 0 && primaryTarget is { IsAlly: false, IsDead: false } && Player.Statuses.Any(static s => RotationModuleManager.TransformationStatuses.Contains(s.ID)))
-            Hints.GoalZones.Add(AIHints.GoalSingleTarget(primaryTarget, 3f));
+        {
+            Hints.GoalZones.Add(Hints.GoalSingleTarget(primaryTarget, Player, World.Actors, 3f));
+        }
+
+        if (Hints.FindEnemy(primaryTarget) is { } enemy && enemy.Actor.TargetID == Player.InstanceID)
+        {
+            if (enemy.CanMove && enemy.DesiredPosition is { } pos)
+                Hints.GoalZones.Add(Hints.PullTargetToLocation(enemy.Actor, pos, Player, GCD, 0.5f));
+
+            if (enemy.DesiredRotation is { } rot)
+            {
+                var dist = (enemy.Actor.Position - Player.Position).Length();
+                var goal = enemy.Actor.Position + rot.ToDirection() * dist;
+                var sh = new SDPrecisePosition(goal, new(0f, 1f), Hints.PathfindMapBounds.MapResolution, Player.Position, 0.1f);
+                Hints.GoalZones.Add(p => sh.Distance(p) > 0f ? 0.5f : 0f);
+            }
+        }
 
         var speed = World.Client.MoveSpeed;
         var destinationOpt = strategy.Option(Track.Destination);

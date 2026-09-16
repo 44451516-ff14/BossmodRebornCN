@@ -16,13 +16,13 @@ public enum AID : uint
     Skylight = 35446 // AngelosMikros->self, 3.0s cast, range 6 circle
 }
 
-class RingOfSkylight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RingOfSkylight, new AOEShapeDonut(8f, 30f));
-class RingOfSkylightInterruptHint(BossModule module) : Components.CastInterruptHint(module, (uint)AID.RingOfSkylight);
-class SkylightCross(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SkylightCross, new AOEShapeCross(60f, 4f));
-class SkylightCrossInterruptHint(BossModule module) : Components.CastInterruptHint(module, (uint)AID.SkylightCross);
-class Skylight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Skylight, 6f);
+sealed class RingOfSkylight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RingOfSkylight, new AOEShapeDonut(8f, 30f));
+sealed class RingOfSkylightInterruptHint(BossModule module) : Components.CastInterruptHint(module, (uint)AID.RingOfSkylight);
+sealed class SkylightCross(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SkylightCross, new AOEShapeCross(60f, 4f));
+sealed class SkylightCrossInterruptHint(BossModule module) : Components.CastInterruptHint(module, (uint)AID.SkylightCross);
+sealed class Skylight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Skylight, 6f);
 
-public class A30Trash2Pack1States : StateMachineBuilder
+public sealed class A30Trash2Pack1States : StateMachineBuilder
 {
     public A30Trash2Pack1States(A30Trash2Pack1 module) : base(module)
     {
@@ -50,13 +50,21 @@ public class A30Trash2Pack1States : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.AngelosPack1, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 962, NameID = 12481, SortOrder = 5)]
-public class A30Trash2Pack1(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.AngelosPack1, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 962u, NameID = 12481u, SortOrder = 5)]
+public sealed class A30Trash2Pack1 : BossModule
 {
-    private static readonly Shape[] union = [new Rectangle(new(800f, 786f), 21f, 13.5f), new Rectangle(new(800f, 767f), 7.5f, 10f), new Rectangle(new(800f, 758f), 10f, 4f)];
-    private static readonly Shape[] difference = [new Square(new(811.25f, 787f), 1.5f), new Square(new(811.25f, 777.4f), 1.5f), new Square(new(788.75f, 787f), 1.5f), new Square(new(788.75f, 777.4f), 1.5f),
-    new Circle(new(793.4f, 762.75f), 1.25f), new Circle(new(806.6f, 762.75f), 1.25f)];
-    private static readonly ArenaBoundsCustom arena = new(union, difference);
+    public A30Trash2Pack1(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private A30Trash2Pack1(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        Shape[] union = [new Rectangle(new(800f, 786f), 21f, 13.5f), new Rectangle(new(800f, 767f), 7.5f, 10f), new Rectangle(new(800f, 758f), 10f, 4f)];
+        Shape[] difference = [new Square(new(811.25f, 787f), 1.5f), new Square(new(811.25f, 777.4f), 1.5f), new Square(new(788.75f, 787f), 1.5f), new Square(new(788.75f, 777.4f), 1.5f),
+            new Circle(new(793.4f, 762.75f), 1.25f), new Circle(new(806.6f, 762.75f), 1.25f)];
+        var arena = new ArenaBoundsCustom(union, difference);
+        return (arena.Center, arena);
+    }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
@@ -65,7 +73,7 @@ public class A30Trash2Pack1(WorldState ws, Actor primary) : BossModule(ws, prima
     }
 }
 
-public class A30Trash2Pack2States : StateMachineBuilder
+public sealed class A30Trash2Pack2States : StateMachineBuilder
 {
     public A30Trash2Pack2States(A30Trash2Pack2 module) : base(module)
     {
@@ -86,8 +94,8 @@ public class A30Trash2Pack2States : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.AngelosPack2, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 962, NameID = 12481, SortOrder = 6)]
-public class A30Trash2Pack2(WorldState ws, Actor primary) : BossModule(ws, primary, new(800f, 909.75f), new ArenaBoundsSquare(19.5f))
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.AngelosPack2, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 962u, NameID = 12481u, SortOrder = 6)]
+public sealed class A30Trash2Pack2(WorldState ws, Actor primary) : BossModule(ws, primary, new(800f, 909.75f), new ArenaBoundsSquare(19.5f))
 {
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

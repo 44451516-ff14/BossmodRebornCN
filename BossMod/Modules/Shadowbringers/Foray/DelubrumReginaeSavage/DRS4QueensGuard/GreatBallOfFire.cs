@@ -6,8 +6,8 @@ sealed class GreatBallOfFire(BossModule module) : Components.GenericAOEs(module)
     private readonly List<Actor> _bigFlames = module.Enemies((uint)OID.ImmolatingFlame);
     private readonly DateTime _activation = module.WorldState.FutureTime(6.6d);
 
-    private static readonly AOEShapeCircle _shapeSmall = new(10f);
-    private static readonly AOEShapeCircle _shapeBig = new(18f);
+    private readonly AOEShapeCircle _shapeSmall = new(10f);
+    private readonly AOEShapeCircle _shapeBig = new(18f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

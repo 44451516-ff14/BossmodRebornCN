@@ -1,6 +1,5 @@
 ﻿namespace BossMod;
 
-[SkipLocalsInit]
 public static class ApplicationDelay
 {
     static readonly Dictionary<uint, float> _delay = [];

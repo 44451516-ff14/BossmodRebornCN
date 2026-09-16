@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P8S2;
 
-class NaturalAlignment(BossModule module) : Components.GenericStackSpread(module, true)
+sealed class NaturalAlignment(BossModule module) : Components.GenericStackSpread(module, true)
 {
     public enum Mechanic { None, StackSpread, FireIce }
 
@@ -52,7 +52,7 @@ class NaturalAlignment(BossModule module) : Components.GenericStackSpread(module
         base.Update();
     }
 
-    public override void AddGlobalHints(GlobalHints hints)
+    public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         if (CurMechanicProgress >= 2 || CurMechanicSource == null)
             return;
@@ -69,12 +69,12 @@ class NaturalAlignment(BossModule module) : Components.GenericStackSpread(module
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.InverseMagicks:
+            case (uint)SID.InverseMagicks:
                 _inverse.Set(Raid.FindSlot(actor.InstanceID));
                 break;
-            case SID.NaturalAlignmentMechanic:
+            case (uint)SID.NaturalAlignmentMechanic:
                 switch (status.Extra)
                 {
                     case 0x209: // initial application
@@ -115,15 +115,15 @@ class NaturalAlignment(BossModule module) : Components.GenericStackSpread(module
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.ForcibleTrifire:
-            case AID.ForcibleFireStack:
+            case (uint)AID.ForcibleTrifire:
+            case (uint)AID.ForcibleFireStack:
                 if (CurMechanicProgress == (CurMechanicInverted ? 1 : 0))
                     ++CurMechanicProgress;
                 break;
-            case AID.ForcibleDifreeze:
-            case AID.ForcibleFireSpread:
+            case (uint)AID.ForcibleDifreeze:
+            case (uint)AID.ForcibleFireSpread:
                 if (CurMechanicProgress == (CurMechanicInverted ? 0 : 1))
                     ++CurMechanicProgress;
                 break;

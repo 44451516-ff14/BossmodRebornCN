@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex2Hydaelyn;
 
-class Echoes(BossModule module) : Components.UniformStackSpread(module, 6f, default, 8, 8)
+sealed class Echoes(BossModule module) : Components.UniformStackSpread(module, 6f, default, 8, 8)
 {
     public int NumCasts;
 

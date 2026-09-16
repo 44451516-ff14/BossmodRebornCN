@@ -1,6 +1,5 @@
 ﻿namespace BossMod.Dawntrail.Foray.ForkedTowerMagic.Extreme.FTME1TwoHeadedAevis;
 
-[SkipLocalsInit]
 sealed class HissingResonance(BossModule module) : Components.GenericKnockback(module)
 {
     // knockbacks during CrossBlazeLoop, happens after BlazeFirst or BlazeFollowup cast (get knocked into donut / avoid cross)

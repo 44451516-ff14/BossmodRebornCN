@@ -422,22 +422,6 @@ sealed class SunkenTreasure(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Contributed,
-StatesType = typeof(Ad012DaryaTheSeamaidStates),
-ConfigType = null, // replace null with typeof(DaryaTheSeaMaidConfig) if applicable
-ObjectIDType = typeof(OID),
-ActionIDType = typeof(AID),
-StatusIDType = typeof(SID),
-TetherIDType = typeof(TetherID),
-IconIDType = typeof(IconID),
-PrimaryActorOID = (uint)OID.DaryaTheSeaMaid,
-Contributors = "",
-Expansion = BossModuleInfo.Expansion.Dawntrail,
-Category = BossModuleInfo.Category.VariantCriterion,
-GroupType = BossModuleInfo.GroupType.CFC,
-GroupID = 1084u,
-NameID = 14291u,
-SortOrder = 2,
-PlanLevel = 0)]
-[SkipLocalsInit]
-public sealed class DaryaTheSeaMaid(WorldState ws, Actor primary) : BossModule(ws, primary, new(375f, 530f), new ArenaBoundsSquare(20f));
+[ModuleInfo(BossModuleInfo.Maturity.Contributed, PrimaryActorOID = (uint)OID.DaryaTheSeaMaid, Contributors = "", Category = BossModuleInfo.Category.VariantCriterion,
+GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1084u, NameID = 14291u, SortOrder = 2)]
+public sealed class Ad012DaryaTheSeamaid(WorldState ws, Actor primary) : BossModule(ws, primary, new(375f, 530f), new ArenaBoundsSquare(20f));

@@ -6,14 +6,14 @@ sealed class FirebreatheRotating(BossModule module) : Components.GenericRotating
     private Angle _rotation;
     private DateTime _activation;
 
-    private static readonly AOEShapeCone cone = new(60f, 45f.Degrees());
+    private readonly AOEShapeCone cone = new(60f, 45f.Degrees());
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.FirebreatheRotating)
         {
             _rotation = spell.Rotation;
-            _activation = Module.CastFinishAt(spell, 0.7f);
+            _activation = Module.CastFinishAt(spell, 0.7d);
             InitIfReady(caster);
         }
     }
@@ -39,7 +39,7 @@ sealed class FirebreatheRotating(BossModule module) : Components.GenericRotating
     {
         if (_rotation != default && _increment != default)
         {
-            Sequences.Add(new(cone, source.Position.Quantized(), _rotation, _increment, _activation, 2f, 5));
+            Sequences.Add(new(cone, source.Position.Quantized(), _rotation, _increment, _activation, 2d, 5));
             _rotation = default;
             _increment = default;
         }

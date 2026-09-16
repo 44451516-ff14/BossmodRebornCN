@@ -1,6 +1,5 @@
 namespace BossMod.Dawntrail.Trial.T06Arkveld;
 
-[SkipLocalsInit]
 sealed class GuardianArkveldStates : StateMachineBuilder
 {
     public GuardianArkveldStates(BossModule module) : base(module)

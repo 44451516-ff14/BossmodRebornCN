@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Savage.P8S1Hephaistos;
 
 // TODO: add various hints for gaze/explode
-class Snake1(BossModule module) : PetrifactionCommon(module)
+sealed class Snake1(BossModule module) : PetrifactionCommon(module)
 {
     struct PlayerState
     {
@@ -42,18 +42,18 @@ class Snake1(BossModule module) : PetrifactionCommon(module)
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.FirstInLine:
+            case (uint)SID.FirstInLine:
                 SetPlayerOrder(Raid.FindSlot(actor.InstanceID), 0);
                 break;
-            case SID.SecondInLine:
+            case (uint)SID.SecondInLine:
                 SetPlayerOrder(Raid.FindSlot(actor.InstanceID), 1);
                 break;
-            case SID.EyeOfTheGorgon:
+            case (uint)SID.EyeOfTheGorgon:
                 SetPlayerExplode(Raid.FindSlot(actor.InstanceID), false);
                 break;
-            case SID.BloodOfTheGorgon:
+            case (uint)SID.BloodOfTheGorgon:
                 SetPlayerExplode(Raid.FindSlot(actor.InstanceID), true);
                 break;
         }
@@ -61,10 +61,10 @@ class Snake1(BossModule module) : PetrifactionCommon(module)
 
     public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.FirstInLine:
-            case SID.SecondInLine:
+            case (uint)SID.FirstInLine:
+            case (uint)SID.SecondInLine:
                 SetPlayerOrder(Raid.FindSlot(actor.InstanceID), -1);
                 break;
         }
@@ -73,7 +73,7 @@ class Snake1(BossModule module) : PetrifactionCommon(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         base.OnCastStarted(caster, spell);
-        if ((AID)spell.Action.ID == AID.Petrifaction)
+        if (spell.Action.ID == (uint)AID.Petrifaction)
         {
             if (ActiveGorgons.Count == 2)
                 InitAssignments(0);

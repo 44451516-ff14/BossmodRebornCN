@@ -1,6 +1,5 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-[SkipLocalsInit]
 public sealed class GroupAssignmentFourUnique : GroupAssignment
 {
     public static GroupAssignmentFourUnique Default()
@@ -32,7 +31,6 @@ public sealed class GroupAssignmentFourUnique : GroupAssignment
     }
 }
 
-[SkipLocalsInit]
 [ConfigDisplay(Order = 0x200, Parent = typeof(ShadowbringersConfig))]
 public sealed class TEAConfig() : ConfigNode()
 {

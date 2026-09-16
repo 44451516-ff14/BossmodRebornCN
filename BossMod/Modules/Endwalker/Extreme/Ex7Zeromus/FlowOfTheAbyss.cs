@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex7Zeromus;
 
-class FlowOfTheAbyssDimensionalSurge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlowOfTheAbyssDimensionalSurge, new AOEShapeRect(60f, 7f));
+sealed class FlowOfTheAbyssDimensionalSurge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlowOfTheAbyssDimensionalSurge, new AOEShapeRect(60f, 7f));
 
-class FlowOfTheAbyssSpreadStack(BossModule module) : Components.GenericStackSpread(module)
+sealed class FlowOfTheAbyssSpreadStack(BossModule module) : Components.GenericStackSpread(module)
 {
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
@@ -31,11 +31,11 @@ class FlowOfTheAbyssSpreadStack(BossModule module) : Components.GenericStackSpre
     }
 }
 
-class FlowOfTheAbyssAkhRhai(BossModule module) : Components.GenericAOEs(module)
+sealed class FlowOfTheAbyssAkhRhai(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
 
-    private static readonly AOEShapeCircle _shape = new(5f);
+    private readonly AOEShapeCircle _shape = new(5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -54,11 +54,11 @@ class FlowOfTheAbyssAkhRhai(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class ChasmicNails(BossModule module) : Components.GenericAOEs(module)
+sealed class ChasmicNails(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(5)];
 
-    private static readonly AOEShapeCone _shape = new(60f, 20f.Degrees());
+    private readonly AOEShapeCone _shape = new(60f, 20f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -85,7 +85,9 @@ class ChasmicNails(BossModule module) : Components.GenericAOEs(module)
         {
             _aoes.Add(new(_shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
             if (_aoes.Count == 5)
-                _aoes.Sort((x, y) => x.Activation.CompareTo(y.Activation));
+            {
+                SortHelpers.SortAOEByActivation(_aoes);
+            }
         }
     }
 

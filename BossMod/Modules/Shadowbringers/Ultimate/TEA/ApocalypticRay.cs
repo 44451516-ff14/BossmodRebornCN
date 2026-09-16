@@ -1,6 +1,5 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-[SkipLocalsInit]
 abstract class ApocalypticRay(BossModule module, bool faceCenter) : Components.GenericAOEs(module)
 {
     public Actor? Source;

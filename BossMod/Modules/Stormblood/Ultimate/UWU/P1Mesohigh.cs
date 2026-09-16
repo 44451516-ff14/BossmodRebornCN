@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UWU;
 
 // TODO :implement hints...
-class P1Mesohigh(BossModule module) : Components.CastCounter(module, (uint)AID.Mesohigh)
+sealed class P1Mesohigh(BossModule module) : Components.CastCounter(module, (uint)AID.Mesohigh)
 {
     private readonly List<Actor> _sisters = module.Enemies((uint)OID.GarudaSister);
     private const float _radius = 3;
