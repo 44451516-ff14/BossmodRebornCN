@@ -18,7 +18,7 @@ using FFXIVClientStructs.Interop;
 namespace BossMod;
 
 // utility that updates a world state to correspond to game state
-sealed class WorldStateGameSync : IDisposable
+sealed unsafe class WorldStateGameSync : IDisposable
 {
     private const int ObjectTableSize = 819; // should match CS; note that different ranges are used for different purposes - consider splitting?..
     private const uint InvalidEntityId = 0xE0000000;
