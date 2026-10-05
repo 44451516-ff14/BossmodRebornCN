@@ -38,7 +38,7 @@ public enum AID : uint
     PoisonBreath = 47639, // Helper->location, 9.0s cast, range 18 circle
     FulgurousFugue1 = 47640, // Helper->self, 9.0s cast, range 6-60 donut (says 6-60, at least 1st instance is hitbox radius)
     FulgurousFugue2 = 47629, // Helper->self, 11.0s cast, range 6-60 donut
-    FulgurousFugue3 = 50727, // Helper->self, 11.0s cast, range 6-60 donut
+    FulgurousFugue3 = 50727, // Helper->self, 11.0s cast, range 18-60 donut
 
     ThunderfrostTempest = 47739, // GreenHead/BlueHead->self, 5.0s cast, single-target
     _Ability_ThunderfrostTempest1 = 47740, // Helper->self, no cast, range 0 ???
@@ -82,9 +82,9 @@ public enum AID : uint
     _Ability_12 = 47700, // 4C18->self, 6.0s cast, single-target
     ArcaneBeacon1 = 47721, // 4C22->self, 0.7s cast, range 60 width 5 rect
     ArcaneBeacon2 = 47722, // 4C23->self, 0.7s cast, range 60 width 5 rect
+    TwoTerrorsVisual = 47697, // GreenHead/BlueHead->self, 7.0s cast, single-target
     TwoTerrors1 = 47702, // Helper->self, 7.0s cast, range 40 width 20 rect
     TwoTerrors2 = 47703, // Helper->self, 7.0s cast, range 40 width 10 rect
-    _Ability_TwoTerrors1 = 47697, // GreenHead/BlueHead->self, 7.0s cast, single-
 
     Summon = 47710, // GreenHead/BlueHead->self, 3.0s cast, single-target
     _Ability_13 = 47711, // 4C18->self, 3.0s cast, single-target

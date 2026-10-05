@@ -184,7 +184,7 @@ sealed class Steelsbreath(BossModule module) : Components.GenericKnockback(modul
         if (pcount != 0)
         {
             var pkbs = CollectionsMarshal.AsSpan(pendingkbs);
-            for (var i = 0; i < pcount; i++)
+            for (var i = 0; i < pcount; ++i)
             {
                 ref var pkb = ref pkbs[i];
                 var timeleft = (pkb.Expiration - WorldState.CurrentTime).TotalSeconds;

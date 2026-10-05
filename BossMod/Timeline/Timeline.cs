@@ -145,7 +145,7 @@ public sealed class Timeline
             ImGui.AlignTextToFramePadding();
             ImGui.Text("Condition filters:");
         }
-        for (var i = 0; i < _allFilters.Count; i++)
+        for (var i = 0; i < _allFilters.Count; ++i)
         {
             ImGui.SameLine();
             var k = _allFilters[i];

@@ -29,13 +29,13 @@ sealed class SunderingSpellblade(BossModule module) : Components.GenericAOEs(mod
 
         var aoelist = CollectionsMarshal.AsSpan(_aoes);
         var listcount = aoelist.Length;
-        for (var i = 0; i < listcount; i++)
+        for (var i = 0; i < listcount; ++i)
         {
             ref var sublistref = ref aoelist[i];
             var sublist = CollectionsMarshal.AsSpan(sublistref);
             var sublistcount = sublist.Length;
             var max = sublistcount > _max ? _max : sublistcount;
-            for (var j = 0; j < max; j++)
+            for (var j = 0; j < max; ++j)
             {
                 ref var sub = ref sublist[j];
                 sub.Color = j == 0 ? Colors.Danger : sub.Color;
@@ -51,10 +51,13 @@ sealed class SunderingSpellblade(BossModule module) : Components.GenericAOEs(mod
         if (spell.Action.ID == (uint)AID.SunderingSpellblade)
         {
             List<AOEInstance> aoes = [];
-            var initialPosition = caster.Position;
-            var initialRotation = caster.Rotation;
+            //var initialPosition = caster.Position;
+            //var initialRotation = caster.Rotation;
+            var initialPosition = spell.LocXZ;
+            var initialRotation = spell.Rotation;
             var initialTime = Module.CastFinishAt(spell);
 
+            /*
             var isLeft = initialPosition.X switch
             {
                 -25.008f => false,
@@ -65,8 +68,12 @@ sealed class SunderingSpellblade(BossModule module) : Components.GenericAOEs(mod
                 25.008f => true,
                 _ => false
             };
+            */
 
-            for (var i = 0; i < 9; i++)
+            var x = initialPosition.X;
+            var isLeft = x is >= -22.25f and <= -21.25f or >= -3.75f and <= -2.75f or >= 24.5f and <= 25.5f;
+
+            for (var i = 0; i < 9; ++i)
             {
                 var pos = i == 0 ? initialPosition : aoes[i - 1].Origin;
                 var rot = i == 0 ? initialRotation : aoes[i - 1].Rotation;
@@ -102,7 +109,7 @@ sealed class SunderingSpellblade(BossModule module) : Components.GenericAOEs(mod
 
             var aoelist = CollectionsMarshal.AsSpan(_aoes);
             var listcount = aoelist.Length;
-            for (var i = 0; i < listcount; i++)
+            for (var i = 0; i < listcount; ++i)
             {
                 ref var sublistref = ref aoelist[i];
                 var sublist = CollectionsMarshal.AsSpan(sublistref);
@@ -121,7 +128,7 @@ sealed class SunderingSpellblade(BossModule module) : Components.GenericAOEs(mod
     /*
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        for (var i = 0; i < _spots.Count; i++)
+        for (var i = 0; i < _spots.Count; ++i)
         {
             Arena.ZoneCircleOutline(_spots[i], 6f, 0xFFFFFFFF);
         }

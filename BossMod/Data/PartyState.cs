@@ -18,7 +18,7 @@ public sealed class PartyState
     public const int MaxAllianceSize = 24;
     public const int MaxAllies = 64;
 
-    public struct Member(ulong contentId, ulong instanceId, bool inCutscene)
+    public struct Member(ulong contentId, ulong instanceId, bool inCutscene) : IEquatable<Member>
     {
         public readonly ulong ContentId = contentId;
         public readonly ulong InstanceId = instanceId;
@@ -33,7 +33,7 @@ public sealed class PartyState
         public override readonly string ToString() => $"ContentID: {ContentId}, " + $"InstanceID: {InstanceId}";
         public readonly bool Equals(Member other) => this == other;
         public override readonly bool Equals(object? obj) => obj is Member other && Equals(other);
-        public override readonly int GetHashCode() => (ContentId, InstanceId, InCutscene).GetHashCode();
+        public override readonly int GetHashCode() => HashCode.Combine(ContentId, InstanceId, InCutscene);
     }
     public static readonly Member EmptySlot = new(default, default, false);
 

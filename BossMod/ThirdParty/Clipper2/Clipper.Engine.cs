@@ -4779,7 +4779,7 @@ public abstract class PolyPathBase(PolyPathBase? parent = null) : IEnumerable
             plural = "";
         }
         var result = $"Polytree with {_childs.Count} polygon{plural}.\n";
-        for (var i = 0; i < Count; i++)
+        for (var i = 0; i < Count; ++i)
         {
             if (_childs[i].Count > 0)
             {

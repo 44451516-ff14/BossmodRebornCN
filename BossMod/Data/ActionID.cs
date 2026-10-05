@@ -32,7 +32,7 @@ public enum ActionType : byte
 public enum Positional { Any, Flank, Rear, Front }
 
 // high byte is type, low 3 bytes is ID
-public readonly struct ActionID(uint raw)
+public readonly struct ActionID(uint raw) : IEquatable<ActionID>
 {
     public readonly uint Raw = raw;
     public readonly ActionType Type => (ActionType)(Raw >> 24);

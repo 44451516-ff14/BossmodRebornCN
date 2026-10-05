@@ -1,4 +1,4 @@
-﻿namespace BossMod.AI;
+namespace BossMod.AI;
 
 [ConfigDisplay(Name = "AI 配置 (AI 处于非常实验阶段，请自行承担风险！)", Order = 7)]
 sealed class AIConfig : ConfigNode
@@ -55,20 +55,18 @@ sealed class AIConfig : ConfigNode
     [PropertyDisplay("到目标的最大距离")]
     public float MaxDistanceToTarget = 2.6f;
 
-    [PropertyDisplay("启用自动离开(AFK)模式", tooltip: "如果处于非战斗状态，则启用自动离开模式。在离开状态下，AI将不会自动旋转或选择目标")]
+    [PropertyDisplay("到碰撞箱的最小距离")]
+    public float MinDistance = 0f;
+
+    [PropertyDisplay("到禁止区域的偏好距离", tooltip: "内部会限制为最多 3y，以保留有效的寻路效果。")]
+    public float PreferredDistance = 0f;
+
+    [PropertyDisplay("启用自动离开(AFK)模式", tooltip: "非战斗状态下启用自动离开模式。离开模式下，AI 不会执行自动循环或选择目标。")]
     public bool AutoAFK = false;
 
 
     [PropertyDisplay("启用非战斗离开(AFK)模式", tooltip: "非战斗状态下等待指定秒数后启用离开模式。任何移动将重置计时器，或在离开模式已激活时禁用该模式")]
     public float AFKModeTimer = 10;
-    [PropertyDisplay("到碰撞箱的最小距离")]
-    public float MinDistance = default;
-
-    [PropertyDisplay("到禁止区域的偏好距离")]
-    public float PreferredDistance = default;
-
-
-
     [PropertyDisplay("禁用障碍物地图加载", tooltip: "部分内容（如深层迷宫）可能需要启用此选项。")]
     public bool DisableObstacleMaps = false;
 

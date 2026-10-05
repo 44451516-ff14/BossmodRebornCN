@@ -126,11 +126,11 @@ sealed class Whirlwinds(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.GreatWhirlwindLarge)
+        if (spell.Action.ID is var id && id == (uint)AID.GreatWhirlwindLarge)
         {
             _bigWhirldwinds.Add(caster);
         }
-        else if (spell.Action.ID == (uint)AID.GreatWhirlwindSmall)
+        else if (id == (uint)AID.GreatWhirlwindSmall)
         {
             _smallWhirldwinds.Add(caster);
         }
@@ -138,11 +138,11 @@ sealed class Whirlwinds(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (actor.OID == (uint)OID.BitingWind && id == 0x1E3C)
+        if (actor.OID is var oid && oid == (uint)OID.BitingWind && id == 0x1E3C)
         {
             _smallWhirldwinds.Remove(actor);
         }
-        else if (actor.OID == (uint)OID.RavagingWind && id == 0x1E39)
+        else if (oid == (uint)OID.RavagingWind && id == 0x1E39)
         {
             _bigWhirldwinds.Remove(actor);
         }

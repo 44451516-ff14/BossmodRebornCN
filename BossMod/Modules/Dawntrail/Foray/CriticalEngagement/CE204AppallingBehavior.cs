@@ -167,7 +167,7 @@ sealed class EsotericInstruction(BossModule module) : Components.GenericAOEs(mod
 
             var count = _aoes.Count;
             var aoes = CollectionsMarshal.AsSpan(_aoes);
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 aoes[i].Activation = WorldState.FutureTime((swapping ? 6.6d : 0d) + 6d + i * 4.5d);
             }

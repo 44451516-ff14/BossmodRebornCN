@@ -91,7 +91,7 @@ sealed class Steelsbreath(BossModule module) : Components.GenericKnockback(modul
         {
             var kbs = CollectionsMarshal.AsSpan(_knockbacks);
             var count = kbs.Length;
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 Arena.TextWorld(kbs[i].Origin, $"{i + 1}", Colors.CardinalS, 12);
             }
@@ -177,7 +177,7 @@ sealed class Steelsforge(BossModule module) : Components.GenericAOEs(module)
         {
             var aoes = CollectionsMarshal.AsSpan(_aoes);
             var count = aoes.Length;
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 Arena.ZoneCircle(aoes[i].Origin, 2f, Colors.CardinalN);
             }

@@ -25,7 +25,7 @@ sealed class SparkPuddle(BossModule module) : Components.Voidzone(module, 10f, G
         var count = enemies.Count;
         var index = 0;
         var puddles = new Actor[count];
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             var z = enemies[i];
             if (z.EventState != 7)

@@ -67,6 +67,12 @@ sealed class P3BahamutPositioning(UCOB module) : BossComponent(module)
     public Angle? DesiredRotation;
     private readonly Actor _bahamut = module.BahamutPrime()!;
 
+    public void Reset()
+    {
+        DesiredPosition = null;
+        DesiredRotation = null;
+    }
+
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (hints.FindEnemy(_bahamut) is AIHints.Enemy b)

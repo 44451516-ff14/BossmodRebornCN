@@ -192,7 +192,7 @@ sealed class GaleForce(BossModule module) : Components.GenericAOEs(module)
             var aoes = CollectionsMarshal.AsSpan(_aoes);
             var len = aoes.Length;
 
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < len; ++i)
             {
                 if (!shape.Check(aoes[i].Origin, origin, rotation))
                 {
@@ -244,7 +244,7 @@ sealed class StrongWind(BossModule module) : Components.GenericAOEs(module)
             _startPos = caster.Position;
             _rotation = caster.Rotation;
 
-            for (var i = 0; i < 4; i++)
+            for (var i = 0; i < 4; ++i)
             {
                 _aoes.Add(new(_shape, _startPos + ((i * dist) * _rotation.ToDirection()), _rotation));
             }
@@ -284,7 +284,7 @@ sealed class ThievesWeaves(BossModule module) : Components.GenericAOEs(module)
         var carpets = CollectionsMarshal.AsSpan(_carpets);
         var len = carpets.Length;
 
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; ++i)
         {
             if (!carpets[i].Position.AlmostEqual(_safeCarpet.Position, 1f))
             {
@@ -319,7 +319,7 @@ sealed class ThievesWeaves(BossModule module) : Components.GenericAOEs(module)
             var gems = CollectionsMarshal.AsSpan(_gems);
             var len = gems.Length;
 
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < len; ++i)
             {
                 if (caster.Position.AlmostEqual(gems[i].Position, 1f))
                 {

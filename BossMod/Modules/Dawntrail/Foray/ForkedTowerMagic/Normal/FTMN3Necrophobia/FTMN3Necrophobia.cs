@@ -48,7 +48,7 @@ sealed class DarkCurrent(BossModule module) : Components.GenericAOEs(module)
             var distance = 10f;
             _aoes.Add(new(_rect, position, rotation, act, risky: true));
 
-            for (var i = 1; i <= 2; i++)
+            for (var i = 1; i <= 2; ++i)
             {
                 _aoes.Add(new(_rect, position + i * distance * dir, rotation, act.AddSeconds(2.1d * i), risky: false));
                 _aoes.Add(new(_rect, position + i * distance * dir * -1f, rotation, act.AddSeconds(2.1d * i), risky: false));

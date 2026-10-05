@@ -42,7 +42,7 @@ sealed class NeckBiter(BossModule module) : Components.Voidzone(module, 3f, GetN
         var count = enemies.Count;
         var index = 0;
         var neckbiters = new Actor[count];
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             var z = enemies[i];
             if (z.EventState != 7)
@@ -63,7 +63,7 @@ sealed class CoffinMaker(BossModule module) : Components.Voidzone(module, 3f, Ge
         var count = enemies.Count;
         var index = 0;
         var coffinmakers = new Actor[count];
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             var z = enemies[i];
             if (z.EventState != 7)

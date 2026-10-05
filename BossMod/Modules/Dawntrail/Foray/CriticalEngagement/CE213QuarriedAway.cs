@@ -211,7 +211,7 @@ sealed class Acclaim(BossModule module) : Components.GenericAOEs(module)
         var max = count > totalGolems ? totalGolems : count;
 
         var nextAOEs = CollectionsMarshal.AsSpan(aoes);
-        for (var i = 0; i < max; i++)
+        for (var i = 0; i < max; ++i)
         {
             ref var aoe = ref nextAOEs[i];
             aoe.Risky = aoe.Activation.AddSeconds(-RiskyWithSecondsLeft) <= time;

@@ -122,8 +122,8 @@ sealed class M06SSugarRiotStates : StateMachineBuilder
     {
         Cast(id, AID.SoulSugar, delay, 3f, "Add Phase")
             .ActivateOnEnter<Adds>();
-        ComponentCondition<Adds>(id + 0x10u, 10.2f, static comp => comp.ActiveActors.Count != 0, "2x Mu + 1x Yan targetable");
-        ComponentCondition<Adds>(id + 0x20u, 2f, static comp => comp.ActiveActors.Count > 3, "GimmeCat targetable")
+        ComponentCondition<Adds>(id + 0x10u, 10.2f, static comp => comp.ActiveActorsCount != 0, "2x Mu + 1x Yan targetable");
+        ComponentCondition<Adds>(id + 0x20u, 2f, static comp => comp.ActiveActorsCount > 3, "GimmeCat targetable")
             .ActivateOnEnter<ICraveViolence>()
             .ActivateOnEnter<OreRigato>();
         ComponentCondition<Adds>(id + 0x30u, 25.1f, static comp => comp.CountMu == 4 && comp.CountFeatherRay == 2, "2x Mu + 2x Featheray spawn")

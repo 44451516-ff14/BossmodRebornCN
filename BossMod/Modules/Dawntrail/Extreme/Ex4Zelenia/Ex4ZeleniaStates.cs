@@ -108,7 +108,7 @@ sealed class Ex4ZeleniaStates : StateMachineBuilder
 
     private void BlessedBarricade(uint id, float delay)
     {
-        ComponentCondition<RosebloodDrop>(id, delay, static comp => comp.ActiveActors.Count != 0, "Adds become targetable");
+        ComponentCondition<RosebloodDrop>(id, delay, static comp => comp.ActiveActorsCount != 0, "Adds become targetable");
 
         for (var i = 0; i < 4; ++i)
         {

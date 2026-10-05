@@ -242,7 +242,7 @@ sealed class CelestialTrail(BossModule module) : Components.CastTowers(module, (
         {
             var count = Towers.Count;
             var towers = CollectionsMarshal.AsSpan(Towers);
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 towers[i].ForbiddenSoakers = _forbidden;
             }

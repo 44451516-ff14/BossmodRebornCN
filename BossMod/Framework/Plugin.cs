@@ -16,7 +16,7 @@ namespace BossMod;
 
 public sealed class Plugin : IAsyncDalamudPlugin
 {
-    public string Name => "BossMod Reborn";
+    public static string Name => "BossMod Reborn";
 
     private readonly IDalamudPluginInterface _dalamud;
     private readonly ICommandManager CommandManager;
@@ -66,9 +66,9 @@ public sealed class Plugin : IAsyncDalamudPlugin
         {
             dalamud.ConfigDirectory.Create();
         }
-
-        var dalamudRoot = dalamud.GetType().Assembly.
-                GetType("Dalamud.Service`1", true)!.MakeGenericType(dalamud.GetType().Assembly.GetType("Dalamud.Dalamud", true)!).
+        var type = dalamud.GetType().Assembly;
+        var dalamudRoot = type.
+                GetType("Dalamud.Service`1", true)!.MakeGenericType(type.GetType("Dalamud.Dalamud", true)!).
                 GetMethod("Get")!.Invoke(null, BindingFlags.Default, null, [], null);
         var dalamudStartInfo = dalamudRoot?.GetType().GetProperty("StartInfo", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(dalamudRoot) as DalamudStartInfo;
         _gameVersion = dalamudStartInfo?.GameVersion?.ToString() ?? "unknown";

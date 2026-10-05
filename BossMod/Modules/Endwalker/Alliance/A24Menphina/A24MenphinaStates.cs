@@ -231,10 +231,10 @@ sealed class A24MenphinaStates : StateMachineBuilder
     {
         Cast(id, AID.SelenainMysteria, delay, 3f, "Boss disappears")
             .SetHint(StateMachine.StateHint.DowntimeStart);
-        ComponentCondition<CeremonialPillar>(id + 0x10u, 4.5f, static comp => comp.ActiveActors.Count != 0, "Adds appear")
+        ComponentCondition<CeremonialPillar>(id + 0x10u, 4.5f, static comp => comp.ActiveActorsCount != 0, "Adds appear")
             .ActivateOnEnter<CeremonialPillar>()
             .SetHint(StateMachine.StateHint.DowntimeEnd);
-        ComponentCondition<CeremonialPillar>(id + 0x100u, 100f, static comp => comp.ActiveActors.Count == 0, "Adds enrage")
+        ComponentCondition<CeremonialPillar>(id + 0x100u, 100f, static comp => comp.ActiveActorsCount == 0, "Adds enrage")
             .ActivateOnEnter<AncientBlizzard>()
             .ActivateOnEnter<KeenMoonbeam>()
             .DeactivateOnExit<AncientBlizzard>()

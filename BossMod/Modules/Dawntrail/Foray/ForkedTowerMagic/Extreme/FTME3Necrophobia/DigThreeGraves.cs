@@ -45,7 +45,7 @@ sealed class DigThreeGraves(BossModule module) : Components.GenericAOEs(module)
         var time = WorldState.CurrentTime;
         var riskyAt = 3.5d;
 
-        for (var i = 0; i < max; i++)
+        for (var i = 0; i < max; ++i)
         {
             ref var aoe = ref aoes[i];
             aoe.Risky = aoe.Activation.AddSeconds(-riskyAt) <= time;
@@ -116,7 +116,7 @@ sealed class DigThreeGraves(BossModule module) : Components.GenericAOEs(module)
             var interval = 4.5d;
             var activation = WorldState.CurrentTime.AddSeconds(8.9d + interval * (_elements.Count - 1));
 
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 ref var head = ref span[i];
                 var position = head.Position;
@@ -124,7 +124,7 @@ sealed class DigThreeGraves(BossModule module) : Components.GenericAOEs(module)
                 if (shape is AOEShapeCone)
                 {
                     // is lightning always in X shape, or can it be also be + shape or any other rotation?
-                    for (var j = 0; j < 4; j++)
+                    for (var j = 0; j < 4; ++j)
                     {
                         _aoes.Add(new(shape, position, (45f + 90f * j).Degrees(), activation, default, true, head.InstanceID, shape.Distance(position, rotation)));
                     }
@@ -242,14 +242,14 @@ sealed class SeveredDarkCurrent(BossModule module) : Components.GenericAOEs(modu
             var position = Arena.Center;
             var distance = 10f;
 
-            for (var i = 0; i < 3; i++)
+            for (var i = 0; i < 3; ++i)
             {
                 activation = activation.AddSeconds(interval * i);
                 var rotation = _severedAngles[i];
                 var dir = rotation.ToDirection().OrthoL().Normalized();
 
                 _aoeAll.Add(new(_rect, position, rotation, activation, risky: true));
-                for (var j = 1; j <= 2; j++)
+                for (var j = 1; j <= 2; ++j)
                 {
                     _aoeAll.Add(new(_rect, position + j * distance * dir, rotation, activation.AddSeconds(2.1d * j), risky: false));
                     _aoeAll.Add(new(_rect, position + j * distance * dir * -1f, rotation, activation.AddSeconds(2.1d * j), risky: false));
@@ -282,7 +282,7 @@ sealed class SeveredDarkCurrent(BossModule module) : Components.GenericAOEs(modu
         {
             var all = CollectionsMarshal.AsSpan(_aoeAll);
             var count = all.Length > NumCasts + 5 ? NumCasts + 5 : all.Length;
-            for (var i = NumCasts; i < count; i++)
+            for (var i = NumCasts; i < count; ++i)
             {
                 ref var aoe = ref all[i];
                 _aoes.Add(aoe);

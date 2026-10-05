@@ -166,7 +166,7 @@ sealed class SurgeOrb(BossModule module) : BossComponent(module)
     {
         var orbs = CollectionsMarshal.AsSpan(_orbs);
         var count = orbs.Length;
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             ref var orb = ref orbs[i];
             var position = orb.Position;
@@ -191,7 +191,7 @@ sealed class SurgeOrb(BossModule module) : BossComponent(module)
         if (count != 0)
         {
             var avoid = _avoid[slot];
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 ref var orb = ref orbs[i];
                 var position = orb.Position;

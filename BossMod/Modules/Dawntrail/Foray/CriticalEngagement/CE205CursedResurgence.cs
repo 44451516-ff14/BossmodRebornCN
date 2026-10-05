@@ -70,7 +70,7 @@ sealed class Catching(BossModule module) : Components.GenericAOEs(module)
             var actors = WorldState.Actors.ToArray();
             var count = actors.Length;
 
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 ref var actor = ref actors[i];
                 if (actor.OID == (uint)OID.Necrohaze)
@@ -126,7 +126,7 @@ sealed class Necrohaze(BossModule module) : Components.GenericAOEs(module)
         List<AOEInstance> aoes = [];
         var hazes = CollectionsMarshal.AsSpan(_hazes);
         var count = hazes.Length;
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             ref var haze = ref hazes[i];
             if (_isMoving)
@@ -236,7 +236,7 @@ sealed class AetherialWard(BossModule module) : BossComponent(module)
         {
             var angles = CollectionsMarshal.AsSpan(_angles);
             var count = angles.Length;
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 ref var angle = ref angles[i];
                 // round to exact degrees, small visual gap in minimap
@@ -252,7 +252,7 @@ sealed class AetherialWard(BossModule module) : BossComponent(module)
         {
             var angles = CollectionsMarshal.AsSpan(_angles);
             var count = angles.Length;
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 ref var angle = ref angles[i];
                 if (actor.Position.InCone(Arena.Center, angle, 45f.Degrees()))
@@ -270,11 +270,11 @@ sealed class AetherialWard(BossModule module) : BossComponent(module)
         {
             var angles = CollectionsMarshal.AsSpan(_angles);
             var count = angles.Length;
-            for (var i = 0; i < 4; i++)
+            for (var i = 0; i < 4; ++i)
             {
                 var cardinal = Angle.AnglesCardinals[i];
                 var found = false;
-                for (var j = 0; j < count; j++)
+                for (var j = 0; j < count; ++j)
                 {
                     ref var angle = ref angles[j];
                     found = found || angle.AlmostEqual(cardinal, 0.1f);

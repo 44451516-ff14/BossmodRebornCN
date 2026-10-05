@@ -28,7 +28,10 @@ sealed class P3HeavensfallTrio(BossModule module) : BossComponent(module)
     private readonly UCOBConfig _config = Service.Config.Get<UCOBConfig>();
 
     public bool Active => _nael != null;
-    private bool _divesStarted;
+    private bool _divesActive;
+    private bool _divesDone;
+    private bool _puddlesActive;
+    private P3Twister? _twister;
 
     private readonly Angle[] _offsetsNaelCenter = [10f.Degrees(), 80f.Degrees(), 100f.Degrees(), 170f.Degrees()];
     private readonly Angle[] _offsetsNaelSide = [60f.Degrees(), 80f.Degrees(), 100f.Degrees(), 120f.Degrees()];
@@ -64,24 +67,59 @@ sealed class P3HeavensfallTrio(BossModule module) : BossComponent(module)
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (_divesStarted)
+        if (_divesActive)
         {
             hints.AddForbiddenZone(new SDInvertedCircle(_safeSpots[slot], 1f));
+        }
+        if (!_puddlesActive)
+        {
+            if (_twister == null)
+            {
+                var comp = Module.FindComponent<P3Twister>();
+                if (comp != null)
+                {
+                    _twister = comp;
+                }
+                else
+                {
+                    return;
+                }
+            }
+            if (_twister.Predicted || _twister.Active)
+            {
+                hints.AddForbiddenZone(new SDInvertedCircle(Arena.Center, 8f));
+            }
         }
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.MegaflareDive)
+        if (spell.Action.ID is var id && id == (uint)AID.MegaflareDive)
         {
-            _divesStarted = true;
+            _divesActive = true;
+        }
+        else if (id == (uint)AID.MegaflarePuddle)
+        {
+            _puddlesActive = true;
+        }
+    }
+
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID == (uint)AID.TwistingDive)
+        {
+            _divesActive = false;
+            _divesDone = true;
+            Array.Fill(_safeSpots, default);
         }
     }
 
     private void InitIfReady()
     {
-        if (_nael == null || _twin == null || _baha == null)
+        if (_nael == null || _twin == null || _baha == null || _divesDone)
+        {
             return;
+        }
 
         var dirToNael = Angle.FromDirection(_nael.Position - Arena.Center);
         var dirToTwin = Angle.FromDirection(_twin.Position - Arena.Center);
@@ -105,6 +143,12 @@ sealed class P3HeavensfallTrio(BossModule module) : BossComponent(module)
             _safeSpots[p.slot] = Arena.Center + 20f * dir.ToDirection();
         }
     }
+}
+
+sealed class P3Heavensfall(BossModule module) : Heavensfall(module)
+{
+    // no hints, handled by towers component
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) { }
 }
 
 sealed class P3HeavensfallTowers(UCOB module) : Components.CastTowers(module, (uint)AID.MegaflareTower, 3f)
@@ -174,11 +218,6 @@ sealed class P3HeavensfallTowers(UCOB module) : Components.CastTowers(module, (u
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (!EnableHints)
-        {
-            return;
-        }
-
         if (_knockbackDone)
         {
             base.AddAIHints(slot, actor, assignment, hints);
@@ -201,9 +240,112 @@ sealed class P3HeavensfallTowers(UCOB module) : Components.CastTowers(module, (u
             var center = Arena.Center;
             ref var myTower = ref towers[index];
             var dir = myTower.Position - Arena.Center;
-            hints.AddForbiddenZone(new SDInvertedCone(center, 30f, dir.ToAngle(), 5f.Degrees()), myTower.Activation.AddSeconds(-2.5d));
+            var mySpot = Arena.Center + dir.Normalized() * 9f;
+
+            hints.GoalZones.Add(AIHints.GoalProximity(mySpot, 10f, 5f));
+
+            hints.AddForbiddenZone(new SDPrecisePosition(mySpot, new(0f, 1f), 0.5f, actor.Position, 0.1f), myTower.Activation);
         }
     }
 }
 
-sealed class P3HeavensfallFireball(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Fireball, (uint)AID.Fireball, 4f, 5.3f, 8, 8);
+sealed class P3HeavensfallFireball(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Fireball, (uint)AID.Fireball, 4f, 5.3d, 8, 8)
+{
+    int _numHypernovas;
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        if (Stacks.Count > 0)
+        {
+            hints.AddForbiddenZone(new SDInvertedCircle(Arena.Center, 2f), Stacks.Ref(0).Activation);
+            return;
+        }
+
+        // last hypernova to stack going off is 6 seconds
+        switch (_numHypernovas)
+        {
+            case 3:
+                hints.AddForbiddenZone(new SDInvertedCircle(Arena.Center, 8f), DateTime.MaxValue);
+                break;
+            case 2:
+                hints.AddForbiddenZone(new SDInvertedCircle(Arena.Center, 15f), DateTime.MaxValue);
+                break;
+        }
+    }
+
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        base.OnEventCast(caster, spell);
+
+        if (spell.Action.ID == (uint)AID.Hypernova)
+        {
+            ++_numHypernovas;
+        }
+    }
+}
+
+sealed class P3ThermionicBurst(BossModule module) : ThermionicBurst(module)
+{
+    private readonly Angle[] _startingSlice = new Angle[PartyState.MaxPartySize];
+
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        base.OnEventCast(caster, spell);
+
+        if (spell.Action.ID == (uint)AID.MegaflareTower)
+        {
+            var targets = CollectionsMarshal.AsSpan(spell.Targets);
+            var len = targets.Length;
+            var angle = (spell.TargetXZ - Arena.Center).ToAngle() - 11.25f.Degrees();
+            for (var i = 0; i < len; ++i)
+            {
+                if (Raid.FindSlot(targets[i].ID) is var slot && slot >= 0)
+                {
+                    _startingSlice[slot] = angle;
+                }
+            }
+        }
+    }
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        var numAoes = 0;
+        var aoes = ActiveAOEs(slot, actor);
+        var len = aoes.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            ref readonly var aoe = ref aoes[i];
+            if (aoe.Activation > WorldState.CurrentTime || NumCasts < 2)
+            {
+                hints.AddForbiddenZone(aoe.ShapeDistance!, aoe.Activation);
+                if (++numAoes >= 2)
+                {
+                    break;
+                }
+            }
+        }
+
+        if (NumCasts < 16 && _startingSlice[slot] != default)
+        {
+            hints.AddForbiddenZone(new SDInvertedRect(Arena.Center, _startingSlice[slot], 40f, -2f, 1.5f));
+        }
+    }
+}
+
+sealed class P3HeavensfallHypernova(BossModule module) : Hypernova(module)
+{
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        base.AddAIHints(slot, actor, assignment, hints);
+
+        var events = CollectionsMarshal.AsSpan(_predictedByEvent);
+        var len = events.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            var event_ = events[i];
+            var pos = event_.pos;
+            var dir = pos - Arena.Center;
+            hints.AddForbiddenZone(new SDRect(pos, dir.ToAngle(), 50f, 0f, 5f), event_.time);
+        }
+    }
+}

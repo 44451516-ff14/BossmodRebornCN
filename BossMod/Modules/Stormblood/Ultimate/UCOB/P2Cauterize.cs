@@ -56,7 +56,7 @@ sealed class P2Cauterize(BossModule module) : Components.GenericAOEs(module)
             }
             else
             {
-                hints.AddForbiddenZone(new SDInvertedDonut(b, 5f, 7f), act.AddSeconds(-1d));
+                hints.AddForbiddenZone(new SDInvertedDonut(b, 5f, 7f), act.AddSeconds(-2d));
             }
         }
         else if (bo == 0)
@@ -212,7 +212,7 @@ sealed class P2Cauterize(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-sealed class P2Hypernova(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.Hypernova, GetVoidzones, 1.4f)
+abstract class Hypernova(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.Hypernova, GetVoidzones, 1.4d) // 2d
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -232,3 +232,5 @@ sealed class P2Hypernova(BossModule module) : Components.VoidzoneAtCastTarget(mo
         return voidzones[..index];
     }
 }
+
+sealed class P2Hypernova(BossModule module) : Hypernova(module);

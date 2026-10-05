@@ -47,7 +47,7 @@ sealed class MortalSlayer(BossModule module) : Components.GenericAOEs(module)
         // MortalSlayer1/2 are the instant damage abilities cast by orbs when baited
         if (spell.Action.ID is (uint)AID.MortalSlayer1 or (uint)AID.MortalSlayer2)
         {
-            for (var i = 0; i < _allOrbs.Count; i++)
+            for (var i = 0; i < _allOrbs.Count; ++i)
             {
                 var orb = _allOrbs[i];
                 if (orb.Orb.InstanceID == caster.InstanceID && !orb.Baited)
@@ -191,8 +191,10 @@ sealed class MortalSlayer(BossModule module) : Components.GenericAOEs(module)
             {
                 if (IsOnPurpleSide(o))
                 {
-                    if (o.IsPurple) purpleCount++;
-                    else greenCount++;
+                    if (o.IsPurple)
+                        ++purpleCount;
+                    else
+                        ++greenCount;
                 }
             }
             if (purpleCount == 1 && greenCount == 1)
@@ -292,7 +294,7 @@ sealed class MortalSlayer(BossModule module) : Components.GenericAOEs(module)
     private static string BuildRemainingOrder(PartyRolesConfig.Assignment[] order, int baited)
     {
         var parts = new List<string>();
-        for (var i = baited; i < order.Length; i++)
+        for (var i = baited; i < order.Length; ++i)
             parts.Add(order[i].ToString());
         return string.Join(" > ", parts);
     }

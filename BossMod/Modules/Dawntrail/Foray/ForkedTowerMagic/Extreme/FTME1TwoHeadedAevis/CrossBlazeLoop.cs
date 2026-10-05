@@ -2,46 +2,46 @@
 
 sealed class CrossBlazeLoop(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = [];
+    public readonly List<AOEInstance> AOEs = [with(4)];
     private readonly AOEShapeCircle _circle = new(5f);
     private readonly AOEShapeDonut _donut = new(5f, 60f);
     private readonly AOEShapeCross _cross = new(35f, 5f);
-    private (uint Head, ulong InstanceID, Actor Target) _nextPos; // actual boss OID, instanceID of boss helper, aoe origin
+    private WPos? _nextPos = null;
+    private AOEShape? _secondShape = null;
+    private ulong? _casterId = null;
+    private DateTime _activation;
 
-    public ReadOnlySpan<AOEInstance> ActiveCasters
-    {
-        get
-        {
-            var count = _aoes.Count;
-            var max = count > 2 ? 2 : count;
-            return CollectionsMarshal.AsSpan(_aoes)[..max];
-        }
-    }
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        var count = _aoes.Count;
+        var count = AOEs.Count;
         if (count == 0)
         {
             return [];
         }
 
         var max = count > 2 ? 2 : count;
-        var aoes = CollectionsMarshal.AsSpan(_aoes);
-        ref var aoe0 = ref aoes[0];
-        aoe0.Color = count > 1 ? Colors.Danger : default;
-        aoe0.Risky = true;
+        var aoes = CollectionsMarshal.AsSpan(AOEs);
+        //ref var aoe = ref aoes[0];
+        //aoe.Color = count > 1 ? Colors.Danger : default;
         return aoes[..max];
     }
 
-    public override void OnTethered(Actor source, in ActorTetherInfo tether)
+    private void InitIfReady()
     {
-        if (tether.ID == (uint)TetherID.Tether)
+        if (_nextPos is WPos nextPos && _secondShape is AOEShape shape && _casterId is ulong actorID)
         {
-            var target = WorldState.Actors.Find(tether.Target);
-            if (target?.OID == (uint)OID.CrossBlazeTarget && source.OID is (uint)OID.GreenHead1 or (uint)OID.BlueHead1)
+            var loc = nextPos.Quantized();
+            var rot = Angle.AnglesCardinals[1];
+            _nextPos = null;
+            _secondShape = null;
+            _casterId = null;
+            AddAOE(_circle);
+            AddAOE(shape, 2d);
+
+            void AddAOE(AOEShape shape, double delay = 0d)
             {
-                var head = source.OID == (uint)OID.GreenHead1 ? (uint)OID.GreenHead : (uint)OID.BlueHead;
-                _nextPos = (head, source.InstanceID, target);
+                var is1st = delay == 0d;
+                AOEs.Add(new(shape, loc, rot, is1st ? _activation : _activation.AddSeconds(2d), is1st ? Colors.Danger : default, actorID: actorID, shapeDistance: shape.Distance(loc, rot)));
             }
         }
     }
@@ -51,39 +51,35 @@ sealed class CrossBlazeLoop(BossModule module) : Components.GenericAOEs(module)
         // actual AOE and visual indicators ID by order cast, not specific spell
         // either boss can start with crossblaze / blazeloop
         // either repeats the same donut/cross or switches
-        // tether comes from boss helper 1 tick before boss does the cast indicating mechanic
-        // use actual target actor; actor position at time of tether not at position of AOE
-
-        if (spell.Action.ID is >= 47671 and <= 47678)
+        // tether target may not have moved after both tethered and cast started depending on latency
+        // cache 2nd shape and base position on cast location of 1st, 2nd, 3rd/4th blaze
+        if (spell.Action.ID is var id && (id is >= (uint)AID.CrossblazeAndRepeat1 and <= (uint)AID.BlazeloopCrossblaze2 || id is >= (uint)AID.CrossblazeCast and <= (uint)AID.BlazeloopCast))
         {
-            var activation = Module.CastFinishAt(spell);
-            var position = _nextPos.Target.Position;
+            _casterId = caster.InstanceID;
+            _activation = Module.CastFinishAt(spell);
 
-            if (spell.Action.ID % 2 == 0) //donut
+            if ((id & 1) == 0) // donut
             {
-                _aoes.Add(new(_circle, position, default, activation, default, false, _nextPos.InstanceID, _circle.Distance(position, default)));
-                _aoes.Add(new(_donut, position, default, activation.AddSeconds(2d), default, false, _nextPos.InstanceID, _donut.Distance(position, default)));
+                _secondShape = _donut;
             }
             else // cross
             {
-                _aoes.Add(new(_circle, position, default, activation, default, false, _nextPos.InstanceID, _circle.Distance(position, default)));
-                _aoes.Add(new(_cross, position, default, activation.AddSeconds(2d), default, false, _nextPos.InstanceID, _cross.Distance(position, default)));
+                _secondShape = _cross;
             }
+            InitIfReady();
         }
-        else if (spell.Action.ID is (uint)AID.CrossblazeCast or (uint)AID.BlazeloopCast)
+        else if (id is (uint)AID.BlazeFirst or (uint)AID.BlazeSecond or (uint)AID.BlazeFollowup)
         {
-            var activation = Module.CastFinishAt(spell);
-            var position = _nextPos.Target.Position;
-            AOEShape shape = spell.Action.ID == (uint)AID.CrossblazeCast ? _cross : _donut;
-
-            _aoes.Add(new(_circle, position, default, activation, default, false, _nextPos.InstanceID, _circle.Distance(position, default)));
-            _aoes.Add(new(shape, position, default, activation.AddSeconds(2d), default, false, _nextPos.InstanceID, shape.Distance(position, default)));
+            _nextPos = spell.LocXZ;
+            _activation = Module.CastFinishAt(spell);
+            InitIfReady();
         }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (_aoes.Count != 0)
+        var count = AOEs.Count;
+        if (count != 0)
         {
             switch (spell.Action.ID)
             {
@@ -93,7 +89,18 @@ sealed class CrossBlazeLoop(BossModule module) : Components.GenericAOEs(module)
                 case (uint)AID.Crossblaze:
                 case (uint)AID.BlazeFollowup:
                     ++NumCasts;
-                    _aoes.RemoveAt(0);
+                    AOEs.RemoveAt(0);
+                    if (count >= 2)
+                    {
+                        var aoes = CollectionsMarshal.AsSpan(AOEs);
+                        //aoes[0].Color = default;
+                        aoes[0].Color = Colors.Danger;
+                        if (count >= 3)
+                        {
+                            //aoes[1].Color = Colors.Danger;
+                            aoes[1].Color = default;
+                        }
+                    }
                     break;
             }
         }
@@ -101,22 +108,9 @@ sealed class CrossBlazeLoop(BossModule module) : Components.GenericAOEs(module)
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        /*
-        // stay near initial circle if not during knockback
-        if (_aoes.Count != 0)
+        if (AOEs.Count != 0)
         {
-            var hissing = Module.FindComponent<HissingResonance>();
-            ref var aoe = ref _aoes.Ref(0);
-            if (hissing == null && aoe.Shape is AOEShapeCircle)
-            {
-                hints.GoalZones.Add(AIHints.GoalSingleTarget(aoe.Origin, 8f));
-            }
-            base.AddAIHints(slot, actor, assignment, hints);
-        }
-        */
-        if (_aoes.Count != 0)
-        {
-            ref var aoe = ref _aoes.Ref(0);
+            ref var aoe = ref AOEs.Ref(0);
             if (aoe.Shape is AOEShapeCircle)
             {
                 hints.GoalZones.Add(AIHints.GoalSingleTarget(aoe.Origin, 10f));

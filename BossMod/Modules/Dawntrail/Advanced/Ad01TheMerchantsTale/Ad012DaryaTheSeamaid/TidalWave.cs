@@ -85,7 +85,7 @@ sealed class TidalWave(BossModule module) : Components.SimpleKnockbacks(module, 
         var kb = ActiveKnockbacks(slot, actor)[0];
         var origin = kb.Origin;
         var dir = (origin - Arena.Center).Normalized();
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; ++i)
         {
             var puddle = puddles[i];
             hints.AddForbiddenZone(new SDRect(puddle, dir, 30f, 4f, 4f));

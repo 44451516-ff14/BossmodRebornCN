@@ -66,12 +66,14 @@ sealed class FTME4IndexStates : StateMachineBuilder
         Cast(id, AID.OmniElements, delay, 4f, "Raidwide + Arena change")
             .ActivateOnEnter<ElementIII>()
             .ActivateOnEnter<Predict>()
-            .ActivateOnEnter<ElementaryExpansion>()
+            //.ActivateOnEnter<ElementaryExpansion>()
+            .ActivateOnEnter<ElementaryExpansionEvocation>()
             .ActivateOnEnter<SealedImplements>();
         // is Sealed Implements always one then the other, or is it possible for Harp x2?
         ComponentCondition<SealedImplements>(id + 0x1000u, 48.8f, static comp => comp.VisualCasts == 2 && comp.ActiveCasters.Length == 0, "Omni-Elements")
             .DeactivateOnExit<SealedImplements>()
-            .DeactivateOnExit<ElementaryExpansion>()
+            //.DeactivateOnExit<ElementaryExpansion>()
+            .DeactivateOnExit<ElementaryExpansionEvocation>()
             .DeactivateOnExit<Predict>()
             .DeactivateOnExit<ElementIII>()
             .ActivateOnExit<ElementaryChemistry>();
@@ -115,15 +117,17 @@ sealed class FTME4IndexStates : StateMachineBuilder
         Cast(id, AID.OmniElements, delay, 4f, "Raidwide + Arena change")
             .ActivateOnEnter<ElementIII>()
             .ActivateOnEnter<Predict>()
-            .ActivateOnEnter<ElementaryExpansion>()
-            .ActivateOnEnter<ElementaryEvocation>()
+            //.ActivateOnEnter<ElementaryExpansion>()
+            //.ActivateOnEnter<ElementaryEvocation>()
+            .ActivateOnEnter<ElementaryExpansionEvocation>()
             .ActivateOnEnter<SealedImplements>()
             .ActivateOnEnter<Shockwave>();
         ComponentCondition<SealedImplements>(id + 0x1000u, 65.9f, static comp => comp.VisualCasts == 2 && comp.ActiveCasters.Length == 0, "Omni-Elements")
             .DeactivateOnExit<Shockwave>()
             .DeactivateOnExit<SealedImplements>()
-            .DeactivateOnExit<ElementaryEvocation>()
-            .DeactivateOnExit<ElementaryExpansion>()
+            //.DeactivateOnExit<ElementaryEvocation>()
+            //.DeactivateOnExit<ElementaryExpansion>()
+            .DeactivateOnExit<ElementaryExpansionEvocation>()
             .DeactivateOnExit<Predict>()
             .DeactivateOnExit<ElementIII>()
             .ActivateOnExit<ElementaryChemistry>();

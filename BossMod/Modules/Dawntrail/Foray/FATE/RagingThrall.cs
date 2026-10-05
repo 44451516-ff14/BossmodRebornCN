@@ -70,7 +70,7 @@ sealed class FocusedTremorConcentric(BossModule module) : Components.GenericAOEs
         var count = _aoes.Count;
         var max = count > 2 ? 2 : count;
         var aoes = CollectionsMarshal.AsSpan(_aoes);
-        for (var i = 0; i < max; i++)
+        for (var i = 0; i < max; ++i)
         {
             ref var aoe = ref aoes[i];
             var isFirst = i == 0;

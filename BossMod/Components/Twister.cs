@@ -34,16 +34,23 @@ public abstract class GenericTwister(BossModule module, float radius, uint oid, 
 
     public bool Active => ActiveTwisters.Length != 0;
 
-    public void AddPredicted(double activationDelay)
+    public void AddPredicted(double activationDelay) => AddPredicted(WorldState.FutureTime(activationDelay));
+
+    public void AddPredicted(DateTime activationTime)
     {
         PredictedPositions.Clear();
-        foreach (var a in Raid.WithoutSlot())
+        var raid = Raid.WithoutSlot();
+        var len = raid.Length;
+        for (var i = 0; i < len; ++i)
         {
+            var a = raid[i];
             if (ArenaProjectionLayerParticipantApplies(a, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+            {
                 PredictedPositions.Add(a.Position);
+            }
         }
 
-        PredictedActivation = WorldState.FutureTime(activationDelay);
+        PredictedActivation = activationTime;
     }
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -87,37 +94,29 @@ public abstract class GenericTwister(BossModule module, float radius, uint oid, 
 }
 
 // twister that activates on cast end, or slightly before
-public abstract class CastTwister(BossModule module, float radius, uint oid, uint aid, double activationDelay, double predictBeforeCastEnd = 0d, int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false)
+public abstract class CastTwister(BossModule module, float radius, uint oid, uint aid, double spawnDelay, double predictBeforeSpawn = 0d, int? arenaProjectionLayer = null, bool? restrictToArenaProjectionLayer = false)
     : GenericTwister(module, radius, oid, aid, arenaProjectionLayer, restrictToArenaProjectionLayer)
 {
-    private readonly double _activationDelay = activationDelay; // from cast-end to twister spawn
-    private readonly double _predictBeforeCastEnd = predictBeforeCastEnd;
-    private DateTime _predictStart = DateTime.MaxValue;
+    public readonly double SpawnDelay = spawnDelay; // from cast-end to twister spawn
+    public readonly double PredictionTime = predictBeforeSpawn;
+    private DateTime _predictAt = DateTime.MaxValue;
+    private DateTime _spawnAt;
 
     public override void Update()
     {
-        if (PredictedPositions.Count == 0 && Twisters.Count == 0 && WorldState.CurrentTime >= _predictStart)
+        if (PredictedPositions.Count == 0 && Twisters.Count == 0 && WorldState.CurrentTime >= _predictAt)
         {
-            AddPredicted(_predictBeforeCastEnd + _activationDelay);
-            _predictStart = DateTime.MaxValue;
+            AddPredicted(_spawnAt);
+            _predictAt = DateTime.MaxValue;
         }
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == WatchedAction && _predictStart == DateTime.MaxValue)
+        if (spell.Action.ID == WatchedAction)
         {
-            _predictStart = Module.CastFinishAt(spell, -_predictBeforeCastEnd);
-        }
-    }
-
-    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
-    {
-        if (spell.Action.ID == WatchedAction && _predictStart < DateTime.MaxValue)
-        {
-            // cast finished earlier than expected, just activate things now
-            AddPredicted(_activationDelay);
-            _predictStart = DateTime.MaxValue;
+            _spawnAt = Module.CastFinishAt(spell, SpawnDelay);
+            _predictAt = _spawnAt.AddSeconds(-PredictionTime);
         }
     }
 }

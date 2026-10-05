@@ -168,7 +168,7 @@ sealed class FlameFloater(BossModule module) : Components.GenericAOEs(module)
         var party = Raid.WithSlot(false, true, true);
         var len = party.Length;
 
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; ++i)
         {
             var slot = party[i].Item1;
 
@@ -200,7 +200,7 @@ sealed class FlameFloater(BossModule module) : Components.GenericAOEs(module)
 
     private bool IsBaitTarget(int slot)
     {
-        for (var i = NumCasts; i < _baitTargets.Length; i++)
+        for (var i = NumCasts; i < _baitTargets.Length; ++i)
         {
             if (_baitTargets[i] == slot)
                 return true;
@@ -211,7 +211,7 @@ sealed class FlameFloater(BossModule module) : Components.GenericAOEs(module)
 
     private int BaitOrder(int slot)
     {
-        for (var i = NumCasts; i < _baitTargets.Length; i++)
+        for (var i = NumCasts; i < _baitTargets.Length; ++i)
         {
             if (_baitTargets[i] == slot)
                 return i;

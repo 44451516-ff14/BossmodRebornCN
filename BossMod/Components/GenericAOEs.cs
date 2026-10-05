@@ -78,7 +78,7 @@ public abstract class GenericAOEs(BossModule module, uint aid = default, string 
         var bestIndex = 0;
         var bestDiff = Math.Abs(values[0] - y);
         var len = values.Length;
-        for (var i = 1; i < len; i++)
+        for (var i = 1; i < len; ++i)
         {
             var diff = Math.Abs(values[i] - y);
 

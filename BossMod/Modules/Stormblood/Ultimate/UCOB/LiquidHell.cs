@@ -33,7 +33,7 @@ sealed class P1LiquidHell(BossModule module) : LiquidHellBase(module)
     private P1Fireball? _fireball;
     private readonly List<Actor> _neurolinks = module.Enemies((uint)OID.Neurolink);
 
-    public Actor? Baiter;
+    public BitMask Baiters;
 
     public void Reset(double delay, BaitMode mode)
     {
@@ -50,9 +50,19 @@ sealed class P1LiquidHell(BossModule module) : LiquidHellBase(module)
         {
             NextCast = WorldState.FutureTime(1.2d);
 
-            if (Mode == BaitMode.Random && (Baiter == null || Baiter.IsDead))
+            if (Mode == BaitMode.Random && !Baiters.Any())
             {
-                Baiter = Raid.WithoutSlot().Closest(spell.TargetXZ);
+                var raid = Raid.WithSlot(false, true, true);
+                var len = raid.Length;
+                var targetPos = spell.TargetXZ;
+                for (var i = 0; i < len; ++i)
+                {
+                    var p = raid[i];
+                    if (p.Item2.Position.InCircle(targetPos, 1f))
+                    {
+                        Baiters.Set(p.Item1);
+                    }
+                }
             }
         }
 
@@ -60,7 +70,7 @@ sealed class P1LiquidHell(BossModule module) : LiquidHellBase(module)
         {
             NextCast = default;
             Mode = BaitMode.None;
-            Baiter = null;
+            Baiters.Reset();
         }
     }
 
@@ -117,18 +127,6 @@ sealed class P1LiquidHell(BossModule module) : LiquidHellBase(module)
             if (NumCasts == 0 && Module.PrimaryActor.TargetID != actor.InstanceID && !_hatch.IsTarget(slot) && assignment is not (PartyRolesConfig.Assignment.R1 or PartyRolesConfig.Assignment.MT))
             {
                 hints.AddForbiddenZone(new SDCircle(Module.PrimaryActor.Position, 6f), NextCast);
-
-                var raid = Raid.WithoutSlot(false, true, true);
-                var lenR = raid.Length;
-                for (var i = 0; i < lenR; ++i)
-                {
-                    var p = raid[i];
-                    if (p == actor)
-                    {
-                        continue;
-                    }
-                    hints.AddForbiddenZone(new SDCircle(p.Position, 1f), DateTime.MaxValue);
-                }
             }
             if (_fireball == null)
             {
@@ -142,7 +140,7 @@ sealed class P1LiquidHell(BossModule module) : LiquidHellBase(module)
                     return;
                 }
             }
-            if (actor == Baiter && _fireball.Destination is var dest && dest != default)
+            if (Baiters[slot] && _fireball.Destination is var dest && dest != default)
             {
                 hints.AddForbiddenZone(new SDInvertedCircle(dest, 11f), NextCast.AddSeconds(1.2d * (4 - NumCasts)));
                 hints.AddForbiddenZone(new SDCircle(dest, 7f), NextCast);
@@ -150,13 +148,34 @@ sealed class P1LiquidHell(BossModule module) : LiquidHellBase(module)
         }
     }
 
-    public override PlayerPriority CalcPriority(int pcSlot, Actor pc, int playerSlot, Actor player, ref uint customColor) => player == Baiter ? PlayerPriority.Danger : PlayerPriority.Irrelevant;
+    public override PlayerPriority CalcPriority(int pcSlot, Actor pc, int playerSlot, Actor player, ref uint customColor) => Baiters[playerSlot] ? PlayerPriority.Danger : PlayerPriority.Irrelevant;
 
     public override void Update()
     {
         base.Update();
 
         if (Mode == BaitMode.Proximity)
-            Baiter = Raid.WithoutSlot().Farthest(Module.PrimaryActor.Position);
+        {
+            var origin = Module.PrimaryActor.Position;
+
+            var farthestSlot = -1;
+            var farthestDistanceSq = -1f;
+            var raid = Raid.WithSlot(false, true, true);
+            var len = raid.Length;
+
+            for (var i = 0; i < len; ++i)
+            {
+                var (slot, actor) = raid[i];
+                var distanceSq = (actor.Position - origin).LengthSq();
+
+                if (distanceSq > farthestDistanceSq)
+                {
+                    farthestDistanceSq = distanceSq;
+                    farthestSlot = slot;
+                }
+            }
+
+            Baiters = farthestSlot >= 0 ? BitMask.Build(farthestSlot) : default;
+        }
     }
 }

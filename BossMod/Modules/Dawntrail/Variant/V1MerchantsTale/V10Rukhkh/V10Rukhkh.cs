@@ -26,7 +26,7 @@ sealed class SandBurst(BossModule module) : Components.GenericAOEs(module)
             if (len == 0)
                 return;
 
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < len; ++i)
             {
                 ref var aoe = ref aoes[i];
                 if (aoe.ActorID == spell.MainTargetID)

@@ -4,7 +4,7 @@
 sealed class Demiurges(BossModule module) : Components.DirectionalParry(module, [(uint)OID.Demiurge1, (uint)OID.Demiurge2, (uint)OID.Demiurge3])
 {
 
-    public bool AddsActive => ActiveActors.Count != 0;
+    public bool AddsActive => ActiveActorsCount != 0;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

@@ -130,7 +130,7 @@ sealed class FTB3MarbleDragonStates : StateMachineBuilder
 
     private void IceGolems(uint id, float delay)
     {
-        ComponentCondition<IceGolems>(id, delay, comp => comp.ActiveActors.Count != 0, "Adds targetable (Ice Golems)")
+        ComponentCondition<IceGolems>(id, delay, comp => comp.ActiveActorsCount != 0, "Adds targetable (Ice Golems)")
             .ActivateOnEnter<VulnerabilityDown>()
             .ActivateOnEnter<WitheringEternity>()
             .ActivateOnEnter<IceGolems>();
@@ -168,7 +168,7 @@ sealed class FTB3MarbleDragonStates : StateMachineBuilder
 
     private void LifelessLegacy(uint id, float delay)
     {
-        ComponentCondition<IceSprite>(id, delay, comp => comp.ActiveActors.Count != 0, "Adds targetable (Ice Sprites)")
+        ComponentCondition<IceSprite>(id, delay, comp => comp.ActiveActorsCount != 0, "Adds targetable (Ice Sprites)")
             .ActivateOnEnter<LifelessLegacy>()
             .ActivateOnEnter<DamageUp>()
             .ActivateOnEnter<IceSprite>();

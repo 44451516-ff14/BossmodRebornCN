@@ -95,7 +95,7 @@ sealed class NaughtHuntsJumps(BossModule module) : BossComponent(module)
             var p = WorldState.Actors.Find(tether.Target);
             if (p != null)
             {
-                for (var i = 0; i < _targets.Count; i++)
+                for (var i = 0; i < _targets.Count; ++i)
                 {
                     _targets.Clear();
                     _sources.Clear();
@@ -107,7 +107,7 @@ sealed class NaughtHuntsJumps(BossModule module) : BossComponent(module)
     {
         if (_targets.Count() > 0 && _sources.Count > 0)
         {
-            for (var i = 0; i < _targets.Count; i++)
+            for (var i = 0; i < _targets.Count; ++i)
             {
                 var s = _sources[i];
                 var t = _targets[i];

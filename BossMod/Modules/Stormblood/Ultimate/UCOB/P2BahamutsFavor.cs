@@ -113,15 +113,22 @@ sealed class P2BahamutsFavorFireball(UCOB module) : Components.UniformStackSprea
 }
 
 // note: if player dies immediately after chain lightning cast, he won't get a status or have aoe cast; if he dies after status application, aoe will be triggered immediately
-sealed class P2BahamutsFavorChainLightning(UCOB module) : Components.UniformStackSpread(module, default, 5f)
+sealed class P2BahamutsFavorChainLightning : Components.UniformStackSpread
 {
     private BitMask _pendingTargets;
     private DateTime _expectedStatuses;
-    private readonly Actor _nael = module.Nael()!;
+    private readonly Actor _nael;
     private readonly PartyRolesConfig partyRolesConfig = Service.Config.Get<PartyRolesConfig>();
-    private readonly List<Actor> _voidzones = module.Enemies((uint)OID.VoidzoneSalvation);
+    private readonly List<Actor> _voidzones;
 
     public bool FirstSet;
+
+    public P2BahamutsFavorChainLightning(UCOB module) : base(module, 0f, 5f)
+    {
+        ExtraAISpreadThreshold = 0;
+        _voidzones = module.Enemies((uint)OID.VoidzoneSalvation);
+        _nael = module.Nael()!;
+    }
 
     public bool ActiveOrSkipped()
     {
@@ -130,7 +137,7 @@ sealed class P2BahamutsFavorChainLightning(UCOB module) : Components.UniformStac
             return true;
         }
 
-        if (_pendingTargets.Any() || WorldState.CurrentTime < _expectedStatuses)
+        if (!_pendingTargets.Any() || WorldState.CurrentTime < _expectedStatuses)
         {
             return false;
         }
@@ -140,12 +147,9 @@ sealed class P2BahamutsFavorChainLightning(UCOB module) : Components.UniformStac
         for (var i = 0; i < len; ++i)
         {
             var p = raid[i];
-            if (_pendingTargets[p.Item1])
+            if (_pendingTargets[p.Item1] && !p.Item2.IsDead)
             {
-                if (!p.Item2.IsDead)
-                {
-                    return false;
-                }
+                return false;
             }
         }
         return true;
@@ -197,6 +201,8 @@ sealed class P2BahamutsFavorChainLightning(UCOB module) : Components.UniformStac
         if (IsSpreadTarget(actor))
         {
             hints.GoalZonesEnabled = false;
+            // don't you dare use a gap closer
+            hints.ForbidDashes = true;
 
             if (FirstSet)
             {
@@ -366,7 +372,7 @@ sealed class P2BahamutsFavorDeathstorm(BossModule module) : BossComponent(module
                         var isCovered = false;
                         for (var j = 0; j < len; ++j)
                         {
-                            if (position.InCircle(aoes[i].Origin, 4f))
+                            if (position.InCircle(aoes[j].Origin, 4f))
                             {
                                 isCovered = true;
                                 break;
@@ -378,8 +384,6 @@ sealed class P2BahamutsFavorDeathstorm(BossModule module) : BossComponent(module
                     else
                     {
                         hints.AddForbiddenZone(new SDCircle(position, 1f));
-                        // encourage non-dooms to bait next puddle away
-                        hints.AddForbiddenZone(new SDCircle(position, 5f), WorldState.FutureTime(2d));
                     }
                 }
             }

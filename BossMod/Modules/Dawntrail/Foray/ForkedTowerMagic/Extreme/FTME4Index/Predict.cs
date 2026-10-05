@@ -63,13 +63,13 @@ sealed class Predict(BossModule module) : Components.GenericAOEs(module)
         var dcount = _debugs.Count;
         var pcount = _predicts.Count;
 
-        for (var i = 0; i < dcount; i++)
+        for (var i = 0; i < dcount; ++i)
         {
             var act = _debugs[i];
             Arena.ZoneCircle(act.Position, 1.5f, 0xFF888800);
         }
 
-        for (var i = 0; i < pcount; i++)
+        for (var i = 0; i < pcount; ++i)
         {
             var act = _predicts[i];
             if (act.Extra == 0x44C)

@@ -96,7 +96,7 @@ sealed class M09SVampFataleStates : StateMachineBuilder
 
     private void Arena1(uint id, float delay)
     {
-        ComponentCondition<Coffinmaker>(id, delay, static comp => comp.ActiveActors.Count > 0, "Coffinmaker spawn");
+        ComponentCondition<Coffinmaker>(id, delay, static comp => comp.ActiveActorsCount > 0, "Coffinmaker spawn");
 
         // boss may become targetable while casting last 2 halfmoons depending on DPS
         //Targetable(id + 0x10, true, 69.5f, "Enrage 1");

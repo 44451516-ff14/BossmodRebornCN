@@ -31,7 +31,7 @@ sealed class GrandCrossOrder(BossModule module) : BossComponent(module)
             {
                 var buffs = new List<(uint buff, DateTime expireAt)>[PartyState.MaxPartySize];
 
-                for (var i = 0; i < PartyState.MaxPartySize; i++)
+                for (var i = 0; i < PartyState.MaxPartySize; ++i)
                 {
                     buffs[i] = [];
                 }
@@ -154,7 +154,7 @@ sealed class TsunamiInfernoOrder(BossModule module) : BossComponent(module)
             if ((status.Extra == 0x45F || status.Extra == 0x460) && !tellingTruthCaught)
             {
                 var buffs = new List<(uint buff, DateTime expireAt)>[PartyState.MaxPartySize];
-                for (var i = 0; i < buffs.Length; i++)
+                for (var i = 0; i < buffs.Length; ++i)
                 {
                     buffs[i] = [];
                 }
@@ -678,7 +678,7 @@ sealed class CursedShriek(BossModule module) : Components.GenericGaze(module)
             return;
         }
 
-        for (var i = 0; i < players.Count; i++)
+        for (var i = 0; i < players.Count; ++i)
         {
             if ((players[i].expireAt - WorldState.CurrentTime).TotalSeconds > 8d)
             {

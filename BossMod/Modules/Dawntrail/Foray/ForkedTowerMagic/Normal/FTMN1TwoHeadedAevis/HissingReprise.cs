@@ -110,7 +110,7 @@ sealed class HissingReprise(BossModule module) : Components.GenericKnockback(mod
         var radius = float.MinValue;
         var aoes = lip.ActiveAOEs(slot, actor);
         var count = aoes.Length;
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             var aoe = aoes[i];
             var shape = aoe.Shape as AOEShapeCircle;
@@ -120,7 +120,7 @@ sealed class HissingReprise(BossModule module) : Components.GenericKnockback(mod
 
         var orbs = hyposhock.ActiveAOEs(slot, actor);
         var orbCount = orbs.Length;
-        for (var i = 0; i < orbCount; i++)
+        for (var i = 0; i < orbCount; ++i)
         {
             var aoe = orbs[i];
             var shape = aoe.Shape as AOEShapeCircle;
@@ -135,7 +135,7 @@ sealed class HissingReprise(BossModule module) : Components.GenericKnockback(mod
         var aoes = GetCircleAOEInfo(slot, actor);
         var count = aoes.Origins.Length;
         var radius = aoes.Radius;
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             var origin = aoes.Origins[i];
             if (to.InCircle(origin, radius))

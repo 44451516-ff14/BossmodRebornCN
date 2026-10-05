@@ -9,7 +9,20 @@ sealed class Hatch(BossModule module) : Components.CastCounter(module, (uint)AID
     private readonly List<(Actor orb, DateTime moveStart)> _orbs = [];
     private readonly List<Actor> _neurolinks = module.Enemies((uint)OID.Neurolink);
     private BitMask _targets;
+    private BitMask _tenstrikeUntargeted;
     private readonly Actor?[] _assignedLinks = new Actor?[PartyState.MaxPartySize];
+    private readonly List<InterceptState> _intercepts = [];
+    private readonly StringBuilder _targetsBuilder = new(128);
+    private ulong _cachedTargetsMask;
+    private string? _cachedTargetsHint;
+
+    sealed class InterceptState(int first, int second)
+    {
+        public int First = first;
+        public int Second = second;
+        public Actor? Link = null;
+        public int NumHits = 0;
+    }
 
     public const float Radius = 8f;
 
@@ -23,12 +36,55 @@ sealed class Hatch(BossModule module) : Components.CastCounter(module, (uint)AID
         NumTargetsAssigned = NumCasts = 0;
     }
 
+    private string GetTargetsHint()
+    {
+        var targets = _targets;
+
+        // Reuse the string when the mask hasn't changed.
+        if (_cachedTargetsHint is not null && _cachedTargetsMask == targets.Raw)
+        {
+            return _cachedTargetsHint;
+        }
+
+        var raid = Raid.WithSlot(false, true, true);
+        var builder = _targetsBuilder;
+        builder.Clear();
+        builder.Append("Targets: ");
+        var first = true;
+        var len = raid.Length;
+
+        for (var i = 0; i < len; ++i)
+        {
+            var p = raid[i];
+
+            if (!_targets[p.Item1])
+            {
+                continue;
+            }
+
+            if (!first)
+            {
+                builder.Append(", ");
+            }
+
+            builder.Append(p.Item2.Name);
+            first = false;
+        }
+
+        _cachedTargetsHint = builder.ToString();
+        _cachedTargetsMask = targets.Raw;
+
+        return _cachedTargetsHint;
+    }
+
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (!Active)
         {
             return;
         }
+
+        hints.Add(GetTargetsHint(), false);
 
         var inNeurolink = false;
         var count = _neurolinks.Count;
@@ -100,11 +156,34 @@ sealed class Hatch(BossModule module) : Components.CastCounter(module, (uint)AID
             }
 
             var leewaySeconds = 10f;
+            Actor? closestOrb = null;
 
             if (_orbs.Count > 0)
             {
-                var waitMove = Math.Max(0f, (float)(_orbs[0].moveStart - WorldState.CurrentTime).TotalSeconds);
-                leewaySeconds = waitMove + _orbs.Min(o => actor.DistanceToHitbox(o.orb)) * 0.2f;
+                var orbs = CollectionsMarshal.AsSpan(_orbs);
+                var waitMove = Math.Max(0f, (float)(orbs[0].moveStart - WorldState.CurrentTime).TotalSeconds);
+                closestOrb = orbs[0].orb;
+                var dist = actor.DistanceToHitbox(closestOrb);
+                var count = _orbs.Count;
+                for (var i = 1; i < count; ++i)
+                {
+                    var orb = orbs[i].orb;
+                    var orbDist = actor.DistanceToHitbox(orb);
+
+                    if (orbDist < dist)
+                    {
+                        closestOrb = orb;
+                        dist = orbDist;
+                    }
+                }
+                leewaySeconds = waitMove + dist * 0.2f;
+            }
+
+            if (closestOrb is { LastFrameMovement: var m } && m != default)
+            {
+                var src = closestOrb.Position;
+                var dir = m.Normalized() * 1000f;
+                hints.GoalZones.Add(p => p.InRect(src, dir, 1f) ? 1f : 0f);
             }
 
             hints.GoalZones.Add(AIHints.GoalSingleTarget(myLink.Position, 5f, 0.5f));
@@ -117,6 +196,11 @@ sealed class Hatch(BossModule module) : Components.CastCounter(module, (uint)AID
             {
                 hints.AddForbiddenZone(new SDInvertedCircle(myLink.Position, 2f), WorldState.FutureTime(leewaySeconds));
             }
+        }
+        else if (_tenstrikeUntargeted[slot])
+        {
+            // non participating players should gtfo to give allies space to preposition
+            hints.AddForbiddenZone(new SDCircle(Arena.Center, 19f));
         }
         else
         {
@@ -177,15 +261,47 @@ sealed class Hatch(BossModule module) : Components.CastCounter(module, (uint)AID
                             continue;
                         }
 
-                        var waitMove = Math.Max(0, (float)(moveStart - WorldState.CurrentTime).TotalSeconds);
+                        var waitMove = Math.Max(0f, (float)(moveStart - WorldState.CurrentTime).TotalSeconds);
                         var toOrb = (closest!.Position - tar.Position).Normalized();
 
-                        hints.AddForbiddenZone(new SDCircle(tar.Position + toOrb, Radius), WorldState.FutureTime(waitMove + tar.DistanceToHitbox(closest) * 0.2f));
+                        // radius = 8 tested extensively to work fine in P1, but first baiters get clipped by it in P3...i don't know       
+                        hints.AddForbiddenZone(new SDCircle(tar.Position + toOrb, Radius + 1f), WorldState.FutureTime(waitMove + tar.DistanceToHitbox(closest) * 0.2f));
                     }
                 }
             }
 
             hints.AddForbiddenZone(linkShape, DateTime.MaxValue);
+        }
+
+        var countI = _intercepts.Count;
+        InterceptState? i0 = null;
+        InterceptState? i1 = null;
+        for (var i = 0; i < countI; ++i)
+        {
+            var intercept = _intercepts[i];
+            if (i1 == null && intercept.NumHits == 1 && intercept.First == slot)
+            {
+                i1 = intercept;
+            }
+            else if (i0 == null && intercept.NumHits == 0 && intercept.Second == slot)
+            {
+                i0 = intercept;
+            }
+        }
+        if (i1 is { Link: { } li })
+        {
+            var linkDir = (li.Position - Arena.Center).Normalized();
+
+            // first hatch player should dodge directly backwards to wall
+            hints.AddForbiddenZone(new SDInvertedRect(Arena.Center + linkDir * 15f, Arena.Center + linkDir * 22f, 1f));
+        }
+
+        if (i0 is { Link: { } link })
+        {
+            var linkPos = link.Position;
+            var linkDir = (linkPos - Arena.Center).Normalized();
+            var adj = linkDir.OrthoR() * 100f;
+            hints.GoalZones.Add(p => p.InRect(linkPos, adj, 2f) ? 10f : 0f);
         }
     }
 
@@ -268,9 +384,21 @@ sealed class Hatch(BossModule module) : Components.CastCounter(module, (uint)AID
 
     private void AssignLinks()
     {
+        if (_targets.NumSetBits() == 3)
+        {
+            AssignTenstrike();
+        }
+        else
+        {
+            AssignP1();
+        }
+    }
+
+    // can't use proximity for assignment during p1 because players are moving
+    private void AssignP1()
+    {
         Array.Fill(_assignedLinks, null);
 
-        // Can't use proximity for assignment because positions are different between clients (if player is moving).
         SortHelpers.SortActorsByID(_neurolinks);
 
         var targets = new List<(int Slot, Actor Player)>();
@@ -295,6 +423,85 @@ sealed class Hatch(BossModule module) : Components.CastCounter(module, (uint)AID
         }
     }
 
+    private void AssignTenstrike()
+    {
+        if (_tenstrikeUntargeted.Any())
+        {
+            return;
+        }
+
+        Array.Fill(_assignedLinks, null);
+
+        List<(int slot, Actor player)> set1 = [];
+        List<(int slot, Actor player)> set2 = [];
+
+        var raid = Raid.WithSlot(true, true, true);
+
+        var len = raid.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            var (slot, player) = raid[i];
+            (_targets[slot] ? set1 : set2).Add((slot, player));
+        }
+
+        var count = _neurolinks.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var link = _neurolinks[i];
+
+            var countS1 = set1.Count;
+            var countS2 = set2.Count;
+            if (countS1 == 0 || countS2 == 0)
+            {
+                ReportError("Each neurolink requires one player from each set.");
+                continue;
+            }
+
+            // Find the closest targeted player
+            var closestIndex = 0;
+            var closestDistance = set1[0].player.DistanceToPoint(link.Position);
+
+            for (var j = 1; j < countS1; ++j)
+            {
+                var distance = set1[j].player.DistanceToPoint(link.Position);
+                if (distance < closestDistance)
+                {
+                    closestIndex = j;
+                    closestDistance = distance;
+                }
+            }
+
+            var closest = set1[closestIndex];
+            set1.RemoveAt(closestIndex);
+
+            // Find the closest untargeted player
+            var closestFriendIndex = 0;
+            var closestFriendDistance = set2[0].player.DistanceToPoint(link.Position);
+
+            for (var j = 1; j < countS2; ++j)
+            {
+                var distance = set2[j].player.DistanceToPoint(link.Position);
+                if (distance < closestFriendDistance)
+                {
+                    closestFriendIndex = j;
+                    closestFriendDistance = distance;
+                }
+            }
+
+            var closestFriend = set2[closestFriendIndex];
+            set2.RemoveAt(closestFriendIndex);
+
+            _assignedLinks[closest.slot] = _assignedLinks[closestFriend.slot] = link;
+            _intercepts.Add(new(closest.slot, closestFriend.slot) { Link = link });
+        }
+
+        var countset2 = set2.Count;
+        for (var i = 0; i < countset2; ++i)
+        {
+            _tenstrikeUntargeted.Set(set2[i].slot);
+        }
+    }
+
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == WatchedAction)
@@ -311,10 +518,27 @@ sealed class Hatch(BossModule module) : Components.CastCounter(module, (uint)AID
             }
             var targets = CollectionsMarshal.AsSpan(spell.Targets);
             var len = targets.Length;
+            var countI = _intercepts.Count;
             for (var i = 0; i < len; ++i)
             {
                 ref readonly var t = ref targets[i];
-                _targets.Clear(Raid.FindSlot(t.ID));
+                if (Raid.FindSlot(t.ID) is var slot && slot >= 0)
+                {
+                    _targets.Clear(slot);
+                    for (var j = 0; j < countI; ++j)
+                    {
+                        var intercept = _intercepts[j];
+                        if (intercept.First == slot)
+                        {
+                            ++intercept.NumHits;
+                            _targets.Set(intercept.Second);
+                        }
+                        else if (intercept.Second == slot)
+                        {
+                            ++intercept.NumHits;
+                        }
+                    }
+                }
             }
         }
     }

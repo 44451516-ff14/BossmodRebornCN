@@ -72,7 +72,7 @@ public sealed class AutoDDConfig : ConfigNode
             ImGui.TextWrapped("该功能在队伍中禁用。");
 
 
-            for (var i = 1; i < (int)PomanderID.Count; i++)
+            for (var i = 1; i < (int)PomanderID.Count; ++i)
                 using (ImRaii.PushId($"pom{i}"))
                 {
                     var row = Service.LuminaRow<DeepDungeonItem>((uint)i)!.Value;

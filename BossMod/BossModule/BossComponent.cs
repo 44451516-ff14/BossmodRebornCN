@@ -99,7 +99,9 @@ public class BossComponent(BossModule module)
         if (table.InstanceID != primaryTarget.InstanceID)
         {
             if (!allowGuessing)
+            {
                 return [];
+            }
 
             var guessed = new List<(int Key, int Index, (int, Actor) Value)>(count);
             for (var i = 0; i < count; ++i)
@@ -117,10 +119,13 @@ public class BossComponent(BossModule module)
                     };
                 guessed.Add((key, i, r));
             }
-            guessed.Sort((a, b) => a.Key != b.Key ? a.Key.CompareTo(b.Key) : a.Index.CompareTo(b.Index));
+            guessed.Sort(static (a, b) => a.Key != b.Key ? a.Key.CompareTo(b.Key) : a.Index.CompareTo(b.Index));
             var guessedResult = new List<(int, Actor)>(count);
-            for (var i = 0; i < guessed.Count; ++i)
+            var countG = guessed.Count;
+            for (var i = 0; i < countG; ++i)
+            {
                 guessedResult.Add(guessed[i].Value);
+            }
             return guessedResult;
         }
 
@@ -130,29 +135,39 @@ public class BossComponent(BossModule module)
         {
             var r = withSlot[i];
             var instanceID = r.Item2.InstanceID;
-            for (var j = 0; j < targets.Length; ++j)
+            var lenT = targets.Length;
+            for (var j = 0; j < lenT; ++j)
             {
-                if (targets[j].InstanceID == instanceID)
+                var t = targets[j];
+                if (t.InstanceID == instanceID)
                 {
-                    if (targets[j].InstanceID > 0)
-                        result.Add((targets[j].Enmity, i, r));
+                    if (t.InstanceID > 0u)
+                    {
+                        result.Add((t.Enmity, i, r));
+                    }
                     break;
                 }
             }
         }
-        result.Sort((a, b) => a.Enmity != b.Enmity ? b.Enmity.CompareTo(a.Enmity) : a.Index.CompareTo(b.Index));
+        result.Sort(static (a, b) => a.Enmity != b.Enmity ? b.Enmity.CompareTo(a.Enmity) : a.Index.CompareTo(b.Index));
         var final = new List<(int, Actor)>(result.Count);
-        for (var i = 0; i < result.Count; ++i)
+        var countR = result.Count;
+        for (var i = 0; i < countR; ++i)
+        {
             final.Add(result[i].Value);
+        }
         return final;
     }
 
     public List<Actor> RaidByEnmity(Actor primaryTarget, bool allowGuessing = true)
     {
         var withSlot = RaidWithSlotByEnmity(primaryTarget, allowGuessing);
-        var result = new List<Actor>(withSlot.Count);
-        for (var i = 0; i < withSlot.Count; ++i)
+        var count = withSlot.Count;
+        var result = new List<Actor>(count);
+        for (var i = 0; i < count; ++i)
+        {
             result.Add(withSlot[i].Item2);
+        }
         return result;
     }
 }

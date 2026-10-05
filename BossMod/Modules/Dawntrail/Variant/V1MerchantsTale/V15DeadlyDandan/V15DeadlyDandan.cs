@@ -90,7 +90,7 @@ sealed class Devour(BossModule module) : Components.GenericAOEs(module)
             var endAngle = startAngle + (isBackwards ? secondAngle * -1 : secondAngle);
             var endDir = endAngle.ToDirection().Normalized();
             var endDist = Intersect.RayCircle(midPos, endDir, Arena.Center, 30f);
-            var endPos = midPos + endDir * endDist;
+            // var endPos = midPos + endDir * endDist;
 
             _aoes.Add(new(new AOEShapeRect(midDist, 10f), startPos, dir.ToAngle()));
             _aoes.Add(new(new AOEShapeRect(endDist, 10f), midPos, endDir.ToAngle()));
@@ -130,7 +130,7 @@ sealed class StingingTentacle(BossModule module) : Components.GenericAOEs(module
             return [];
 
         List<AOEInstance> aoes = [];
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; ++i)
         {
             aoes.Add(new(new AOEShapeRect(50f, 7f), tentacles[i].Position, tentacles[i].Rotation, _activation));
         }

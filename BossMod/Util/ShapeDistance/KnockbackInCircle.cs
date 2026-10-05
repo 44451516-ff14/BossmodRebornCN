@@ -385,3 +385,29 @@ public sealed class SDKnockbackInCircleAwayFromOriginIntoCircle(WPos Center, WPo
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
 }
+
+// Knockback, but we can hit the wall
+public sealed class SDInCircleAwayFromOriginPlusIntersectAOECircles(WPos Origin, float Distance, (WPos Origin, float radius)[] AOEs, int Length) : ShapeDistance {
+    private readonly WPos origin = Origin;
+    private readonly float distance = Distance;
+    private readonly (WPos origin, float radius)[] aoes = AOEs;
+    private readonly int len = Length;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override bool Contains(in WPos p) {
+        for (var i = 0; i < len; ++i) {
+            ref var aoe = ref aoes[i];
+            if (Intersect.RayCircle(p - aoe.origin, (p - origin).Normalized(), aoe.radius, distance)) {
+                return true;
+            }
+
+        }
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override float Distance(in WPos p) => Contains(p) ? 0f : 1f;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
+}

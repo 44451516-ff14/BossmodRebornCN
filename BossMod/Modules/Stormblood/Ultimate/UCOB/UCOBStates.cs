@@ -223,8 +223,7 @@ sealed class UCOBStates : StateMachineBuilder
 
     private State P2BahamutsClaw(uint id, float delay)
     {
-        ComponentCondition<P2BahamutsClaw>(id, delay, static comp => comp.NumCasts > 0)
-            .ActivateOnEnter<P2BahamutsClaw>();
+        ComponentCondition<P2BahamutsClaw>(id, delay, static comp => comp.NumCasts > 0);
         return ComponentCondition<P2BahamutsClaw>(id + 0x10u, 3.2f, static comp => comp.NumCasts > 4, "5-hit tankbuster end")
             .DeactivateOnExit<P2BahamutsClaw>();
     }
@@ -268,10 +267,12 @@ sealed class UCOBStates : StateMachineBuilder
             .DeactivateOnExit<P2HeavensfallDalamudDive>()
             .SetHint(StateMachine.StateHint.Tankbuster);
         ActorTargetable(id + 0x31u, _module.Nael, true, 2f, "Boss appears")
+            // boss can become targetable in the same frame as the 1st claw hit, so we need to activate early or 1st hit will be missed
+            .ActivateOnEnter<P2BahamutsClaw>()
             .ExecOnEnter<Hatch>(static comp => comp.Active = true)
             .SetHint(StateMachine.StateHint.DowntimeEnd);
 
-        P2BahamutsClaw(id + 0x40u, 0.3f)
+        P2BahamutsClaw(id + 0x40u, 0.8f)
             .DeactivateOnExit<P2HeavensfallPillar>();
     }
 
@@ -363,6 +364,7 @@ sealed class UCOBStates : StateMachineBuilder
             .ExecOnExit<P2BahamutsFavorFireball>(static comp => comp.Show());
         // +0.4s: iceball 12
         ComponentCondition<P2BahamutsFavorFireball>(id + 0x350u, 3.0f, static comp => !comp.Active, "Fireball 3")
+            .ActivateOnEnter<P2BahamutsClaw>()
             .DeactivateOnExit<P2BahamutsFavorFireball>();
 
         P2BahamutsClaw(id + 0x400u, 3.4f);
@@ -446,6 +448,7 @@ sealed class UCOBStates : StateMachineBuilder
             .DeactivateOnExit<QuoteThermionicBeam>()
             .DeactivateOnExit<Quote>();
         ComponentCondition<P2Cauterize>(id + 0x60u, 2.5f, static comp => comp.NumCasts >= 5)
+            .ActivateOnEnter<P2BahamutsClaw>()
             .DeactivateOnExit<P2Cauterize>()
             .DeactivateOnExit<P2BlockTransition>(); // nael should be back by now
 
@@ -566,10 +569,10 @@ sealed class UCOBStates : StateMachineBuilder
         ComponentCondition<P3EarthShaker>(id + 0x60u, 2.3f, static comp => comp.NumCasts > 0, "Baited cones")
             .DeactivateOnExit<P3EarthShaker>()
             .ExecOnExit<P3TempestWing>(static comp => comp.EnableRaidHints = true);
-        ComponentCondition<P3TempestWing>(id + 0x70u, 3.3f, static comp => comp.NumCasts > 0, "Tethers")
+        ComponentCondition<P3TempestWing>(id + 0x70u, 2f, static comp => comp.NumCasts > 0, "Tethers")
             .DeactivateOnExit<P3TempestWing>();
 
-        P3FlareBreath(id + 0x1000u, 2.8f);
+        P3FlareBreath(id + 0x1000u, 3.8f);
         P3Flatten(id + 0x2000u, 4.1f)
             .DeactivateOnExit<P3EarthShakerVoidzone>()
             .DeactivateOnExit<P3QuickmarchTrio>();
@@ -662,7 +665,8 @@ sealed class UCOBStates : StateMachineBuilder
 
         P3FlareBreath(id + 0x1000u, 5.4f);
         P3Flatten(id + 0x2000u, 5.2f);
-        P3FlareBreath(id + 0x3000u, 5.2f);
+        P3FlareBreath(id + 0x3000u, 5.2f)
+            .ExecOnExit<P3BahamutPositioning>(static comp => comp.Reset());
     }
 
     private void P3HeavensfallTrio(uint id, float delay)
@@ -682,8 +686,7 @@ sealed class UCOBStates : StateMachineBuilder
         ComponentCondition<P3MegaflareDive>(id + 0x40u, 4f, static comp => comp.NumCasts > 0, "Dives")
             .ActivateOnEnter<P3TwistingDive>()
             .DeactivateOnExit<P3TwistingDive>()
-            .DeactivateOnExit<P3MegaflareDive>()
-            .DeactivateOnExit<P3HeavensfallTrio>();
+            .DeactivateOnExit<P3MegaflareDive>();
         ComponentCondition<P3Twister>(id + 0x50u, 1.3f, static comp => comp.Active, "Twisters");
 
         ComponentCondition<P3HeavensfallTowers>(id + 0x60u, 0.7f, static comp => comp.Towers.Count > 0)
@@ -692,12 +695,7 @@ sealed class UCOBStates : StateMachineBuilder
         ComponentCondition<P3MegaflarePuddle>(id + 0x61u, 1.0f, static comp => comp.Casters.Count > 0)
             .ActivateOnEnter<P3MegaflarePuddle>()
             .ActivateOnEnter<P3Heavensfall>()
-            .ExecOnEnter<P3Heavensfall>(comp =>
-            {
-                comp.Activation = Module.WorldState.FutureTime(4.6d);
-                comp.EnableHints = false;
-            })
-            .ExecOnExit<P3Heavensfall>(static comp => comp.EnableHints = true)
+            .ExecOnEnter<P3Heavensfall>(comp => comp.Activation = Module.WorldState.FutureTime(4.6d))
             .ExecOnExit<P3HeavensfallTowers>(static comp => comp.EnableHints = true);
         ComponentCondition<P3MegaflarePuddle>(id + 0x62u, 3f, static comp => comp.NumCasts > 0)
             .DeactivateOnExit<P3MegaflarePuddle>();
@@ -706,21 +704,21 @@ sealed class UCOBStates : StateMachineBuilder
             .DeactivateOnExit<P3Twister>() // twisters disappear ~0.5s before knockback
             .DeactivateOnExit<P3Heavensfall>();
         ComponentCondition<P3HeavensfallTowers>(id + 0x64u, 2.4f, static comp => comp.NumCasts > 0, "Towers")
+            .ActivateOnEnter<P3ThermionicBurst>() // we use the tower cast event to assign each player a starting position for their dodges
             .DeactivateOnExit<P3HeavensfallTowers>();
 
-        ComponentCondition<P2ThermionicBurst>(id + 0x100u, 1.6f, static comp => comp.Casters.Count > 0)
-            .ActivateOnEnter<P2ThermionicBurst>();
+        ComponentCondition<P3ThermionicBurst>(id + 0x100u, 1.6f, static comp => comp.Casters.Count > 0);
         // +2.0s: second pair, then every 0.5s
 
-        ComponentCondition<P2Hypernova>(id + 0x110u, 1.6f, static comp => comp.NumCasts > 0)
-            .ActivateOnEnter<P2Hypernova>();
-        ComponentCondition<P2ThermionicBurst>(id + 0x120u, 1.4f, static comp => comp.NumCasts > 0, "Pizza start");
-        ComponentCondition<P2Hypernova>(id + 0x130u, 0.2f, static comp => comp.NumCasts > 1);
-        ComponentCondition<P2Hypernova>(id + 0x140u, 1.6f, static comp => comp.NumCasts > 2);
+        ComponentCondition<P3HeavensfallHypernova>(id + 0x110u, 1.6f, static comp => comp.NumCasts > 0)
+            .ActivateOnEnter<P3HeavensfallHypernova>();
+        ComponentCondition<P3ThermionicBurst>(id + 0x120u, 1.4f, static comp => comp.NumCasts > 0, "Pizza start");
+        ComponentCondition<P3HeavensfallHypernova>(id + 0x130u, 0.2f, static comp => comp.NumCasts > 1);
+        ComponentCondition<P3HeavensfallHypernova>(id + 0x140u, 1.6f, static comp => comp.NumCasts > 2);
         ComponentCondition<P3HeavensfallFireball>(id + 0x150u, 0.9f, static comp => comp.Active)
             .ActivateOnEnter<P3HeavensfallFireball>();
-        ComponentCondition<P2ThermionicBurst>(id + 0x160u, 2.5f, static comp => comp.Casters.Count == 0, "Pizza end")
-            .DeactivateOnExit<P2ThermionicBurst>();
+        ComponentCondition<P3ThermionicBurst>(id + 0x160u, 2.5f, static comp => comp.Casters.Count == 0, "Pizza end")
+            .DeactivateOnExit<P3ThermionicBurst>();
 
         ActorTargetable(id + 0x170u, _module.BahamutPrime, true, 1.4f, "Boss reappears")
             .ExecOnEnter<Hatch>(static comp => comp.Active = true)
@@ -730,10 +728,11 @@ sealed class UCOBStates : StateMachineBuilder
             .DeactivateOnExit<P3HeavensfallFireball>();
         ActorCastEnd(id + 0x173u, _module.BahamutPrime, 4.8f, true, "Raidwide")
             .DeactivateOnExit<P2HeavensfallPillar>()
+            .DeactivateOnExit<P3HeavensfallTrio>()
             .SetHint(StateMachine.StateHint.Raidwide);
 
         P3FlareBreath(id + 0x1000u, 9.2f)
-            .DeactivateOnExit<P2Hypernova>();
+            .DeactivateOnExit<P3HeavensfallHypernova>();
         P3FlareBreath(id + 0x2000u, 2.1f);
         P3FlareBreath(id + 0x3000u, 2.1f);
     }
@@ -746,20 +745,21 @@ sealed class UCOBStates : StateMachineBuilder
 
         ComponentCondition<Hatch>(id + 0x20u, 2.2f, static comp => comp.NumTargetsAssigned > 0)
             .ExecOnEnter<Hatch>(static comp => comp.Reset())
-            .ActivateOnEnter<P2MeteorStream>();
+            .ActivateOnEnter<P3TenstrikeMeteorStream>()
+            .ExecOnExit<P3TenstrikeMeteorStream>(static comp => comp.HatchAssigned = true);
         ActorCast(id + 0x30u, _module.Twintania, AID.Generate, 0.1f, 3f, true, "Hatch 1");
-        ComponentCondition<P2MeteorStream>(id + 0x40u, 0.9f, static comp => comp.NumCasts > 0);
+        ComponentCondition<P3TenstrikeMeteorStream>(id + 0x40u, 0.9f, static comp => comp.NumCasts > 0);
         ComponentCondition<Hatch>(id + 0x41u, 0.1f, static comp => comp.NumTargetsAssigned > 3);
         ActorCastStart(id + 0x50u, _module.Twintania, AID.Generate, 0.1f, true);
-        ComponentCondition<P2MeteorStream>(id + 0x51u, 0.8f, static comp => comp.NumCasts > 1);
-        ComponentCondition<P2MeteorStream>(id + 0x52u, 1.0f, static comp => comp.NumCasts > 2); // first set of hatches explode around this point
-        ComponentCondition<P2MeteorStream>(id + 0x53u, 1.0f, static comp => comp.NumCasts > 3);
+        ComponentCondition<P3TenstrikeMeteorStream>(id + 0x51u, 0.8f, static comp => comp.NumCasts > 1);
+        ComponentCondition<P3TenstrikeMeteorStream>(id + 0x52u, 1.0f, static comp => comp.NumCasts > 2); // first set of hatches explode around this point
+        ComponentCondition<P3TenstrikeMeteorStream>(id + 0x53u, 1.0f, static comp => comp.NumCasts > 3);
         ActorCastEnd(id + 0x54u, _module.Twintania, 0.2f, true, "Hatch 2");
-        ComponentCondition<P2MeteorStream>(id + 0x55u, 0.8f, static comp => comp.NumCasts > 4);
-        ComponentCondition<P2MeteorStream>(id + 0x56u, 1.0f, static comp => comp.NumCasts > 5);
-        ComponentCondition<P2MeteorStream>(id + 0x57u, 1.0f, static comp => comp.NumCasts > 6); // second set of hatches explode around this point
-        ComponentCondition<P2MeteorStream>(id + 0x58u, 1.0f, static comp => comp.NumCasts > 7)
-            .DeactivateOnExit<P2MeteorStream>();
+        ComponentCondition<P3TenstrikeMeteorStream>(id + 0x55u, 0.8f, static comp => comp.NumCasts > 4);
+        ComponentCondition<P3TenstrikeMeteorStream>(id + 0x56u, 1.0f, static comp => comp.NumCasts > 5);
+        ComponentCondition<P3TenstrikeMeteorStream>(id + 0x57u, 1.0f, static comp => comp.NumCasts > 6); // second set of hatches explode around this point
+        ComponentCondition<P3TenstrikeMeteorStream>(id + 0x58u, 1.0f, static comp => comp.NumCasts > 7)
+            .DeactivateOnExit<P3TenstrikeMeteorStream>();
 
         ComponentCondition<P3EarthShaker>(id + 0x100u, 0.9f, static comp => comp.CurrentBaits.Count > 0)
             .ActivateOnEnter<P3EarthShaker>();

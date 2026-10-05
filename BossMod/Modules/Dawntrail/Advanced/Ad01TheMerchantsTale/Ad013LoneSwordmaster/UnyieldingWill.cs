@@ -57,7 +57,7 @@ sealed class UnyieldingWill(BossModule module) : Components.GenericBaitAway(modu
 
             var tethers = CollectionsMarshal.AsSpan(_tethers);
             var len = tethers.Length;
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < len; ++i)
             {
                 if (tethers[i].Target == source)
                 {
@@ -88,7 +88,7 @@ sealed class UnyieldingWill(BossModule module) : Components.GenericBaitAway(modu
             if (len > 0)
             {
                 var safe = false;
-                for (var i = 0; i < len; i++)
+                for (var i = 0; i < len; ++i)
                 {
                     if (angle.AlmostEqual(angles[i], 45f.Degrees().Rad))
                     {
@@ -177,7 +177,7 @@ sealed class UnyieldingWill(BossModule module) : Components.GenericBaitAway(modu
 
         // if source is same direction as safe side, stand in that path; try standing close to avoid clipping other players
         var sourceSafe = true;
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; ++i)
         {
             if (source.Rotation.AlmostEqual(unsafeAngles[i], 0.02f))
             {

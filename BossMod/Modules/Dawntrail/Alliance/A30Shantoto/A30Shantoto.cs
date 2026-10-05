@@ -35,7 +35,7 @@ sealed class SuperiorStoneIIArena(BossModule module) : BossComponent(module)
         if (spell.Action.ID == (uint)AID.SuperiorStoneII)
         {
             var _rects = new Rectangle[cutoffs.Count];
-            for (var i = 0; i < cutoffs.Count; i++)
+            for (var i = 0; i < cutoffs.Count; ++i)
             {
                 var pos = cutoffs[i].Position + cutoffs[i].Rotation.ToDirection() * 10.5f;
                 _rects[i] = new Rectangle(pos, 6.1f, 10.5f, cutoffs[i].Rotation); //This functions but could probably be more accurate.

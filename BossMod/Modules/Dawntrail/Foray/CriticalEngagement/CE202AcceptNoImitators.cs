@@ -134,7 +134,7 @@ sealed class HellwardBound(BossModule module) : Components.GenericAOEs(module)
         var max = count > 2 ? 2 : count;
         var nextAOEs = CollectionsMarshal.AsSpan(aoes);
 
-        for (var i = 0; i < max; i++)
+        for (var i = 0; i < max; ++i)
         {
             ref var aoe = ref nextAOEs[i];
             aoe.Color = i == 0 ? Colors.Danger : Colors.AOE;
@@ -179,7 +179,7 @@ sealed class HellwardBound(BossModule module) : Components.GenericAOEs(module)
         }
 
         // Setup the aoes
-        for (var i = 0; i < pathList.Count; i++)
+        for (var i = 0; i < pathList.Count; ++i)
         {
             if (i == 0)
             {
@@ -234,7 +234,7 @@ sealed class HellishBreath(BossModule module) : Components.GenericAOEs(module)
         var max = count > 2 ? 2 : count;
         var nextAOEs = CollectionsMarshal.AsSpan(aoes);
 
-        for (var i = 0; i < max; i++)
+        for (var i = 0; i < max; ++i)
         {
             ref var aoe = ref nextAOEs[i];
             aoe.Color = i == 0 ? Colors.Danger : Colors.AOE;
@@ -292,7 +292,7 @@ sealed class ShapeshiftingSupercellRings(BossModule module) : Components.Generic
         var max = count > 2 ? 2 : count;
         var aoes = CollectionsMarshal.AsSpan(Casters);
 
-        for (var i = 0; i < max; i++)
+        for (var i = 0; i < max; ++i)
         {
             ref var aoe = ref aoes[i];
             aoe.Color = i == 0 ? Colors.Danger : Colors.AOE;
@@ -347,7 +347,7 @@ sealed class ShapeshiftingSupercell : Components.GenericRotatingAOE
     {
         if (rotations.Count == 3 && increment != default)
         {
-            for (var i = 0; i < 3; i++)
+            for (var i = 0; i < 3; ++i)
             {
                 var spell = rotations[i];
                 Sequences.Add(new(shape, spell.LocXZ, spell.Rotation, increment, Module.CastFinishAt(spell), 2.5f, 6, 1));

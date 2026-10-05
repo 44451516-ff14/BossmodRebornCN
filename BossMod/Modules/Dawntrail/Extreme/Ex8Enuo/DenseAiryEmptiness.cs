@@ -10,7 +10,7 @@ sealed class DenseAiryEmptiness(BossModule module) : Components.GenericBaitStack
             var party = Raid.WithoutSlot(true, false, false);
             var len = party.Length;
             var delay = 5f;
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < len; ++i)
             {
                 var p = party[i];
                 if (p.Role == Role.Healer)
@@ -24,7 +24,7 @@ sealed class DenseAiryEmptiness(BossModule module) : Components.GenericBaitStack
             var party = Raid.WithoutSlot(true, false, false);
             var len = party.Length;
             var delay = 5f;
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < len; ++i)
             {
                 var p = party[i];
                 if (p.Role is Role.Healer or Role.Tank)

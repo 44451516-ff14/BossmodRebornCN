@@ -6,25 +6,26 @@ sealed class HissingResonance(BossModule module) : Components.GenericKnockback(m
     // knockback x2 only when color boss is casting
     private readonly Kind[] _green = new Kind[PartyState.MaxAllies];
     private readonly Kind[] _blue = new Kind[PartyState.MaxAllies];
+
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
         var hissing = GetHissingInfo(slot);
-        if (hissing.Kind == Kind.None || hissing.AOEs.Length < 2)
+        var aoes = hissing.AOEs.AsSpan();
+        if (hissing.Kind == Kind.None || aoes.Length < 2)
         {
             return [];
         }
 
         var posx = hissing.Kind == Kind.DirRight ? -880f : 920f;
         WPos origin = new(posx, Arena.Center.Z);
-        var aoe1 = hissing.AOEs[0];
-        Knockback[] kb = [new(origin, 10f, aoe1.Activation, kind: hissing.Kind)];
+        Knockback[] kb = [new(origin, 10f, aoes[0].Activation, kind: hissing.Kind)];
 
         return kb;
     }
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        if (status.ID is (uint)SID.GreenNoiseEasterly or (uint)SID.GreenNoiseWesterly or (uint)SID.BlueNoiseEasterly or (uint)SID.BlueNoiseWesterly)
+        if (status.ID is var id && id is (uint)SID.GreenNoiseEasterly or (uint)SID.GreenNoiseWesterly or (uint)SID.BlueNoiseEasterly or (uint)SID.BlueNoiseWesterly)
         {
             var slot = Raid.FindSlot(actor.InstanceID);
             if (slot == -1)
@@ -32,8 +33,8 @@ sealed class HissingResonance(BossModule module) : Components.GenericKnockback(m
                 return;
             }
 
-            var direction = status.ID is (uint)SID.GreenNoiseEasterly or (uint)SID.BlueNoiseEasterly ? Kind.DirRight : Kind.DirLeft;
-            var color = status.ID is (uint)SID.GreenNoiseEasterly or (uint)SID.GreenNoiseWesterly ? _green : _blue;
+            var direction = id is (uint)SID.GreenNoiseEasterly or (uint)SID.BlueNoiseEasterly ? Kind.DirRight : Kind.DirLeft;
+            var color = id is (uint)SID.GreenNoiseEasterly or (uint)SID.GreenNoiseWesterly ? _green : _blue;
             color[slot] = direction;
         }
     }
@@ -69,26 +70,28 @@ sealed class HissingResonance(BossModule module) : Components.GenericKnockback(m
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
         var hissing = GetHissingInfo(slot);
-        if (hissing.Kind == Kind.None || hissing.AOEs.Length < 2)
+        var aoes = hissing.AOEs.AsSpan();
+        if (hissing.Kind == Kind.None || aoes.Length < 2)
         {
             return base.DestinationUnsafe(slot, actor, pos);
         }
 
-        var aoe = hissing.AOEs[1];
+        var aoe = aoes[1];
         return base.DestinationUnsafe(slot, actor, pos) || aoe.Check(pos);
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var hissing = GetHissingInfo(slot);
-        if (hissing.Kind == Kind.None || hissing.AOEs.Length < 2)
+        var aoes = hissing.AOEs.AsSpan();
+        if (hissing.Kind == Kind.None || aoes.Length < 2)
         {
             return;
         }
 
         var direction = new WDir(hissing.Kind == Kind.DirLeft ? 10f : -10f, 0f);
-        var aoe1 = hissing.AOEs[0];
-        var aoe2 = hissing.AOEs[1];
+        ref var aoe1 = ref aoes[0];
+        ref var aoe2 = ref aoes[1];
 
         if (!IsImmune(slot, aoe1.Activation))
         {
@@ -108,28 +111,34 @@ sealed class HissingResonance(BossModule module) : Components.GenericKnockback(m
     private (Kind Kind, Components.GenericAOEs.AOEInstance[] AOEs) GetHissingInfo(int slot)
     {
         var blazes = Module.FindComponent<CrossBlazeLoop>();
-
-        if (blazes == null || blazes.ActiveCasters.Length < 2)
+        if (blazes == null)
         {
-            return (Kind.None, []);
+            return ReturnDefault();
+        }
+        var aoes = CollectionsMarshal.AsSpan(blazes.AOEs);
+        if (blazes == null || aoes.Length < 2)
+        {
+            return ReturnDefault();
         }
 
-        var aoe1 = blazes.ActiveCasters[0];
+        ref var aoe1 = ref aoes[0];
         var casterId = aoe1.ActorID;
         var caster = WorldState.Actors.Find(casterId);
         if (caster?.OID is not ((uint)OID.GreenHead1) and not ((uint)OID.BlueHead1))
         {
-            return (Kind.None, []);
+            return ReturnDefault();
         }
 
         var kind = caster.OID == (uint)OID.GreenHead1 ? _green : _blue;
         if (kind[slot] == Kind.None)
         {
-            return (Kind.None, []);
+            return ReturnDefault();
         }
 
-        var aoe2 = blazes.ActiveCasters[1];
+        ref var aoe2 = ref aoes[1];
 
         return (kind[slot], [aoe1, aoe2]);
+
+        static (Kind, Components.GenericAOEs.AOEInstance[]) ReturnDefault() => (Kind.None, []);
     }
 }

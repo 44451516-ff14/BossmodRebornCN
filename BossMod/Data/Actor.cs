@@ -76,7 +76,7 @@ public sealed class ActorCastEvent(ActionID action, ulong mainTargetID, float an
     public bool IsSpell<AID>(AID aid) where AID : Enum => Action == ActionID.MakeSpell(aid);
 }
 
-public struct ActorHPMP(uint curHP, uint maxHP, uint shield, uint curMP, uint maxMP)
+public struct ActorHPMP(uint curHP, uint maxHP, uint shield, uint curMP, uint maxMP) : IEquatable<ActorHPMP>
 {
     public uint CurHP = curHP;
     public uint MaxHP = maxHP;
@@ -108,7 +108,7 @@ public struct ActorStatus(uint id, ushort extra, DateTime expireAt, ulong source
     public readonly ulong SourceID = sourceID;
 }
 
-public readonly struct ActorModelState(byte modelState, byte animState1, byte animState2)
+public readonly struct ActorModelState(byte modelState, byte animState1, byte animState2) : IEquatable<ActorModelState>
 {
     public readonly byte ModelState = modelState;
     public readonly byte AnimState1 = animState1;
@@ -124,7 +124,7 @@ public readonly struct ActorModelState(byte modelState, byte animState1, byte an
     public override string ToString() => $"ModelState: {ModelState}, AnimState1: {AnimState1}, AnimState2: {AnimState2}";
 }
 
-public readonly struct ActorForayInfo(byte level, byte element)
+public readonly struct ActorForayInfo(byte level, byte element) : IEquatable<ActorForayInfo>
 {
     public readonly byte Level = level;
     public readonly byte Element = element;

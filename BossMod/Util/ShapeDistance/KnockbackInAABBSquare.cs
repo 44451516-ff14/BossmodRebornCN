@@ -439,3 +439,34 @@ public sealed class SDKnockbackInAABBSquareFixedDirectionPlusMixedAOEs(WPos Cent
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
 }
+
+public sealed class SDKnockbackInAABBSquareAwayFromOriginPlusIntersectAOECircles(WPos Center, WPos Origin, float Distance, float HalfWidth, WPos[] Origins, float Radius, int Length) : ShapeDistance {
+    private readonly WPos center = Center;
+    private readonly WPos origin = Origin;
+    private readonly float halfWidth = HalfWidth;
+    private readonly float distance = Distance;
+    private readonly WPos[] origins = Origins;
+    private readonly float radius = Radius;
+    private readonly int len = Length;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override bool Contains(in WPos p) {
+        var projected = p + distance * (p - origin).Normalized();
+        if (!projected.InSquare(center, halfWidth)) {
+            return true;
+        }
+
+        for (var i = 0; i < len; ++i) {
+            if (Intersect.RayCircle(p - origins[i], (p - origin).Normalized(), radius, distance)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override float Distance(in WPos p) => Contains(p) ? 0f : 1f;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
+}

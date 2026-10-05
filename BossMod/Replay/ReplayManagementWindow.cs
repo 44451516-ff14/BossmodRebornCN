@@ -352,7 +352,7 @@ public sealed class ReplayManagementWindow : UIWindow
                     {
                         Process.Start(new ProcessStartInfo
                         {
-                            FileName = "https://forms.gle/z6czgekaEnFBtgbB6",
+                            FileName = "https://forms.gle/azKuE9mfbz9qG8EBA",
                             UseShellExecute = true
                         });
                     });

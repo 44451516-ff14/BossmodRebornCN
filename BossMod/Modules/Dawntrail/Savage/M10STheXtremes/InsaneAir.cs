@@ -31,7 +31,7 @@ sealed class InsaneAirTest(BossModule module) : Components.GenericBaitProximity(
         {
             var abilities = CollectionsMarshal.AsSpan(_abilities);
             var len = abilities.Length;
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < len; ++i)
             {
                 ref var ability = ref abilities[i];
                 if (caster.Position.AlmostEqual(ability.Position, 1f))
@@ -64,7 +64,7 @@ sealed class InsaneAirTest(BossModule module) : Components.GenericBaitProximity(
         var baits = CollectionsMarshal.AsSpan(CurrentBaits);
         var len = baits.Length;
 
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; ++i)
         {
             if (baits[i].Position.AlmostEqual(position, eps))
             {

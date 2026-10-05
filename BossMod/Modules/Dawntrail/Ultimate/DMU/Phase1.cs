@@ -253,7 +253,7 @@ sealed class WaveCannonTowers(BossModule module) : Components.CastTowers(module,
         {
             var count = Towers.Count;
             var towers = CollectionsMarshal.AsSpan(Towers);
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 towers[i].ForbiddenSoakers = Raid.WithSlot(false, true, true)
                     .WhereSlot(player => magicVulnerability[player] > Towers[i].Activation).Mask();

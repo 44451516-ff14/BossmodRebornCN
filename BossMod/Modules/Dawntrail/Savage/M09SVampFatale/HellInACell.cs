@@ -61,7 +61,7 @@ sealed class BloodyBondage(BossModule module) : Components.CastTowers(module, (u
         if (index == -1)
         {
             //base.DrawArenaForeground(pcSlot, pc);
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < len; ++i)
             {
                 var isInside = towers[i].IsInside(pc);
                 var numInside = towers[i].NumInside(Module);
@@ -88,7 +88,7 @@ sealed class BloodyBondage(BossModule module) : Components.CastTowers(module, (u
             // not in light party that's doing towers
             if (!actorParty)
             {
-                for (var i = 0; i < len; i++)
+                for (var i = 0; i < len; ++i)
                 {
                     towers[i].Shape.Draw(Arena, towers[i].Position, towers[i].Rotation, default);
                 }
@@ -160,7 +160,7 @@ sealed class BloodyBondage(BossModule module) : Components.CastTowers(module, (u
             if (!actorParty)
             {
                 var len = towers.Length;
-                for (var i = 0; i < len; i++)
+                for (var i = 0; i < len; ++i)
                 {
                     hints.AddForbiddenZone(towers[i].Shape, towers[i].Position, default, towers[i].Activation);
                 }
@@ -236,7 +236,7 @@ sealed class BloodyBondageUndeadDeathmatch(BossModule module) : Components.CastT
         var towers = CollectionsMarshal.AsSpan(Towers);
         var len = towers.Length;
 
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; ++i)
         {
             var angle = (towers[i].Position - Arena.Center).ToAngle();
             if (angle.AlmostEqual(Angle.AnglesCardinals[0], 0.01f) || angle.AlmostEqual(Angle.AnglesCardinals[2], 0.01f))
@@ -278,7 +278,7 @@ sealed class UltrasonicSpreadTank(BossModule module) : Components.GenericBaitAwa
             var party = Raid.WithoutSlot(false, true, true);
             var len = party.Length;
 
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < len; ++i)
             {
                 if (party[i].Role == Role.Tank)
                 {
@@ -317,7 +317,7 @@ sealed class UltrasonicSpreadRest(BossModule module) : Components.GenericBaitAwa
             var party = Raid.WithoutSlot(false, true, true);
             var len = party.Length;
 
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < len; ++i)
             {
                 var status = party[i].FindStatus((uint)SID.HellAwaits);
                 if (status == null || status.Value.ExpireAt.AddSeconds(-1) < WorldState.CurrentTime)
@@ -364,7 +364,7 @@ sealed class UltrasonicAmp(BossModule module) : Components.GenericBaitAway(modul
             var party = Raid.WithoutSlot(false, true, true);
             var len = party.Length;
 
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < len; ++i)
             {
                 if (party[i].Role == Role.Tank)
                 {

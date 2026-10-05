@@ -3,8 +3,16 @@
 // wrapper around float, stores angle in radians, provides type-safety and convenience
 // when describing rotation in world, common convention is 0 for 'south'/'down'/(0, -1) and increasing counterclockwise - so +90 is 'east'/'right'/(1, 0)
 
-public readonly struct Angle(float rad)
+public readonly struct Angle(float rad) : IEquatable<Angle>
 {
+    static Angle()
+    {
+        // quantized angles that are commonly used
+        AnglesIntercardinals = [-45.003f.Degrees(), 44.998f.Degrees(), 134.999f.Degrees(), -135.005f.Degrees()];
+        AnglesCardinals = [-90.004f.Degrees(), -0.003f.Degrees(), 180f.Degrees(), 89.999f.Degrees()];
+        AnglesFullCompass = [.. AnglesIntercardinals, .. AnglesCardinals];
+    }
+
     public readonly float Rad = rad;
     public const float RadToDeg = 180f / MathF.PI;
     public const float DegToRad = MathF.PI / 180f;
@@ -13,8 +21,9 @@ public readonly struct Angle(float rad)
 
     public Angle(ref Vector4 v) : this(v.W) { }
 
-    public static readonly Angle[] AnglesIntercardinals = [-45.003f.Degrees(), 44.998f.Degrees(), 134.999f.Degrees(), -135.005f.Degrees()];
-    public static readonly Angle[] AnglesCardinals = [-90.004f.Degrees(), -0.003f.Degrees(), 180f.Degrees(), 89.999f.Degrees()];
+    public static readonly Angle[] AnglesIntercardinals;
+    public static readonly Angle[] AnglesCardinals;
+    public static readonly Angle[] AnglesFullCompass;
 
     public readonly float Deg => Rad * RadToDeg;
 

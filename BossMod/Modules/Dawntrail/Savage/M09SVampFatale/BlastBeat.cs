@@ -25,7 +25,7 @@ sealed class BlastBeat(BossModule module) : Components.GenericAOEs(module)
         List<AOEInstance> aoes = [];
 
         // delay displaying bat blast longer? for easier debuff popping
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; ++i)
         {
             if (vamps[i].Activation == default)
                 continue;
@@ -58,7 +58,7 @@ sealed class BlastBeat(BossModule module) : Components.GenericAOEs(module)
             var vamps = CollectionsMarshal.AsSpan(_vampettes);
             var len = vamps.Length;
 
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < len; ++i)
             {
                 // predicted explosion on at least 1st bats are incorrect, still clipped despite showing safe on radar; 90 degrees too far?
                 // between replays it appears to be anywhere from 88 to 92 degrees; mal says maybe due calculated by server ticks not hard rotation
@@ -87,7 +87,7 @@ sealed class BlastBeat(BossModule module) : Components.GenericAOEs(module)
             var vamps = CollectionsMarshal.AsSpan(_vampettes);
             var len = vamps.Length;
 
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < len; ++i)
             {
                 if (vamps[i].Actor.InstanceID == caster.InstanceID)
                 {
@@ -107,7 +107,7 @@ sealed class BlastBeat(BossModule module) : Components.GenericAOEs(module)
             var len = predictedVamps.Length;
             var index = -1;
 
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < len; ++i)
             {
                 var v = predictedVamps[i];
                 if (caster.InstanceID == v.Actor.InstanceID)

@@ -109,7 +109,7 @@ class LevinSignal(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var aoes = new AOEInstance[count];
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             var c = _casters[i];
 
@@ -176,7 +176,7 @@ sealed class WindpipeDrawIn(BossModule module) : Components.SimpleKnockbacks(mod
                 if (len > 0)
                 {
                     var swalls = new SafeWall[len];
-                    for (var i = 0; i < _walls.Count; i++)
+                    for (var i = 0; i < _walls.Count; ++i)
                     {
                         swalls[i] = _walls[i];
                     }
@@ -421,15 +421,7 @@ public class T07Doomtrain(WorldState ws, Actor primary) : BossModule(ws, primary
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        if (PrimaryActor.IsTargetable)
-        {
-            var height = Arena.Bounds.Radius;
-            if (PrimaryActor.Position.InRect(Arena.Center, default(Angle), height + 12, height + 12, 10))
-                Arena.ActorInsideBounds(Arena.Center - new WDir(0, height), PrimaryActor.Rotation, Colors.Enemy);
-            else
-                Arena.ActorOutsideBounds(Arena.Center - new WDir(0, height), PrimaryActor.Rotation, Colors.Enemy);
-        }
-
+        Arena.Actor(PrimaryActor);
         Arena.Actor(AetherIntermission);
         Arena.Actor(ghostTrain, Colors.Object, true);
         // use this to see where the arcane revelation aoe center is floating.

@@ -296,7 +296,7 @@ public sealed class UIPresetEditor
         {
             if (combo)
             {
-                for (var i = 0; i < ms.Definition.Configs.Count; i++)
+                for (var i = 0; i < ms.Definition.Configs.Count; ++i)
                     if (ImGui.Selectable(ms.Definition.Configs[i].UIName))
                     {
                         ms.SerializedSettings.Add(new(Preset.Modifier.Shift, i, ms.Definition.Configs[i].CreateForEditor()));
@@ -304,7 +304,7 @@ public sealed class UIPresetEditor
             }
         }
 
-        for (var i = 0; i < ms.SerializedSettings.Count; i++)
+        for (var i = 0; i < ms.SerializedSettings.Count; ++i)
         {
             ref var val = ref ms.SerializedSettings.Ref(i);
             if (val.Mod == default)

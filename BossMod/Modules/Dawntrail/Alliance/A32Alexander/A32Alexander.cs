@@ -16,7 +16,7 @@ sealed class RadiantSacrament(BossModule module) : Components.GenericAOEs(module
         {
             var max = count > 15 ? 15 : count;
             var tiles = new AOEInstance[max];
-            for (var i = 0; i < max; i++)
+            for (var i = 0; i < max; ++i)
             {
                 tiles[i] = _aoes[i];
             }
@@ -94,7 +94,7 @@ class Electrify(BossModule module) : Components.GenericAOEs(module)
         }
         var max = (count > 2) ? 2 : count;
         var _aoes = new AOEInstance[max];
-        for (var i = 0; i < max; i++)
+        for (var i = 0; i < max; ++i)
         {
             _aoes[i] = _tethers[i];
         }

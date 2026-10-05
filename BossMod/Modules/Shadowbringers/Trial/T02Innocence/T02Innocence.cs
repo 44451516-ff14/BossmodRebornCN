@@ -157,7 +157,7 @@ sealed class SoulAndBody(BossModule module) : Components.SimpleAOEs(module, (uin
              */
             var _genAOE = 26;
 
-            for (var i = 0; i < _genAOE; i++)
+            for (var i = 0; i < _genAOE; ++i)
             {
                 var rotAngFloat = 8f * i;
                 WPos futureOrigin = WPos.RotateAroundOrigin(-rotAngFloat, Arena.Center, spell.LocXZ);

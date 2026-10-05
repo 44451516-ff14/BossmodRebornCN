@@ -7,7 +7,7 @@ namespace BossMod;
 
 public sealed class AIHintsVisualizer(AIHints hints, WorldState ws, Actor player, float preferredDistance, float cushionSize)
 {
-    private readonly MapVisualizer?[] _zoneVisualizers = new MapVisualizer?[hints.ForbiddenZones.Count];
+    private readonly MapVisualizer?[] _zoneVisualizers = new MapVisualizer?[hints.ForbiddenZones.Count + hints.GoalZones.Count];
     private MapVisualizer? _pathfindVisualizer;
     private readonly NavigationDecision.Context _naviCtx = new();
     private NavigationDecision _navi;
@@ -38,14 +38,27 @@ public sealed class AIHintsVisualizer(AIHints hints, WorldState ws, Actor player
         tree.LeafNode($"Forced target: {hints.ForcedTarget}{((hints.ForcedTarget?.IsTargetable ?? true) ? "" : " (untargetable)")}");
         tree.LeafNode($"Forced movement: {hints.ForcedMovement} (misdirection threshold={hints.MisdirectionThreshold})");
         tree.LeafNode($"Special movement: {hints.ImminentSpecialMode.mode} in {Math.Max(0, (hints.ImminentSpecialMode.activation - ws.CurrentTime).TotalSeconds):f3}s");
-        foreach (var _1 in tree.Node("Forbidden zones", hints.ForbiddenZones.Count == 0))
+        var countF = hints.ForbiddenZones.Count;
+        foreach (var _1 in tree.Node("Forbidden zones", countF == 0))
         {
-            for (var i = 0; i < hints.ForbiddenZones.Count; ++i)
+            for (var i = 0; i < countF; ++i)
             {
-                foreach (var _2 in tree.Node($"[{i}] activated at {Math.Max(0, (hints.ForbiddenZones[i].activation - ws.CurrentTime).TotalSeconds):f3}"))
+                var zone = hints.ForbiddenZones[i];
+                foreach (var _2 in tree.Node($"[{i}] activated at {Math.Max(0d, (zone.activation - ws.CurrentTime).TotalSeconds):f3}"))
                 {
-                    _zoneVisualizers[i] ??= BuildZoneVisualizer(hints.ForbiddenZones[i].shapeDistance);
-                    _zoneVisualizers[i]!.Draw();
+                    (_zoneVisualizers[i] ??= BuildZoneVisualizer(zone.shapeDistance)).Draw();
+                }
+            }
+        }
+        var off = countF;
+        var countG = hints.GoalZones.Count;
+        foreach (var _1 in tree.Node("Goal zones", countG == 0))
+        {
+            for (var i = 0; i < countG; ++i)
+            {
+                foreach (var _2 in tree.Node($"[{i}]"))
+                {
+                    (_zoneVisualizers[i + off] ??= BuildGoalVisualizer(hints.GoalZones[i])).Draw();
                 }
             }
         }
@@ -174,6 +187,14 @@ public sealed class AIHintsVisualizer(AIHints hints, WorldState ws, Actor player
         var map = new Map();
         hints.InitPathfindMap(map);
         map.BlockPixelsInside(shape, 0, 0.5f * map.Resolution);
+        return new MapVisualizer(map, player.Position);
+    }
+
+    private MapVisualizer BuildGoalVisualizer(Func<WPos, float> shape)
+    {
+        var map = new Map();
+        hints.InitPathfindMap(map);
+        NavigationDecision.RasterizeGoalZones(map, [shape]);
         return new MapVisualizer(map, player.Position);
     }
 

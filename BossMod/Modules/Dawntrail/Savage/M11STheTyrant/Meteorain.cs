@@ -162,7 +162,7 @@ sealed class CosmicKissTowers(BossModule module) : Components.CastTowers(module,
         {
             var badsoakers = new BitMask();
             var raid = Raid.WithoutSlot();
-            for (var i = 0; i < raid.Length; i++)
+            for (var i = 0; i < raid.Length; ++i)
             {
                 if (raid[i].Role != Role.Tank)
                 {
@@ -181,7 +181,7 @@ sealed class WeightyImpactTowers(BossModule module) : Components.CastTowers(modu
         {
             var badsoakers = new BitMask();
             var raid = Raid.WithoutSlot();
-            for (var i = 0; i < raid.Length; i++)
+            for (var i = 0; i < raid.Length; ++i)
             {
                 if (raid[i].Role == Role.Tank)
                 {

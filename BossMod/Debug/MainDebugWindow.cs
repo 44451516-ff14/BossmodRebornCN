@@ -8,29 +8,8 @@ using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using System.Runtime.InteropServices;
 
 namespace BossMod;
-
-[StructLayout(LayoutKind.Explicit, Size = 0x10)]
-public struct BeastmasterGauge
-{
-    [FieldOffset(0)] public byte Unk0;
-    [FieldOffset(1)] public byte Unk1;
-    [FieldOffset(2)] public byte Unk2;
-    [FieldOffset(3)] public byte Unk3;
-    [FieldOffset(4)] public byte Unk4;
-    [FieldOffset(5)] public byte Unk5;
-    [FieldOffset(6)] public byte Unk6;
-    [FieldOffset(7)] public byte Unk7;
-    [FieldOffset(8)] public byte PlayerTP;
-    [FieldOffset(9)] public byte PetTP;
-    [FieldOffset(10)] public byte LastPetActionTP;
-    [FieldOffset(0x0B)] public byte SummonedBeast;
-    [FieldOffset(12)] public byte Unk12; // 
-    [FieldOffset(13)] public byte Unk13; // 2 = red buff, 3 = blue buff, 4 = yellow buff, 5 = green buff
-    [FieldOffset(14)] public byte Unk14;
-}
 
 sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneModuleManager zmm, ActionManagerEx amex, MovementOverride move, AIHintsBuilder hintBuilder, IDalamudPluginInterface dalamud, RotationSolverRebornModule rsr) : UIWindow("Boss mod debug UI", false, new(300, 200))
 {
@@ -118,6 +97,7 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
         {
             DrawEffects();
         }
+        /*
         if (ImGui.CollapsingHeader("Gauge"))
         {
             var gauge = ws.Client.GaugePayload;
@@ -125,6 +105,7 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
             var as_ = ws.Client.GetGauge<BeastmasterGauge>();
             Dalamud.Utility.Util.ShowObject(as_);
         }
+        */
         if (ImGui.CollapsingHeader("Map effects"))
         {
             _debugMapEffect.Draw();
@@ -542,7 +523,7 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
         var markers = MarkingController.Instance();
         using (ImRaii.Table("Field", 2))
         {
-            for (var i = 0; i < markers->FieldMarkers.Length; i++)
+            for (var i = 0; i < markers->FieldMarkers.Length; ++i)
             {
                 ImGui.TableNextRow();
                 ImGui.TableNextColumn();
@@ -554,7 +535,7 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
 
         using (ImRaii.Table("目标", 2))
         {
-            for (var i = 0; i < markers->Markers.Length; i++)
+            for (var i = 0; i < markers->Markers.Length; ++i)
             {
                 ImGui.TableNextRow();
                 ImGui.TableNextColumn();

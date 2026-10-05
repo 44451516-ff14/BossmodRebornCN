@@ -13,14 +13,28 @@ public sealed class ReplayRecorder : IDisposable
     // this is required for role assignment to work in anonymized replays (i.e. if we returned a constant instead, everyone would get the same role)
     private class IdAnonymizer
     {
-        readonly byte[] table = [.. Enumerable.Range(0, 256).Shuffle().Select(i => (byte)i)];
+        readonly byte[] table = CreateTable();
+
+        private static byte[] CreateTable()
+        {
+            var result = new byte[256];
+
+            for (var i = 0; i < 256; ++i)
+            {
+                result[i] = (byte)i;
+            }
+
+            Random.Shared.Shuffle(result);
+            return result;
+        }
 
         public ulong Hide(ulong id)
         {
             var plain = BitConverter.GetBytes(id);
-            var cx = new byte[plain.Length];
+            var len = plain.Length;
+            var cx = new byte[len];
             var c = 0;
-            for (var i = 0; i < plain.Length; i++)
+            for (var i = 0; i < len; ++i)
             {
                 c = table[plain[i] ^ c];
                 cx[i] = (byte)c;

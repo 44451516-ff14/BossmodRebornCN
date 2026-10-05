@@ -69,7 +69,7 @@ sealed class BigWave(BossModule module) : Components.SimpleKnockbacks(module, (u
         var dir = kb.Direction.ToDirection() * kb.Distance;
         var est = actor.Position + dir;
 
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; ++i)
         {
             if (aquaballs[i].Contains(est))
                 return true;
@@ -213,7 +213,7 @@ sealed class EchoedSerenade(BossModule module) : Components.GenericAOEs(module)
         List<AOEInstance> upcoming = [];
         var firstAct = aoes[0].Activation;
 
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; ++i)
         {
             if (aoes[i].Activation == firstAct)
             {
@@ -240,7 +240,7 @@ sealed class EchoedSerenade(BossModule module) : Components.GenericAOEs(module)
             if (actorlen == 0)
                 return;
 
-            for (var i = 0; i < actorlen; i++)
+            for (var i = 0; i < actorlen; ++i)
             {
                 _aoes.Add(new(_shape, actors[i].Position, actors[i].Rotation, activation));
             }
@@ -310,7 +310,7 @@ sealed class SunkenTreasure(BossModule module) : Components.GenericAOEs(module)
         List<AOEInstance> upcoming = [];
         var firstAct = aoes[0].Activation;
 
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; ++i)
         {
             if (aoes[i].Activation == firstAct)
             {

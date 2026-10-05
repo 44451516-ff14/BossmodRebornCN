@@ -447,28 +447,116 @@ public sealed class HealerAI(RotationModuleManager manager, Actor player) : AIBa
     // O(n³) :3
     private Vector3 GetBestPartyCoverage(float radius)
     {
-        var allies = LightParty.Select(p => p.Position).ToList();
-        if (allies.Count < 2)
-            return Player.PosRot.XYZ();
+        var allies = new List<WPos>(8);
+        foreach (var ally in LightParty)
+            allies.Add(ally.Position);
 
-        var rsq = radius * radius;
-        var bestCount = 0;
-        var bestCenter = allies[0];
-        for (var i = 0; i < allies.Count; i++)
+        var n = allies.Count;
+        if (n == 0)
         {
-            for (var j = i; j < allies.Count; j++)
+            return Player.PosRot.XYZ();
+        }
+
+        var playerY = Player.PosRot.Y;
+        var bestCenter = new Vector3(allies[0].X, playerY, allies[0].Z);
+        var bestCount = 0;
+
+        var radiusSq = radius * radius;
+        var diameterSq = 4f * radiusSq;
+
+        // Returns true when this candidate covers the whole party.
+        bool ConsiderCenter(float x, float z)
+        {
+            // Evaluate the same float coordinates that will be returned.
+            var centerX = x;
+            var centerZ = z;
+            var count = 0;
+
+            for (var k = 0; k < n; ++k)
             {
-                var center = WPos.Lerp(allies[i], allies[j], 0.5f);
-                var thisCount = allies.Count(pos => (pos - center).LengthSq() <= rsq);
-                if (thisCount > bestCount)
+                var dx = allies[k].X - centerX;
+                var dz = allies[k].Z - centerZ;
+
+                if (dx * dx + dz * dz <= radiusSq)
                 {
-                    bestCount = thisCount;
-                    bestCenter = center;
+                    ++count;
+                }
+
+                // Even covering every remaining ally cannot beat the best.
+                if (count + n - k - 1 <= bestCount)
+                {
+                    return false;
+                }
+            }
+
+            if (count > bestCount)
+            {
+                bestCount = count;
+                bestCenter = new Vector3(centerX, playerY, centerZ);
+            }
+
+            return bestCount == n;
+        }
+
+        // These handle single allies, coincident positions, and zero radius.
+        // They can also provide a quick whole-party result.
+        for (var i = 0; i < n; ++i)
+        {
+            if (ConsiderCenter(allies[i].X, allies[i].Z))
+            {
+                return bestCenter;
+            }
+        }
+
+        if (radius == 0)
+        {
+            return bestCenter;
+        }
+
+        for (var i = 0; i < n; ++i)
+        {
+            var a = allies[i];
+
+            for (var j = i + 1; j < n; ++j)
+            {
+                var b = allies[j];
+
+                var dx = b.X - a.X;
+                var dz = b.Z - a.Z;
+                var distanceSq = dx * dx + dz * dz;
+
+                // Coincident points do not define a unique pair of centers.
+                // Points farther apart than the diameter cannot share a circle.
+                if (distanceSq == 0f || distanceSq > diameterSq)
+                {
+                    continue;
+                }
+
+                var midX = a.X + dx * 0.5f;
+                var midZ = a.Z + dz * 0.5f;
+
+                // Each center is perpendicular to the segment through a and b.
+                // Its distance from the midpoint is sqrt(r² - distance² / 4).
+                var heightSq = Math.Max(0f, radiusSq - distanceSq * 0.25f);
+                var scale = MathF.Sqrt(heightSq / distanceSq);
+
+                var offsetX = -dz * scale;
+                var offsetZ = dx * scale;
+
+                if (ConsiderCenter(midX + offsetX, midZ + offsetZ))
+                {
+                    return bestCenter;
+                }
+
+                // At exactly one diameter apart, both centers are the midpoint.
+                if (heightSq > 0 && ConsiderCenter(midX - offsetX, midZ - offsetZ))
+                {
+                    return bestCenter;
                 }
             }
         }
 
-        return new Vector3(bestCenter.X, Player.PosRot.Y, bestCenter.Z);
+        return bestCenter;
     }
 
     private void AutoSGE(in Strategy strategy, Actor? primaryTarget)

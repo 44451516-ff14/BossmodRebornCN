@@ -345,7 +345,7 @@ sealed class WillOfTheUnderworld(BossModule module) : Components.SimpleAOEs(modu
         {
             var aoe = aoes[i];
 
-            for (var j = 0; j < angleLen; j++)
+            for (var j = 0; j < angleLen; ++j)
             {
                 // roughly 1deg, unnecessary? actor angle seems equal to Angle.Cardinal
                 if (aoe.Rotation.AlmostEqual(angles[j], 0.02f))
@@ -380,7 +380,7 @@ sealed class WillOfTheUnderworldRocks(BossModule module) : Components.GenericAOE
                 return;
             }
 
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < len; ++i)
             {
                 var rock = rocks[i];
 
@@ -448,7 +448,7 @@ sealed class CrusherOfLions(BossModule module) : Components.SimpleAOEs(module, (
         {
             var aoe = aoes[i];
 
-            for (var j = 0; j < angleLen; j++)
+            for (var j = 0; j < angleLen; ++j)
             {
                 if (aoe.Rotation.AlmostEqual(angles[j], 0.02f))
                 {
@@ -518,7 +518,7 @@ sealed class UnyieldingWill(BossModule module) : Components.GenericBaitAway(modu
 
             var tethers = CollectionsMarshal.AsSpan(_tethers);
             var len = tethers.Length;
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < len; ++i)
             {
                 if (tethers[i].Target == source)
                 {
@@ -549,7 +549,7 @@ sealed class UnyieldingWill(BossModule module) : Components.GenericBaitAway(modu
             if (len > 0)
             {
                 var safe = false;
-                for (var i = 0; i < len; i++)
+                for (var i = 0; i < len; ++i)
                 {
                     if (angle.AlmostEqual(angles[i], 45f.Degrees().Rad))
                     {
@@ -638,7 +638,7 @@ sealed class UnyieldingWill(BossModule module) : Components.GenericBaitAway(modu
 
         // if source is same direction as safe side, stand in that path; try standing close to avoid clipping other players
         var sourceSafe = true;
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; ++i)
         {
             if (source.Rotation.AlmostEqual(unsafeAngles[i], 0.02f))
             {

@@ -138,6 +138,8 @@ public sealed class MNK(RotationModuleManager manager, Actor player) : Attackxan
         ForceOpo,
         [Option("在下个红莲极意窗口前 3 个 GCD 使用，无视当前身形", MinLevel = 50)]
         ForceMinus3,
+        [Option("身形转换效果期间除外，尽快使用")]
+        ForceNoShift,
         [Option("尽快使用", MinLevel = 50)]
         Force,
         [Option("不使用", MinLevel = 50)]
@@ -726,7 +728,7 @@ public sealed class MNK(RotationModuleManager manager, Actor player) : Attackxan
             return;
 
         // forced usage
-        if (pbstrat == PBStrategy.Force || pbstrat is PBStrategy.DowntimeSolar or PBStrategy.DowntimeLunar && primaryTarget == null)
+        if (pbstrat == PBStrategy.Force || pbstrat is PBStrategy.DowntimeSolar or PBStrategy.DowntimeLunar && primaryTarget == null || pbstrat == PBStrategy.ForceNoShift && FormShiftLeft == 0)
         {
             use();
             return;

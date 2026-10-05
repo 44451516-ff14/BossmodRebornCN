@@ -29,7 +29,7 @@ sealed class AwesomeSplashSlab(BossModule module) : Components.GenericStackSprea
                 // Freaky Pyrorotation icons appear .15s before light party stack during arena split
                 case 0x3ED:
                     // light party stack
-                    for (var i = 0; i < len; i++)
+                    for (var i = 0; i < len; ++i)
                     {
                         if (party[i].Role == Role.Healer)
                         {
@@ -48,7 +48,7 @@ sealed class AwesomeSplashSlab(BossModule module) : Components.GenericStackSprea
                     break;
                 case 0x3EE:
                     // spread
-                    for (var i = 0; i < len; i++)
+                    for (var i = 0; i < len; ++i)
                     {
                         _mech = Mechanic.Spread;
                         Spreads.Add(new(party[i], 5f, activation: act));
@@ -56,7 +56,7 @@ sealed class AwesomeSplashSlab(BossModule module) : Components.GenericStackSprea
                     break;
                 case 0x3EF:
                     // watersnaking stack
-                    for (var i = 0; i < len; i++)
+                    for (var i = 0; i < len; ++i)
                     {
                         if (party[i].Role == Role.Healer)
                         {
@@ -74,7 +74,7 @@ sealed class AwesomeSplashSlab(BossModule module) : Components.GenericStackSprea
                     break;
                 case 0x3F0:
                     // watersnaking spread
-                    for (var i = 0; i < len; i++)
+                    for (var i = 0; i < len; ++i)
                     {
                         /*
                         if (party[i].FindStatus((uint)SID.Watersnaking) != null)
@@ -135,7 +135,7 @@ sealed class AlleyOopWater(BossModule module) : Components.GenericBaitAway(modul
             var targets = GetTargets();
             var len = targets.Length;
 
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < len; ++i)
             {
                 CurrentBaits.Add(new(caster, targets[i], new AOEShapeCone(60f, 15f.Degrees()), Module.CastFinishAt(spell)));
             }
@@ -167,7 +167,7 @@ sealed class AlleyOopWater(BossModule module) : Components.GenericBaitAway(modul
             return [];
 
         var actors = new Actor[len];
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; ++i)
         {
             actors[i] = party[i].Item2;
         }
@@ -483,7 +483,7 @@ sealed class AwesomeSplashSlabAerial(BossModule module) : Components.GenericStac
         var party = _debuff.GetWaterActors();
         var len = party.Length;
 
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; ++i)
         {
             var player = party[i];
             switch (state)

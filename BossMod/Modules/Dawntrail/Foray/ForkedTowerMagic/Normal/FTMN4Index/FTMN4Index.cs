@@ -59,7 +59,7 @@ sealed class Bombs(BossModule module) : Components.Adds(module, (uint)OID.Summon
 
     public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
-        if (ActiveActors.Count != 0)
+        if (ActiveActorsCount != 0)
         {
             hints.Add("Kill the Bombs!");
         }
@@ -70,7 +70,7 @@ sealed class Bombs(BossModule module) : Components.Adds(module, (uint)OID.Summon
         base.DrawArenaForeground(pcSlot, pc);
         var actors = CollectionsMarshal.AsSpan(ActiveActors);
         var count = actors.Length;
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             ref var actor = ref actors[i];
             Arena.ZoneCircleOutline(actor.Position, 2f);
@@ -79,7 +79,7 @@ sealed class Bombs(BossModule module) : Components.Adds(module, (uint)OID.Summon
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (ActiveActors.Count != 0)
+        if (ActiveActorsCount != 0)
         {
             // prioritize adds if boss still healthy
             if (Module.PrimaryActor.HPRatio > 0.05f)
@@ -167,7 +167,7 @@ sealed class ElementaryEvocation(BossModule module) : Components.GenericAOEs(mod
         var aoes = CollectionsMarshal.AsSpan(_aoes);
         var max = count > 4 ? 4 : count;
 
-        for (var i = 0; i < max; i++)
+        for (var i = 0; i < max; ++i)
         {
             ref var aoe = ref aoes[i];
             aoe.Color = i < 2 ? Colors.Danger : default;
@@ -195,7 +195,7 @@ sealed class ElementaryEvocation(BossModule module) : Components.GenericAOEs(mod
         Actor? targetPanel = null;
         var panels = CollectionsMarshal.AsSpan(_panels.Actors);
         var count = panels.Length;
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             ref var panel = ref panels[i];
             if (panel.OID == panelId)
@@ -255,7 +255,7 @@ sealed class ElementaryExpansion(BossModule module) : Components.GenericAOEs(mod
         var aoes = CollectionsMarshal.AsSpan(_aoes);
         var max = count > 4 ? 4 : count;
 
-        for (var i = 0; i < max; i++)
+        for (var i = 0; i < max; ++i)
         {
             ref var aoe = ref aoes[i];
             aoe.Color = i < 2 ? Colors.Danger : default;
@@ -286,7 +286,7 @@ sealed class ElementaryExpansion(BossModule module) : Components.GenericAOEs(mod
 
             var panels = CollectionsMarshal.AsSpan(_panels.Actors);
             var count = panels.Length;
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 ref var panel = ref panels[i];
                 if (panel.OID == panelId)
@@ -333,7 +333,7 @@ sealed class Shockwave(BossModule module) : Components.SimpleKnockbacks(module, 
         }
 
         var knockbacks = new List<Knockback>();
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             // what happens if player standing in 2 circles?
             ref var kb = ref Casters.Ref(i);
@@ -400,7 +400,7 @@ sealed class Shockwave(BossModule module) : Components.SimpleKnockbacks(module, 
                 var count = aoes.Length;
                 var origins = new WPos[count];
 
-                for (var i = 0; i < count; i++)
+                for (var i = 0; i < count; ++i)
                 {
                     var aoe = aoes[i];
                     origins[i] = aoe.Origin;
@@ -418,7 +418,7 @@ sealed class Shockwave(BossModule module) : Components.SimpleKnockbacks(module, 
                 {
                     // avoid circle from other 2 knockbacks
                     var kbCount = Casters.Count;
-                    for (var i = 0; i < kbCount; i++)
+                    for (var i = 0; i < kbCount; ++i)
                     {
                         ref var other = ref Casters.Ref(i);
                         var origin = other.Origin;
@@ -495,7 +495,7 @@ sealed class Predict(BossModule module) : Components.GenericAOEs(module)
         List<AOEInstance> aoes = [];
         var keys = _predict.Keys.ToArray();
         var count = keys.Length;
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             if (_predict.TryGetValue(keys[i], out var value))
             {
@@ -574,7 +574,7 @@ sealed class Predict(BossModule module) : Components.GenericAOEs(module)
         if (ActiveAOEs(slot, actor) is var aoes && aoes.Length != 0)
         {
             var count = aoes.Length;
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 var aoe = aoes[i];
                 hints.AddForbiddenZone(aoe.Shape, aoe.Origin, activation: aoe.Activation);

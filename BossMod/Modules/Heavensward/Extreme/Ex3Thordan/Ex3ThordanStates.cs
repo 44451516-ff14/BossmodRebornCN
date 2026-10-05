@@ -168,10 +168,10 @@ sealed class Ex3ThordanStates : StateMachineBuilder
 
     private void SacredCrossSpiralThrust(uint id, float delay)
     {
-        ComponentCondition<SerZephirin>(id, delay, static comp => comp.ActiveActors.Count != 0, "Add appears")
+        ComponentCondition<SerZephirin>(id, delay, static comp => comp.ActiveActorsCount != 0, "Add appears")
             .ActivateOnEnter<SerZephirin>()
             .SetHint(StateMachine.StateHint.DowntimeEnd);
-        ComponentCondition<SerZephirin>(id + 0x10u, 20.1f, static comp => comp.ActiveActors.Count == 0, "DPS check")
+        ComponentCondition<SerZephirin>(id + 0x10u, 20.1f, static comp => comp.ActiveActorsCount == 0, "DPS check")
             .ActivateOnEnter<SpiralThrust1>()
             .DeactivateOnExit<SerZephirin>()
             .SetHint(StateMachine.StateHint.DowntimeStart | StateMachine.StateHint.Raidwide);
@@ -230,7 +230,7 @@ sealed class Ex3ThordanStates : StateMachineBuilder
         ComponentCondition<FaithUnmoving>(id + 0x50u, 3.1f, static comp => comp.NumCasts > 0, "Knockback")
             .DeactivateOnExit<FaithUnmoving>();
 
-        ComponentCondition<MeteorCircle>(id + 0x1000u, 3.4f, static comp => comp.ActiveActors.Count != 0, "Comets appear") // note: quite large variance
+        ComponentCondition<MeteorCircle>(id + 0x1000u, 3.4f, static comp => comp.ActiveActorsCount != 0, "Comets appear") // note: quite large variance
             .ActivateOnEnter<CometCircle>()
             .ActivateOnEnter<MeteorCircle>()
             .ActivateOnEnter<HeavyImpact>()
@@ -238,7 +238,7 @@ sealed class Ex3ThordanStates : StateMachineBuilder
         // +3.4s: prey icons, first aoe after 4.1s, then every 1.1s
         // +29.9s: all live comets cast raidwides
         // TODO: proper small/large enrage deadlines
-        ComponentCondition<MeteorCircle>(id + 0x1010u, 52.2f, static comp => comp.ActiveActors.Count == 0, "Large comet enrage", 100f);
+        ComponentCondition<MeteorCircle>(id + 0x1010u, 52.2f, static comp => comp.ActiveActorsCount == 0, "Large comet enrage", 100f);
         ComponentCondition<MeteorCircle>(id + 0x1020u, 10f, comp =>
         {
             var comets = Module.Enemies((uint)OID.CometCircle);
@@ -397,7 +397,7 @@ sealed class Ex3ThordanStates : StateMachineBuilder
             .DeactivateOnExit<HeavenswardLeap>()
             .SetHint(StateMachine.StateHint.Raidwide);
 
-        ComponentCondition<SerZephirin>(id + 0x1000u, 7.7f, static comp => comp.ActiveActors.Count != 0, "Boss invuln")
+        ComponentCondition<SerZephirin>(id + 0x1000u, 7.7f, static comp => comp.ActiveActorsCount != 0, "Boss invuln")
             .ActivateOnEnter<SerZephirin>();
         // +0.1s: zephirin starts 25s cast
         ComponentCondition<PureOfSoul>(id + 0x1010u, 6.1f, static comp => comp.NumCasts > 0, "Raidwide")
@@ -410,7 +410,7 @@ sealed class Ex3ThordanStates : StateMachineBuilder
             .SetHint(StateMachine.StateHint.Raidwide);
         Cast(id + 0x1030, AID.DragonsGaze, 2.3f, 3f, "Gaze")
             .DeactivateOnExit<DragonsGaze>();
-        ComponentCondition<SerZephirin>(id + 0x1040u, 2.8f, static comp => comp.ActiveActors.Count == 0, "Add enrage")
+        ComponentCondition<SerZephirin>(id + 0x1040u, 2.8f, static comp => comp.ActiveActorsCount == 0, "Add enrage")
             .DeactivateOnExit<SerZephirin>();
     }
 }

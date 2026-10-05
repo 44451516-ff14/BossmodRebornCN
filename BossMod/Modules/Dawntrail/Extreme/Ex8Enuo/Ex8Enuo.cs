@@ -16,7 +16,7 @@ sealed class VacuumAOE(BossModule module) : Components.Voidzone(module, 7f, Find
         }
         var vacs = new Actor[count];
         var index = 0;
-        for (var i = 0; i < enemies.Count; i++)
+        for (var i = 0; i < enemies.Count; ++i)
         {
             var z = enemies[i];
             // These appear at the start of the mechanic at Arena.Center and zoom out to their final locations, we only care about showing them while they're standing still and not in the Center. They die after exploding.
@@ -44,7 +44,7 @@ sealed class DeepFreeze(BossModule module) : Components.StayMove(module)
     {
         if (spell.Action.ID == (uint)AID.DeepFreeze)
         {
-            for (var i = 0; i < PlayerStates.Length; i++)
+            for (var i = 0; i < PlayerStates.Length; ++i)
             {
                 PlayerStates[i] = new(Requirement.Move, WorldState.FutureTime(spell.RemainingTime));
             }
@@ -109,6 +109,7 @@ sealed class ArenaChanges(BossModule module) : BossComponent(module)
             Arena.Bounds = new ArenaBoundsCircle(40f); // encompasses the towers, haven't tested for a real border.
         }
     }
+
     public override void OnActorDeath(Actor actor)
     {
         if (actor.OID == (uint)OID.BeaconInTheDark)

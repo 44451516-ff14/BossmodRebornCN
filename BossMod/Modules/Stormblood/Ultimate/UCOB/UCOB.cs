@@ -3,6 +3,7 @@
 sealed class P1Plummet(BossModule module) : Components.Cleave(module, (uint)AID.Plummet, new AOEShapeCone(12f, 60f.Degrees()), [(uint)OID.Twintania])
 {
     public bool Soak;
+    private readonly UCOBConfig _config = Service.Config.Get<UCOBConfig>();
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -31,7 +32,7 @@ sealed class P1Plummet(BossModule module) : Components.Cleave(module, (uint)AID.
         }
     }
 
-    static bool IsSoaker(PartyRolesConfig.Assignment ass) => Service.Config.Get<UCOBConfig>().P1PlummetTargets[(int)ass];
+    private bool IsSoaker(PartyRolesConfig.Assignment ass) => _config.P1PlummetTargets[(int)ass];
 }
 
 sealed class P2BahamutsClaw(BossModule module) : Components.CastCounter(module, (uint)AID.BahamutsClaw);

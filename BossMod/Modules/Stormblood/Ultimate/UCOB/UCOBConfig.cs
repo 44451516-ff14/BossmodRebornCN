@@ -39,7 +39,7 @@ public sealed class RolesRenderer : PropertyRenderer
         {
             using (ImRaii.PushIndent())
             {
-                for (var i = 2; i < 8; i++)
+                for (var i = 2; i < 8; ++i)
                 {
                     var assignment = (PartyRolesConfig.Assignment)i;
                     var isChecked = cfg.P1PlummetTargets[i];

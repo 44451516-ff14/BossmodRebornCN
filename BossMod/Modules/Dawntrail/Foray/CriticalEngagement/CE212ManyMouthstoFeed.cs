@@ -88,7 +88,7 @@ sealed class VenomGrow(BossModule module) : Components.GenericAOEs(module)
 
         var max = count > 2 ? 2 : count;
 
-        for (var i = 0; i < max; i++)
+        for (var i = 0; i < max; ++i)
         {
             ref var venom = ref venoms[i];
             ref var aoe = ref aoes[i];
@@ -120,7 +120,7 @@ sealed class VenomGrow(BossModule module) : Components.GenericAOEs(module)
             else if (state == 0x00040008)
             {
                 var count = _venom.Count;
-                for (var i = 0; i < count; i++)
+                for (var i = 0; i < count; ++i)
                 {
                     var venom = _venom[i];
                     if (venom.Position.AlmostEqual(position, 0.1f))
@@ -138,7 +138,7 @@ sealed class VenomGrow(BossModule module) : Components.GenericAOEs(module)
         {
             var position = caster.Position;
             var count = _venom.Count;
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 var venom = _venom[i];
                 if (venom.Position.AlmostEqual(position, 0.1f))
@@ -160,7 +160,7 @@ sealed class VenomGrow(BossModule module) : Components.GenericAOEs(module)
         var venoms = CollectionsMarshal.AsSpan(_venom);
         var count = venoms.Length;
         var max = count > 2 ? 2 : count;
-        for (var i = 0; i < max; i++)
+        for (var i = 0; i < max; ++i)
         {
             ref var aoe = ref venoms[i];
             hints.AddForbiddenZone(new AOEShapeCircle(_maxRadius), aoe.Position);

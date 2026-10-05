@@ -358,7 +358,7 @@ class ParisCurse(BossModule module) : Components.GenericAOEs(module)
         var meleeRole = false;
         var rangedRole = false;
 
-        for (var i = 0; i < PartyState.MaxPartySize; i++)
+        for (var i = 0; i < PartyState.MaxPartySize; ++i)
         {
             switch (roles[i])
             {

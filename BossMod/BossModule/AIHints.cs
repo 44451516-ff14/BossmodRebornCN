@@ -27,8 +27,8 @@ public sealed class AIHints
         //public float TimeToKill;
         public float AttackStrength = 0.05f; // target's predicted HP percent is decreased by this amount (0.05 by default)
         public bool CanMove = true;
-        public WPos? DesiredPosition = actor.Position; // tank AI will try to move enemy to this position
-        public Angle? DesiredRotation = actor.Rotation; // tank AI will try to rotate enemy to this angle
+        public WPos? DesiredPosition; // tank AI will try to move enemy to this position
+        public Angle? DesiredRotation; // tank AI will try to rotate enemy to this angle
         public float TankDistance = 2f; // enemy will start moving if distance between hitboxes is bigger than this
         public bool ShouldBeTanked = shouldBeTanked; // tank AI will try to tank this enemy
         public bool PreferProvoking; // tank AI will provoke enemy if not targeted
@@ -178,6 +178,7 @@ public sealed class AIHints
     // misc stuff to execute
     public bool WantJump;
     public bool WantDismount;
+    public bool ForbidDashes; // if set, gap closers/dashes will be prevented
     public FateSync WantFateSync;
     public bool ShouldLeaveDuty;
 
@@ -215,6 +216,7 @@ public sealed class AIHints
         WantDismount = false;
         WantFateSync = FateSync.None;
         ShouldLeaveDuty = false;
+        ForbidDashes = false;
     }
 
     public void PrioritizeTargetsByOID(uint oid, int priority = default)
@@ -849,9 +851,7 @@ public sealed class AIHints
 
         // try to stay within pull range
         if (dirToGoal.LengthSq() <= leewaySq)
-        {
-            return GoalSingleTarget(target.Position, adjRange, 0.5f);
-        }
+            return GoalSingleTarget(target.Position, adjRange, 0.1f);
 
         var distance = distToGoal;
         if (gcd < 0.5f)
@@ -861,7 +861,7 @@ public sealed class AIHints
         }
 
         var sh = new SDPrecisePosition(target.Position + dirToGoal.Normalized() * distToGoal, new(0f, 1f), PathfindMapBounds.MapResolution, player.Position, 0.1f);
-        return p => sh.Distance(p) > 0f ? 10f : 0f;
+        return p => sh.Distance(p) >= 0f ? 10f : 0f;
     }
 
     public static Func<WPos, float> GoalRectangle(WPos center, WDir direction, float halfWidth, float halfHeight, float weight = 1f)

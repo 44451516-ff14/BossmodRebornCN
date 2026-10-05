@@ -37,7 +37,7 @@ public sealed class ModuleViewer(PlanDatabase? planDB, WorldState ws) : IDisposa
         }
     }
 
-    private readonly struct ModuleGroupInfo(string name, uint id, uint sortOrder, uint icon = default)
+    private readonly struct ModuleGroupInfo(string name, uint id, uint sortOrder, uint icon = default) : IEquatable<ModuleGroupInfo>
     {
         public readonly string Name = name;
         public readonly uint Id = id;

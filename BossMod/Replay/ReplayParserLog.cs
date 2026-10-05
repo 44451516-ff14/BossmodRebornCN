@@ -843,7 +843,7 @@ public sealed class ReplayParserLog : IDisposable
         var owner = _input.ReadActorID();
         var count = _input.ReadInt();
         List<(ulong, ushort)> actions = [];
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             actions.Add((_input.ReadActorID(), _input.ReadUShort(true)));
         }

@@ -39,7 +39,7 @@ public struct Cooldown(float elapsed, float total) : IEquatable<Cooldown>
 
     public readonly bool Equals(Cooldown other) => this == other;
     public override readonly bool Equals(object? obj) => obj is Cooldown other && Equals(other);
-    public override readonly int GetHashCode() => (Elapsed, Total).GetHashCode();
+    public override readonly int GetHashCode() => HashCode.Combine(Elapsed, Total);
     public override readonly string ToString() => $"{Elapsed:f3}/{Total:f3}";
 }
 
@@ -47,7 +47,7 @@ public struct Cooldown(float elapsed, float total) : IEquatable<Cooldown>
 // this is generally not available for non-player party members, but we can try to guess
 public sealed class ClientState
 {
-    public readonly struct Fate(uint id, Vector3 center, float radius, byte progress, byte handInCount, uint objectiveNpc)
+    public readonly struct Fate(uint id, Vector3 center, float radius, byte progress, byte handInCount, uint objectiveNpc) : IEquatable<Fate>
     {
         public readonly uint ID = id;
         public readonly Vector3 Center = center;
@@ -64,7 +64,7 @@ public sealed class ClientState
         public override readonly int GetHashCode() => ID.GetHashCode();
     }
 
-    public struct Combo(uint action, float remaining)
+    public struct Combo(uint action, float remaining) : IEquatable<Combo>
     {
         public readonly uint Action = action;
         public float Remaining = remaining;
@@ -74,7 +74,7 @@ public sealed class ClientState
 
         public readonly bool Equals(Combo other) => this == other;
         public override readonly bool Equals(object? obj) => obj is Combo other && Equals(other);
-        public override readonly int GetHashCode() => (Action, Remaining).GetHashCode();
+        public override readonly int GetHashCode() => HashCode.Combine(Action, Remaining);
     }
 
     public readonly struct Gauge(ulong low, ulong high)
@@ -83,7 +83,7 @@ public sealed class ClientState
         public readonly ulong High = high;
     }
 
-    public readonly struct Stats(int skillSpeed, int spellSpeed, int haste)
+    public readonly struct Stats(int skillSpeed, int spellSpeed, int haste) : IEquatable<Stats>
     {
         public readonly int SkillSpeed = skillSpeed;
         public readonly int SpellSpeed = spellSpeed;
@@ -94,10 +94,10 @@ public sealed class ClientState
 
         public readonly bool Equals(Stats other) => this == other;
         public override readonly bool Equals(object? obj) => obj is Combo other && Equals(other);
-        public override readonly int GetHashCode() => (SkillSpeed, SpellSpeed, Haste).GetHashCode();
+        public override readonly int GetHashCode() => HashCode.Combine(SkillSpeed, SpellSpeed, Haste);
     }
 
-    public readonly struct Pet(ulong instanceID, byte order, byte stance)
+    public readonly struct Pet(ulong instanceID, byte order, byte stance) : IEquatable<Pet>
     {
         public readonly ulong InstanceID = instanceID;
         public readonly byte Order = order;
@@ -111,7 +111,7 @@ public sealed class ClientState
         public override readonly int GetHashCode() => InstanceID.GetHashCode();
     }
 
-    public readonly struct Companion(ulong instanceID, byte stance, float timeLeft, bool stabled)
+    public readonly struct Companion(ulong instanceID, byte stance, float timeLeft, bool stabled) : IEquatable<Companion>
     {
         public readonly ulong InstanceID = instanceID;
         public readonly byte Stance = stance;
@@ -123,11 +123,11 @@ public sealed class ClientState
 
         public readonly bool Equals(Companion other) => this == other;
         public override readonly bool Equals(object? obj) => obj is Companion other && Equals(other);
-        public override readonly int GetHashCode() => (InstanceID, Stance, TimeLeft).GetHashCode();
+        public override readonly int GetHashCode() => HashCode.Combine(InstanceID, Stance, TimeLeft);
         public override readonly string ToString() => $"ID: {InstanceID}, Stance: {Stance}";
     }
 
-    public readonly struct DutyAction(ActionID action, byte curCharges, byte maxCharges)
+    public readonly struct DutyAction(ActionID action, byte curCharges, byte maxCharges) : IEquatable<DutyAction>
     {
         public readonly ActionID Action = action;
         public readonly byte CurCharges = curCharges;
@@ -138,7 +138,7 @@ public sealed class ClientState
 
         public readonly bool Equals(DutyAction other) => this == other;
         public override readonly bool Equals(object? obj) => obj is DutyAction other && Equals(other);
-        public override readonly int GetHashCode() => (Action, CurCharges, MaxCharges).GetHashCode();
+        public override readonly int GetHashCode() => HashCode.Combine(Action, CurCharges, MaxCharges);
         public override string ToString() => $"ID: {Action.ID}, Charges: {CurCharges}/{MaxCharges}";
     }
 
@@ -150,7 +150,7 @@ public sealed class ClientState
         public readonly Hate[] Targets = targets;
     }
 
-    public readonly struct Hate(ulong instanceID, int enmity)
+    public readonly struct Hate(ulong instanceID, int enmity) : IEquatable<Hate>
     {
         public readonly ulong InstanceID = instanceID;
         public readonly int Enmity = enmity;
@@ -160,7 +160,7 @@ public sealed class ClientState
 
         public readonly bool Equals(Hate other) => this == other;
         public override readonly bool Equals(object? obj) => obj is Hate other && Equals(other);
-        public override readonly int GetHashCode() => (InstanceID, Enmity).GetHashCode();
+        public override readonly int GetHashCode() => HashCode.Combine(InstanceID, Enmity);
     }
 
     public const int NumCooldownGroups = 87;

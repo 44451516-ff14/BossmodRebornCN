@@ -61,7 +61,7 @@ sealed class DRS5PhantomStates : StateMachineBuilder
     {
         Cast(id, AID.Summon, delay, 3f);
         Targetable(id + 0x10u, false, 1.0f, "Boss disappears");
-        ComponentCondition<BloodyWraith>(id + 0x20u, 3f, static comp => comp.ActiveActors.Count != 0, "Adds appear") // 2x bloody + 1x misty
+        ComponentCondition<BloodyWraith>(id + 0x20u, 3f, static comp => comp.ActiveActorsCount != 0, "Adds appear") // 2x bloody + 1x misty
             .ActivateOnEnter<BloodyWraith>()
             .ActivateOnEnter<MistyWraith>()
             .SetHint(StateMachine.StateHint.DowntimeEnd);

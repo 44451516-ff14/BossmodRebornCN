@@ -25,7 +25,7 @@ sealed class StormsBreath(BossModule module) : Components.SimpleKnockbacks(modul
                 {
                     var count = aoes.Length;
                     var pos = new WPos[count];
-                    for (var i = 0; i < count; i++)
+                    for (var i = 0; i < count; ++i)
                     {
                         pos[i] = aoes[i].Origin;
                     }

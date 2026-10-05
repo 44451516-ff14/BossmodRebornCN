@@ -50,7 +50,7 @@ sealed class BreathyDuet(BossModule module) : Components.GenericAOEs(module)
             var charms = CollectionsMarshal.AsSpan(charmlist);
             var count = charms.Length;
 
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 ref var charm = ref charms[i];
                 if (charm.Position.InCircle(position, 15f))

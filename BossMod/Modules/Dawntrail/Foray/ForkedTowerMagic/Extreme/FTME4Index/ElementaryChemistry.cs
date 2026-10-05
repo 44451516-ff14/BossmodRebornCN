@@ -79,11 +79,11 @@ sealed class ElementaryChemistry(BossModule module) : BossComponent(module)
             var sds = _panels.GetElementSDs(_fire[pcSlot], _ice[pcSlot], _lightning[pcSlot]);
             var scount = sds.Length;
 
-            for (var i = 0; i < 6; i++)
+            for (var i = 0; i < 6; ++i)
             {
                 var taken = false;
                 var spot = _soakSpots[i];
-                for (var j = 0; j < scount; j++)
+                for (var j = 0; j < scount; ++j)
                 {
                     var sd = sds[j];
                     if (sd.Contains(spot))
@@ -104,7 +104,7 @@ sealed class ElementaryChemistry(BossModule module) : BossComponent(module)
         var count = _actors.Count;
         if (count != 0)
         {
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 var actor = _actors[i];
                 var color = actor.OID switch
@@ -148,7 +148,7 @@ sealed class ElementaryChemistry(BossModule module) : BossComponent(module)
         {
             var sds = _panels.GetElementSDs(_fire[slot], _ice[slot], _lightning[slot]);
             var scount = sds.Length;
-            for (var i = 0; i < scount; i++)
+            for (var i = 0; i < scount; ++i)
             {
                 var sd = sds[i];
                 hints.AddForbiddenZone(sd);
@@ -156,7 +156,7 @@ sealed class ElementaryChemistry(BossModule module) : BossComponent(module)
 
             // if all goal zones are equal, should move to closest while avoiding forbidden zones
             // need it to nav to one of the 1st spawned orbs the move CW
-            for (var i = 0; i < 6; i++)
+            for (var i = 0; i < 6; ++i)
             {
                 hints.GoalZones.Add(AIHints.GoalSingleTarget(_soakSpots[i], 1.5f));
             }

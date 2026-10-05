@@ -53,7 +53,7 @@ sealed class AetherlettingPuddle(BossModule module) : Components.SpreadFromCastT
         var spreads = CollectionsMarshal.AsSpan(Spreads);
         var len = spreads.Length;
 
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; ++i)
         {
             if (spreads[i].Target.InstanceID == actor.InstanceID)
                 hints.Add("Bait puddle to edge", false);
@@ -78,12 +78,12 @@ sealed class AetherlettingPuddle(BossModule module) : Components.SpreadFromCastT
             var party = Raid.WithoutSlot(false, true, true);
             var len = party.Length;
 
-            for (var i = 0; i < _hectorPos.Length; i++)
+            for (var i = 0; i < _hectorPos.Length; ++i)
             {
                 var pos = _hectorPos[i];
                 var inside = false;
 
-                for (var j = 0; j < len; j++)
+                for (var j = 0; j < len; ++j)
                 {
                     var actor = party[j];
                     var actorPos = actor.Position;
@@ -106,7 +106,7 @@ sealed class AetherlettingPuddle(BossModule module) : Components.SpreadFromCastT
         var lenSpread = spreads.Length;
         var isTarget = false;
 
-        for (var i = 0; i < lenSpread; i++)
+        for (var i = 0; i < lenSpread; ++i)
         {
             ref var s = ref spreads[i];
             isTarget = s.Target.InstanceID == pc.InstanceID;
@@ -133,7 +133,7 @@ sealed class AetherlettingPuddle(BossModule module) : Components.SpreadFromCastT
         var lenSpread = spreads.Length;
         var isTarget = false;
 
-        for (var i = 0; i < lenSpread; i++)
+        for (var i = 0; i < lenSpread; ++i)
         {
             ref var s = ref spreads[i];
             isTarget = s.Target.InstanceID == actor.InstanceID;

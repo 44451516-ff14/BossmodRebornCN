@@ -6,7 +6,8 @@ sealed class FTME1TwoHeadedAevisStates : StateMachineBuilder
     public FTME1TwoHeadedAevisStates(FTME1TwoHeadedAevis module) : base(module)
     {
         _module = module;
-        DeathPhase(default, SinglePhase);
+        DeathPhase(0u, SinglePhase)
+            .Raw.Update = () => AllDeadOrDestroyed(FTME1TwoHeadedAevis.Bosses);
     }
 
     private void SinglePhase(uint id)
@@ -29,7 +30,7 @@ sealed class FTME1TwoHeadedAevisStates : StateMachineBuilder
         ArcaneFugue(id + 0xF0000u, 5.2f);
         ThunderfrostTempest(id + 0x100000u, 4.4f);
         BreathyDuet(id + 0x110000u, 7.3f);
-        ArchaeoFury(id + 0xB0000u, 5f); // unsure actual time
+        ArchaeoFury(id + 0x120000u, 5f); // unsure actual time
         //Enrage
     }
 
@@ -41,7 +42,7 @@ sealed class FTME1TwoHeadedAevisStates : StateMachineBuilder
 
     private void FugueBreath(uint id, float delay)
     {
-        Condition(id, delay, () => _module.PrimaryActor.CastInfo != null || _module.BlueHead()!.CastInfo != null, "")
+        Condition(id, delay, () => _module.PrimaryActor.CastInfo != null || _module.BlueHead()!.CastInfo != null)
             .ActivateOnEnter<FreezingFugue>()
             .ActivateOnEnter<StormsBreath>()
             .ActivateOnEnter<FulgurousFugue>()
@@ -64,16 +65,16 @@ sealed class FTME1TwoHeadedAevisStates : StateMachineBuilder
     {
         CastStart(id, AID.ArchaeofuryCast, delay)
             .ActivateOnEnter<Archaeofury>();
-        ComponentCondition<Archaeofury>(id + 0x1000u, 0f, static comp => comp.ActiveSpreads.Count != 0, "");
+        ComponentCondition<Archaeofury>(id + 0x1000u, 0f, static comp => comp.ActiveSpreads.Count != 0);
         ComponentCondition<Archaeofury>(id + 0x2000u, 5f, static comp => comp.ActiveSpreads.Count == 0, "Tankbuster spread")
             .DeactivateOnExit<Archaeofury>();
     }
 
     private void CrossBlazeLoop(uint id, float delay)
     {
-        Condition(id, delay, () => _module.Green1()?.CastInfo?.Action.ID == (uint)AID.BlazeFirstCast || _module.Blue1()?.CastInfo?.Action.ID == (uint)AID.BlazeFirstCast, "")
+        Condition(id, delay, () => _module.Green1()?.CastInfo?.Action.ID == (uint)AID.BlazeFirstCast || _module.Blue1()?.CastInfo?.Action.ID == (uint)AID.BlazeFirstCast, "Cross Blaze Loop start")
             .ActivateOnEnter<CrossBlazeLoop>();
-        ComponentCondition<CrossBlazeLoop>(id + 0x1000u, 25.1f, static comp => comp.ActiveCasters.Length == 0, "CrossBlazeLoop")
+        ComponentCondition<CrossBlazeLoop>(id + 0x1000u, 25.1f, static comp => comp.AOEs.Count == 0, "Cross Blaze Loop ends")
             .DeactivateOnExit<CrossBlazeLoop>();
     }
 
@@ -81,7 +82,7 @@ sealed class FTME1TwoHeadedAevisStates : StateMachineBuilder
     {
         Cast(id, AID.ArcaneRevelation, delay, 3f)
             .ActivateOnEnter<ArcaneRevelation>();
-        CastMulti(id + 0x1000u, [AID.TwoTerrors1, AID.TwoTerrors2], 3.1f, 7f, "Arcane + Two Terrors")
+        Cast(id + 0x1000u, AID.TwoTerrorsVisual, 3.1f, 7f, "Arcane + Two Terrors")
             .ActivateOnEnter<TwoTerrorsThin>()
             .ActivateOnEnter<TwoTerrorsWide>()
             .DeactivateOnExit<TwoTerrorsWide>()
@@ -111,9 +112,9 @@ sealed class FTME1TwoHeadedAevisStates : StateMachineBuilder
     {
         Cast(id, AID.HissingResonance, delay, 3f)
             .ActivateOnEnter<HissingResonance>();
-        Condition(id + 0x1000u, 3.1f, () => _module.Green1()?.CastInfo?.Action.ID == (uint)AID.BlazeFirstCast || _module.Blue1()?.CastInfo?.Action.ID == (uint)AID.BlazeFirstCast, "")
+        Condition(id + 0x1000u, 3.1f, () => _module.Green1()?.CastInfo?.Action.ID == (uint)AID.BlazeFirstCast || _module.Blue1()?.CastInfo?.Action.ID == (uint)AID.BlazeFirstCast)
             .ActivateOnEnter<CrossBlazeLoop>();
-        ComponentCondition<CrossBlazeLoop>(id + 0x1000u, 25.1f, static comp => comp.ActiveCasters.Length == 0, "KB + CrossBlazeLoop")
+        ComponentCondition<CrossBlazeLoop>(id + 0x2000u, 25.1f, static comp => comp.AOEs.Count == 0, "KB + CrossBlazeLoop")
             .DeactivateOnExit<HissingResonance>()
             .DeactivateOnExit<CrossBlazeLoop>();
     }

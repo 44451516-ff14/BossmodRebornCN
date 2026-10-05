@@ -156,8 +156,10 @@ public sealed class BossModuleManager : IDisposable
                     (isActive ? ModuleActivated : ModuleDeactivated).Fire(m);
                 }
 
-                // unload module because player is out of desired range
-                if ((playerPos - actor.PosRot.AsVector3()).LengthSquared() > maxSq && actor.SpawnIndex != -99)
+                // unload module because player is out of desired range, but exclude instanced content, otherwise module may unload in situations such as Necron prisons
+                // SpawnIndex of -99 means demo module, we do not want to unlead that either
+                var isOpenWorld = WorldState.CurrentCFCID == 0u;
+                if ((!isOpenWorld && !isActive || isOpenWorld) && (playerPos - actor.PosRot.AsVector3()).LengthSquared() > maxSq && actor.SpawnIndex != -99)
                 {
                     MoveModuleToPending(i--);
                     continue;

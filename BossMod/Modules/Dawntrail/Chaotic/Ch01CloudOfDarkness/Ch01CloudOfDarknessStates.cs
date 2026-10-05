@@ -213,7 +213,7 @@ sealed class Ch01CloudOfDarknessStates : StateMachineBuilder
     {
         Cast(id, AID.DelugeOfDarkness2, delay, 8f, "Raidwide + arena transition")
             .SetHint(StateMachine.StateHint.Raidwide);
-        ComponentCondition<StygianShadow>(id + 0x10, 4.2f, static comp => comp.ActiveActors.Count != 0, "Platform adds")
+        ComponentCondition<StygianShadow>(id + 0x10, 4.2f, static comp => comp.ActiveActorsCount != 0, "Platform adds")
             .ActivateOnEnter<StygianShadow>()
             .ActivateOnEnter<Phase2AIHints>()
             .ActivateOnEnter<Atomos>()

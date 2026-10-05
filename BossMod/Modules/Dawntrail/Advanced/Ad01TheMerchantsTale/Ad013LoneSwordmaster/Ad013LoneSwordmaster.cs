@@ -325,7 +325,7 @@ sealed class MaleficPortent(BossModule module) : Components.CastCounter(module, 
         else
         {
             var canIntercept = false;
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 var player = keys[i];
                 var tether = _tethers[player];
@@ -352,7 +352,7 @@ sealed class MaleficPortent(BossModule module) : Components.CastCounter(module, 
         if (count == 0)
             return;
         /*
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             var player = keys[i];
             var tether = _tethers[player];
@@ -374,7 +374,7 @@ sealed class MaleficPortent(BossModule module) : Components.CastCounter(module, 
             if (!isTetherSafe)
             {
                 // add circle around player to pass to
-                for (var i = 0; i < Raid.Members.Length; i++)
+                for (var i = 0; i < Raid.Members.Length; ++i)
                 {
                     if (i == pcSlot)
                         continue;
@@ -393,7 +393,7 @@ sealed class MaleficPortent(BossModule module) : Components.CastCounter(module, 
         }
         else
         {
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 var player = keys[i];
                 var tether = _tethers[player];
@@ -436,7 +436,7 @@ sealed class MaleficPortent(BossModule module) : Components.CastCounter(module, 
         };
 
         var count = unsafeIDs.Length;
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             if (malefic == unsafeIDs[i])
                 return false;
@@ -468,7 +468,7 @@ sealed class MaleficAlignment(BossModule module) : Components.SimpleAOEs(module,
         {
             var aoe = aoes[i];
 
-            for (var j = 0; j < angleLen; j++)
+            for (var j = 0; j < angleLen; ++j)
             {
                 if (aoe.Rotation.AlmostEqual(angles[j], 0.02f))
                 {
@@ -502,7 +502,7 @@ sealed class WillOfTheUnderworld(BossModule module) : Components.SimpleAOEs(modu
         {
             var aoe = aoes[i];
 
-            for (var j = 0; j < angleLen; j++)
+            for (var j = 0; j < angleLen; ++j)
             {
                 // roughly 1deg, unnecessary? actor angle seems equal to Angle.Cardinal
                 if (aoe.Rotation.AlmostEqual(angles[j], 0.02f))
@@ -537,7 +537,7 @@ class GenericWillUnderworld(BossModule module, uint aid, AOEShape shape) : Compo
         {
             var aoe = aoes[i];
 
-            for (var j = 0; j < angleLen; j++)
+            for (var j = 0; j < angleLen; ++j)
             {
                 // roughly 1deg, unnecessary? actor angle seems equal to Angle.Cardinal
                 if (aoe.Rotation.AlmostEqual(angles[j], 0.02f))

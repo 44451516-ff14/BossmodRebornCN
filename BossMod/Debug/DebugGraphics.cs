@@ -862,7 +862,7 @@ sealed class DebugGraphics
         var exportedList = new StringBuilder($"List<Shape>  {listName} = [");
 
         // TODO iterate through list and call StringBuilder function based off Shape Type pattern match.
-        for (int i = 0; i < shapes.Count; i++)
+        for (int i = 0; i < shapes.Count; ++i)
         {
             // Pattern matching Shape type lets us cast to the shape.
             var shape = shapes[i];
@@ -964,7 +964,7 @@ sealed class DebugGraphics
             ImGui.TableSetColumnIndex(0);
             ImGui.Text("UnionShapes");
             ImGui.BeginChild("UnionRegion", new Vector2(0, 100), true);
-            for (int i = 0; i < _unionShapes.Count; i++)
+            for (int i = 0; i < _unionShapes.Count; ++i)
             {
                 bool isUnionSelected = (_selectedUnionShapesIdx == i);
                 if (ImGui.Selectable(_unionShapes[i].ToString(), isUnionSelected))
@@ -1002,7 +1002,7 @@ sealed class DebugGraphics
             ImGui.TableSetColumnIndex(2);
             ImGui.Text("DiffShapes");
             ImGui.BeginChild("DiffRegion", new Vector2(0, 100), true);
-            for (int i = 0; i < _diffShapes.Count; i++)
+            for (int i = 0; i < _diffShapes.Count; ++i)
             {
                 bool isSelected = (_selectedDiffShapesIdx == i);
                 if (ImGui.Selectable(_diffShapes[i].ToString(), isSelected))
@@ -1041,7 +1041,7 @@ sealed class DebugGraphics
             ImGui.TableSetColumnIndex(4);
             ImGui.Text("AdditionalShapes");
             ImGui.BeginChild("AdditionalRegion", new Vector2(0, 100), true);
-            for (int i = 0; i < _additionalShapes.Count; i++)
+            for (int i = 0; i < _additionalShapes.Count; ++i)
             {
                 bool isSelected = _selectedAdditionalShapesIdx == i;
                 if (ImGui.Selectable(_additionalShapes[i].ToString(), isSelected))

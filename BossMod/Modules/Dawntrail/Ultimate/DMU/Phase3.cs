@@ -222,7 +222,7 @@ sealed class WaterCrystal(BossModule module) : Components.GenericBaitProximity(m
         }
 
         var players = Raid.WithoutSlot().SortedByRange(waterCrystal.Value.actor.Position).ToList();
-        for (var i = 0; i < 2; i++)
+        for (var i = 0; i < 2; ++i)
         {
             CurrentBaits.Add(new(players[i], new AOEShapeCircle(5.0f)));
         }
@@ -233,7 +233,7 @@ sealed class WaterCrystal(BossModule module) : Components.GenericBaitProximity(m
             return;
         }
 
-        for (var i = 0; i < 2; i++)
+        for (var i = 0; i < 2; ++i)
         {
             CurrentBaits.Add(new(debuffPlayers[i].actor, new AOEShapeDonut(4.0f, 10.0f)));
         }
@@ -324,7 +324,7 @@ sealed class FireCrystal(BossModule module) : Components.GenericBaitProximity(mo
         }
 
         var players = Raid.WithoutSlot().SortedByRange(fireCrystal.Value.actor.Position).ToList();
-        for (var i = 0; i < 2; i++)
+        for (var i = 0; i < 2; ++i)
         {
             CurrentBaits.Add(new(players[i], new AOEShapeDonut(4.0f, 10.0f)));
         }
@@ -335,7 +335,7 @@ sealed class FireCrystal(BossModule module) : Components.GenericBaitProximity(mo
             return;
         }
 
-        for (var i = 0; i < 2; i++)
+        for (var i = 0; i < 2; ++i)
         {
             CurrentBaits.Add(new(debuffPlayers[i].actor, new AOEShapeCircle(5.0f)));
         }
@@ -875,7 +875,7 @@ sealed class SlapHappyBaits(BossModule module) : Components.GenericBaitStack(mod
             BitMask allowedHealers = default;
             BitMask allowedDDs = default;
 
-            for (var i = 0; i < party.Length; i++)
+            for (var i = 0; i < party.Length; ++i)
             {
                 ref var p = ref party[i];
 
@@ -899,7 +899,7 @@ sealed class SlapHappyBaits(BossModule module) : Components.GenericBaitStack(mod
             var addedHealer = false;
             var addedDD = false;
 
-            for (var i = 0; i < party.Length; i++)
+            for (var i = 0; i < party.Length; ++i)
             {
                 ref var player = ref party[i];
                 var p = player.Item2;
@@ -1092,7 +1092,7 @@ sealed class BlackHole(BossModule module) : Components.BaitAwayTethers(module, n
     {
         base.DrawArenaForeground(pcSlot, pc);
 
-        for (var i = 0; i < Tethers.Count; i++)
+        for (var i = 0; i < Tethers.Count; ++i)
         {
             var (blackHoleActor, targetID) = Tethers[i];
             var target = WorldState.Actors.Find(targetID);

@@ -1,4 +1,4 @@
-﻿namespace BossMod.Stormblood.Ultimate.UCOB;
+namespace BossMod.Stormblood.Ultimate.UCOB;
 
 sealed class P3BlackfireTrio(BossModule module) : Components.CastCounter(module, (uint)AID.BlackfireTrio)
 {
@@ -160,7 +160,7 @@ sealed class P3MegaflareTower(BossModule module) : Components.CastTowers(module,
             var raid = Raid.WithSlot(true, true, true);
             var lenR = raid.Length;
 
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 ref var t = ref towers[i];
                 var toTower = t.Position - Arena.Center;
@@ -321,7 +321,7 @@ sealed class P3MegaflareTower(BossModule module) : Components.CastTowers(module,
 
 sealed class P3MegaflareStack(BossModule module) : Components.UniformStackSpread(module, 5f, 0f, 4, 4)
 {
-    private readonly P3BlackfireTrio _blackfire = module.FindComponent<P3BlackfireTrio>()!;
+    private P3BlackfireTrio? _blackfire;
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
@@ -368,6 +368,18 @@ sealed class P3MegaflareStack(BossModule module) : Components.UniformStackSpread
         }
         else // bft: stack spot is relative south of puddles
         {
+            if (_blackfire == null)
+            {
+                var comp = Module.FindComponent<P3BlackfireTrio>();
+                if (comp != null)
+                {
+                    _blackfire = comp;
+                }
+                else
+                {
+                    return;
+                }
+            }
             hints.AddForbiddenZone(new SDInvertedCircle(Arena.Center + (_blackfire.RelativeNorth + 180f.Degrees()).ToDirection() * 8f, 2.5f), stack.Activation);
         }
     }

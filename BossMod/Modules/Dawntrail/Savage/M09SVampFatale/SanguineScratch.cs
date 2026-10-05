@@ -39,7 +39,7 @@ sealed class BreakdownWing(BossModule module) : Components.GenericAOEs(module)
             // action enum says 8-15 but inner radius more like 4 in replay; based on boss stacks?
             if (status.Extra is 0x426 or 0x427)
             {
-                for (var i = 0; i < _vamps.Count(); i++)
+                for (var i = 0; i < _vamps.Count(); ++i)
                 {
                     if (_vamps[i].Actor.InstanceID == actor.InstanceID)
                     {
@@ -115,7 +115,7 @@ sealed class BreakdownWing(BossModule module) : Components.GenericAOEs(module)
 
         var danger = pc.DistanceToPoint(tethered.Position) > _vampRadius;
 
-        for (var i = 0; i < _vamps.Count; i++)
+        for (var i = 0; i < _vamps.Count; ++i)
         {
             if (tethered.InstanceID == _vamps[i].Actor.InstanceID)
                 Arena.ZoneCircleOutline(_vamps[i].Actor.Position, _vampRadius, danger ? Colors.Danger : Colors.Safe, 2f);

@@ -71,7 +71,7 @@ sealed class DebuffTracker(BossModule module) : BossComponent(module)
         var len = masked.Length;
 
         var actors = new Actor[len];
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; ++i)
         {
             actors[i] = masked[i].Item2;
         }

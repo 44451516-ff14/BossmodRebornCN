@@ -431,7 +431,7 @@ public abstract unsafe class PacketDecoder
     private TextNode DecodePATSync(PlayActionTimelineSync* p)
     {
         var res = new TextNode($"PlayActionTimelineSync");
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < 10; ++i)
         {
             var id = p->EntityIds[i];
             if (id == 0xE0000000)

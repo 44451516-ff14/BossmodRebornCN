@@ -25,7 +25,7 @@ public class VoidzoneShape(BossModule module, uint OID, AOEShape shape) : Compon
             return [];
 
         List<Actor> voids = [];
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; ++i)
         {
             var enemy = enemySpan[i];
             if (enemy.EventState != 7)
@@ -103,7 +103,7 @@ sealed class CutbackBlaze(BossModule module) : Components.CastCounter(module, (u
         Actor? furthest = null;
         var furthestDistSq = float.MinValue;
 
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; ++i)
         {
             ref readonly var player = ref party[i].Item2;
             var distSq = (player.Position - source.Position).LengthSq();

@@ -6,6 +6,10 @@ public static class ActionPredicate
 
     public static bool AllowDashToTarget(WorldState ws, Actor player, ActionQueue.Entry action, AIHints hints)
     {
+        if (hints.ForbidDashes)
+        {
+            return false;
+        }
         var target = action.Target;
         if (target == null || !_config.DashSafety)
         {
@@ -43,23 +47,40 @@ public static class ActionPredicate
 
     public static bool AllowDashToPosition(WorldState _, Actor player, ActionQueue.Entry action, AIHints hints)
     {
+        if (hints.ForbidDashes)
+        {
+            return false;
+        }
         if (action.TargetPos == default || !_config.DashSafety || !_config.DashSafetyExtra)
+        {
             return true;
+        }
 
         if (player.PendingKnockbacks.Count > 0)
+        {
             return false;
+        }
 
-        return IsDashSafe(player.Position, new WPos(action.TargetPos.XZ()), hints);
+        return IsDashSafe(player.Position, new WPos(action.TargetPos), hints);
     }
 
     public static ActionDefinition.ConditionDelegate AllowDashFixed(float range, bool backwards = false)
-        => (ws, player, act, hints) =>
+    {
+        return (ws, player, act, hints) =>
         {
+            if (hints.ForbidDashes)
+            {
+                return false;
+            }
             if (!_config.DashSafety || !_config.DashSafetyExtra)
+            {
                 return true;
+            }
 
             if (player.PendingKnockbacks.Count > 0)
+            {
                 return false;
+            }
 
             var dir = act.FacingAngle ?? player.Rotation;
 
@@ -67,24 +88,40 @@ public static class ActionPredicate
 
             return IsDashSafe(player.Position, dest, hints);
         };
+    }
 
     public static ActionDefinition.ConditionDelegate AllowBackdash(float range)
-         => (ws, player, act, hints) =>
+    {
+        return (ws, player, act, hints) =>
         {
+            if (hints.ForbidDashes)
+            {
+                return false;
+            }
+
             if (act.Target == null || !_config.DashSafety || !_config.DashSafetyExtra)
+            {
                 return true;
+            }
 
             if (player.PendingKnockbacks.Count > 0)
+            {
                 return false;
+            }
 
             var dir = act.Target.DirectionTo(player).Normalized();
 
             return IsDashSafe(player.Position, player.Position + dir * range, hints);
         };
+    }
 
     // check if dashing to target will put the player inside a forbidden zone
     public static bool IsDashSafe(WPos from, WPos to, AIHints hints)
     {
+        if (hints.ForbidDashes)
+        {
+            return false;
+        }
         var center = hints.PathfindMapCenter;
         if (!hints.PathfindMapBounds.Contains(to - center))
         {

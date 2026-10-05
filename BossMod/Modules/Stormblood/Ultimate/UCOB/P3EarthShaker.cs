@@ -100,7 +100,7 @@ sealed class P3EarthShaker(UCOB module) : Components.GenericBaitAway(module, (ui
     }
 }
 
-sealed class P3EarthShakerVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 4f, (uint)AID.EarthShakerAOE, GetVoidzones, 1.4d)
+sealed class P3EarthShakerVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 4f, (uint)AID.EarthShakerAOE, GetVoidzones, 1.4d) // 1.9d
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -138,6 +138,15 @@ sealed class P3EarthShakerVoidzone(BossModule module) : Components.VoidzoneAtCas
         {
             _predictedByEvent.Add((Targets[0].Position, WorldState.FutureTime(CastEventToSpawn)));
             Targets.RemoveAt(0);
+        }
+    }
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        // spawn is quite delayed and doesn't correspond with a targeted AOE, like liquid hell, so we only want to avoid actually spawned zones
+        foreach (var z in Sources(Module))
+        {
+            hints.AddForbiddenZone(Shape, z.Position);  // activation: spawn.AddSeconds(ActivationDelay)
         }
     }
 }

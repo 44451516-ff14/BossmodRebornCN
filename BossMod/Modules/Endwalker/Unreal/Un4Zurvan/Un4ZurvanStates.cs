@@ -121,7 +121,7 @@ sealed class Un4ZurvanStates : StateMachineBuilder
 
     private void Phase2Adds(uint id, float delay)
     {
-        ComponentCondition<P2ExecratedWill>(id, delay, static comp => comp.ActiveActors.Count != 0, "Add wave 1")
+        ComponentCondition<P2ExecratedWill>(id, delay, static comp => comp.ActiveActorsCount != 0, "Add wave 1")
             .ActivateOnEnter<P2ExecratedWill>();
         SimpleState(id + 0x100, 100u, "Wave 1: tank+aoe N; wave 2: tank W, caster E, gaze S; wave 3: tank S, aoe E, caster E, gaze N") // TODO: enrage timer
             .ActivateOnEnter<P2ExecratedWit>()

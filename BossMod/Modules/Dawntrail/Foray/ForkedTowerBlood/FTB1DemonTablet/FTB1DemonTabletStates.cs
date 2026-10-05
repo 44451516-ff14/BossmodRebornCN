@@ -118,10 +118,10 @@ sealed class FTB1DemonTabletStates : StateMachineBuilder
         ComponentCondition<Summon>(id, delay, comp => comp.NumCasts != 0, "Rect AOE and add phase starts")
             .ActivateOnEnter<Summon>()
             .DeactivateOnExit<Summon>();
-        ComponentCondition<SummonedDemons>(id + 0x10u, 1f, comp => comp.ActiveActors.Count != 0, "Adds targetable")
+        ComponentCondition<SummonedDemons>(id + 0x10u, 1f, comp => comp.ActiveActorsCount != 0, "Adds targetable")
             .ActivateOnEnter<DarkDefenses>()
             .ActivateOnEnter<SummonedDemons>();
-        ComponentCondition<SummonedDemons>(id + 0x20u, 45f, comp => comp.ActiveActors.Count == 0, "Add phase end")
+        ComponentCondition<SummonedDemons>(id + 0x20u, 45f, comp => comp.ActiveActorsCount == 0, "Add phase end")
             .DeactivateOnExit<DarkDefenses>()
             .DeactivateOnExit<SummonedDemons>();
     }

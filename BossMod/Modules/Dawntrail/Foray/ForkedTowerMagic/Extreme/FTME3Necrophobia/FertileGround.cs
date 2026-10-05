@@ -73,7 +73,7 @@ sealed class FertileGround(BossModule module) : Components.GenericAOEs(module)
 
             var angles = Math.Abs(Arena.Center.X - position.X) < 1f || Math.Abs(Arena.Center.Z - position.Z) < 1f ? Angle.AnglesCardinals : Angle.AnglesIntercardinals;
             var angle = 0f.Degrees();
-            for (var i = 0; i < 4; i++)
+            for (var i = 0; i < 4; ++i)
             {
                 var card = angles[i];
                 if (rotation.AlmostEqual(card, 0.1f))
@@ -107,7 +107,7 @@ sealed class FertileGround(BossModule module) : Components.GenericAOEs(module)
         // set dead players so AOE marker doesn't lag behind on revive
         var players = Raid.WithSlot();
         var count = players.Length;
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             var player = players[i].Item2;
             if (player.IsDead)
@@ -137,7 +137,7 @@ sealed class FertileGround(BossModule module) : Components.GenericAOEs(module)
     {
         base.DrawArenaForeground(pcSlot, pc);
         var count = _heads.Count;
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             ref var head = ref _heads.Ref(i);
             Arena.ZoneCircle(head, 1.5f, 0x99FFFF00);

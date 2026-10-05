@@ -1,9 +1,11 @@
 ﻿namespace BossMod.Components;
 
 // generic component used for drawing adds
-public class Adds(BossModule module, uint oid, int priority = 0, bool forbidDots = false) : BossComponent(module)
+public abstract class Adds(BossModule module, uint oid, int priority = 0, bool forbidDots = false, bool allowUntargetable = false) : BossComponent(module)
 {
     public readonly List<Actor> Actors = module.Enemies(oid);
+    private readonly bool AllowUntargetable = allowUntargetable;
+
     public List<Actor> ActiveActors
     {
         get
@@ -13,12 +15,30 @@ public class Adds(BossModule module, uint oid, int priority = 0, bool forbidDots
             for (var i = 0; i < count; ++i)
             {
                 var actor = Actors[i];
-                if (actor.IsTargetable && !actor.IsDead)
+                if ((AllowUntargetable || actor.IsTargetable) && !actor.IsDead)
                 {
                     activeActors.Add(actor);
                 }
             }
             return activeActors;
+        }
+    }
+
+    public int ActiveActorsCount
+    {
+        get
+        {
+            var count = Actors.Count;
+            var active = 0;
+            for (var i = 0; i < count; ++i)
+            {
+                var actor = Actors[i];
+                if ((AllowUntargetable || actor.IsTargetable) && !actor.IsDead)
+                {
+                    ++active;
+                }
+            }
+            return active;
         }
     }
 
@@ -28,7 +48,7 @@ public class Adds(BossModule module, uint oid, int priority = 0, bool forbidDots
 }
 
 // component for adds that shouldn't be targeted at all, but should still be drawn
-public class AddsPointless(BossModule module, uint oid) : Adds(module, oid)
+public abstract class AddsPointless(BossModule module, uint oid, bool allowUntargetable = false) : Adds(module, oid, allowUntargetable: allowUntargetable)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -41,25 +61,68 @@ public class AddsPointless(BossModule module, uint oid) : Adds(module, oid)
 }
 
 // generic component used for drawing multiple adds with multiple oids, when it's not useful to distinguish between them
-public class AddsMulti(BossModule module, uint[] oids, int priority = 0) : BossComponent(module)
+public abstract class AddsMulti(BossModule module, uint[] oids, int priority = 0, bool allowUntargetable = false) : BossComponent(module)
 {
     public readonly uint[] OIDs = oids;
+    private readonly bool AllowUntargetable = allowUntargetable;
+
     public List<Actor> ActiveActors
     {
         get
         {
-            var enemies = Module.Enemies(OIDs);
-            var count = enemies.Count;
-            List<Actor> activeActors = [with(count)];
-            for (var i = 0; i < count; ++i)
+            var len = OIDs.Length;
+            var active = 0;
+            for (var j = 0; j < len; ++j)
             {
-                var actor = enemies[i];
-                if (actor.IsTargetable && !actor.IsDead)
+                var actors = Module.Enemies(OIDs[j]);
+                var count = actors.Count;
+                for (var i = 0; i < count; ++i)
                 {
-                    activeActors.Add(actor);
+                    var actor = actors[i];
+                    if ((AllowUntargetable || actor.IsTargetable) && !actor.IsDead)
+                    {
+                        ++active;
+                    }
+                }
+            }
+            List<Actor> activeActors = [with(active)];
+            for (var j = 0; j < len; ++j)
+            {
+                var actors = Module.Enemies(OIDs[j]);
+                var count = actors.Count;
+                for (var i = 0; i < count; ++i)
+                {
+                    var actor = actors[i];
+                    if ((AllowUntargetable || actor.IsTargetable) && !actor.IsDead)
+                    {
+                        activeActors.Add(actor);
+                    }
                 }
             }
             return activeActors;
+        }
+    }
+
+    public int ActiveActorsCount
+    {
+        get
+        {
+            var len = OIDs.Length;
+            var active = 0;
+            for (var j = 0; j < len; ++j)
+            {
+                var actors = Module.Enemies(OIDs[j]);
+                var count = actors.Count;
+                for (var i = 0; i < count; ++i)
+                {
+                    var actor = actors[i];
+                    if ((AllowUntargetable || actor.IsTargetable) && !actor.IsDead)
+                    {
+                        ++active;
+                    }
+                }
+            }
+            return active;
         }
     }
 
@@ -71,5 +134,5 @@ public class AddsMulti(BossModule module, uint[] oids, int priority = 0) : BossC
         }
     }
 
-    public override void DrawArenaForeground(int pcSlot, Actor pc) => Arena.Actors(Module, OIDs);
+    public override void DrawArenaForeground(int pcSlot, Actor pc) => Arena.Actors(Module, OIDs, allowDeadAndUntargetable: AllowUntargetable);
 }

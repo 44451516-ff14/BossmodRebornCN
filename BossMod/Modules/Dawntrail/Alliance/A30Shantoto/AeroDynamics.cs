@@ -104,7 +104,7 @@ sealed class AeroDynamics(BossModule module) : Components.GenericKnockback(modul
                 if (len > 0)
                 {
                     var swalls = new SafeWall[len];
-                    for (var i = 0; i < walls.Count; i++)
+                    for (var i = 0; i < walls.Count; ++i)
                     {
                         swalls[i] = walls[i];
                     }

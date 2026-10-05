@@ -169,15 +169,15 @@ sealed class A23HaloneStates : StateMachineBuilder
 
     private void AddPhase(uint id, float delay)
     {
-        ComponentCondition<GlacialSpearSmall>(id + 0x10u, delay, static comp => comp.ActiveActors.Count != 0, "Adds appear")
+        ComponentCondition<GlacialSpearSmall>(id + 0x10u, delay, static comp => comp.ActiveActorsCount != 0, "Adds appear")
             .ActivateOnEnter<GlacialSpearSmall>()
             .ActivateOnEnter<Octagons>()
             .SetHint(StateMachine.StateHint.DowntimeEnd);
-        ComponentCondition<GlacialSpearLarge>(id + 0x20u, 7.5f, static comp => comp.ActiveActors.Count != 0)
+        ComponentCondition<GlacialSpearLarge>(id + 0x20u, 7.5f, static comp => comp.ActiveActorsCount != 0)
             .ActivateOnEnter<GlacialSpearLarge>();
         // TODO: correct enrage timer
         // TODO: Cheimon component (find out rotation direction, angle offset and num aoes)
-        Condition(id + 0x100u, 100f, () => Module.FindComponent<GlacialSpearSmall>()!.ActiveActors.Count == 0 && Module.FindComponent<GlacialSpearLarge>()!.ActiveActors.Count == 0, "Adds enrage")
+        Condition(id + 0x100u, 100f, () => Module.FindComponent<GlacialSpearSmall>()!.ActiveActorsCount == 0 && Module.FindComponent<GlacialSpearLarge>()!.ActiveActorsCount == 0, "Adds enrage")
             .ActivateOnEnter<IceDart>()
             .ActivateOnEnter<Niphas>()
             .DeactivateOnExit<Niphas>()

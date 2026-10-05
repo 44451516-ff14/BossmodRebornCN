@@ -73,7 +73,7 @@ sealed class LongDeadExplorer(BossModule module) : Components.SimpleAOEs(module,
         if (RiskyWithSecondsLeft != default)
         {
             var time = WorldState.CurrentTime;
-            for (var i = 0; i < max; i++)
+            for (var i = 0; i < max; ++i)
             {
                 ref var aoe = ref aoes[i];
                 aoe.Risky = aoe.Activation.AddSeconds(-RiskyWithSecondsLeft) <= time;

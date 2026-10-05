@@ -15,7 +15,7 @@ sealed class Plummet(BossModule module) : Components.CastTowers(module, (uint)AI
             _nonTanks = default;
             var party = Raid.WithSlot(true, true, true);
             var len = party.Length;
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < len; ++i)
             {
                 ref readonly var p = ref party[i];
                 if (p.Item2.Role != Role.Tank)
@@ -121,7 +121,7 @@ sealed class GravegrazerSmall(BossModule module) : Components.GenericAOEs(module
             return [];
 
         var aoes = new AOEInstance[count];
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             aoes[i] = new(_rect, _neckbiters[i].Position, _neckbiters[i].Rotation);
         }
@@ -153,7 +153,7 @@ sealed class GravegrazerBig(BossModule module) : Components.GenericAOEs(module)
             return [];
 
         var aoes = new AOEInstance[count];
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             aoes[i] = new(_rect, _coffinmakers[i].Position, _coffinmakers[i].Rotation);
         }

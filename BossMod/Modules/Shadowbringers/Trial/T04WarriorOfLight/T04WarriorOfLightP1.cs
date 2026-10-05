@@ -510,7 +510,7 @@ sealed class BrimstoneEarthGrow(BossModule module) : Components.SimpleAOEs(modul
              */
             var _genAOE = 16;
 
-            for (var i = 0; i < _genAOE; i++)
+            for (var i = 0; i < _genAOE; ++i)
             {
                 // The first long cast takes approx 6 seconds. The instants that follow every 1 seconds or so.
                 DateTime _activation = WorldState.FutureTime(5f + (1.0f * i));

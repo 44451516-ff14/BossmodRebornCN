@@ -66,7 +66,7 @@ public static partial class Utils
 
     public static bool IsMultiplayerDuty(WorldState world) => Service.LuminaRow<Lumina.Excel.Sheets.ContentFinderCondition>(world.CurrentCFCID) is { } cfc && cfc.AllowUndersized;
 
-    public static bool IsUnsynced(WorldState world, Actor player) => Service.LuminaRow<Lumina.Excel.Sheets.ContentFinderCondition>(world.CurrentCFCID) is { } cfc && player.Level > cfc.ClassJobLevelSync;
+    public static bool IsUnsynced(WorldState world, Actor player) => world.CurrentCFCID > 0 && Service.LuminaRow<Lumina.Excel.Sheets.ContentFinderCondition>(world.CurrentCFCID) is { } cfc && player.Level > cfc.ClassJobLevelSync;
 
     private static readonly Dictionary<uint, (byte, byte)> _fateCache = [];
     private static (byte ClassJobLevelMax, byte EurekaFate) GetFateData(uint fateID)
@@ -270,7 +270,7 @@ public static partial class Utils
     public static T[] GenArray<T>(int count, Func<T> gen)
     {
         var res = new T[count];
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             res[i] = gen();
         }

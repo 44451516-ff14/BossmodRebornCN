@@ -771,7 +771,7 @@ sealed class ForsakenSolverSet1(BossModule module) : BossComponent(module)
         var towersSpan = CollectionsMarshal.AsSpan(towers.Towers);
         var tSE = towers.CurrentSE;
         var tSW = towers.CurrentSW;
-        for (var i = 0; i < 2; i++)
+        for (var i = 0; i < 2; ++i)
         {
             ref var t = ref towersSpan[i];
             if (i == tSW)
@@ -987,7 +987,7 @@ sealed class ForsakenSolverSet2(BossModule module) : BossComponent(module)
         var towersSpan = CollectionsMarshal.AsSpan(towers.Towers);
         var tSE = towers.CurrentSE;
         var tSW = towers.CurrentSW;
-        for (var i = 0; i < 2; i++)
+        for (var i = 0; i < 2; ++i)
         {
             ref var t = ref towersSpan[i];
             if (i == tSW)
@@ -1093,7 +1093,7 @@ sealed class Trine(DMU module) : Components.GenericAOEs(module, (uint)AID.Trine)
         (int currentWave, int nextWave)[] wave = [(9, 3), (3, 9), (9, 0)];
         var (currentSize, nextSize) = wave[NumCasts < 9 ? 0 : NumCasts < 12 ? 1 : 2];
         var count = Math.Min(currentSize + nextSize, aoes.Count);
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             aoes[i] = aoes[i] with
             {

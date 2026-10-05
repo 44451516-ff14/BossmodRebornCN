@@ -120,7 +120,7 @@ sealed class TinyQuake(BossModule module) : Components.GenericAOEs(module)
         var max = count > 2 ? 2 : count;
         var aoes = CollectionsMarshal.AsSpan(Casters);
 
-        for (var i = 0; i < max; i++)
+        for (var i = 0; i < max; ++i)
         {
             ref var aoe = ref aoes[i];
             aoe.Color = i == 0 ? Colors.Danger : Colors.AOE;
@@ -180,7 +180,7 @@ sealed class DiminutiveDualcast(BossModule module) : Components.GenericAOEs(modu
         var deadline = aoes[0].Activation.AddSeconds(1d);
         var max = count > 4 ? 4 : count;
 
-        for (var i = 0; i < max; i++)
+        for (var i = 0; i < max; ++i)
         {
             ref var aoe = ref aoes[i];
             if (aoe.Activation <= deadline)
@@ -218,7 +218,7 @@ sealed class TinyMeteor(BossModule module) : Components.SimpleAOEs(module, (uint
             index++;
         }
 
-        for (var i = 0; i < index; i++)
+        for (var i = 0; i < index; ++i)
         {
             ref var aoe = ref aoes[i];
             aoe.Color = Colors.Danger;
@@ -382,7 +382,7 @@ sealed class FlareHolyMerge(BossModule module) : BossComponent(module)
         var nextCombinations = CollectionsMarshal.AsSpan(mergeCombinations);
         var max = count > 2 ? 2 : count;
 
-        for (var i = 0; i < max; i++)
+        for (var i = 0; i < max; ++i)
         {
             ref var combination = ref nextCombinations[i];
 
@@ -410,7 +410,7 @@ sealed class FlareHolyMerge(BossModule module) : BossComponent(module)
         var nextCombinations = CollectionsMarshal.AsSpan(mergeCombinations);
         var max = count > 2 ? 2 : count;
 
-        for (var i = 0; i < max; i++)
+        for (var i = 0; i < max; ++i)
         {
             ref var combination = ref nextCombinations[i];
 
@@ -432,7 +432,7 @@ sealed class FlareHolyMerge(BossModule module) : BossComponent(module)
         var nextCombinations = CollectionsMarshal.AsSpan(mergeCombinations);
         var max = count > 2 ? 2 : count;
 
-        for (var i = 0; i < max; i++)
+        for (var i = 0; i < max; ++i)
         {
             ref var combination = ref nextCombinations[i];
 
@@ -464,7 +464,7 @@ sealed class FlareHolyMerge(BossModule module) : BossComponent(module)
         var max = count > 2 ? 2 : count;
         var knockbackSetup = false;
 
-        for (var i = 0; i < max; i++)
+        for (var i = 0; i < max; ++i)
         {
             ref var combination = ref nextCombinations[i];
             if (combination.IsFlare)
@@ -667,7 +667,7 @@ sealed class SphereGrowable(BossModule module) : BossComponent(module)
             var bestIndex = -1;
             var bestDot = float.MinValue;
 
-            for (var i = 0; i < mages.Count; i++)
+            for (var i = 0; i < mages.Count; ++i)
             {
                 if (i == startIndex)
                 {

@@ -57,14 +57,12 @@ sealed class OmniElementPanels(BossModule module) : BossComponent(module)
         List<ShapeDistance> sd = [];
         var actors = CollectionsMarshal.AsSpan(Actors);
         var count = actors.Length;
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
-            ref var actor = ref actors[i];
+            var actor = actors[i];
             var rotation = actor.Rotation;
-            if (fire && actor.OID == (uint)OID.OmniElementFire ||
-                ice && actor.OID == (uint)OID.OmniElementIce ||
-                lightning && actor.OID == (uint)OID.OmniElementThunder
-                )
+            var oid = actor.OID;
+            if (fire && oid == (uint)OID.OmniElementFire || ice && oid == (uint)OID.OmniElementIce || lightning && oid == (uint)OID.OmniElementThunder)
             {
                 var center = Arena.Center;
                 sd.Add(new SDCone(center, 30f, rotation, 30f.Degrees()));
@@ -79,7 +77,7 @@ sealed class OmniElementPanels(BossModule module) : BossComponent(module)
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         var count = Actors.Count;
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             var act = Actors[i];
             var position = act.Position;
@@ -101,7 +99,7 @@ sealed class OmniElementPanels(BossModule module) : BossComponent(module)
 #endif
 }
 
-sealed class AllMightyFlames(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.SpreadTankbuster, (uint)AID.AllMightyFlames, 6f, 5.1f)
+sealed class AllMightyFlames(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.SpreadTankbuster, (uint)AID.AllMightyFlames, 6f, 5.1d)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -115,7 +113,7 @@ sealed class AllMightyFlames(BossModule module) : Components.SpreadFromIcon(modu
     }
 }
 
-sealed class AllConsumingFlames(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spread, (uint)AID.AllConsumingFlames, 6f, 5.1f)
+sealed class AllConsumingFlames(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spread, (uint)AID.AllConsumingFlames, 6f, 5.1d)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -129,13 +127,13 @@ sealed class AllConsumingFlames(BossModule module) : Components.SpreadFromIcon(m
 sealed class AllKnowingFlames(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly AOEShapeCone _cone = new(30f, 30f.Degrees());
-    private BitMask _spreading = new();
+    private BitMask _spreading;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         List<AOEInstance> aoes = [];
-        var rotation = _spreading[slot] ? 60f.Degrees() : 0f.Degrees();
-        aoes.Add(new(_cone, Module.PrimaryActor.Position, 0f.Degrees() + rotation));
+        var rotation = _spreading[slot] ? 60f.Degrees() : default;
+        aoes.Add(new(_cone, Module.PrimaryActor.Position, rotation));
         aoes.Add(new(_cone, Module.PrimaryActor.Position, 120f.Degrees() + rotation));
         aoes.Add(new(_cone, Module.PrimaryActor.Position, -120f.Degrees() + rotation));
         return CollectionsMarshal.AsSpan(aoes);
@@ -197,7 +195,7 @@ sealed class QuadrilogyOfImplements(BossModule module) : Components.GenericAOEs(
         var end = 0;
         var id = aoes[0].ActorID;
         /*
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             ref var aoe = ref aoes[i];
             if (aoe.ActorID != id)
@@ -208,7 +206,7 @@ sealed class QuadrilogyOfImplements(BossModule module) : Components.GenericAOEs(
         }
         */
         ulong second = default;
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             ref var aoe = ref aoes[i];
             if (aoe.ActorID != id)
@@ -236,7 +234,7 @@ sealed class QuadrilogyOfImplements(BossModule module) : Components.GenericAOEs(
         //if (shockwave != null)
         if (shockwave?.ActiveKnockbacks(slot, actor).Length > 0)
         {
-            for (var i = 0; i < end; i++)
+            for (var i = 0; i < end; ++i)
             {
                 ref var aoe = ref subset[i];
                 aoe.Risky = false;
@@ -404,7 +402,7 @@ sealed class ElementIII(BossModule module) : Components.GenericAOEs(module)
         var panels = CollectionsMarshal.AsSpan(_panels.Actors);
         var count = panels.Length;
         var center = Module.PrimaryActor.Position;
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             ref var panel = ref panels[i];
             if (panel.OID != safeOID)
@@ -450,7 +448,7 @@ sealed class ElementIII(BossModule module) : Components.GenericAOEs(module)
             ++NumCasts;
             var targets = spell.Targets;
             var count = targets.Count;
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 ref var target = ref targets.Ref(i);
                 var slot = Raid.FindSlot(target.ID);
@@ -485,7 +483,7 @@ sealed class SummonBombs(BossModule module) : Components.Adds(module, (uint)OID.
     {
         // focus inside bombs 1st, then outside
         var count = hints.PotentialTargets.Count;
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             var h = hints.PotentialTargets[i];
             if (h.Actor.OID == (uint)OID.SummonedBomb)
@@ -510,7 +508,7 @@ sealed class SummonBirds(BossModule module) : Components.Adds(module, (uint)OID.
     {
         // only focus if all boms are dead
         // should face outside when killed
-        if (_bombs.ActiveActors.Count == 0)
+        if (_bombs.ActiveActorsCount == 0)
         {
             hints.PrioritizeTargetsByOID((uint)OID.SummonedBird, 1);
         }
@@ -561,7 +559,7 @@ sealed class BladeBlitz(BossModule module) : Components.SimpleAOEs(module, (uint
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP, PrimaryActorOID = (uint)OID.Index, Contributors = "gynorhino", GroupType = BossModuleInfo.GroupType.TheForkedTowerMagicExtreme, GroupID = 1114u, NameID = 14717u, PlanLevel = 100)]
+[ModuleInfo(BossModuleInfo.Maturity.Contributed, PrimaryActorOID = (uint)OID.Index, Contributors = "gynorhino", GroupType = BossModuleInfo.GroupType.TheForkedTowerMagicExtreme, GroupID = 1114u, NameID = 14717u, PlanLevel = 100)]
 public sealed class FTME4Index : BossModule
 {
     public FTME4Index(WorldState ws, Actor primary) : this(ws, primary, Normal.FTMN4Index.FTMN4Index.BuildInitialArena()) { }

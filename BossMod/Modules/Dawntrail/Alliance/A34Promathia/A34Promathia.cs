@@ -202,13 +202,13 @@ sealed class EmptySeed(BossModule module) : Components.SimpleKnockbacks(module, 
             var firstcornerdir = PlatformOrientation(caster.Position) + 45.Degrees();
             var walls = new SafeWall[8];
             var dist = 3.5f;
-            for (var i = 0; i < 4; i++)
+            for (var i = 0; i < 4; ++i)
             {
                 var z = i * 2;
                 var angle = firstcornerdir + i * 90f.Degrees();
                 var corner = caster.Position + angle.ToDirection() * 8.9f; // This isn't 5e!  Diagonals are Longer!
-                var end1 = corner + (angle + 225.Degrees()).ToDirection() * dist; // 180+45, turn around, then turn one way or the other.
-                var end2 = corner + (angle - 225.Degrees()).ToDirection() * dist;
+                var end1 = corner + (angle + 225f.Degrees()).ToDirection() * dist; // 180+45, turn around, then turn one way or the other.
+                var end2 = corner + (angle - 225f.Degrees()).ToDirection() * dist;
                 walls[z] = new(corner, end1);
                 walls[z + 1] = new(corner, end2);
             }
@@ -221,7 +221,7 @@ sealed class EmptySeed(BossModule module) : Components.SimpleKnockbacks(module, 
     {
         if (Casters.Count == 0)
             return;
-        for (var i = 0; i < Casters.Count; i++)
+        for (var i = 0; i < Casters.Count; ++i)
         {
             var source = Casters[i].Origin;
             if (actor.DistanceToPoint(source) < 9f)

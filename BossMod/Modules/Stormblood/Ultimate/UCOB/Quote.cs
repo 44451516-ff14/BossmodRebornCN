@@ -5,13 +5,15 @@ sealed class Quote(BossModule module) : BossComponent(module)
     public Actor? Source;
     public List<uint> PendingMechanics = [];
     public DateTime NextActivation;
+    private readonly StringBuilder _stringbuilder = new(20);
 
     public override void AddGlobalHints(Actor actor, GlobalHints hints)
     {
         var count = PendingMechanics.Count;
         if (count > 0)
         {
-            var sb = new StringBuilder();
+            var sb = _stringbuilder;
+            sb.Clear();
             for (var i = 0; i < count; ++i)
             {
                 var hint = PendingMechanics[i] switch
@@ -105,6 +107,24 @@ sealed class QuoteIronChariotLunarDynamo(BossModule module) : Components.Generic
         if (count <= 0)
         {
             _aoe = [];
+        }
+    }
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        var aoes = ActiveAOEs(slot, actor);
+        var len = aoes.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            ref readonly var aoe = ref aoes[i];
+            if (aoe.Shape is AOEShapeDonut)
+            {
+                hints.AddForbiddenZone(new SDInvertedCircle(aoe.Origin, 6f), aoe.Activation);
+            }
+            else
+            {
+                hints.AddForbiddenZone(new SDCircle(aoe.Origin, 8.55f), aoe.Activation);
+            }
         }
     }
 }

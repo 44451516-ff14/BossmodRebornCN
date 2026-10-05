@@ -64,7 +64,7 @@ sealed class DivineArrowCircles(BossModule module) : Components.SimpleAOEGroups(
                 return;
             }
         }
-        for (var i = 0; i < MidAIDs.Length; i++)
+        for (var i = 0; i < MidAIDs.Length; ++i)
         {
             if (id == MidAIDs[i])
             {
@@ -74,7 +74,7 @@ sealed class DivineArrowCircles(BossModule module) : Components.SimpleAOEGroups(
                 SortHelpers.SortAOEByActivation(Casters);
             }
         }
-        for (var i = 0; i < FarAIDs.Length; i++)
+        for (var i = 0; i < FarAIDs.Length; ++i)
         {
             if (id == FarAIDs[i])
             {
@@ -113,7 +113,7 @@ sealed class DivineArrowCircles(BossModule module) : Components.SimpleAOEGroups(
                 return;
             }
         }
-        for (var i = 0; i < MidAIDs.Length; i++)
+        for (var i = 0; i < MidAIDs.Length; ++i)
         {
             if (spell.Action.ID == MidAIDs[i])
             {
@@ -121,7 +121,7 @@ sealed class DivineArrowCircles(BossModule module) : Components.SimpleAOEGroups(
                 return;
             }
         }
-        for (var i = 0; i < FarAIDs.Length; i++)
+        for (var i = 0; i < FarAIDs.Length; ++i)
         {
             if (spell.Action.ID == FarAIDs[i])
             {

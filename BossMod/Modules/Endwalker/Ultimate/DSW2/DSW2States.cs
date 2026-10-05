@@ -468,7 +468,7 @@ sealed class DSW2States : StateMachineBuilder
             .DeactivateOnExit<P5DeathOfTheHeavensHeavensflame>()
             .DeactivateOnExit<P5DeathOfTheHeavensDooms>();
 
-        ComponentCondition<P5DeathOfTheHeavensMeteorCircle>(id + 0x300u, 2.4f, static comp => comp.ActiveActors.Count != 0, "Meteors spawn")
+        ComponentCondition<P5DeathOfTheHeavensMeteorCircle>(id + 0x300u, 2.4f, static comp => comp.ActiveActorsCount != 0, "Meteors spawn")
             .ActivateOnEnter<P5DeathOfTheHeavensMeteorCircle>()
             .SetHint(StateMachine.StateHint.DowntimeEnd);
         ActorTargetable(id + 0x310u, _module.BossP5, true, 14.8f, "Meteors enrage") // boss will reappear as soon as final meteor dies

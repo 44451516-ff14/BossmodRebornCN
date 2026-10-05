@@ -12,7 +12,7 @@ public sealed class NetworkState
         public readonly byte[] Payload = payload;
     };
 
-    public readonly struct IDScrambleFields(uint gameSessionRandom, uint zoneRandom, uint key0, uint key1, uint key2)
+    public readonly struct IDScrambleFields(uint gameSessionRandom, uint zoneRandom, uint key0, uint key1, uint key2) : IEquatable<IDScrambleFields>
     {
         public readonly uint GameSessionRandom = gameSessionRandom;
         public readonly uint ZoneRandom = zoneRandom;
@@ -31,7 +31,7 @@ public sealed class NetworkState
 
         public readonly bool Equals(IDScrambleFields other) => this == other;
         public override readonly bool Equals(object? obj) => obj is IDScrambleFields other && Equals(other);
-        public override readonly int GetHashCode() => (GameSessionRandom, ZoneRandom, Key0, Key1, Key2).GetHashCode();
+        public override readonly int GetHashCode() => HashCode.Combine(GameSessionRandom, ZoneRandom, Key0, Key1, Key2);
     }
 
     public IDScrambleFields IDScramble;

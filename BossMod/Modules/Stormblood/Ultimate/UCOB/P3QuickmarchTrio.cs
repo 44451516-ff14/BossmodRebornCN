@@ -78,6 +78,11 @@ sealed class P3QuickmarchTrio(UCOB module) : BossComponent(module)
             hints.AddForbiddenZone(new SDInvertedCircle(_spreadSpots[slot], 1f));
         }
 
+        if (PuddleDodgeHint)
+        {
+            hints.AddForbiddenZone(new SDInvertedCircle(Arena.Center, 10f));
+        }
+
         if (_earthshakersDone && actor.InstanceID != _bahamut.TargetID)
         {
             hints.AddForbiddenZone(new SDHalfPlane(Arena.Center, (Arena.Center - RelativeNorth).Normalized()), DateTime.MaxValue);
@@ -110,7 +115,7 @@ sealed class P3QuickmarchTrio(UCOB module) : BossComponent(module)
 sealed class P3TwistingDive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TwistingDive, new AOEShapeRect(63.96f, 4f));
 sealed class P3LunarDive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LunarDive, new AOEShapeRect(62.55f, 4f));
 sealed class P3MegaflareDive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MegaflareDive, new AOEShapeRect(64.2f, 6f));
-sealed class P3Twister(BossModule module) : Components.CastTwister(module, 1.25f, (uint)OID.VoidzoneTwister, (uint)AID.TwistingDive, 1.4f, predictBeforeCastEnd: 0.8f)
+sealed class P3Twister(BossModule module) : Components.CastTwister(module, 1.25f, (uint)OID.VoidzoneTwister, (uint)AID.TwistingDive, 1.4d, predictBeforeSpawn: 0.8d)
 {
     public bool Predicted => PredictedPositions.Count > 0;
 }
@@ -144,10 +149,17 @@ sealed class P3MegaflareSpreadStack : Components.UniformStackSpread
                 {
                     return;
                 }
-                var stackTarget = Raid.WithSlot(false, true, true).IncludedInMask(_stackTargets).FirstOrDefault().Item2; // random target
-                if (stackTarget != null)
+
+                var raid = Raid.WithSlot(false, true, true);
+                var len = raid.Length;
+                for (var i = 0; i < len; ++i)
                 {
-                    AddStack(stackTarget, WorldState.FutureTime(4d), ~_stackTargets);
+                    var p = raid[i];
+                    if (_stackTargets[p.Item1])
+                    {
+                        AddStack(p.Item2, WorldState.FutureTime(4d), ~_stackTargets);
+                        return;
+                    }
                 }
                 break;
             case (uint)AID.MegaflareStack:
@@ -166,7 +178,7 @@ sealed class P3MegaflareSpreadStack : Components.UniformStackSpread
             if (isTarget)
             {
                 var safeDir = (_trio.RelativeNorth - Arena.Center).ToAngle() + 135f.Degrees();
-                hints.AddForbiddenZone(new SDInvertedCircle(Arena.Center + safeDir.ToDirection() * 5f, 2));
+                hints.AddForbiddenZone(new SDInvertedCircle(Arena.Center + safeDir.ToDirection() * 5f, 1f));
             }
 
             // everyone else should avoid the stack, it will kill healers and do ~50% to tanks
@@ -360,7 +372,8 @@ sealed class P3TempestWing(BossModule module) : Components.TankbusterTether(modu
                         continue;
                     }
 
-                    hints.AddForbiddenZone(new SDCircle(ally.Position, 5f), activation);
+                    // trying to dodge allies causes too much variance, plant and let them gtfo
+                    // hints.AddForbiddenZone(new SDCircle(ally.Position, 5f), activation);
 
                     // if we walk behind another player, it will pass the tether to them the cone width doesn't really matter here; as long as the pixels are blocked,
                     // pathfinder won't try to go through them
@@ -370,21 +383,7 @@ sealed class P3TempestWing(BossModule module) : Components.TankbusterTether(modu
                     }
                 }
             }
-            else if (Targets[slot])
-            {
-                var raid = Raid.WithoutSlot(false, true, true);
-                var len = raid.Length;
-                for (var i = 0; i < len; ++i)
-                {
-                    var p = raid[i];
-                    if (p == actor)
-                    {
-                        continue;
-                    }
-                    hints.AddForbiddenZone(new SDCircle(p.Position, 5f), activation);
-                }
-            }
-            else
+            else if (!Targets[slot])
             {
                 List<ShapeDistance> goal = [];
 
@@ -422,16 +421,19 @@ sealed class P3TempestWing(BossModule module) : Components.TankbusterTether(modu
                     hints.AddForbiddenZone(new SDCircle(side.Enemy.Position, 2f));
                 }
             }
-            if (EnableRaidHints)
+            // non-tanks avoid tanks, OT avoid MT
+            // (if both tanks avoid each other they kill everyone)
+            if (EnableRaidHints && assignment != PartyRolesConfig.Assignment.MT)
             {
                 var raid = Raid.WithSlot(false, true, true);
                 var len = raid.Length;
                 for (var i = 0; i < len; ++i)
                 {
                     var p = raid[i];
-                    if (Targets[p.Item1])
+                    var t = p.Item2;
+                    if (t != actor && Targets[p.Item1])
                     {
-                        hints.AddForbiddenZone(new SDCircle(p.Item2.Position, 5f), activation);
+                        hints.AddForbiddenZone(new SDCircle(t.Position, 5f), activation);
                     }
                 }
             }

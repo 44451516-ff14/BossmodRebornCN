@@ -2,33 +2,23 @@
 
 sealed class FreezingFugue(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.FreezingFugue1, (uint)AID.FreezingFugue2, (uint)AID.FreezingFugue3], 20f);
 sealed class PoisonBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PoisonBreath, 18f);
-sealed class FulgurousFugue(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.FulgurousFugue1, (uint)AID.FulgurousFugue2, (uint)AID.FulgurousFugue3], new AOEShapeDonut(20f, 60f));
+sealed class FulgurousFugue(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.FulgurousFugue1, (uint)AID.FulgurousFugue2, (uint)AID.FulgurousFugue3], new AOEShapeDonut(18f, 60f));
 sealed class FreezingFulgurousFugue(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> Casters = [];
+    public readonly List<AOEInstance> AOEs = [];
     private readonly AOEShapeCircle _circle = new(20f);
-    private readonly AOEShapeDonut _donut = new(20f, 60f);
-
-    public ReadOnlySpan<AOEInstance> ActiveCasters
-    {
-        get
-        {
-            var count = Casters.Count;
-            var max = count > 1 ? 1 : count;
-            return CollectionsMarshal.AsSpan(Casters)[..max];
-        }
-    }
+    private readonly AOEShapeDonut _donut = new(18f, 60f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        var count = Casters.Count;
+        var count = AOEs.Count;
         if (count == 0)
         {
             return [];
         }
 
         var max = count > 1 ? 1 : count;
-        var aoes = CollectionsMarshal.AsSpan(Casters);
+        var aoes = CollectionsMarshal.AsSpan(AOEs);
         return aoes[..max];
     }
 
@@ -39,13 +29,18 @@ sealed class FreezingFulgurousFugue(BossModule module) : Components.GenericAOEs(
             case (uint)AID.FreezingFugue1:
             case (uint)AID.FreezingFugue2:
             case (uint)AID.FreezingFugue3:
-                Casters.Add(new(_circle, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID, shapeDistance: _circle.Distance(spell.LocXZ, spell.Rotation)));
+                AddAOE(_circle);
                 break;
             case (uint)AID.FulgurousFugue1:
             case (uint)AID.FulgurousFugue2:
             case (uint)AID.FulgurousFugue3:
-                Casters.Add(new(_donut, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID, shapeDistance: _donut.Distance(spell.LocXZ, spell.Rotation)));
+                AddAOE(_donut);
                 break;
+        }
+        void AddAOE(AOEShape shape)
+        {
+            var loc = spell.LocXZ;
+            AOEs.Add(new(shape, loc, default, Module.CastFinishAt(spell), actorID: caster.InstanceID, shapeDistance: shape.Distance(loc, default)));
         }
     }
 
@@ -59,14 +54,14 @@ sealed class FreezingFulgurousFugue(BossModule module) : Components.GenericAOEs(
             case (uint)AID.FulgurousFugue1:
             case (uint)AID.FulgurousFugue2:
             case (uint)AID.FulgurousFugue3:
-                var count = Casters.Count;
+                var count = AOEs.Count;
                 var id = caster.InstanceID;
-                var aoes = CollectionsMarshal.AsSpan(Casters);
+                var aoes = CollectionsMarshal.AsSpan(AOEs);
                 for (var i = 0; i < count; ++i)
                 {
                     if (aoes[i].ActorID == id)
                     {
-                        Casters.RemoveAt(i);
+                        AOEs.RemoveAt(i);
                         return;
                     }
                 }
@@ -175,7 +170,7 @@ sealed class ArcaneRevelation(BossModule module) : Components.GenericAOEs(module
         {
             var actors = CollectionsMarshal.AsSpan(arcanes);
             var count = actors.Length;
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 var arcane = actors[i];
                 _aoes.Add(new(_rect, arcane.Item1, arcane.Item2));
@@ -192,9 +187,10 @@ sealed class ArcaneRevelation(BossModule module) : Components.GenericAOEs(module
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP, PrimaryActorOID = (uint)OID.GreenHead, Contributors = "gynorhino", GroupType = BossModuleInfo.GroupType.TheForkedTowerMagicExtreme, GroupID = 1114u, NameID = 14490u, SortOrder = 1, PlanLevel = 100)]
+[ModuleInfo(BossModuleInfo.Maturity.Contributed, PrimaryActorOID = (uint)OID.GreenHead, Contributors = "gynorhino", GroupType = BossModuleInfo.GroupType.TheForkedTowerMagicExtreme, GroupID = 1114u, NameID = 14490u, SortOrder = 1, PlanLevel = 100)]
 public sealed class FTME1TwoHeadedAevis(WorldState ws, Actor primary) : BossModule(ws, primary, new(-900f, 700f), new ArenaBoundsSquare(20f))
 {
+    public static uint[] Bosses = [(uint)OID.GreenHead, (uint)OID.BlueHead];
     private Actor? _blueHead;
     private Actor? _green1;
     private Actor? _blue1;
@@ -225,8 +221,5 @@ public sealed class FTME1TwoHeadedAevis(WorldState ws, Actor primary) : BossModu
         Arena.Actor(_blueHead);
     }
 
-    protected override bool CheckPull()
-    {
-        return PrimaryActor.InCombat && Raid.Player()!.Position.InSquare(Arena.Center, 20f);
-    }
+    protected override bool CheckPull() => (PrimaryActor.InCombat || (_blueHead?.InCombat ?? false)) && Raid.Player()!.Position.InSquare(Arena.Center, 20f);
 }

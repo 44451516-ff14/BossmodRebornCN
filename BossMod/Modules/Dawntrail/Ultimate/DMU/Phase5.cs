@@ -541,7 +541,7 @@ sealed class Celestriad(BossModule module) : Components.GenericTowers(module)
         // If all 6 players have debuffs, we know the final two are the non-debuff players
         if (debuffs.Count(d => d != Elements.NONE) == 6)
         {
-            for (var i = 0; i < debuffs.Length; i++)
+            for (var i = 0; i < debuffs.Length; ++i)
             {
                 if (debuffs[i] == Elements.NONE)
                 {

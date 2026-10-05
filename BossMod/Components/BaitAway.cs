@@ -39,6 +39,7 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
     public List<Bait> CurrentBaits = [];
     public AIHints.PredictedDamageType DamageType = damageType;
     public const string BaitAwayHint = "远离队伍诱导！";
+    public bool AllowPetTargets;
 
     public List<Bait> ActiveBaits
     {
@@ -258,40 +259,108 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
 
     private void AddTargetSpecificHints(Actor actor, ref Bait bait, AIHints hints)
     {
-        if (bait.Source == bait.Target) // TODO: think about how to handle source == target baits, eg. vomitting mechanics
+        if (bait.Source == bait.Target)
         {
             return;
         }
+
+        var layer = bait.ResolveArenaProjectionLayer(Module);
+        var aiLayer = ArenaProjectionLayerForAI(layer, bait.RestrictToArenaProjectionLayer);
+
+        var sourcePosition = bait.Source.Position;
         var raid = Raid.WithoutSlot();
         var len = raid.Length;
         for (var i = 0; i < len; ++i)
         {
             var a = raid[i];
-            if (a == actor || !Module.ActorMatchesArenaProjectionLayer(a, bait.ResolveArenaProjectionLayer(Module), bait.RestrictToArenaProjectionLayer))
+            // A lot of mechanics don't care if the pet is hit or not, e.g. even if the pet is inside the bait it doesn't do anything to them
+            if (!AllowPetTargets && a.Type == ActorType.Pet)
             {
                 continue;
             }
+            if (a == actor || !Module.ActorMatchesArenaProjectionLayer(a, layer, bait.RestrictToArenaProjectionLayer))
+            {
+                continue;
+            }
+
+            var radius = a.Type == ActorType.Pet ? a.HitboxRadius : 0f;
+
+            ShapeDistance zone;
+
             switch (bait.Shape)
             {
-                case AOEShapeDonut:
                 case AOEShapeCircle:
-                    hints.AddForbiddenZone(bait.Shape, a.Position - bait.Offset, default, bait.Activation,
-                        arenaProjectionLayer: ArenaProjectionLayerForAI(bait.ResolveArenaProjectionLayer(Module), bait.RestrictToArenaProjectionLayer));
-                    break;
+                case AOEShapeDonut:
+                case AOEShapeCross:
+                    {
+                        var distance = bait.Shape.Distance(a.Position - bait.Offset, bait.Rotation);
+                        zone = radius > 0f ? new ExpandedBaitZone(distance, radius) : distance;
+                        break;
+                    }
                 case AOEShapeCone cone:
-                    hints.AddForbiddenZone(new SDCone(bait.Source.Position, 100f, bait.Source.AngleTo(a), cone.HalfAngle), bait.Activation,
-                        arenaProjectionLayer: ArenaProjectionLayerForAI(bait.ResolveArenaProjectionLayer(Module), bait.RestrictToArenaProjectionLayer));
-                    break;
+                    {
+                        var distance = (a.Position - sourcePosition).Length();
+                        var halfAngle = distance <= radius ? new Angle(MathF.PI) : cone.HalfAngle + Angle.Asin(Math.Clamp(radius / distance, 0f, 1f));
+                        zone = BaitAimZone(sourcePosition, bait.Source.AngleTo(a) - cone.DirectionOffset, halfAngle);
+                        break;
+                    }
                 case AOEShapeRect rect:
-                    hints.AddForbiddenZone(new SDCone(bait.Source.Position, 100f, bait.Source.AngleTo(a), Angle.Asin(rect.HalfWidth / (a.Position - bait.Source.Position).Length())), bait.Activation,
-                        arenaProjectionLayer: ArenaProjectionLayerForAI(bait.ResolveArenaProjectionLayer(Module), bait.RestrictToArenaProjectionLayer));
-                    break;
-                case AOEShapeCross cross:
-                    hints.AddForbiddenZone(cross, a.Position - bait.Offset, bait.Rotation, bait.Activation,
-                        arenaProjectionLayer: ArenaProjectionLayerForAI(bait.ResolveArenaProjectionLayer(Module), bait.RestrictToArenaProjectionLayer));
-                    break;
+                    {
+                        var distance = (a.Position - sourcePosition).Length();
+                        var halfAngle = RectBaitHalfAngle(distance, rect.HalfWidth, radius);
+                        zone = BaitAimZone(sourcePosition, bait.Source.AngleTo(a) - rect.DirectionOffset, halfAngle);
+                        break;
+                    }
+                default:
+                    continue;
             }
+
+            hints.AddForbiddenZone(zone, bait.Activation, arenaProjectionLayer: aiLayer);
         }
+    }
+
+    private sealed class ExpandedBaitZone(ShapeDistance inner, float radius) : ShapeDistance
+    {
+        public override float Distance(in WPos p) => inner.Distance(p) - radius;
+    }
+
+    private static ShapeDistance BaitAimZone(WPos source, Angle direction, Angle halfAngle)
+    {
+        const float zoneRadius = 100f;
+
+        return halfAngle.Rad >= MathF.PI ? new SDCircle(source, zoneRadius) : new SDCone(source, zoneRadius, direction, halfAngle);
+    }
+
+    // Angular interval in which a circular hitbox intersects a forward, infinitely long rectangle
+    private static Angle RectBaitHalfAngle(float distance, float halfWidth, float radius)
+    {
+        // The party member (pet, since players count as a point) overlaps the source: changing aim cannot avoid it
+        if (distance <= radius)
+        {
+            return new Angle(MathF.PI);
+        }
+
+        // Normal case: contact is against one of the rectangle's long sides
+        if (distance >= halfWidth + radius)
+        {
+            return Angle.Asin(Math.Clamp((halfWidth + radius) / distance, 0f, 1f));
+        }
+
+        var distanceSq = distance * distance;
+        var widthSq = halfWidth * halfWidth;
+        var radiusSq = radius * radius;
+        var rightAngle = new Angle(Angle.HalfPi);
+
+        // Close to the source: contact is against the rectangle's rear face
+        if (distanceSq <= widthSq + radiusSq)
+        {
+            return rightAngle + Angle.Asin(Math.Clamp(radius / distance, 0f, 1f));
+        }
+
+        // Otherwise, contact is around a rear corner halfWidth is positive here; zero width takes the normal-case branch
+        var cosAngle = (distanceSq + widthSq - radiusSq) / (2f * distance * halfWidth);
+
+        return rightAngle + Angle.Acos(Math.Clamp(cosAngle, -1f, 1f));
     }
 
     public override PlayerPriority CalcPriority(int pcSlot, Actor pc, int playerSlot, Actor player, ref uint customColor)
@@ -359,7 +428,7 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
         var bestIndex = 0;
         var bestDiff = Math.Abs(values[0] - y);
         var len = values.Length;
-        for (var i = 1; i < len; i++)
+        for (var i = 1; i < len; ++i)
         {
             var diff = Math.Abs(values[i] - y);
 
@@ -495,17 +564,18 @@ public class BaitAwayTethers(BossModule module, AOEShape shape, uint tetherID, u
 
 // component for mechanics requiring icon targets to bait their aoe away from raid
 
-public class BaitAwayIcon(BossModule module, AOEShape shape, uint iconID, uint aid = default, double activationDelay = 5.1d, bool centerAtTarget = false, Actor? source = null, bool tankbuster = false, AIHints.PredictedDamageType damageType = AIHints.PredictedDamageType.Raidwide, bool? restrictToArenaProjectionLayer = true, int? arenaProjectionLayer = null)
+public class BaitAwayIcon(BossModule module, AOEShape shape, uint iconID, uint aid = default, double activationDelay = 5.1d, bool centerAtTarget = false, Actor? source = null, bool tankbuster = false, AIHints.PredictedDamageType damageType = AIHints.PredictedDamageType.Raidwide, Angle? customRotation = null, bool? restrictToArenaProjectionLayer = true, int? arenaProjectionLayer = null)
     : GenericBaitAway(module, aid, centerAtTarget: centerAtTarget, tankbuster: tankbuster, damageType: damageType)
 {
-    public BaitAwayIcon(BossModule module, float radius, uint iconID, uint aid = default, double activationDelay = 5.1d, bool centerAtTarget = true, Actor? source = null, bool tankbuster = false, AIHints.PredictedDamageType damageType = AIHints.PredictedDamageType.Raidwide, bool? restrictToArenaProjectionLayer = true, int? arenaProjectionLayer = null)
-        : this(module, new AOEShapeCircle(radius), iconID, aid, activationDelay, centerAtTarget, source, tankbuster, damageType, restrictToArenaProjectionLayer, arenaProjectionLayer) { }
+    public BaitAwayIcon(BossModule module, float radius, uint iconID, uint aid = default, double activationDelay = 5.1d, bool centerAtTarget = true, Actor? source = null, bool tankbuster = false, AIHints.PredictedDamageType damageType = AIHints.PredictedDamageType.Raidwide, Angle? customRotation = null, bool? restrictToArenaProjectionLayer = true, int? arenaProjectionLayer = null)
+        : this(module, new AOEShapeCircle(radius), iconID, aid, activationDelay, centerAtTarget, source, tankbuster, damageType, customRotation, restrictToArenaProjectionLayer, arenaProjectionLayer) { }
 
-    public int? ArenaProjectionLayer = arenaProjectionLayer;
-    public AOEShape Shape = shape;
-    public uint IID = iconID;
-    public double ActivationDelay = activationDelay;
-    public bool? RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
+    public readonly int? ArenaProjectionLayer = arenaProjectionLayer;
+    public readonly AOEShape Shape = shape;
+    public readonly uint IID = iconID;
+    public readonly double ActivationDelay = activationDelay;
+    public readonly bool? RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
+    public readonly Angle? CustomRotation = customRotation;
 
     public virtual Actor? BaitSource(Actor target) => source ?? Module.PrimaryActor;
 
@@ -513,7 +583,7 @@ public class BaitAwayIcon(BossModule module, AOEShape shape, uint iconID, uint a
     {
         if (iconID == IID && BaitSource(actor) is var source && source != null)
         {
-            CurrentBaits.Add(new(source, WorldState.Actors.Find(targetID) ?? actor, Shape, WorldState.FutureTime(ActivationDelay), arenaProjectionLayer: ArenaProjectionLayer, restrictToArenaProjectionLayer: RestrictToArenaProjectionLayer));
+            CurrentBaits.Add(new(source, WorldState.Actors.Find(targetID) ?? actor, Shape, WorldState.FutureTime(ActivationDelay), arenaProjectionLayer: ArenaProjectionLayer, restrictToArenaProjectionLayer: RestrictToArenaProjectionLayer, customRotation: CustomRotation));
         }
     }
 
@@ -846,7 +916,7 @@ public class GenericBaitProximity(BossModule module, bool alwaysDrawOtherBaits =
                 var targets = GetTargets(bait);
                 var len = targets.Length;
 
-                for (var j = 0; j < len; j++)
+                for (var j = 0; j < len; ++j)
                 {
                     if (AllowDeadTargets || !targets[j].IsDead)
                     {
@@ -891,7 +961,7 @@ public class GenericBaitProximity(BossModule module, bool alwaysDrawOtherBaits =
         var targets = GetTargets(bait);
         var length = targets.Length;
 
-        for (var j = 0; j < length; j++)
+        for (var j = 0; j < length; ++j)
         {
             if (targets[j] == target)
             {
@@ -912,7 +982,7 @@ public class GenericBaitProximity(BossModule module, bool alwaysDrawOtherBaits =
             return;
         }
 
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; ++i)
         {
             ref var b = ref baits[i];
             if (!BaitParticipantAppliesToArenaProjectionLayer(actor, b))
@@ -955,7 +1025,7 @@ public class GenericBaitProximity(BossModule module, bool alwaysDrawOtherBaits =
         }
         if (!IgnoreOtherBaits)
         {
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < len; ++i)
             {
                 ref var b = ref baits[i];
                 if (!BaitParticipantAppliesToArenaProjectionLayer(actor, b))
@@ -968,7 +1038,7 @@ public class GenericBaitProximity(BossModule module, bool alwaysDrawOtherBaits =
                 // show all baits, or all baits aside from yourself
                 var subTargets = new Actor[tarLen - (IsBaitTarget(ref b, actor) ? 1 : 0)];
                 var subCount = 0;
-                for (var j = 0; j < tarLen; j++)
+                for (var j = 0; j < tarLen; ++j)
                 {
                     if (targets[j] != actor)
                     {
@@ -976,7 +1046,7 @@ public class GenericBaitProximity(BossModule module, bool alwaysDrawOtherBaits =
                     }
                 }
 
-                for (var j = 0; j < subCount; j++)
+                for (var j = 0; j < subCount; ++j)
                 {
                     var target = subTargets[j];
                     if (IsClippedBy(actor, ref b, target))
@@ -1018,7 +1088,7 @@ public class GenericBaitProximity(BossModule module, bool alwaysDrawOtherBaits =
             var targets = GetTargets(b);
             var tarLen = targets.Length;
 
-            for (var j = 0; j < tarLen; j++)
+            for (var j = 0; j < tarLen; ++j)
             {
                 var target = targets[j];
                 var slot = Raid.FindSlot(target.InstanceID);
@@ -1046,7 +1116,7 @@ public class GenericBaitProximity(BossModule module, bool alwaysDrawOtherBaits =
             var targets = GetTargets(b);
             var tarLen = targets.Length;
 
-            for (var j = 0; j < tarLen; j++)
+            for (var j = 0; j < tarLen; ++j)
             {
                 var target = targets[j];
                 if (OnlyShowOutlines || !OnlyShowOutlines && target == pc)
@@ -1074,7 +1144,7 @@ public class GenericBaitProximity(BossModule module, bool alwaysDrawOtherBaits =
         var len = baits.Length;
 
         var haveApplicableBait = false;
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; ++i)
         {
             ref var bait = ref baits[i];
             foreach (var target in GetTargets(bait))
@@ -1106,7 +1176,7 @@ public class GenericBaitProximity(BossModule module, bool alwaysDrawOtherBaits =
 
         var partyRoles = new Actor[partyLen];
         var roleLen = 0;
-        for (var i = 0; i < partyLen; i++)
+        for (var i = 0; i < partyLen; ++i)
         {
             var actor = party[i].Item2;
             if ((bait.SpecifiedRole == Role.None || actor.Role == bait.SpecifiedRole)

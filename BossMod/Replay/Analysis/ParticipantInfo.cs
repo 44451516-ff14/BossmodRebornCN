@@ -28,7 +28,7 @@ sealed class ParticipantInfo : CommonEnumInfo
         {
             foreach (var enc in replay.Encounters.Where(enc => enc.OID == oid))
             {
-                var minExistence = enc.Time.End.AddSeconds(-1); // we don't want to add actors that spawned right before wipe, they could belong to reset
+                var minExistence = enc.Time.End.AddSeconds(-1d); // we don't want to add actors that spawned right before wipe, they could belong to reset
                 foreach (var (commonOID, participants) in enc.ParticipantsByOID)
                 {
                     var data = _data.GetOrAdd(commonOID);

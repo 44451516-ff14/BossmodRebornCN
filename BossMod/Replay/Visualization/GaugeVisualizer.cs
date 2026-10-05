@@ -76,7 +76,7 @@ internal sealed class GaugeVisualizer
             uint tint = 0;
             uint bias = 0;
 
-            for (var i = 0; i < 3; i++)
+            for (var i = 0; i < 3; ++i)
             {
                 var col = color[i];
                 if (col > 0)
@@ -249,7 +249,7 @@ internal sealed class GaugeVisualizer
         var chevronLit = Tint("chakra", "ui/uld/JobHudSimple_StackB_hr1.tex", [95, 0, -115]);
         var chevronOvercap = Tint("chakra_overcap", "ui/uld/JobHudSimple_StackB_hr1.tex", [0, -168, -255]);
 
-        for (var i = 0; i < 5; i++)
+        for (var i = 0; i < 5; ++i)
         {
             ImGui.SetCursorPos(origin + Scale(i * 18, 75));
             ImGui.Image(chevron.Handle, new Vector2(32, 32), new Vector2(0, 0), new Vector2(0.5f, 0.5f));
@@ -322,7 +322,7 @@ internal sealed class GaugeVisualizer
 
         var chevron = Wrap("chevron", "ui/uld/JobHudSimple_StackB_hr1.tex");
         var chevronLit = Tint("astral", "ui/uld/JobHudSimple_StackB_hr1.tex", [100, -50, -120]);
-        for (var i = 0; i < 6; i++)
+        for (var i = 0; i < 6; ++i)
         {
             ImGui.SetCursorPos(origin + Scale(30 + 18 * i, 40));
             ImGui.Image(chevron.Handle, new Vector2(32, 32), new Vector2(0, 0), new Vector2(0.5f, 0.5f));
