@@ -27,13 +27,13 @@ public static class PlanPresetConverter
     {
         if (plan)
         {
-            yield return root!["模块"]!.AsObject();
+            yield return root!["Modules"]!.AsObject();
         }
         else
         {
             foreach (var preset in root.AsArray())
             {
-                yield return preset!["模块"]!.AsObject();
+                yield return preset!["Modules"]!.AsObject();
             }
         }
     }
