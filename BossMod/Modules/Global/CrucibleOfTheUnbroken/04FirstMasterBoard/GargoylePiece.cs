@@ -250,9 +250,9 @@ sealed class MaladyOrbs : Components.PersistentInvertibleVoidzone {
         }
 
         if (Inverted) {
-            hints.Add("Soak orbs until you reach 4 stacks!", false);
+            hints.Add("承受球体直到达到 4 层！", false);
         } else {
-            hints.Add("Don't soak any orbs!");
+            hints.Add("不要承受任何球体！");
         }
     }
 
@@ -335,7 +335,7 @@ sealed class FivefoldFallout(BossModule module) : Components.GenericKnockback(mo
         }
 
         base.AddHints(slot, actor, hints);
-        hints.Add("4x Raidwide!");
+        hints.Add("4 次全屏攻击！");
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) {

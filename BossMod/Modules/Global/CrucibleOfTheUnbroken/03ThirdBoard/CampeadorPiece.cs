@@ -50,7 +50,7 @@ sealed class HealingWater(BossModule module) : Components.Adds(module, (uint)OID
             return;
         }
 
-        hints.Add("Kill the Flowertender Piece adds");
+        hints.Add("击杀 Flowertender Piece 小怪");
     }
 }
 sealed class Needles(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Needles, 15f, maxCasts: 3);
@@ -105,7 +105,7 @@ public sealed class CampeadorPiece(WorldState ws, Actor primary) : BossModule(ws
     }
 
     private readonly string[] _prePullHints = [
-        "Fight kill order priority: Flowertender Piece/Soldado Piece (purple) -> Sabotender Piece/Guardia Piece/Soldado Piece (red)"
+        "战斗中的击杀优先级：Flowertender Piece/Soldado Piece（紫色）-> Sabotender Piece/Guardia Piece/Soldado Piece（红色）"
     ];
 
     public override string[] PrePullHints => _prePullHints;

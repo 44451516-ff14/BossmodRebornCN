@@ -268,7 +268,7 @@ sealed class FarBurst(BossModule module) : Components.GenericAOEs(module)
         {
             if (_eyes.Far.Length != 0)
             {
-                hints.Add("Run to donut orb to pop early!", false);
+                hints.Add("跑到环形球旁提前引爆！", false);
             }
         }
     }
@@ -382,9 +382,9 @@ sealed class CatoblepasPieceStates : StateMachineBuilder
 public sealed class CatoblepasPiece(WorldState ws, Actor primary) : BossModule(ws, primary, new(120f, -420f), new ArenaBoundsCircle(20f))
 {
     private readonly string[] _prePullHints = [
-        "After the raidwide, spawns 3x circle orbs and 3x donut orbs. Getting hit will petrify the player",
-        "Orbs explode either on reaching the edge of the arena or the player running into it. Pop donuts early if you want",
-        "After the 1st time, boss will tether 3 orbs that will have an additional gaze mechanic that petrifies"
+        "全屏攻击后会生成 3 个圆形球和 3 个环形球。被击中会石化。",
+        "球在到达场地边缘或被玩家撞到时爆炸。需要的话可以提前引爆环形球。",
+        "第一次处理后，首领会连接 3 个球，并额外附加会石化的凝视机制。"
     ];
 
     public override string[] PrePullHints => _prePullHints;
@@ -393,6 +393,6 @@ public sealed class CatoblepasPiece(WorldState ws, Actor primary) : BossModule(w
 [ConfigDisplay(Order = 0x10, Parent = typeof(GlobalConfig))]
 public sealed class CatoblepasPieceConfig : ConfigNode
 {
-    [PropertyDisplay("Try to pop donut AOEs early by running into it")]
+    [PropertyDisplay("尝试跑进环形范围伤害以提前引爆")]
     public bool PopDonut = false;
 }

@@ -298,7 +298,7 @@ sealed class MnemonicRiddle(BossModule module) : BossComponent(module)
             return;
         }
 
-        hints.Add("Interact with the actor on the green circle", false);
+        hints.Add("与绿色圆圈上的目标互动", false);
     }
 }
 

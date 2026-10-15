@@ -185,7 +185,7 @@ public sealed class CavalierPiece(WorldState ws, Actor primary) : BossModule(ws,
     }
 
     private readonly string[] _prePullHints = [
-        "Bone bishops will periodically spawn, these will drop an orb when killed that the boss will absorb when it casts Doubling. Up to 5 orbs can be absorbed, avoid having 5+ orbs accumulate or else mechanics will be undodgable"
+        "骨主教会周期性出现，击杀后会掉落一个球，首领施放 Doubling 时会吸收这些球。最多可吸收 5 个球，请避免积累 5 个或更多，否则机制将无法躲避。"
     ];
 
     public override string[] PrePullHints => _prePullHints;

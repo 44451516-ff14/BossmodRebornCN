@@ -341,7 +341,7 @@ public sealed class ConfigUI : IDisposable
             {
                 modified = props.Renderer is { } rendererType
                     ? GetPropertyRenderer(rendererType).Draw(props, false, node, value!, root, tree, ws)
-                    : DrawProperty(props.Label, props.Tooltip, node, field, value, root, tree, ws);
+                    : DrawProperty(props.Label, root.IsTransient(node, field) ? TransientTooltip(props.Tooltip) : props.Tooltip, node, field, value, root, tree, ws);
             }
             if (modified)
             {
@@ -356,6 +356,12 @@ public sealed class ConfigUI : IDisposable
 
         // draw custom stuff
         node.DrawCustom(tree, ws);
+    }
+
+    private static string TransientTooltip(string tooltip)
+    {
+        const string note = "此值正被其他插件（例如 AutoDuty）临时修改。配置文件仍会保留你的原始设置，并在该插件结束修改后恢复；你在此处手动更改后，新值将被保留。";
+        return tooltip.Length > 0 ? $"{tooltip}\n\n{note}" : note;
     }
 
     private static bool IsPropertyEnabled(ConfigNode node, ConfigTypeMetadata metadata, ConfigFieldMetadata field)

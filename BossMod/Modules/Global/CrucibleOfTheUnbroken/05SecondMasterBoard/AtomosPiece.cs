@@ -280,8 +280,8 @@ public sealed class AtomosPiece(WorldState ws, Actor primary) : BossModule(ws, p
     }
 
     private readonly string[] _prePullHints = [
-        "Fight kill priority: BavaroisPiece -> PuddingPiece/FlanPiece/MenacingDahakPiece -> Gremlins -> VodorigaPiece -> Boss",
-        "BavaroisPiece will cast a knockback when killed and spawn 9 puddles"
+        "战斗中的击杀优先级：BavaroisPiece -> PuddingPiece/FlanPiece/MenacingDahakPiece -> Gremlins -> VodorigaPiece -> 首领",
+        "BavaroisPiece 被击杀时会施放击退并生成 9 个水洼。"
     ];
 
     public override string[] PrePullHints => _prePullHints;

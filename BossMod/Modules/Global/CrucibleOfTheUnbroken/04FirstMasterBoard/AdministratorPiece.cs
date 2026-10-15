@@ -56,7 +56,7 @@ sealed class AutoCannons(BossModule module) : Components.SimpleAOEs(module, (uin
 sealed class Object199(BossModule module) : Components.RaidwideCast(module, (uint)AID.Object199);
 sealed class Headspin(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Headspin, 5f);
 sealed class FlameThrower(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlameThrower, new AOEShapeCone(40f, 60f.Degrees()));
-sealed class NoxiousNova(BossModule module) : Components.RaidwideCast(module, (uint)AID.NoxiousNova, "Applies poison!");
+sealed class NoxiousNova(BossModule module) : Components.RaidwideCast(module, (uint)AID.NoxiousNova, "施加中毒！");
 sealed class Confound(BossModule module) : Components.CastInterruptHint(module, (uint)AID.Confound, showNameInHint: true);
 
 sealed class PiercingLaser(BossModule module) : Components.GenericWildCharge(module, 2.5f, (uint)AID.PiercingLaserBoss, 40f)

@@ -60,7 +60,7 @@ sealed class ParalyzingSpikes(BossModule module) : Components.Adds(module, (uint
 
         for (var i = 0; i < count; i++) {
             if (avoidBosses[i].InstanceID == actor.TargetID) {
-                hints.Add("Attacking boss with spikes debuff!");
+                hints.Add("正在攻击带尖刺减益的首领！");
             }
         }
     }
@@ -102,7 +102,7 @@ sealed class VulnDown(BossModule module) : Components.Adds(module, (uint)OID.Ymi
 
         for (var i = 0; i < count; i++) {
             if (avoidBosses[i].InstanceID == actor.TargetID) {
-                hints.Add("Attacking invincible target!");
+                hints.Add("正在攻击无敌目标！");
             }
         }
     }
@@ -161,9 +161,9 @@ public sealed class YmirPiece(WorldState ws, Actor primary) : BossModule(ws, pri
     }
 
     private readonly string[] _prePullHints = [
-        "The ymir will take reduced damage until its shell is broken. When its shell is broken it will move to the closest shell and enter it. Stun and bind can help delay the ymir from reaching a shell.",
-        "Paralyzing Spikes: Buff on sahagin that inflicts paralysis if hit. Casted at the start of the fight and whenever ymir gets a new shell",
-        "Interrupt the Dreadwash spell or use your pet to take the damage down."
+        "Ymir 的外壳被破坏前会受到减伤。外壳破坏后，它会移动到最近的外壳并进入其中。眩晕和止步可以延缓 Ymir 到达外壳。",
+        "Paralyzing Spikes：施加在鱼人身上的增益，被击中时会造成麻痹。战斗开始以及 Ymir 获得新外壳时都会施放。",
+        "打断 Dreadwash，或让宠物承受这次伤害。"
     ];
 
     public override string[] PrePullHints => _prePullHints;

@@ -60,18 +60,17 @@ sealed class OneOneOneOneTonzeSwing(BossModule module) : BossComponent(module)
         {
             return;
         }
-
         Actor? closest = null;
         var minDistSq = float.MaxValue;
 
         var count = _incubators.Count;
+        var pos = actor.Position;
         for (var i = 0; i < count; ++i)
         {
             var incubator = _incubators[i];
             if (incubator.IsTargetable)
             {
-                hints.GoalZones.Add(AIHints.GoalSingleTarget(incubator, 2f, 5f));
-                var distSq = (actor.Position - incubator.Position).LengthSq();
+                var distSq = (pos - incubator.Position).LengthSq();
                 if (distSq < minDistSq)
                 {
                     minDistSq = distSq;
@@ -94,7 +93,7 @@ sealed class OneOneOneOneTonzeSwing(BossModule module) : BossComponent(module)
         {
             if (_incubators[i].IsTargetable)
             {
-                hints.Add("Use an incubator to stun the boss!");
+                hints.Add("使用孵化器眩晕首领！");
                 return;
             }
         }
@@ -113,7 +112,7 @@ sealed class OneOneOneOneTonzeSwing(BossModule module) : BossComponent(module)
             var incubator = _incubators[i];
             if (incubator.IsTargetable)
             {
-                Arena.ZoneCircleOutline(incubator.Position, 3f, Colors.Safe);
+                Arena.AddCircleUnfilled(incubator.Position, 3f, Colors.Safe, 2f);
             }
         }
     }
@@ -148,7 +147,7 @@ public sealed class D082Minotaur : BossModule
         return (arena.Center, arena);
     }
 
-    private static readonly uint[] adds = [(uint)OID.FlawedShabti, (uint)OID.ContinuumConservator, (uint)OID.Urstrix, (uint)OID.FlawedNaga];
+    private readonly uint[] adds = [(uint)OID.FlawedShabti, (uint)OID.ContinuumConservator, (uint)OID.Urstrix, (uint)OID.FlawedNaga];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

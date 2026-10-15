@@ -98,7 +98,7 @@ sealed class CrossbreezeBait(ZuPiece module) : Components.BaitAwayIcon(module, n
             return;
         }
 
-        hints.Add("Avoid intersecting egg hitboxes!");
+        hints.Add("避免与蛋的碰撞箱重叠！");
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) {
@@ -161,7 +161,7 @@ sealed class FlyingFrenzy(ZuPiece module) : Components.BaitAwayIcon(module, bait
             return;
         }
 
-        hints.Add("Avoid intersecting egg hitboxes!");
+        hints.Add("避免与蛋的碰撞箱重叠！");
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) {
@@ -224,7 +224,7 @@ sealed class AiryPursuitPuddles(ZuPiece module) : Components.StandardChasingAOEs
             return;
         }
 
-        hints.Add("Avoid intersecting egg hitboxes!");
+        hints.Add("避免与蛋的碰撞箱重叠！");
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) {
@@ -291,7 +291,7 @@ sealed class AiryPursuitBait(ZuPiece module) : Components.BaitAwayIcon(module, b
             return;
         }
 
-        hints.Add("Avoid intersecting egg hitboxes!");
+        hints.Add("避免与蛋的碰撞箱重叠！");
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) {
@@ -429,8 +429,8 @@ public sealed class ZuPiece : BossModule {
     }
 
     private readonly string[] _prePullHints = [
-        "Avoid breaking the eggs!",
-        "When adds spawn kill order is the following: PulletPiece (purple) -> CockerelPiece -> Boss"
+        "避免打破蛋！",
+        "小怪出现后的击杀顺序：PulletPiece（紫色）-> CockerelPiece -> 首领"
     ];
 
     public override string[] PrePullHints => _prePullHints;

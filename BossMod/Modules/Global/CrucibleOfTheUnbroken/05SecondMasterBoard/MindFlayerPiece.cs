@@ -53,7 +53,7 @@ public enum TetherID : uint
 
 sealed class VoidThunderIII(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.VoidThunderIIITankBuster, (uint)AID.VoidThunderIIITB, 6f, 5.1d);
 sealed class VoidThunderIIICross(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidThunderIIICross, new AOEShapeCross(50f, 5f));
-sealed class VoidParalyzeIII(BossModule module) : Components.RaidwideCast(module, (uint)AID.VoidParalyzeIII, "Raidwide + Applies Paralysis");
+sealed class VoidParalyzeIII(BossModule module) : Components.RaidwideCast(module, (uint)AID.VoidParalyzeIII, "全屏攻击 + 施加麻痹");
 
 sealed class VoidWaterIII(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.VoidWaterIIIIcon, (uint)AID.VoidWaterIII, 8f, 5.1d);
 
@@ -267,7 +267,7 @@ public sealed class MindflayerPiece(WorldState ws, Actor primary) : BossModule(w
     }
 
     private readonly string[] _prePullHints = [
-        "Kill the MyconidPiece inside the water puddles to solve the mechanic correctly"
+        "击杀水洼中的 MyconidPiece 以正确处理机制。"
     ];
 
     public override string[] PrePullHints => _prePullHints;

@@ -47,7 +47,7 @@ public enum TetherID : uint {
 sealed class EarthenRing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EarthenRing, new AOEShapeDonut(5f, 50f));
 sealed class Plaincracker(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Plaincracker, 20f);
 sealed class Outcrop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Outcrop, new AOEShapeCone(40f, 30f.Degrees()));
-sealed class SelfDestruct(BossModule module) : Components.RaidwideCast(module, (uint)AID.SelfDestruct, "Enrage");
+sealed class SelfDestruct(BossModule module) : Components.RaidwideCast(module, (uint)AID.SelfDestruct, "狂暴");
 
 sealed class Shockwave(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Shockwave, new AOEShapeRect(5f, 2.5f)) {
     // Used to track if the mechanic started - needed as the boss can die while casting it, if the cast goes through and the boss dies, the mechanic

@@ -222,7 +222,7 @@ sealed class WrigglingPhlegmBait(BossModule module) : Components.BaitAwayIcon(mo
             return;
         }
 
-        hints.Add("Bait away from puddles!");
+        hints.Add("将诱导放在远离水洼的位置！");
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) {

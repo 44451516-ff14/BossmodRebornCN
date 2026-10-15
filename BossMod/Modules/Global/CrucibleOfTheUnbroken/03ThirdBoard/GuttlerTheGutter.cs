@@ -172,7 +172,7 @@ sealed class MoltenMetalBait(BossModule module) : Components.BaitAwayIcon(module
             return;
         }
 
-        hints.Add("Bait far away on one side of the map!");
+        hints.Add("将诱导放在场地一侧的远处！");
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) {
@@ -298,7 +298,7 @@ sealed class Thunderbolt(BossModule module) : Components.BaitAwayIcon(module, ne
         }
 
         base.AddHints(slot, actor, hints);
-        hints.Add("Applies paralysis debuff");
+        hints.Add("施加麻痹减益");
     }
 }
 

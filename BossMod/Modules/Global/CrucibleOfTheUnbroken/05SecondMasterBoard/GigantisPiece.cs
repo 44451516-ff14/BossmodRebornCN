@@ -109,13 +109,13 @@ sealed class SmashingStampBait(BossModule module) : Components.BaitAwayIcon(modu
 
         switch (weaponElement) {
             case Element.NONE:
-                hints.Add("Hit any slime with the bait!", false);
+                hints.Add("用诱导命中任意史莱姆！", false);
                 break;
             case Element.LIGHTNING:
-                hints.Add("Hit the orange slime with the bait!", false);
+                hints.Add("用诱导命中橙色史莱姆！", false);
                 break;
             case Element.FIRE:
-                hints.Add("Hint the purple slime with the bait!", false);
+                hints.Add("用诱导命中紫色史莱姆！", false);
                 break;
         }
     }
@@ -224,10 +224,10 @@ sealed class GiganticRageType(BossModule module) : Components.GenericBaitAway(mo
         switch (smashingStampBait.weaponElement)
         {
             case SmashingStampBait.Element.LIGHTNING:
-                hints.Add("You will drop a tower!", false);
+                hints.Add("你将放置塔！", false);
                 break;
             case SmashingStampBait.Element.FIRE:
-                hints.Add("You will drop a puddle!", false);
+                hints.Add("你将放置水洼！", false);
                 break;
         }
     }
@@ -298,8 +298,8 @@ sealed class SlimesInterrupt(BossModule module) : Components.CastInterruptHint(m
 
     private void UpdateHint()
     {
-        var actionStr = "Interrupt";
-        var nameStr = Casters.Count == 1 ? Casters[0].OID == (uint)OID.CongealedKindling ? " Orange slime" : " Purple slime" : "";
+        var actionStr = "打断";
+        var nameStr = Casters.Count == 1 ? Casters[0].OID == (uint)OID.CongealedKindling ? " 橙色史莱姆" : " 紫色史莱姆" : "";
         Hint = $"{actionStr}{nameStr}!";
     }
 }
@@ -376,11 +376,11 @@ public sealed class GigantisPiece(WorldState ws, Actor primary) : BossModule(ws,
     }
 
     private readonly string[] _prePullHints = [
-        "Fight kill priority: CyclopsPiece -> Slimes (whichever one we are not killing with bait) -> small slimes / boss",
-        "When the boss crushes a slime it will absorb its element and have additional effects after a Gigantic Rage cast ends. Lightning club will leave a tower under you (stay) after a Gigantic Rage, fire club will leave an aoe under you (move) after a Gigantic Rage",
-        "Smashing Stamp: Line aoe in front, there is a smaller red rectangle in the aoe near the boss that will kill a slime in it and absorb its element. Avoid hitting a slime with the same element as the club, or the slime will grow large instead of dying",
-        "Rapture: Interrupt - If there are 2 slimes, have the boss crush the one with the opposite element of the club, then interrupt the other one",
-        "Camaraderie: Interrupt or it will heal the boss 5% max HP"
+        "战斗中的击杀优先级：CyclopsPiece -> 史莱姆（不使用诱导击杀的那只）-> 小型史莱姆 / 首领",
+        "首领压碎史莱姆后会吸收其元素，Gigantic Rage 结束后产生额外效果。雷电棍会在你脚下留下塔（停留），火焰棍会在你脚下留下范围伤害（移动）。",
+        "Smashing Stamp：前方直线范围，首领附近范围内有一块较小的红色矩形，会击杀其中的史莱姆并吸收其元素。避免用与棍子同元素的史莱姆承受范围，否则史莱姆会变大而不是死亡。",
+        "Rapture：打断。如果有 2 只史莱姆，让首领压碎与棍子元素相反的那只，再打断另一只。",
+        "Camaraderie：打断，否则会恢复首领 5% 的最大生命值。"
     ];
 
     public override string[] PrePullHints => _prePullHints;

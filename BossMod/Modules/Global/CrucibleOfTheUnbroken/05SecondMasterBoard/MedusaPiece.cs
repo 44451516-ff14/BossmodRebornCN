@@ -186,7 +186,7 @@ sealed class PetrifyingRegardBait(BossModule module) : Components.BaitAwayIcon(m
             return;
         }
 
-        hints.Add("Avoid hitting LamiaPieces with the bait, while hitting the CyclopsPieces");
+        hints.Add("使用诱导时避免命中 LamiaPieces，同时命中 CyclopsPieces");
     }
 }
 
@@ -557,9 +557,9 @@ public sealed class MedusaPiece(WorldState ws, Actor primary) : BossModule(ws, p
     }
 
     private readonly string[] _prePullHints = [
-        "Baited petrify cone, will damage buff lamias and petrify cyclops on hit. Can also cast rotating versions. YOU WILL INSTANTLY DIE IF YOU GET PETRIFIED BY THIS",
-        "Lamia: Will attempt to revive any dead lamias, interrupt this cast.",
-        "Cyclops: Casts PB aoes covering the entire arena when spawned, petrify them to stop it. These will also instantly die upon taking any damage while petrified"
+        "诱导石化锥形范围，命中时会伤害带增益的 Lamia 并石化 Cyclops，也可能施放旋转版本。被此技能石化会立即死亡。",
+        "Lamia：会尝试复活死亡的 Lamia，打断此技能。",
+        "Cyclops：出现时会施放覆盖整个场地的 PB 范围，石化它们以阻止施放。石化期间受到任何伤害也会立即死亡。"
     ];
 
     public override string[] PrePullHints => _prePullHints;

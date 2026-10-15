@@ -18,7 +18,7 @@ sealed class AlexandrianBanishIII(BossModule module) : Components.GenericBaitSta
         var count = CurrentBaits.Count;
         if (count == 0)
             return;
-        if (CurrentBaits[0].Target != pc)
+        if (CurrentBaits.Ref(0).Target != pc)
             base.DrawArenaBackground(pcSlot, pc);
     }
 
@@ -27,7 +27,7 @@ sealed class AlexandrianBanishIII(BossModule module) : Components.GenericBaitSta
         var count = CurrentBaits.Count;
         if (count == 0)
             return;
-        if (CurrentBaits[0].Target == pc)
+        if (CurrentBaits.Ref(0).Target == pc)
             Arena.ZoneCircleOutline(pc.Position, 4f, Colors.Safe);
     }
 
@@ -36,8 +36,8 @@ sealed class AlexandrianBanishIII(BossModule module) : Components.GenericBaitSta
         var count = CurrentBaits.Count;
         if (count == 0)
             return;
-        if (CurrentBaits[0].Target == actor)
-            hints.Add("Intersect marked tiles to share damage over distance!");
+        if (CurrentBaits.Ref(0).Target == actor)
+            hints.Add("连接带标记的格子以分摊远距离伤害！");
         else
             base.AddHints(slot, actor, hints);
     }
@@ -64,9 +64,11 @@ sealed class AlexandrianBanishIII(BossModule module) : Components.GenericBaitSta
         };
 
         Span<bool> visited = stackalloc bool[16];
+        visited.Clear();
         Span<bool> activeTiles = stackalloc bool[16];
         Span<bool> intersects = stackalloc bool[16];
         Span<(int ring, int idx)> stack = stackalloc (int, int)[16];
+
         var stackPtr = 0;
         var angle = 22.5f.Degrees();
         var pos = Arena.Center;

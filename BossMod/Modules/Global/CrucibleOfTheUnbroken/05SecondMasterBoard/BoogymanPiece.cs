@@ -53,7 +53,7 @@ public enum SID : uint {
     Gen = 2659, // BoogymanPiece->BoogymanPiece, extra=0xBC5
 }
 
-sealed class RipplesOfGloom(BossModule module) : Components.RaidwideCast(module, (uint)AID.RipplesOfGloom, "Raidwide + Applies blind");
+sealed class RipplesOfGloom(BossModule module) : Components.RaidwideCast(module, (uint)AID.RipplesOfGloom, "全屏攻击 + 施加失明");
 sealed class SwingRound(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SwingRoundCircle, 12.0f);
 sealed class BombExplosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, 9f);
 sealed class Oogle(BossModule module) : Components.CastGaze(module, (uint)AID.Oogle);
@@ -200,8 +200,8 @@ sealed class BoogymanPieceStates : StateMachineBuilder {
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, PrimaryActorOID = (uint)OID.BoogymanPiece, Contributors = "Equilius", GroupType = BossModuleInfo.GroupType.CrucibleOfTheUnbroken, GroupID = 1092u, NameID = 14638u, SortOrder = 3)]
 public sealed class BoogymanPiece(WorldState ws, Actor primary) : BossModule(ws, primary, new(120f, -420f), new ArenaBoundsCircle(20f)) {
     private readonly string[] _prePullHints = [
-        "Fight kill priority: BombPiece -> DeepeyePiece -> LightSprite -> boss",
-        "Sprite: Will cast a cone toward where it's facing when it dies, aim it toward the boss to reveal it"
+        "战斗中的击杀优先级：BombPiece -> DeepeyePiece -> LightSprite -> 首领",
+        "精灵：死亡时会朝面向方向施放锥形范围，将它引向首领以使首领显形。"
     ];
 
     public override string[] PrePullHints => _prePullHints;

@@ -60,7 +60,7 @@ sealed class StrixPlume(BossModule module) : Components.Adds(module, (uint)OID.S
             return;
         }
 
-        hints.Add("Kill the Plume!");
+        hints.Add("击杀羽毛！");
     }
 }
 

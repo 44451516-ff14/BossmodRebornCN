@@ -36,7 +36,7 @@ public enum IconID : uint
 }
 
 sealed class Earthrender(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Earthrender, 6.0f);
-sealed class SandTempest(BossModule module) : Components.RaidwideCast(module, (uint)AID.SandTempest, "Applies blind debuff");
+sealed class SandTempest(BossModule module) : Components.RaidwideCast(module, (uint)AID.SandTempest, "施加失明减益");
 
 // Eventcast is triggered but the bait actually resolves a little bit later, so a timer of 1.0 second is added
 sealed class EarthShaker : Components.BaitAwayIcon {

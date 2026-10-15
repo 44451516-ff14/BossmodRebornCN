@@ -95,9 +95,9 @@ public class FloralTrap(BossModule module) : Components.CastCounter(module, (uin
         }
 
         if (Inverted) {
-            hints.Add(inVoidzone ? "Stay in voidzone" : "Go to voidzone!", !inVoidzone);
+            hints.Add(inVoidzone ? "留在黑圈内" : "前往黑圈！", !inVoidzone);
         } else if (inVoidzone) {
-            hints.Add("GTFO from voidzone!");
+            hints.Add("离开黑圈！");
         }
     }
 

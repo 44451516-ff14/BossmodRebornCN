@@ -52,7 +52,7 @@ public enum TetherID : uint
     ElectricPillarSWTether = 419, // 4EA8->DurgaPiece
 }
 
-sealed class AtomicRay(BossModule module) : Components.RaidwideCast(module, (uint)AID.AtomicRay, "Raidwide - Pet cover does not work");
+sealed class AtomicRay(BossModule module) : Components.RaidwideCast(module, (uint)AID.AtomicRay, "全屏攻击 - 宠物保护无效");
 sealed class DiffusionRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DiffusionRay, new AOEShapeCone(30f, 60f.Degrees()));
 
 // Due to the boss rotating as he starts these casts, it impossible to tell any earlier than just when the cast is started
@@ -121,7 +121,7 @@ sealed class ThermobaricChargeBait(BossModule module) : Components.BaitAwayIcon(
             return;
         }
 
-        hints.Add("Drop the bait at a corner of the map!");
+        hints.Add("将诱导放在场地角落！");
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -213,7 +213,7 @@ public sealed class DurgaPiece(WorldState ws, Actor primary) : BossModule(ws, pr
     }
 
     private readonly string[] _prePullHints = [
-        "Atomic Ray: Heavy raidwide damage - Pet cover will not take damage for you",
+        "Atomic Ray：高额全屏伤害，宠物保护不会替你承受伤害。",
     ];
 
     public override string[] PrePullHints => _prePullHints;

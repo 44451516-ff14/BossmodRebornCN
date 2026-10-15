@@ -83,7 +83,7 @@ sealed class DeathDriveBait(BossModule module) : Components.BaitAwayIcon(module,
             return;
         }
 
-        hints.Add("Avoid intersecting zombies hitboxes!");
+        hints.Add("避免与僵尸的碰撞箱重叠！");
     }
 }
 

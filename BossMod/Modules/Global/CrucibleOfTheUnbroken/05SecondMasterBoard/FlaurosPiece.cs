@@ -41,7 +41,7 @@ sealed class LineVoltage(BossModule module) : Components.SimpleAOEs(module, (uin
 sealed class LineVoltageBig(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LineVoltageBig, new AOEShapeRect(100f, 3f));
 sealed class ChargedLightning(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ChargedLightning, new AOEShapeRect(100f, 20f));
 sealed class ElectricShock(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ElectricShock, 16f);
-sealed class ErraticBlaster(BossModule module) : Components.SingleTargetCast(module, (uint)AID.ErraticBlaster, "TankBuster + applies Paralysis");
+sealed class ErraticBlaster(BossModule module) : Components.SingleTargetCast(module, (uint)AID.ErraticBlaster, "死刑 + 施加麻痹");
 
 sealed class AddMovement(BossModule module) : Components.Adds(module, (uint)OID.LightningSprite, 2) {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) {

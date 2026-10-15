@@ -122,7 +122,7 @@ sealed class Doom(BossModule module) : BossComponent(module)
     {
         if (_active)
         {
-            hints.Add("Cleanse Doom!", false);
+            hints.Add("驱散死亡宣告！", false);
         }
     }
 
@@ -143,7 +143,7 @@ sealed class Doom(BossModule module) : BossComponent(module)
         }
     }
 }
-sealed class MortalRay(BossModule module) : Components.RaidwideCast(module, (uint)AID.MortalRay, "Raidwide + Doom");
+sealed class MortalRay(BossModule module) : Components.RaidwideCast(module, (uint)AID.MortalRay, "全屏攻击 + 死亡宣告");
 sealed class RuinousRing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RuinousRing1, new AOEShapeDonut(8f, 40f));
 sealed class RuinousLocus(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RuinousLocus1, 8f);
 sealed class RayOfIgnorance(BossModule module) : BossComponent(module)

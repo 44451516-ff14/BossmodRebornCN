@@ -114,7 +114,7 @@ sealed class BlackEruption(BossModule module) : Components.GenericAOEs(module)
                     return;
                 }
             }
-            ReportError($"Failed to update AOE for location: {pos}"); // not sure if possible, maybe if radius = 22.5 assumption is wrong
+            ReportError($"无法更新位置 {pos} 的范围伤害"); // not sure if possible, maybe if radius = 22.5 assumption is wrong
         }
         else if (id == (uint)AID.BlackEruption1)
         {
@@ -138,7 +138,7 @@ sealed class BlackEruption(BossModule module) : Components.GenericAOEs(module)
                     return;
                 }
             }
-            ReportError($"Failed to remove AOE for location: {pos}"); // not sure if possible, maybe if radius = 22.5 assumption is wrong
+            ReportError($"无法移除位置 {pos} 的范围伤害"); // not sure if possible, maybe if radius = 22.5 assumption is wrong
         }
         else if (_aoes.Count == 1 && id == (uint)AID.BlackEruption1) // actor can die during cast
         {
@@ -191,7 +191,7 @@ sealed class BlackEruption(BossModule module) : Components.GenericAOEs(module)
 
                 if (!addedThisStep)
                 {
-                    ReportError($"Failed to place 24 AOEs: only {24 - remaining} positions fit with the current directions and spacing.");
+                    ReportError($"无法放置 24 个范围伤害：按照当前方向和间距只能容纳 {24 - remaining} 个位置。");
                     return;
                 }
             }

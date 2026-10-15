@@ -37,7 +37,7 @@ public enum SID : uint {
 }
 
 sealed class IcyTorment(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IcyTorment, new AOEShapeRect(100.0f, 7.5f));
-sealed class RimeWreath(BossModule module) : Components.RaidwideCast(module, (uint)AID.RimeWreath, "Raidwide + Applies Frostbite");
+sealed class RimeWreath(BossModule module) : Components.RaidwideCast(module, (uint)AID.RimeWreath, "全屏攻击 + 施加冻伤");
 sealed class IcyTormentCrystals(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IcyTormentCrystals, new AOEShapeRect(100.0f, 7.5f));
 sealed class WitheringEternity(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WitheringEternity, 9.0f);
 sealed class SheetOfIce(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SheetOfIce, 5.0f);
@@ -188,13 +188,13 @@ sealed class Cauterize(BossModule module) : BossComponent(module) {
         for (var i = 0; i < max; ++i) {
             ref var aoe = ref incomingAOEs[i];
             if (!aoe.IsKnockback && i == 0 && rect.Check(actor.Position, aoe.Origin, aoe.Rotation)) {
-                hints.Add("GTFO from aoe!");
+                hints.Add("离开范围伤害！");
             }
 
             if (aoe.IsKnockback) {
                 var endPoint = Components.GenericKnockback.AwayFromSource(actor.Position, aoe.Origin, knockbackDistance);
                 if (!Arena.InBounds(endPoint)) {
-                    hints.Add("About to be knocked into wall!");
+                    hints.Add("即将被击退到墙上！");
                 }
             }
         }

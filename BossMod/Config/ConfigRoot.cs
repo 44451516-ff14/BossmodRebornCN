@@ -1,5 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Threading;
 
 namespace BossMod;
 
@@ -9,10 +12,17 @@ public sealed class ConfigRoot
     public readonly Dictionary<Type, ConfigNode> _nodes = [];
     private readonly Dictionary<string, ConfigNode> _nodesByName = [];
 
+    // fields temporarily overridden by other plugins (via IPC); the config file always keeps the user's original value
+    private readonly record struct TransientOverride(object? Original, object? Value);
+    private readonly Dictionary<(ConfigNode node, ConfigFieldMetadata field), TransientOverride> _transient = [];
+    private int _transientVersion; // incremented under the lock whenever the overrides change
+
     public void Initialize() => GeneratedRegistries.RegisterConfigNodes(RegisterNode);
 
     private void RegisterNode(Type type, ConfigNode node)
     {
+        // subscribed first, so that it runs before the save is triggered
+        node.Modified.Subscribe(() => DropChangedTransients(node));
         node.Modified.Subscribe(Modified.Fire);
         _nodes[type] = node;
         if (type.FullName is { } fullName)
@@ -57,14 +67,49 @@ public sealed class ConfigRoot
         {
             var ser = Serialization.BuildSerializationOptions();
             var serializedNodes = new ConcurrentDictionary<Type, string>();
-            Parallel.ForEach(_nodes, entry =>
+            // saves run in the background, so overrides can change while serializing; retry until the serialized values match the snapshot
+            // (anything changing the overrides also fires Modified, so giving up is fine - another save is coming)
+            Dictionary<(ConfigNode node, ConfigFieldMetadata field), TransientOverride> transient;
+            int version;
+            var attempts = 0;
+            do
             {
-                using var ms = new MemoryStream();
-                using var tempWriter = new Utf8JsonWriter(ms);
-                entry.Value.Serialize(tempWriter, ser);
-                tempWriter.Flush();
-                serializedNodes[entry.Key] = Encoding.UTF8.GetString(ms.ToArray());
-            });
+                if (++attempts > 10)
+                {
+                    Service.Log($"配置保存已跳过：{file.FullName}，临时覆盖项持续变化");
+                    return;
+                }
+
+                (transient, version) = TransientSnapshot();
+                Parallel.ForEach(_nodes, entry =>
+                {
+                    using var ms = new MemoryStream();
+                    using var tempWriter = new Utf8JsonWriter(ms);
+                    entry.Value.Serialize(tempWriter, ser);
+                    tempWriter.Flush();
+                    serializedNodes[entry.Key] = Encoding.UTF8.GetString(ms.ToArray());
+                });
+            }
+            while (version != Volatile.Read(ref _transientVersion));
+
+            // temporarily overridden fields are saved with the user's original value
+            if (transient.Count > 0)
+            {
+                Dictionary<Type, JsonObject> patched = [];
+                foreach (var ((node, field), entry) in transient)
+                {
+                    var type = node.GetType();
+                    if (!patched.TryGetValue(type, out var jnode))
+                    {
+                        patched[type] = jnode = JsonNode.Parse(serializedNodes[type])!.AsObject();
+                    }
+                    jnode[field.Name] = JsonSerializer.SerializeToNode(entry.Original, field.FieldType, ser);
+                }
+                foreach (var (type, jnode) in patched)
+                {
+                    serializedNodes[type] = jnode.ToJsonString();
+                }
+            }
 
             using var stream = new FileStream(file.FullName, FileMode.Create, FileAccess.Write, FileShare.None);
             using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
@@ -89,13 +134,157 @@ public sealed class ConfigRoot
     public List<string> ConsoleCommand(ReadOnlySpan<string> args, bool save = true)
     {
         List<string> result = [];
+        if (!ResolveField(args, result, out var selectedNode, out var selectedField))
+            return result;
+
+        try
+        {
+            if (args.Length == 2)
+            {
+                result.Add(selectedField.Getter(selectedNode)?.ToString() ?? $"读取配置项“{selectedField.Name}”失败");
+            }
+            else
+            {
+                var value = FromConsoleString(args[2], selectedField.FieldType);
+                if (value == null)
+                {
+                    result.Add($"无法将“{args[2]}”转换为 {selectedField.FieldType}");
+                }
+                else
+                {
+                    // an explicit set replaces any temporary override of this field
+                    lock (_transient)
+                    {
+                        if (_transient.Remove((selectedNode, selectedField)))
+                            ++_transientVersion;
+                        selectedField.Setter(selectedNode, value);
+                    }
+                    if (save)
+                        selectedNode.Modified.Fire();
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            result.Add(args.Length == 2
+                ? $"读取配置项 {selectedNode.GetType().Name}.{selectedField.Name} 失败：{e}"
+                : $"无法将 {selectedNode.GetType().Name}.{selectedField.Name} 设置为“{args[2]}”：{e}");
+        }
+        return result;
+    }
+
+    // same arguments as ConsoleCommand, but the value is never saved: the config file keeps the user's value, which is restored by ClearTransient
+    // if the user changes the field while it is overridden, their new value is kept instead
+    public List<string> SetTransient(ReadOnlySpan<string> args)
+    {
+        List<string> result = [];
+        if (!ResolveField(args, result, out var selectedNode, out var selectedField))
+            return result;
+
+        if (args.Length < 3)
+        {
+            result.Add($"缺少配置项 {selectedNode.GetType().Name}.{selectedField.Name} 的值");
+            return result;
+        }
+
+        try
+        {
+            var value = FromConsoleString(args[2], selectedField.FieldType);
+            if (value == null)
+            {
+                result.Add($"无法将“{args[2]}”转换为 {selectedField.FieldType}");
+                return result;
+            }
+
+            // the value is changed under the lock, so that a concurrent save sees it together with its override entry
+            lock (_transient)
+            {
+                // if the field is already overridden, keep the user's value from before the first override
+                var original = _transient.TryGetValue((selectedNode, selectedField), out var existing) ? existing.Original : selectedField.Getter(selectedNode);
+                _transient[(selectedNode, selectedField)] = new(original, value);
+                ++_transientVersion;
+                selectedField.Setter(selectedNode, value);
+            }
+            selectedNode.Modified.Fire();
+        }
+        catch (Exception e)
+        {
+            result.Add($"无法将 {selectedNode.GetType().Name}.{selectedField.Name} 设置为“{args[2]}”：{e}");
+        }
+        return result;
+    }
+
+    // restores the user's values of all temporarily overridden fields; returns number of fields restored
+    public int ClearTransient()
+    {
+        HashSet<ConfigNode> modified = [];
+        var restored = 0;
+        lock (_transient)
+        {
+            if (_transient.Count == 0)
+                return 0;
+
+            ++_transientVersion;
+            foreach (var ((node, field), entry) in _transient)
+            {
+                // don't clobber the field if something has changed it in the meantime
+                if (Equals(field.Getter(node), entry.Value))
+                {
+                    field.Setter(node, entry.Original);
+                    modified.Add(node);
+                    ++restored;
+                }
+            }
+            _transient.Clear();
+        }
+        foreach (var node in modified)
+            node.Modified.Fire();
+        return restored;
+    }
+
+    private (Dictionary<(ConfigNode node, ConfigFieldMetadata field), TransientOverride>, int version) TransientSnapshot()
+    {
+        lock (_transient)
+        {
+            return (new(_transient), _transientVersion);
+        }
+    }
+
+    internal bool IsTransient(ConfigNode node, ConfigFieldMetadata field)
+    {
+        lock (_transient)
+        {
+            return _transient.ContainsKey((node, field));
+        }
+    }
+
+    // a field that no longer has the overridden value was changed by the user (e.g. via the UI), so the new value should be saved
+    private void DropChangedTransients(ConfigNode node)
+    {
+        lock (_transient)
+        {
+            foreach (var (key, entry) in _transient)
+            {
+                if (key.node == node && !Equals(key.field.Getter(node), entry.Value))
+                {
+                    _transient.Remove(key);
+                    ++_transientVersion;
+                }
+            }
+        }
+    }
+
+    private bool ResolveField(ReadOnlySpan<string> args, List<string> result, [NotNullWhen(true)] out ConfigNode? selectedNode, [NotNullWhen(true)] out ConfigFieldMetadata? selectedField)
+    {
+        selectedNode = null;
+        selectedField = null;
         if (args.Length == 0)
         {
-            result.Add("Usage: /bmr cfg <config-type> <field> <value>");
-            result.Add("Both config-type and field can be shortened. Valid config-types:");
+            result.Add("用法：/bmr cfg <配置类型> <字段> <值>");
+            result.Add("配置类型和字段名均可使用缩写。有效的配置类型：");
             foreach (var type in _nodes.Keys)
                 result.Add($"- {type.Name}");
-            return result;
+            return false;
         }
 
         List<ConfigNode> matchingNodes = [];
@@ -115,28 +304,28 @@ public sealed class ConfigRoot
 
         if (matchingNodes.Count == 0)
         {
-            result.Add("Config type not found. Valid types:");
+            result.Add("未找到该配置类型。有效类型：");
             foreach (var type in _nodes.Keys)
                 result.Add($"- {type.Name}");
-            return result;
+            return false;
         }
         if (matchingNodes.Count > 1)
         {
-            result.Add("Ambiguous config type, pass longer pattern. Matches:");
+            result.Add("配置类型不唯一，请输入更长的名称。匹配项：");
             foreach (var node in matchingNodes)
                 result.Add($"- {node.GetType().Name}");
-            return result;
+            return false;
         }
 
-        var selectedNode = matchingNodes[0];
+        selectedNode = matchingNodes[0];
         var fields = GeneratedConfigMetadata.Get(selectedNode).DisplayFields;
         if (args.Length == 1)
         {
-            result.Add("Usage: /bmr cfg <config-type> <field> <value>");
-            result.Add($"Valid fields for {selectedNode.GetType().Name}:");
+            result.Add("用法：/bmr cfg <配置类型> <字段> <值>");
+            result.Add($"{selectedNode.GetType().Name} 的有效字段：");
             foreach (var field in fields)
                 result.Add($"- {field.Name}");
-            return result;
+            return false;
         }
 
         List<ConfigFieldMetadata> matchingFields = [];
@@ -156,48 +345,21 @@ public sealed class ConfigRoot
 
         if (matchingFields.Count == 0)
         {
-            result.Add($"Field not found {args[1]}, Valid fields:");
+            result.Add($"未找到字段 {args[1]}。有效字段：");
             foreach (var field in fields)
                 result.Add($"- {field.Name}");
-            return result;
+            return false;
         }
         if (matchingFields.Count > 1)
         {
-            result.Add("Ambiguous field name, pass longer pattern. Matches:");
+            result.Add("字段名不唯一，请输入更长的名称。匹配项：");
             foreach (var field in matchingFields)
                 result.Add($"- {field.Name}");
-            return result;
+            return false;
         }
 
-        var selectedField = matchingFields[0];
-        try
-        {
-            if (args.Length == 2)
-            {
-                result.Add(selectedField.Getter(selectedNode)?.ToString() ?? $"Failed to get value of '{selectedField.Name}'");
-            }
-            else
-            {
-                var value = FromConsoleString(args[2], selectedField.FieldType);
-                if (value == null)
-                {
-                    result.Add($"Failed to convert '{args[2]}' to {selectedField.FieldType}");
-                }
-                else
-                {
-                    selectedField.Setter(selectedNode, value);
-                    if (save)
-                        selectedNode.Modified.Fire();
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            result.Add(args.Length == 2
-                ? $"Failed to get value of {selectedNode.GetType().Name}.{selectedField.Name}: {e}"
-                : $"Failed to set {selectedNode.GetType().Name}.{selectedField.Name} to {args[2]}: {e}");
-        }
-        return result;
+        selectedField = matchingFields[0];
+        return true;
     }
 
     private static object? FromConsoleString(string str, Type type)

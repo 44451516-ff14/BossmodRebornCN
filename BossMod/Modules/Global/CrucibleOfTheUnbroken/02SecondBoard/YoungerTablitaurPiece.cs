@@ -202,7 +202,7 @@ sealed class hpChecker(YoungerTablitaurPiece module) : BossComponent(module) {
 
         var younger = Module.PrimaryActor;
         var difference = (int)(younger.HPMP.CurHP - elder.HPMP.CurHP) * 100f / younger.HPMP.MaxHP;
-        hints.Add($"Younger Tablitaur HP difference: {difference:f1}%");
+        hints.Add($"年轻石板牛头怪的生命值差异：{difference:f1}%");
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) {
@@ -264,7 +264,7 @@ public sealed class YoungerTablitaurPiece(WorldState ws, Actor primary) : BossMo
 
     private readonly string[] _prePullHints =
     [
-        "Kill both at the same time!",
+        "同时击杀两者！",
     ];
 
     public override string[] PrePullHints => _prePullHints;

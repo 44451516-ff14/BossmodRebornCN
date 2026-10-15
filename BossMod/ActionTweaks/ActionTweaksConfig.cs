@@ -17,8 +17,7 @@ public sealed class ActionTweaksConfig : ConfigNode
     [PropertyDisplay("移除额外的帧率诱导冷却延迟", tooltip: "动态调整冷却和动画锁定，确保排队动作立即解决，无论帧率限制如何")]
     public bool RemoveCooldownDelay = false;
 
-
-    [PropertyDisplay("施法时禁止移动", tags: ["slidecast"])]
+    [PropertyDisplay("施法时禁止移动", tooltip: "Rotation Solver Reborn 自动循环运行时忽略此设置", tags: ["slidecast"])]
     public bool PreventMovingWhileCasting = false;
 
     public enum ModifierKey
@@ -73,7 +72,7 @@ public sealed class ActionTweaksConfig : ConfigNode
     [PropertyDisplay("自动下坐骑以执行技能")]
     public bool AutoDismount = true;
 
-    [PropertyDisplay("Allow forbidding targets", tooltip: "Some modules want to prevent attacking certain targets, for example to prevent an early enrage. This setting gets ignored while AI is on.")]
+    [PropertyDisplay("允许模块禁止攻击目标", tooltip: "某些模块会禁止攻击特定目标，例如避免过早触发狂暴。AI 启用时会忽略此设置。")]
     public bool PreventForbiddenTargets = true;
 
     public enum GroundTargetingMode

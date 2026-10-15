@@ -84,7 +84,7 @@ sealed class BlazeSpikesTarget(BossModule module) : Components.Adds(module, (uin
 
         for (var i = 0; i < count; i++) {
             if (avoidBosses[i].InstanceID == actor.TargetID) {
-                hints.Add("Attacking boss with spikes debuff!");
+                hints.Add("正在攻击带尖刺减益的首领！");
             }
         }
     }
@@ -126,7 +126,7 @@ sealed class NeedlesOutTarget(BossModule module) : Components.Adds(module, (uint
 
         for (var i = 0; i < count; i++) {
             if (avoidBosses[i].InstanceID == actor.TargetID) {
-                hints.Add("Attacking boss with spikes debuff!");
+                hints.Add("正在攻击带尖刺减益的首领！");
             }
         }
     }
@@ -383,10 +383,10 @@ public sealed class DrakePiece : BossModule
     }
 
     private readonly string[] _prePullHints = [
-        "DrakePiece: Uses Blaze Spikes which will reflect damage when attacked - This can be dispelled",
-        "BarbmolePiece: Casts Needles Out, which will make it reflect with a stacking bleed when attacked.",
-        "AbaddonPiece: Eats MorphoPiece and gains regen stacks. Will not gain regen if MorphoPiece is low HP when eaten - Don't kill until all MorphoPiece are dead",
-        "MorphoPiece: Applies WitsEnd upon reaching 16 stacks will cause Confused debuff. Killing MorphoPiece will cause confuse debuff as well, must be eaten by AbaddonPiece"
+        "DrakePiece：使用 Blaze Spikes，被攻击时会反射伤害，可以驱散。",
+        "BarbmolePiece：施放 Needles Out，被攻击时会反射伤害并叠加流血。",
+        "AbaddonPiece：吞噬 MorphoPiece 并获得恢复效果层数。吞噬低生命值的 MorphoPiece 时不会获得恢复效果，在所有 MorphoPiece 死亡前不要击杀它。",
+        "MorphoPiece：施加 WitsEnd，达到 16 层时会造成 Confused 减益。击杀 MorphoPiece 也会造成混乱，因此必须让 AbaddonPiece 吞噬它。"
     ];
 
     public override string[] PrePullHints => _prePullHints;

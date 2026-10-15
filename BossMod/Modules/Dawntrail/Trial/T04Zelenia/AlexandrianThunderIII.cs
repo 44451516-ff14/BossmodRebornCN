@@ -4,37 +4,11 @@ sealed class AlexandrianThunderIII(BossModule module) : Components.GenericAOEs(m
 {
     private static readonly AOEShapeCone cone = new(16f, 30f.Degrees());
     private static readonly AOEShapeCircle circle = new(4f);
+    private readonly List<AOEInstance> _aoesTemp = [with(4)];
     private readonly List<AOEInstance> _aoes = [with(4)];
     private readonly bool[] activeTiles = new bool[6];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        var count = _aoes.Count;
-        var aoes = CollectionsMarshal.AsSpan(_aoes);
-        var result = new AOEInstance[count];
-        Span<bool> visited = stackalloc bool[6];
-        const float slice = 1f / 60f;
-
-        var index = 0;
-        for (var i = 0; i < count; ++i)
-        {
-            ref readonly var aoe = ref aoes[i];
-            if (aoe.Shape == circle)
-            {
-                result[index++] = aoe;
-            }
-            else // filter aoes that hit the same spot more than once since that looks ugly and wastes many cpu cycles
-            {
-                var sliceIdx = (int)MathF.Round((180f - aoe.Rotation.Deg) * slice);
-                if (!visited[sliceIdx])
-                {
-                    visited[sliceIdx] = true;
-                    result[index++] = aoe;
-                }
-            }
-        }
-        return result.AsSpan()[..index];
-    }
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
     public override void OnMapEffect(byte index, uint state)
     {
@@ -61,33 +35,40 @@ sealed class AlexandrianThunderIII(BossModule module) : Components.GenericAOEs(m
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID is (uint)AID.AlexandrianThunderIII1 or (uint)AID.AlexandrianThunderIII2)
+        if (spell.Action.ID is var aid && aid is (uint)AID.AlexandrianThunderIII1 or (uint)AID.AlexandrianThunderIII2)
         {
             Span<bool> visited = stackalloc bool[6];
+            visited.Clear();
             var pos = Arena.Center;
             var loc = spell.LocXZ;
             var rot = 30f.Degrees();
             var id = caster.InstanceID;
             var act = Module.CastFinishAt(spell);
 
-            _aoes.Add(new(circle, loc, default, act, actorID: id));
+            _aoesTemp.Add(new(circle, loc, default, act, actorID: id));
 
             for (var i = 0; i < 6; ++i)
             {
                 if (!activeTiles[i] || visited[i])
+                {
                     continue;
+                }
 
                 var intersects = Intersect.CircleCone(loc, 4f, pos, 16f, (180f - 60f * i).Degrees().ToDirection(), rot);
 
                 if (!intersects)
+                {
                     continue;
+                }
 
                 var left = i;
                 while (true)
                 {
                     var prev = (left - 1 + 6) % 6;
                     if (!activeTiles[prev] || visited[prev])
+                    {
                         break;
+                    }
                     left = prev;
                 }
 
@@ -96,7 +77,9 @@ sealed class AlexandrianThunderIII(BossModule module) : Components.GenericAOEs(m
                 {
                     var next = (right + 1) % 6;
                     if (!activeTiles[next] || visited[next])
+                    {
                         break;
+                    }
                     right = next;
                 }
 
@@ -106,18 +89,21 @@ sealed class AlexandrianThunderIII(BossModule module) : Components.GenericAOEs(m
                     if (!visited[j])
                     {
                         visited[j] = true;
-                        _aoes.Add(new(cone, pos, (180f - 60f * j).Degrees(), act, actorID: id));
+                        _aoesTemp.Add(new(cone, pos, (180f - 60f * j).Degrees(), act, actorID: id));
                     }
 
                     if (j == right)
+                    {
                         break;
+                    }
 
                     j = (j + 1) % 6;
                 }
                 break;
             }
+            FilterAOEs();
         }
-        else if (spell.Action.ID is (uint)AID.AlexandrianThunderIVCircle2 or (uint)AID.AlexandrianThunderIVDonut2 && _aoes.Count == 0)
+        else if (aid is (uint)AID.AlexandrianThunderIVCircle2 or (uint)AID.AlexandrianThunderIVDonut2 && _aoes.Count == 0)
         {
             var pos = Arena.Center;
             var act = Module.CastFinishAt(spell);
@@ -126,6 +112,34 @@ sealed class AlexandrianThunderIII(BossModule module) : Components.GenericAOEs(m
                 if (activeTiles[i])
                 {
                     _aoes.Add(new(cone, pos, (180f - 60f * i).Degrees(), act));
+                }
+            }
+        }
+    }
+
+    private void FilterAOEs()
+    {
+        var count = _aoesTemp.Count;
+        var aoes = CollectionsMarshal.AsSpan(_aoesTemp);
+        _aoes.Clear();
+        Span<bool> visited = stackalloc bool[6];
+        visited.Clear();
+        const float slice = 1f / 60f;
+
+        for (var i = 0; i < count; ++i)
+        {
+            ref readonly var aoe = ref aoes[i];
+            if (aoe.Shape == circle)
+            {
+                _aoes.Add(aoe);
+            }
+            else // filter aoes that hit the same spot more than once since that looks ugly and wastes many cpu cycles
+            {
+                var sliceIdx = (int)MathF.Round((180f - aoe.Rotation.Deg) * slice);
+                if (!visited[sliceIdx])
+                {
+                    visited[sliceIdx] = true;
+                    _aoes.Add(aoe);
                 }
             }
         }
@@ -184,15 +198,16 @@ sealed class AlexandrianThunderIII(BossModule module) : Components.GenericAOEs(m
         {
             case (uint)AID.AlexandrianThunderIII1:
             case (uint)AID.AlexandrianThunderIII2:
-                var count = _aoes.Count - 1;
+                var count = _aoesTemp.Count - 1;
                 var id = caster.InstanceID;
                 for (var i = count; i >= 0; --i)
                 {
-                    if (_aoes[i].ActorID == id)
+                    if (_aoesTemp.Ref(i).ActorID == id)
                     {
-                        _aoes.RemoveAt(i);
+                        _aoesTemp.RemoveAt(i);
                     }
                 }
+                FilterAOEs();
                 break;
             case (uint)AID.AlexandrianThunderIVCircle2:
             case (uint)AID.AlexandrianThunderIVDonut2:

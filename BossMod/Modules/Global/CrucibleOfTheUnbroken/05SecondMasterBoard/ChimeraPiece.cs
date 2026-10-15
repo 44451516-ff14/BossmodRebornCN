@@ -61,7 +61,7 @@ public enum TetherID : uint
     _Gen_Tether_chn_dark001f = 1, // ChimeraPiece->player
 }
 
-sealed class ToxicTantrum(BossModule module) : Components.RaidwideCast(module, (uint)AID.ToxicTantrum, "Raidwide + applies poison");
+sealed class ToxicTantrum(BossModule module) : Components.RaidwideCast(module, (uint)AID.ToxicTantrum, "全屏攻击 + 施加中毒");
 sealed class TheRamsRoar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheRamsRoar, 12f);
 sealed class TheLionsBreath(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.TheLionsBreath, (uint)AID.TheRamsBreath,
         (uint)AID.TheDragonsBreath], new AOEShapeCone(60f, 120f.Degrees()));
@@ -257,7 +257,7 @@ sealed class ChimeraPieceStates : StateMachineBuilder
 public sealed class ChimeraPiece(WorldState ws, Actor primary) : BossModule(ws, primary, new(120f, -420f), new ArenaBoundsCircle(20f))
 {
     private readonly string[] _prePullHints = [
-        "Toxic Tantrum: Raidwide + poison, can be esuna’d",
+        "Toxic Tantrum：全屏攻击 + 中毒，可以驱散。",
     ];
 
     public override string[] PrePullHints => _prePullHints;
