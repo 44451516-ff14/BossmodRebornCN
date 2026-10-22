@@ -730,7 +730,7 @@ sealed class CursedShriek(BossModule module) : Components.GenericGaze(module)
             return;
         }
 
-        var aoes = lightningSafeSpots.aoes.ToList();
+        var aoes = lightningSafeSpots.Casters.ToList();
         if (aoes.Count == 0)
         {
             return;
@@ -979,7 +979,7 @@ sealed class Tsunami(BossModule module) : Components.GenericBaitProximity(module
 sealed class UltimaUpsurge(BossModule module) : Components.RaidwideCast(module, (uint)AID.UltimaUpsurge);
 
 // Customize version of P1 lightning safe spots function that uses the truth and lies stored throughout the phase instead
-sealed class P4LightningSafeSpots(BossModule module) : LightningSafeSpots(module)
+sealed class P4LightningSafeSpotsOLD(BossModule module) : LightningSafeSpots(module)
 {
     private readonly KefkaOrder? kefkaOrder = module.FindComponent<KefkaOrder>();
 
@@ -996,6 +996,6 @@ sealed class P4LightningSafeSpots(BossModule module) : LightningSafeSpots(module
             return;
         }
 
-        questionMark = lightning[0].tellingTruth != lightning[1].tellingTruth;
+        //questionMark = lightning[0].tellingTruth != lightning[1].tellingTruth;
     }
 }

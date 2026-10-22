@@ -1,25 +1,27 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.DMU;
 
-sealed class LightOfJudgment(BossModule module) : Components.RaidwideCast(module, (uint)AID.LightOfJudgment);
-
-[ModuleInfo(BossModuleInfo.Maturity.WIP, PrimaryActorOID = (uint)OID.Kefka, Contributors = "Equilius", Expansion = BossModuleInfo.Expansion.Dawntrail,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed, PrimaryActorOID = (uint)OID.Kefka, Contributors = "Equilius", Expansion = BossModuleInfo.Expansion.Dawntrail,
     Category = BossModuleInfo.Category.Ultimate, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1094u, NameID = 7131u, SortOrder = 1, PlanLevel = 100)]
-public sealed class DMU : BossModule
-{
+public sealed class DMU : BossModule {
     public DMU(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
 
-    private DMU(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+    private DMU(WorldState ws, Actor primary, (WPos center, ArenaBounds arena) a) : base(ws, primary, a.center, a.arena) { }
 
-    public static (WPos center, ArenaBoundsCustom arena) BuildArena()
-    {
-        var arena = new ArenaBoundsCustom([new Polygon(new(100f, 100f), 20f, 64)]) { WorldProjectionHeight = 0f, Y = 0.1f, BorderY = 0f }; // looks ugly if we use any projection height due to weird floor geometry
+    /*public static (WPos center, ArenaBoundsCustom arena) BuildArena() {
+        var arena = new ArenaBoundsCustom([new Polygon(new(100f, 100f), 20f, 64)]) {
+            WorldProjectionHeight = 0f, Y = 0.1f, BorderY = 0f
+        }; // looks ugly if we use any projection height due to weird floor geometry
         return (arena.Center, arena);
+    }*/
+
+    public static (WPos center, ArenaBounds arena) BuildArena() {
+        var arena = new ArenaBoundsCircle(20.0f) {
+            WorldProjectionHeight = 0f, Y = 0.1f, BorderY = 0f
+        }; // looks ugly if we use any projection height due to weird floor geometry
+        return (new WPos(100f, 100f), arena);
     }
 
     public override bool ShouldPrioritizeAllEnemies => true;
-
-    //private Actor? bossP1;
-    public Actor? BossP1() => PrimaryActor;
 
     private Actor? bossP2;
     public Actor? BossP2() => bossP2;
@@ -41,33 +43,8 @@ public sealed class DMU : BossModule
     private Actor? kefkaP5;
     public Actor? KefkaP5() => kefkaP5;
 
-    protected override void UpdateModule()
-    {
-        switch (StateMachine.ActivePhaseIndex)
-        {
-            case 1:
-                bossP2 ??= GetActor((uint)OID.BossP2);
-                break;
-            case 2:
-                bossP3 ??= GetActor((uint)OID.Kefka);
-                chaosP3 ??= GetActor((uint)OID.Chaos);
-                exdeathP3 ??= GetActor((uint)OID.Exdeath);
-                break;
-            case 3:
-                kefkaP4 ??= GetActor((uint)OID.KefkaP4);
-                chaosP4 ??= GetActor((uint)OID.ChaosP4);
-                neoExdeath ??= GetActor((uint)OID.NeoExdeath);
-                break;
-            case 4:
-                kefkaP5 ??= GetActor((uint)OID.KefkaP5);
-                break;
-        }
-    }
-
-    protected override void DrawEnemies(int pcSlot, Actor pc)
-    {
-        switch (StateMachine.ActivePhaseIndex)
-        {
+    protected override void DrawEnemies(int pcSlot, Actor pc) {
+        switch (StateMachine.ActivePhaseIndex) {
             case -1:
             case 0:
                 Arena.Actor(PrimaryActor);
@@ -88,4 +65,32 @@ public sealed class DMU : BossModule
                 break;
         }
     }
+
+    protected override void UpdateModule() {
+        switch (StateMachine.ActivePhaseIndex) {
+            case 1:
+                bossP2 ??= GetActor((uint)OID.BossP2);
+                break;
+            case 2:
+                bossP3 ??= GetActor((uint)OID.Kefka);
+                chaosP3 ??= GetActor((uint)OID.Chaos);
+                exdeathP3 ??= GetActor((uint)OID.Exdeath);
+                break;
+            case 3:
+                kefkaP4 ??= GetActor((uint)OID.KefkaP4);
+                chaosP4 ??= GetActor((uint)OID.ChaosP4);
+                neoExdeath ??= GetActor((uint)OID.NeoExdeath);
+                break;
+            case 4:
+                kefkaP5 ??= GetActor((uint)OID.KefkaP5);
+                break;
+        }
+    }
+
+    private readonly string[] _prePullHints = [
+        "此战斗需要先设置队伍职责分配。",
+        "此战斗有多种处理策略，请在“遭遇战专属设置”中配置。",
+    ];
+
+    public override string[] PrePullHints => _prePullHints;
 }

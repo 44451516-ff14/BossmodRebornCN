@@ -1,15 +1,29 @@
-﻿General (for all phases / multiple phases)
+﻿P1 notes:
+// TODO improvements
+//  1. Make opener better - most likely to do with RSR, but also make the player move as close as possible to the boss?
+//  2. Make hyperdrive move the player south like the other Tankbuster
+//  3. Arrow uptime, sometimes our arrow position can be right next to use and moving instantly makes us out of melee range for (~5 + 4)seconds
+//      it would be better to move to the general area of the arrow while keeping at max melee range? and not moving until like 2.5 seconds left
+//  4. Running away during the sleep / confusion - happens on all graven image tethers even the first one
+//      needs to be improved on the first one & confusion / sleep one, others are fine
+//  5. Add hint  to know if you're the stack or not in the global hints part (cofeeti buff)
+//  6. Double trouble knockback improvements:
+//      players get closer to the debuff player like 1.0f in front
+//      debuff player ensure everyone is in with a 2.0f radius of safety - moving to ensure someone is in cloud cause other people to move out
+//  7. Add look at / away from gaze or come up with a better idea to know the difference between looking away or towards the gaze
+
+------------------------------------
+
+1. add line in-game hints like m11s - where it displays a line where to move in-game instead of on the radar
+2. Go over phases, if there are stuff like if resolved or true statement, can just set it inside the state machine instead for easier control
+------------------------------
+
+General (for all phases / multiple phases)
 - Activation times for spells
 - Timeline improvements
 - Turns out we only need to know some of the casts going off for blizzrd and lightning, blizzard has already been refactored
     but lightning could also be refactored, this is for P1 & P4, p4 had extra logic for the fake & truth part, but turns out none of it is needed
     Be careful when changing lightning tho as it is used by gazes as well
-
-Phase 1:
-- Graven Image 1 safe spots
-- WaveCannonTowers Priority order
-- P1 arrow puddles with arrows
-- TeleTrouncing - add support to allow different points of views for different players in the replay - need to use pcSlot and slot of the raid members
 
 Phase 2:
 - If forsaken is reamde
