@@ -45,6 +45,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
     private DateTime _throttleFateSync;
     private DateTime _throttleLeaveDuty;
     private WorldOverlayNode? _worldOverlayNode;
+    private ContentsFinderIndicator? _contentsFinderIndicator;
 
     // windows
     private ConfigUI _configUI = null!; // TODO: should be a proper window!
@@ -108,6 +109,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
         Camera.Instance = new();
         _worldOverlayNode = new();
         Dx11ArenaRenderer.SetWorldOverlayNode(_worldOverlayNode);
+        _contentsFinderIndicator = new();
 
         Service.Config.Modified.Subscribe(() => Task.Run(() => Service.Config.SaveToFile(_dalamud.ConfigFile)));
 
@@ -145,6 +147,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
         config.Modified.ExecuteAndSubscribe(() => _wndReplay.UpdateLogDirectory());
         _wndRotation = new(_rotation, _amex, () => OpenConfigUI("Autorotation presets"));
         _wndDebug = new(_ws, _rotation, _zonemod, _amex, _movementOverride, _hintsBuilder, _dalamud, _rsr);
+        RebornUI.MaterialUI.Start(_dalamud, _ws, _rotationDB, _rotation, _ai, new DirectoryInfo(replayDir));
 
         _dalamud.UiBuilder.DisableAutomaticUiHide = true;
         _dalamud.UiBuilder.Draw += DrawUI;
@@ -161,7 +164,10 @@ public sealed class Plugin : IAsyncDalamudPlugin
             Dx11ArenaRenderer.SetWorldOverlayNode(null);
             _worldOverlayNode?.Dispose();
             _worldOverlayNode = null;
+            _contentsFinderIndicator?.Dispose();
+            _contentsFinderIndicator = null;
             Dx11ArenaRenderer.Shutdown();
+            RebornUI.MaterialUI.Stop();
         });
         ReplayVisualization.GaugeVisualizer.Dispose();
         _wndDebug.Dispose();
@@ -301,6 +307,8 @@ public sealed class Plugin : IAsyncDalamudPlugin
 
     private void OpenConfigUI(string showTab = "")
     {
+        if (RebornUI.MaterialUI.OpenSettings(showTab))
+            return;
         _configUI.ShowTab(showTab);
         _ = new UISimpleWindow("BossModReborn", _configUI.Draw, true, new(300, 300));
     }

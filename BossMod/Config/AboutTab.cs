@@ -46,7 +46,7 @@ public sealed class AboutTab(DirectoryInfo? replayDir)
             "使用指南详见项目Wiki。",
         ]);
         ImGui.Spacing();
-        DrawSection("AI系统",
+        DrawSection("AI 自动移动",
         [
             "自动化首领战中的移动操作。",
             "根据雷达显示的安全区域自动调整角色位置。",

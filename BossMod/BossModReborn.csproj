@@ -14,7 +14,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <TargetFramework>net10.0-windows</TargetFramework>
+        <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
         <Platforms>x64</Platforms>
         <Nullable>enable</Nullable>
         <LangVersion>preview</LangVersion>
@@ -35,9 +35,8 @@
         <Using Include="System.Runtime.CompilerServices"/>
         <Using Include="System.Linq"/>
         <Using Include="System.Numerics"/>
-        <Using Include="System.Threading.Tasks;"/>
+        <Using Include="System.Threading.Tasks"/>
         <Using Include="System.Text"/>
-        
     </ItemGroup>
 
     <PropertyGroup>
@@ -48,7 +47,12 @@
         <DalamudLibPath>$(DALAMUD_HOME)/</DalamudLibPath>
     </PropertyGroup>
 
-<!--    <Target Name="RemoveUnwantedFiles" AfterTargets="CopyFilesToOutputDirectory" Condition="'$(Configuration)' == 'Release'">-->
+    <ItemGroup>
+        <PackageReference Include="RebornMaterial" Version="7.5.8.1" />
+        <PackageReference Include="TerraFX.Interop.Windows" Version="10.0.26100.6" />
+    </ItemGroup>
+
+    <!--    <Target Name="RemoveUnwantedFiles" AfterTargets="CopyFilesToOutputDirectory" Condition="'$(Configuration)' == 'Release'">-->
     <Target Name="RemoveUnwantedFiles" AfterTargets="CopyFilesToOutputDirectory" Condition="'$(Configuration)' == 'Release'">
         <ItemGroup>
             <FilesToDelete Include="$(OutputPath)Dalamud.Common.dll"/>
@@ -61,6 +65,9 @@
 
     <ItemGroup>
         <None Include="DefaultRotationPresets.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="RebornPresets.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
@@ -81,6 +88,11 @@
         </EmbeddedResource>
     </ItemGroup>
 
+    <ItemGroup>
+        <EmbeddedResource Include="RebornUI\Images\*.png">
+            <LogicalName>BossMod.RebornUI.Images.%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+    </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\BossMod.SourceGen\BossMod.SourceGen.csproj"
@@ -90,20 +102,16 @@
 
     <ItemGroup>
         <Reference Include="Dalamud.Common"/>
-        <Reference Include="TerraFX.Interop.Windows"/>
     </ItemGroup>
-
 
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
         <OutputPath>$(MSBuildProjectDirectory)\..\release\</OutputPath>
     </PropertyGroup>
-    
-    
+
     <Target Name="CleanupOutput" AfterTargets="Build" BeforeTargets="DalamudPackage">
         <ItemGroup>
-            <_ExtraOutputFiles Include="$(OutputPath)*" Exclude="$(OutputPath)BossModReborn.*;$(OutputPath)DefaultRotationPresets.json" />
+            <_ExtraOutputFiles Include="$(OutputPath)*" Exclude="$(OutputPath)BossModReborn.*;$(OutputPath)RebornMaterial.dll;$(OutputPath)DefaultRotationPresets.json;$(OutputPath)RebornPresets.json;$(OutputPath)PInvoke.User32.dll" />
         </ItemGroup>
         <Delete Files="@(_ExtraOutputFiles)" />
     </Target>
-    
 </Project>

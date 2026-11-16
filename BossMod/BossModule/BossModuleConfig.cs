@@ -29,6 +29,9 @@ public sealed class BossModuleConfig : ConfigNode
     [PropertyDisplay("允许模块自动使用技能", tooltip: "例如：在击退发生前自动使用防击退技能")]
     public bool AllowAutomaticActions = true;
 
+    [PropertyDisplay("在任务搜索器中标记已支持的任务", tooltip: "在已支持的普通及高难度任务等级要求旁显示“BMR”标记。\n颜色表示该任务可加载的首领模块中的最低完成度：红色 = 开发中，蓝色 = 已贡献，绿色 = 已验证，金色 = 支持 AI。")]
+    public bool ShowDutyFinderIndicator = true;
+
     [PropertyDisplay("[设置调整用]显示测试雷达和提示窗口", tooltip: "无需进入首领战即可配置雷达和提示窗口，便于调试", separator: true, depends: nameof(EnableRadar))]
     public bool ShowDemo = false;
 

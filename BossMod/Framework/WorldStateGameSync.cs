@@ -70,7 +70,7 @@ sealed unsafe class WorldStateGameSync : IDisposable
     private readonly Hook<ProcessMapEffectNDelegate> _processMapEffect2Hook;
     private readonly Hook<ProcessMapEffectNDelegate> _processMapEffect3Hook;
 
-    private readonly Hook<EventFramework.Delegates.SetDirectorData> _processLegacyMapEffectHook;
+    private readonly Hook<EventFramework.Delegates.SetDirectorData>? _processLegacyMapEffectHook;
 
     private delegate void ProcessPacketRSVDataDelegate(byte* packet);
     private readonly Hook<ProcessPacketRSVDataDelegate> _processPacketRSVDataHook;
@@ -92,7 +92,7 @@ sealed unsafe class WorldStateGameSync : IDisposable
     private delegate void ProcessPacketPlayActionTimelineSync(Network.ServerIPC.PlayActionTimelineSync* data);
     private readonly Hook<ProcessPacketPlayActionTimelineSync> _processPlayActionTimelineSyncHook;
 
-    private readonly Hook<ActionManager.Delegates.GetActionInRangeOrLoS> _getActionInRangeOrLoSHook;
+    private readonly Hook<ActionManager.Delegates.GetActionInRangeOrLoS>? _getActionInRangeOrLoSHook;
 
     public unsafe WorldStateGameSync(WorldState ws, ActionManagerEx amex)
     {
@@ -172,9 +172,17 @@ sealed unsafe class WorldStateGameSync : IDisposable
         _calculateMoveSpeedMulti = (delegate* unmanaged<ContainerInterface*, float>)Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 44 0F 28 D8 45 0F 57 D2");
         Service.Log($"[WSG] CalculateMovementSpeedMultiplier address = 0x{(nint)_calculateMoveSpeedMulti:X}");
 
-        _processLegacyMapEffectHook = Service.Hook.HookFromAddress<EventFramework.Delegates.SetDirectorData>(EventFramework.Addresses.SetDirectorData.Value, ProcessLegacyMapEffectDetour);
-        _processLegacyMapEffectHook.Enable();
-        Service.Log($"[WSG] LegacyMapEffect address = {_processLegacyMapEffectHook.Address:X}");
+        var legacyMapEffectAddr = EventFramework.Addresses.SetDirectorData.Value;
+        if (legacyMapEffectAddr != 0)
+        {
+            _processLegacyMapEffectHook = Service.Hook.HookFromAddress<EventFramework.Delegates.SetDirectorData>(legacyMapEffectAddr, ProcessLegacyMapEffectDetour);
+            _processLegacyMapEffectHook.Enable();
+            Service.Log($"[WSG] LegacyMapEffect address = {_processLegacyMapEffectHook.Address:X}");
+        }
+        else
+        {
+            Service.Log("[WSG] LegacyMapEffect address is null — hook skipped (CS may need updating for this client)");
+        }
 
 
 
@@ -191,16 +199,24 @@ sealed unsafe class WorldStateGameSync : IDisposable
         _processPlayActionTimelineSyncHook.Enable();
         Service.Log($"[WSG] ProcessPlayActionTimelineSync address = {_processPlayActionTimelineSyncHook.Address:X}");
 
-        _getActionInRangeOrLoSHook = Service.Hook.HookFromAddress<ActionManager.Delegates.GetActionInRangeOrLoS>((nint)ActionManager.MemberFunctionPointers.GetActionInRangeOrLoS, GetActionInRangeOrLoSDetour);
-        _getActionInRangeOrLoSHook.Enable();
-        Service.Log($"[WSG] GetActionInRangeOrLoS address = 0x{_getActionInRangeOrLoSHook.Address:X}");
+        var getActionInRangeOrLoSAddr = (nint)ActionManager.MemberFunctionPointers.GetActionInRangeOrLoS;
+        if (getActionInRangeOrLoSAddr != 0)
+        {
+            _getActionInRangeOrLoSHook = Service.Hook.HookFromAddress<ActionManager.Delegates.GetActionInRangeOrLoS>(getActionInRangeOrLoSAddr, GetActionInRangeOrLoSDetour);
+            _getActionInRangeOrLoSHook.Enable();
+            Service.Log($"[WSG] GetActionInRangeOrLoS address = 0x{_getActionInRangeOrLoSHook.Address:X}");
+        }
+        else
+        {
+            Service.Log("[WSG] GetActionInRangeOrLoS address is null — hook skipped (CS may need updating for this client)");
+        }
     }
 
     public void Dispose()
     {
         _processPlayActionTimelineSyncHook.Dispose();
         _inventoryAckHook.Dispose();
-        _processLegacyMapEffectHook.Dispose();
+        _processLegacyMapEffectHook?.Dispose();
         _processMapEffect1Hook.Dispose();
         _processMapEffect2Hook.Dispose();
         _processMapEffect3Hook.Dispose();
@@ -214,7 +230,7 @@ sealed unsafe class WorldStateGameSync : IDisposable
         _processSystemLogMessageHook.Dispose();
         _processPacketFateTradeHook.Dispose();
         _processPacketFateInfoHook.Dispose();
-        _getActionInRangeOrLoSHook.Dispose();
+        _getActionInRangeOrLoSHook?.Dispose();
         _subscriptions.Dispose();
         _netConfig.Dispose();
         _interceptor.Dispose();
@@ -1501,7 +1517,7 @@ sealed unsafe class WorldStateGameSync : IDisposable
 
     private unsafe void ProcessLegacyMapEffectDetour(EventFramework* fwk, EventId eventId, byte seq, byte unk, byte* data, ulong length)
     {
-        _processLegacyMapEffectHook.Original(fwk, eventId, seq, unk, data, length);
+        _processLegacyMapEffectHook!.Original(fwk, eventId, seq, unk, data, length);
         _globalOps.Add(new WorldState.OpLegacyMapEffect(seq, unk, new Span<byte>(data, (int)length).ToArray()));
     }
 
@@ -1540,7 +1556,7 @@ sealed unsafe class WorldStateGameSync : IDisposable
 
     private unsafe uint GetActionInRangeOrLoSDetour(uint actionId, GameObject* sourceObject, GameObject* targetObject)
     {
-        var res = _getActionInRangeOrLoSHook.Original(actionId, sourceObject, targetObject);
+        var res = _getActionInRangeOrLoSHook!.Original(actionId, sourceObject, targetObject);
         if (res is 562 && sourceObject->EntityId == UIState.Instance()->PlayerState.EntityId)
             _globalOps.Add(new ClientState.OpActionFailedLoS(actionId, SanitizedObjectID(targetObject->EntityId)));
         return res;

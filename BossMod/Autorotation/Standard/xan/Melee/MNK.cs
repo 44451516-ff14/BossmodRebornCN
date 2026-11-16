@@ -140,7 +140,7 @@ public sealed class MNK(RotationModuleManager manager, Actor player) : Attackxan
         ForceMinus3,
         [Option("身形转换效果期间除外，尽快使用")]
         ForceNoShift,
-        [Option("尽快使用", MinLevel = 50)]
+        [Option("尽快使用", MinLevel = 50, Effect = 20)]
         Force,
         [Option("不使用", MinLevel = 50)]
         Delay,
@@ -320,7 +320,7 @@ public sealed class MNK(RotationModuleManager manager, Actor player) : Attackxan
         var gauge = World.Client.GetGauge<MonkGauge>();
 
         Chakra = gauge.Chakra;
-        BeastChakra = gauge.BeastChakra;
+        BeastChakra = [gauge.BeastChakra1, gauge.BeastChakra2, gauge.BeastChakra3];
         BlitzLeft = gauge.BlitzTimeRemaining / 1000f;
         Nadi = gauge.Nadi;
 
@@ -445,7 +445,9 @@ public sealed class MNK(RotationModuleManager manager, Actor player) : Attackxan
 
         UpdatePositionals(primaryTarget, ref pos);
 
-        GoalZoneCombined(strategy, 3, Hints.GoalAOECircle(5), AID.ArmOfTheDestroyer, AOEBreakpoint, maximumActionRange: 20);
+        var isAoeBlitz = BeastCount == 3 && !currentBlitzIsTargeted;
+
+        GoalZoneCombined(strategy, 3, Hints.GoalAOECircle(5), AID.ArmOfTheDestroyer, isAoeBlitz ? 2 : AOEBreakpoint, maximumActionRange: 20);
 
         OGCD(strategy, primaryTarget);
     }

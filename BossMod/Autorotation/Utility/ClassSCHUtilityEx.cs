@@ -13,9 +13,9 @@ public sealed class ClassSCHUtilityEx(RotationModuleManager manager, Actor playe
 
     public enum SpreadloStrategy
     {
-        [Option("Don't use")]
+        [Option("不使用")]
         None,
-        [Option("Use Adloquium + Deployment Tactics", Targets = ActionTargets.Self | ActionTargets.Party, Effect = 30, MinLevel = 56)]
+        [Option("使用 Adloquium + Deployment Tactics", Targets = ActionTargets.Self | ActionTargets.Party, Effect = 30, MinLevel = 56)]
         Basic,
         [Option("Recitation -> Spreadlo", Targets = ActionTargets.Self | ActionTargets.Party, Effect = 30, MinLevel = 74)]
         Recite,
@@ -25,15 +25,15 @@ public sealed class ClassSCHUtilityEx(RotationModuleManager manager, Actor playe
 
     public enum ShieldStrategy
     {
-        [Option("Disabled")]
+        [Option("禁用")]
         Disabled,
-        [Option("Apply shield to matching party members, if missing; ensure shield lasts until plan entry end", Targets = ActionTargets.Self | ActionTargets.Party, DefaultPriority = ActionQueue.Priority.High + 500)]
+        [Option("若目标队员没有护盾则施加护盾，并确保持续至计划条目结束", Targets = ActionTargets.Self | ActionTargets.Party, DefaultPriority = ActionQueue.Priority.High + 500)]
         Enabled
     }
 
     public static RotationModuleDefinition Definition()
     {
-        return new RotationModuleDefinition("Utility: SCH (extra)", "Extra stuff for SCH", "Utility for planner", "xan", RotationModuleQuality.Ok, BitMask.Build(Class.SCH), 100).WithStrategies<Strategy>();
+        return new RotationModuleDefinition("实用功能：学者（额外）", "学者的额外功能", "用于规划器的实用功能", "xan", RotationModuleQuality.Ok, BitMask.Build(Class.SCH), 100).WithStrategies<Strategy>();
     }
 
     bool HaveSwift;
@@ -48,7 +48,7 @@ public sealed class ClassSCHUtilityEx(RotationModuleManager manager, Actor playe
 
     void Shield(in Strategy strategy, ref Actor? primaryTarget)
     {
-        if (strategy.Shield.Value == ShieldStrategy.Disabled || strategy.Shield.TrackRaw.Target == StrategyTarget.Automatic)
+        if (strategy.Shield.Value == ShieldStrategy.Disabled)
             return;
 
         // gcd shield lasts 30 seconds, if the entry is longer than that, just wait it out
@@ -57,7 +57,10 @@ public sealed class ClassSCHUtilityEx(RotationModuleManager manager, Actor playe
 
         var entryEnd = World.FutureTime(strategy.Shield.TrackRaw.ExpireIn);
 
-        var shieldPlayers = Manager.ResolvePartyMembers(strategy.Shield.TrackRaw.Target, strategy.Shield.TrackRaw.TargetParam).Where(p => !(p.FindStatus(SCH.SID.Galvanize, World.FutureTime(30))?.ExpireAt > entryEnd)).ToList();
+        var playersEnum = strategy.Shield.TrackRaw.Target == StrategyTarget.Automatic ? World.Party.WithoutSlot() : Manager.ResolvePartyMembers(strategy.Shield.TrackRaw.Target, strategy.Shield.TrackRaw.TargetParam);
+
+        // TODO: ignore players that have an existing shield that will expire before the entry end, succor/adlo does not reapply
+        var shieldPlayers = playersEnum.Where(p => p.IsTargetable && !(p.FindStatus(SCH.SID.Galvanize, World.FutureTime(30))?.ExpireAt > entryEnd)).ToList();
 
         // use succor to hit multiple allies
         // TODO: option to force adlo? not sure if it would ever be practical though
