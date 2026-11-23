@@ -20,7 +20,7 @@ public sealed class AutorotationConfig : ConfigNode
     [PropertyRadio]
     public DtrStatus ShowDTR = DtrStatus.None;
 
-    [PropertyDisplay("隐藏VBM默认预设方案", tooltip: "如果你已创建自定义预设方案且不再需要内置默认预设，勾选此选项将使其不再显示在自动旋转和预设编辑窗口中。")]
+    [PropertyDisplay("隐藏 VBM 默认预设", tooltip: "在自动循环、AI 和预设编辑器中隐藏内置的 VBM Default、VBM AI 和 VBM Multibox 预设。")]
     public bool HideDefaultPresets = true;
 
     [PropertyDisplay("显示定位指引标记", tooltip: "显示定位技能提示，指示应移动至目标侧面或背面")]

@@ -18,8 +18,6 @@ public sealed class UIPresetDatabaseEditor(RotationDatabase rotationDB)
     private Type? _selectedModuleType; // we want module selection to be persistent when changing presets
     private UIPresetEditor? _selectedPreset;
 
-    private readonly AutorotationConfig _cfg = Service.Config.Get<AutorotationConfig>();
-
     private bool HaveUnsavedModifications => _selectedPreset?.Modified ?? false;
 
     public void Draw()
@@ -107,8 +105,7 @@ public sealed class UIPresetDatabaseEditor(RotationDatabase rotationDB)
         {
             if (combo)
             {
-                if (!_cfg.HideDefaultPresets)
-                    DrawPresetListElements(true);
+                DrawPresetListElements(true);
                 DrawPresetListElements(false);
             }
         }
@@ -129,7 +126,7 @@ public sealed class UIPresetDatabaseEditor(RotationDatabase rotationDB)
         if (UIMisc.Button("复制", 0, (HaveUnsavedModifications, "当前预设已修改，请保存或放弃更改"), (_selectedPresetIndex < 0, "未选择预设")))
             CreateNewPreset(_selectedPresetIndex, _selectedPresetDefault);
         ImGui.SameLine();
-        if (UIMisc.Button("删除", 0, (_selectedPresetDefault, "默认预设不能删除。如需隐藏，可在设置 -> 自动循环中关闭显示。"), (!ImGui.GetIO().KeyShift, "按住 Shift 删除"), (_selectedPresetIndex < 0, "未选择预设")))
+        if (UIMisc.Button("删除", 0, (_selectedPresetDefault, "默认预设不能删除。可在“设置 → 自动循环”中隐藏 VBM 默认预设。"), (!ImGui.GetIO().KeyShift, "按住 Shift 删除"), (_selectedPresetIndex < 0, "未选择预设")))
             DeleteCurrentPreset();
         ImGui.SameLine();
         if (UIMisc.Button("导出", _selectedPreset == null, "未选择预设"))
@@ -145,6 +142,9 @@ public sealed class UIPresetDatabaseEditor(RotationDatabase rotationDB)
         for (var i = 0; i < presets.Count; ++i)
         {
             var preset = presets[i];
+            if (PresetDB.IsHidden(preset))
+                continue;
+
             if (ImGui.Selectable(preset.Name, _selectedPresetDefault == defaultPresets && _selectedPresetIndex == i))
             {
                 _pendingSelectPresetIndex = i;

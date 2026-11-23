@@ -1,12 +1,14 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.DMU;
 
 [ConfigDisplay(Order = 0x400, Parent = typeof(DawntrailConfig))]
-public sealed class DMUConfig : ConfigNode {
+public sealed class DMUConfig : ConfigNode
+{
     [SectionStart("策略设置")]
     [PropertyDisplay("P1 刻印 1 处理策略")]
     public P1GravenImage1Strategy P1GravenImage1 = P1GravenImage1Strategy.GravenImage1LPDU;
 
-    public enum P1GravenImage1Strategy {
+    public enum P1GravenImage1Strategy
+    {
         [PropertyDisplay("关闭提示")]
         GravenImage1None,
 
@@ -22,7 +24,8 @@ public sealed class DMUConfig : ConfigNode {
     [PropertyDisplay("P1 波形炮安全点提示", tooltip: "大致显示诱导站位")]
     public bool P1WaveCannonHints = false;
 
-    public enum P1DoubleTroubleStrategy {
+    public enum P1DoubleTroubleStrategy
+    {
         [PropertyDisplay("关闭提示")]
         DoubleTroubleNone,
 
@@ -39,7 +42,8 @@ public sealed class DMUConfig : ConfigNode {
     [PropertyDisplay("P1 Double Trouble 击退安全点提示", tooltip: "显示分摊大致站位，可能仍需微调")]
     public bool P1DoubleTroubleKnockbackHints = false;
 
-    public enum P1GravenImage2Strategy {
+    public enum P1GravenImage2Strategy
+    {
         [PropertyDisplay("关闭提示")]
         GravenImage2None,
 
@@ -53,7 +57,8 @@ public sealed class DMUConfig : ConfigNode {
     [PropertyDisplay("P1 刻印 2 处理策略")]
     public P1GravenImage2Strategy P1GravenImage2 = P1GravenImage2Strategy.GravenImage2LPDUUptime;
 
-    public enum P1TeleTrouncingStrategy {
+    public enum P1TeleTrouncingStrategy
+    {
         [PropertyDisplay("关闭提示")]
         TeleTrouncingNone,
 
@@ -73,7 +78,8 @@ public sealed class DMUConfig : ConfigNode {
     [PropertyDisplay("P1 刻印 3 处理策略")]
     public P1GravenImage3Strategy P1GravenImage3 = P1GravenImage3Strategy.GravenImage3LPDU;
 
-    public enum P1GravenImage3Strategy {
+    public enum P1GravenImage3Strategy
+    {
         [PropertyDisplay("关闭提示")]
         GravenImage3None,
 
@@ -84,7 +90,8 @@ public sealed class DMUConfig : ConfigNode {
         GravenImage3KefkaBin,
     }
 
-    public enum P2ForsakenStrategy {
+    public enum P2ForsakenStrategy
+    {
         [PropertyDisplay("EU meow 无脑打法（无标点）")]
         Meow_Markerless,
 
